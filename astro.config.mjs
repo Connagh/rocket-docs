@@ -50,6 +50,10 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Joints & seals',
+          items: [{ label: 'O-ring design', slug: 'seals/o-ring-design' }],
+        },
+        {
           label: 'Verification',
           items: [{ label: 'Proof testing', slug: 'verify/proof-testing' }],
         },

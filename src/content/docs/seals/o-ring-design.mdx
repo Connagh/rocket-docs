@@ -1,0 +1,177 @@
+---
+title: O-ring design
+description: How O-rings seal, how to size squeeze, gland fill, stretch and extrusion gap at the tolerance and temperature extremes, compound selection, and the joint-opening lesson from Challenger.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import ORingStates from '../../../components/ORingStates.astro';
+import ORingCalc from '../../../components/ORingCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Check squeeze at the worst tolerance corner and the coldest temperature, with the joint gap at its widest under pressure — not at nominal.</div>
+  <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> (the joint that the seal lives in)</div>
+  <div><b>Legacy zone</b>Z51 · O-ring design</div>
+</div>
+
+## Why this matters
+
+O-rings are the cheapest parts on a motor and some of the most safety-critical. Case joints, the nozzle-to-case joint,
+igniter bosses and closures all rely on them to hold hot, high-pressure gas. A leak path past a seal lets combustion
+gas cut through metal in seconds. The worst-known example is the loss of the Space Shuttle *Challenger* in 1986, traced
+to a booster field-joint O-ring that could not seal on a cold morning.
+
+## How an O-ring seals
+
+<ORingStates />
+
+<Analogy title="A plug-type aircraft door">
+  An airliner's passenger door is slightly bigger than its frame and fits from the inside, so cabin pressure pushes it
+  harder into the frame the higher the aircraft climbs. An O-ring works the same way: the squeeze you build in gives it
+  a starting seal, and system pressure then pushes it harder into the low-pressure corner of the groove. The seal gets
+  tighter as the pressure rises — until the pressure is high enough to push rubber through the clearance gap.
+</Analogy>
+
+Rubber behaves like a very stiff liquid in bulk and a very soft solid in shape: it changes shape easily but hardly
+changes volume.
+
+<Analogy title="A water balloon in a box">
+  Push down on a water balloon in a box and it bulges sideways — its volume can't change, only its shape. If the box is
+  too small it has nowhere to go and the pressure inside climbs enormously. That is why groove *volume* (gland fill)
+  matters as much as depth: the ring must have room to change shape, plus room to grow when it is hot or swells in
+  fluid.
+</Analogy>
+
+## The four numbers
+
+For a ring of cross-section $d$ in a gland of depth $g$ (the radial or axial space it is squeezed into) and width $w$:
+
+| Quantity | Definition | What goes wrong |
+| --- | --- | --- |
+| **Squeeze** | $s = \dfrac{d - g}{d}$ | Too little: no initial seal, especially cold. Too much: overstress, set, high assembly force |
+| **Gland fill** | $\phi = \dfrac{\pi d^2 / 4}{w\,g}$ | Over ~90%: no room to expand — hydraulic lock, cracked groove lands, extrusion |
+| **Stretch** | $\varepsilon = \dfrac{D_\text{groove} - ID}{ID}$ | Too much thins the section and shortens life; negative leaves the ring loose to roll |
+| **Extrusion gap** | Diametral clearance at the low-pressure side | Too wide for the pressure and hardness: rubber is nibbled into the gap |
+
+Stretching a ring onto a groove thins its cross-section. Assuming constant volume, the stretched section is
+
+$$
+d' = \frac{d}{\sqrt{1 + \varepsilon}}
+$$
+
+so 2% stretch loses about 1% of the section — and about 1% of squeeze with it.
+
+### Nominal is not enough
+
+Every one of those numbers changes across the tolerance band, and the extremes are what fail. A 5.33 mm section has a
+tolerance of about ±0.13 mm. On its own, that moves squeeze by about ±2.5 percentage points. Add the groove, bore and
+piston tolerances, then let the parts sit off-centre (the gland is shallow on one side and deep on the other), and a
+nominal 19% squeeze can range from about 13% to 25%.
+
+Then add the things that move after assembly:
+
+- **Temperature.** Elastomers expand about ten times more than steel (around $1.6\times10^{-4}$/K). Cold rings shrink and
+  lose squeeze; hot rings grow and fill the groove.
+- **Fluid swell.** A few percent of volume growth in service is normal and must fit in the groove.
+- **Compression set.** Over time and temperature the ring takes a permanent set and stops pushing back as hard.
+  Budget it into minimum squeeze.
+- **Joint opening.** Under pressure, case joints rotate, bores dilate and flanges lift. The gap the ring has to fill
+  gets bigger exactly when the pressure arrives.
+
+## The Challenger lesson: the seal must follow the joint
+
+<Aside type="caution" title="A seal is a spring, and cold springs are slow">
+  In a Shuttle booster field joint, ignition pressure made the joint rotate slightly and open the gap the O-rings
+  sealed. A warm O-ring springs out fast enough to follow. On the cold morning of 28 January 1986 (around 2 °C
+  ambient, with the joint colder still) the fluoroelastomer rings recovered too slowly. Hot gas got past before they
+  sealed, and the joint failed about a minute into flight.
+</Aside>
+
+During the Rogers Commission hearings, Richard Feynman showed the effect with a sample of the O-ring rubber clamped in
+iced water: released from the clamp, it stayed squashed instead of springing back. Two design rules come straight from
+that:
+
+1. **Size the minimum squeeze with the joint opened under pressure, at the coldest temperature** — the calculator's
+   "joint opening" input does exactly this.
+2. **Do not rely on rubber resilience to follow motion near its low-temperature limit.** Specify the compound by its
+   low-temperature recovery (TR-10 and resilience tests), heat the joint, or design the joint so it does not open. The
+   redesigned booster joint added a capture feature to limit rotation, a third O-ring and joint heaters.
+
+Two more joint lessons:
+
+- **Redundancy only counts if both seals work.** A primary and secondary O-ring with a leak-check port between them is
+  standard. Show that the secondary can still seal when the joint is opened and the primary has already let gas past.
+- **A leak check pushes the primary O-ring the wrong way.** Pressurising between two rings drives the primary towards
+  the motor side of its groove, so at ignition it must first travel across the groove before it can seal. Leak-check
+  pressure and procedure are part of the seal design.
+
+## Calculator
+
+<ORingCalc />
+
+Use **Suggest groove** to size a groove for 20% nominal squeeze (14% for dynamic) and 75% fill around the selected
+ring, then edit the min/max values to your real tolerances and check the worst case.
+
+## Worked example — a nozzle-to-case radial seal
+
+The calculator's defaults: a static radial seal in a piston-type closure, 150 mm bore at 10 MPa, steel housing,
+service range −40 to +60 °C. Ring: 5.33 mm section, 139.29 mm stock ID. Groove root Ø141.45–141.55, width 7.0–7.2 mm;
+bore Ø150.000–150.063, plug Ø149.860–149.900; parts free to sit off-centre.
+
+1. **Nominal.** Gland depth $(150.03 - 141.50)/2 = 4.27$ mm. Stretch onto the root is $(141.5 - 139.29)/139.29 = 1.6\%$,
+   which thins the 5.33 section to 5.29 mm. Squeeze $= (5.29 - 4.27)/5.29 = 19.3\%$; fill 73%. Comfortably in band.
+2. **Worst corners.** Fully off-centre, the gland ranges from 4.16 to 4.41 mm. Maximum squeeze — largest ring, hot,
+   swollen 5% — is 25%. Minimum — smallest ring, most stretch, −40 °C — is 13.5%, and **10.8% after 20% compression
+   set**. That is right at the edge of the 10% screening floor.
+3. **Extrusion.** The clearance can reach 0.203 mm. At 10 MPa a 70 Shore ring wants about 0.08 mm, and even 90 Shore
+   only about 0.15 mm. **A back-up ring is needed**, or a tighter fit and a harder compound.
+4. **Compound.** Standard FKM is typically limited to about −20 °C. At −40 °C it fails the temperature check — use a
+   low-temperature fluoroelastomer grade or another compound, and confirm the TR-10.
+5. **Joint opening.** Enter 0.25 mm of radial opening under pressure: minimum squeeze falls to **6.9%** and the
+   cold-resilience check fails. That is the Challenger situation in miniature — fix the joint stiffness, not the seal.
+
+## Choosing the compound
+
+Pick the compound for the coldest, hottest and chemically worst moment — in that order. The table in the calculator
+checks every compound against your temperature range and medium. The traps that catch experienced engineers:
+
+- **EPDM with petroleum grease.** EPDM is excellent in water, steam and phosphate-ester fluids, but swells and fails in
+  mineral oil — including the assembly lubricant. Specify the lubricant on the drawing next to the compound.
+- **Standard FKM when cold.** Superb hot and in fuels, but standard grades stiffen around −20 °C. Low-temperature grades
+  exist; specify one by its TR-10.
+- **Silicone in dynamic duty.** Wide temperature range, but poor tear and abrasion strength. Static seals only.
+- **Oxygen service.** Ordinary elastomers can ignite in oxygen. LOX and high-pressure oxygen seals use specifically
+  tested materials and controlled cleanliness.
+- **Brittle point is not the limit.** Sealing is lost far above the brittle point. Use TR-10 or resilience data.
+
+## Groove details that decide the outcome
+
+- **Surface finish.** Static sealing faces typically around Ra 0.8 µm (finer for gases and vacuum); dynamic
+  counterfaces Ra 0.2–0.4 µm; groove walls about Ra 1.6–3.2 µm. The machining lay should not cross the seal.
+- **Lead-in chamfers** of 15–20°, deburred and blended, on every edge the ring passes over. More O-rings are cut on
+  assembly than fail in service, and a cut ring cannot be seen once installed.
+- **Groove corner radii** small enough for the ring to seat, never sharp.
+- **Back-up rings** on the low-pressure side, or on both sides if pressure reverses. Add their width to the groove.
+
+## Where this stops
+
+<Aside type="caution" title="Screening, not a seal qualification">
+  The squeeze bands, fill limit and extrusion table are typical guidance, not ISO 3601-2 dimensions. Real joint seals
+  are qualified by test at temperature, with the joint deflecting as it does in service, and the compound's
+  low-temperature recovery measured directly.
+</Aside>
+
+## References and further reading
+
+- BS ISO 3601-1 to -5 — O-ring sizes and tolerances, housing dimensions, quality, back-up rings, material suitability.
+- SAE AS568 — the inch-series O-ring sizes that ISO 3601-1 class A is based on.
+- Parker Hannifin, *O-Ring Handbook* (ORD 5700) — groove design, extrusion limits and compound data.
+- *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (Rogers Commission, 1986), including
+  R. P. Feynman's Appendix F.
+
+<Aside type="note">
+  Educational and screening material. Final groove dimensions and tolerances come from ISO 3601-2, the seal
+  manufacturer, and your programme's qualification testing.
+</Aside>

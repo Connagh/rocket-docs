@@ -1,0 +1,308 @@
+---
+// O-ring gland design and worst-case check. Calculations in src/lib/oring.ts (unit-tested).
+import data from '../data/orings.json';
+---
+
+<div class="calc orcalc" data-orcalc>
+  <div class="calc-head">
+    <span>O-ring gland — worst-case check</span>
+    <button type="button" class="chip" data-suggest>Suggest groove for 20% squeeze / 75% fill</button>
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Arrangement</legend>
+        <div class="row2">
+          <label>Gland
+            <select name="arr">
+              <option value="piston">Radial — groove in piston / plug</option>
+              <option value="rod">Radial — groove in housing / bore</option>
+              <option value="face">Face (axial) — groove in a flange</option>
+            </select>
+          </label>
+          <label>Duty
+            <select name="duty"><option value="static">Static</option><option value="dynamic">Dynamic (reciprocating)</option></select>
+          </label>
+        </div>
+        <label class="inline"><input type="checkbox" name="ecc" checked /> Parts can sit fully off-centre (no guide or pilot)</label>
+      </fieldset>
+      <fieldset>
+        <legend>O-ring (ISO 3601-1 class A)</legend>
+        <div class="row2">
+          <label>Cross-section (mm)
+            <select name="cs">{data.classA.map((c) => <option value={c} selected={c === 5.33}>{c.toFixed(2)}</option>)}</select>
+          </label>
+          <label>CS tolerance ±<input name="csTol" type="number" step="any" min="0" /></label>
+          <label>Inside diameter (mm)
+            <select name="id"></select>
+          </label>
+          <label>ID tolerance ±<input name="idTol" type="number" step="any" min="0" value="0.84" /></label>
+        </div>
+        <p class="hint" data-idhint></p>
+      </fieldset>
+      <fieldset>
+        <legend>Hardware — min / max</legend>
+        <div class="or-grid" data-dims>
+          <span></span><span>min</span><span>max</span>
+          <span data-lbl="bore">Bore Ø</span><input name="boreMin" type="number" step="any" value="150.000" /><input name="boreMax" type="number" step="any" value="150.063" />
+          <span data-lbl="shaft">Piston Ø</span><input name="shaftMin" type="number" step="any" value="149.860" /><input name="shaftMax" type="number" step="any" value="149.900" />
+          <span data-lbl="groove">Groove root Ø</span><input name="grooveMin" type="number" step="any" value="141.45" /><input name="grooveMax" type="number" step="any" value="141.55" />
+          <span>Groove width</span><input name="wMin" type="number" step="any" value="7.0" /><input name="wMax" type="number" step="any" value="7.2" />
+          <span data-lbl="gap">Flange gap</span><input name="gapMin" type="number" step="any" value="0" /><input name="gapMax" type="number" step="any" value="0" />
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Service</legend>
+        <div class="row2">
+          <label>Compound
+            <select name="cmp">{data.compounds.map((c) => <option value={c.code} selected={c.code === 'FKM'}>{c.code} — {c.name}</option>)}</select>
+          </label>
+          <label>Medium
+            <select name="med">{data.media.map((m) => <option value={m.key}>{m.name}</option>)}</select>
+          </label>
+          <label>Min temp (°C)<input name="tMin" type="number" step="any" value="-40" /></label>
+          <label>Max temp (°C)<input name="tMax" type="number" step="any" value="60" /></label>
+          <label>Pressure (MPa)<input name="p" type="number" min="0" step="any" value="10" /></label>
+          <label>Hardness (Shore A)<input name="hard" type="number" min="50" max="95" step="5" value="70" /></label>
+          <label>Joint opening under pressure (mm)<input name="open" type="number" min="0" step="any" value="0" /></label>
+          <label>Housing material
+            <select name="am"><option value="12e-6">Steel</option><option value="8.6e-6">Titanium</option><option value="23e-6">Aluminium</option></select>
+          </label>
+          <label>Elastomer CTE (×10⁻⁶/K)<input name="ae" type="number" min="0" step="any" value="160" /></label>
+          <label>Volume swell (%)<input name="sw" type="number" step="any" value="5" /></label>
+          <label>Compression set by end of life (%)<input name="cset" type="number" min="0" max="100" step="any" value="20" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="verdict"><dt>Gland verdict</dt><dd data-r="verdict">—</dd></div>
+        <div class="readout"><dt>Nominal squeeze</dt><dd data-r="sqn">—</dd></div>
+        <div class="readout"><dt>Worst-case squeeze</dt><dd data-r="sqw">—</dd></div>
+        <div class="readout"><dt>Fill nominal / worst</dt><dd data-r="fill">—</dd></div>
+      </dl>
+      <svg class="or-bar" viewBox="0 0 480 96" data-bar role="img" aria-label="Squeeze range against the recommended band"></svg>
+      <svg class="or-sec" viewBox="0 0 480 200" data-sec role="img" aria-label="Gland section to scale"></svg>
+      <table class="or-checks"><tbody data-checks></tbody></table>
+    </div>
+  </div>
+  <div class="or-mats">
+    <p class="pv-sub">Compounds against this temperature range and medium</p>
+    <div class="or-mat-table"><table><thead><tr><th>Compound</th><th>Range °C</th><th>Fit</th><th>Notes</th></tr></thead><tbody data-mats></tbody></table></div>
+  </div>
+  <div class="calc-foot">
+    Screening values: squeeze bands, the fill limit and the extrusion table are typical guidance, not ISO 3601-2
+    dimensions. Stretch thinning assumes constant volume. Confirm against ISO 3601-2/-4, the seal supplier's tables, and
+    a compatibility test with your actual fluid at temperature.
+  </div>
+  <script type="application/json" data-data set:html={JSON.stringify(data)}></script>
+</div>
+
+<style>
+  .orcalc .inline { display: flex; align-items: center; gap: 0.4rem; }
+  .orcalc .inline input { width: auto; }
+  .or-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem 0.5rem; align-items: center; font-size: var(--sl-text-sm); color: var(--rd-muted); }
+  .or-grid > * { margin: 0 !important; }
+  .or-grid [hidden] { display: none !important; }
+  .orcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 0 0 0.5rem !important; }
+  .or-bar, .or-sec { width: 100%; height: auto; margin-top: 0.8rem !important; font-family: var(--sl-font-mono); }
+  .or-checks { width: 100%; font-size: var(--sl-text-sm); margin-top: 0.8rem !important; border-collapse: collapse; display: table; }
+  .or-checks td { padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--rd-line); vertical-align: top; }
+  .or-checks td:first-child { white-space: nowrap; font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); }
+  .st-ok { color: var(--rd-ok); } .st-warn { color: var(--rd-warn); } .st-bad { color: var(--rd-accent); }
+  .or-mats { padding: 0 1rem 1rem; }
+  .or-mat-table { overflow-x: auto; }
+  .or-mat-table table { font-size: var(--sl-text-sm); width: 100%; display: table; }
+  .or-mat-table td, .or-mat-table th { padding: 0.3rem 0.5rem; }
+  .or-mat-table tr.sel { outline: 2px solid var(--rd-accent); }
+</style>
+
+<script>
+  import { analyseGland, suggestGroove, nearestId, type ORingInputs, type Arrangement, type Duty } from '../lib/oring';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const CS_TOL: Record<string, number> = { '1.78': 0.08, '2.62': 0.08, '3.53': 0.1, '5.33': 0.13, '6.99': 0.15 };
+  const pct = (v: number, d = 1) => `${(v * 100).toFixed(d)}%`;
+
+  document.querySelectorAll<HTMLElement>('[data-orcalc]').forEach((root) => {
+    const data = JSON.parse(root.querySelector('[data-data]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    const fillIds = (keep?: number) => {
+      const ids: number[] = data.idsA[field('cs').value] ?? [];
+      const sel = field('id') as HTMLSelectElement;
+      sel.innerHTML = ids.map((v) => `<option value="${v}">${v.toFixed(2)}</option>`).join('');
+      if (keep) sel.value = String(nearestId(ids, keep));
+      field('csTol').value = String(CS_TOL[field('cs').value] ?? 0.1);
+    };
+    const labels = () => {
+      const a = field('arr').value;
+      const set = (k: string, t: string, show = true) => {
+        const lbl = root.querySelector<HTMLElement>(`[data-lbl="${k}"]`)!;
+        lbl.textContent = t;
+        lbl.hidden = !show;
+        (field(`${k}Min`) as HTMLElement).hidden = !show;
+        (field(`${k}Max`) as HTMLElement).hidden = !show;
+      };
+      set('bore', a === 'piston' ? 'Bore Ø' : 'Housing bore Ø', a !== 'face');
+      set('shaft', a === 'piston' ? 'Piston Ø' : 'Rod Ø', a !== 'face');
+      set('groove', a === 'piston' ? 'Groove root Ø' : a === 'rod' ? 'Groove Ø (in housing)' : 'Groove depth');
+      set('gap', 'Flange gap', a === 'face');
+      (field('ecc') as HTMLInputElement).disabled = a === 'face';
+    };
+
+    function inputs(): ORingInputs {
+      const R = (k: string) => ({ min: num(`${k}Min`), max: num(`${k}Max`) });
+      return {
+        arrangement: field('arr').value as Arrangement, duty: field('duty').value as Duty,
+        cs: num('cs'), csTol: num('csTol'), id: num('id'), idTol: num('idTol'),
+        bore: R('bore'), shaft: R('shaft'), groove: R('groove'), width: R('w'), faceGap: R('gap'),
+        eccentric: (field('ecc') as HTMLInputElement).checked && field('arr').value !== 'face',
+        tMin: num('tMin'), tMax: num('tMax'), tAssembly: 20,
+        alphaE: num('ae') * 1e-6, alphaM: num('am'), swell: num('sw') / 100, compressionSet: num('cset') / 100,
+        pressure: num('p'), hardness: num('hard'), opening: num('open'),
+      };
+    }
+
+    function run() {
+      labels();
+      const i = inputs();
+      const g = analyseGland(i);
+      const cmp = data.compounds.find((c: any) => c.code === field('cmp').value);
+      const med = field('med').value;
+      const checks: [string, 'ok' | 'warn' | 'bad', string][] = [];
+      const [nLo, nHi] = g.bands.nom, [wLo, wHi] = g.bands.wc;
+      const sqWorstMin = Math.min(g.sqMinEol, g.sqMinPressurised);
+
+      checks.push(['Squeeze, nominal', g.sqNom * 100 >= nLo && g.sqNom * 100 <= nHi ? 'ok' : 'warn',
+        `${pct(g.sqNom)} against a ${nLo}–${nHi}% target for this duty.`]);
+      checks.push(['Squeeze, maximum', g.sqMax * 100 <= wHi ? 'ok' : 'bad',
+        `${pct(g.sqMax)} with the largest ring in the tightest gland, hot and swollen. Above ~${wHi}% the ring is overstressed and assembly forces climb.`]);
+      checks.push(['Squeeze, minimum', sqWorstMin * 100 >= wLo ? 'ok' : sqWorstMin > 0.05 ? 'warn' : 'bad',
+        `${pct(g.sqMinCold)} with the smallest ring in the deepest gland at ${i.tMin} °C; ${pct(g.sqMinEol)} after ${num('cset')}% compression set` +
+        (i.opening > 0 ? `; ${pct(g.sqMinPressurised)} once the joint opens ${i.opening} mm.` : '.')]);
+      checks.push(['Gland fill', g.fillMax <= 0.9 && g.fillNom >= 0.6 ? 'ok' : g.fillMax > 0.9 ? 'bad' : 'warn',
+        `${pct(g.fillNom, 0)} nominal, ${pct(g.fillMax, 0)} worst case (hot, swollen, smallest groove). Over ~90% risks hydraulic lock; under ~60% the ring can roll.`]);
+      if (i.arrangement === 'piston')
+        checks.push(['Stretch', g.stretchMax <= 0.05 && g.rawStretchMin >= 0 ? 'ok' : g.rawStretchMin < 0 ? 'warn' : 'bad',
+          `${pct(g.stretchMin)} to ${pct(g.stretchMax)} onto the groove root. Keep it between 0 and ~5% at every tolerance corner; stretch thins the section.`]);
+      if (i.arrangement === 'rod')
+        checks.push(['Ring OD vs groove', g.circCompression <= 0.03 ? 'ok' : 'warn',
+          `Circumferential compression up to ${pct(Math.max(0, g.circCompression))}. Above ~3% the ring can buckle into the groove.`]);
+      checks.push(['Extrusion gap', !g.backupNeeded ? 'ok' : 'bad',
+        g.extrusionLimit === 0
+          ? `At ${i.pressure} MPa a ${i.hardness} Shore ring needs a back-up ring regardless of gap.`
+          : `Diametral clearance up to ${g.clearancePressurised.toFixed(3)} mm against ~${g.extrusionLimit.toFixed(2)} mm for ${i.hardness} Shore at ${i.pressure} MPa. Tighten the fit, go harder, or fit a back-up ring on the low-pressure side.`]);
+      const tOk = i.tMin >= cmp.tMin && i.tMax <= cmp.tMax;
+      checks.push(['Temperature', tOk ? 'ok' : 'bad',
+        `${cmp.code} is typically good for ${cmp.tMin} to ${cmp.tMax} °C; service is ${i.tMin} to ${i.tMax} °C.`]);
+      const m = cmp.media[med];
+      checks.push(['Medium', m === 'ok' ? 'ok' : m === 'lim' ? 'warn' : 'bad',
+        `${cmp.code} in ${data.media.find((x: any) => x.key === med).name.toLowerCase()}: ${m === 'ok' ? 'generally compatible' : m === 'lim' ? 'limited — check the specific grade' : 'not compatible'}.`]);
+      if (i.opening > 0 && i.tMin < cmp.tMin + 15)
+        checks.push(['Cold resilience', 'bad',
+          `The joint opens under pressure while the ring is within 15 °C of its low-temperature limit. A cold ring recovers slowly and may not follow the gap — the Challenger failure mechanism. Check recovery at temperature (TR-10, resilience tests), keep the ring warm, or design the joint not to open.`]);
+
+      const worst = checks.some((c) => c[1] === 'bad') ? 'bad' : checks.some((c) => c[1] === 'warn') ? 'warn' : 'ok';
+      r('verdict').textContent = worst === 'ok' ? 'Passes all checks' : worst === 'warn' ? 'Check the amber items' : `${checks.filter((c) => c[1] === 'bad').length} failing check(s)`;
+      root.querySelector('[data-cls="verdict"]')!.className = `readout primary ${worst}`;
+      r('sqn').textContent = pct(g.sqNom);
+      r('sqw').textContent = `${pct(sqWorstMin)} – ${pct(g.sqMax)}`;
+      r('fill').textContent = `${pct(g.fillNom, 0)} / ${pct(g.fillMax, 0)}`;
+      root.querySelector('[data-checks]')!.innerHTML = checks
+        .map(([k, s, t]) => `<tr><td class="st-${s}">${s === 'ok' ? '✓' : s === 'warn' ? '!' : '✗'} ${k}</td><td>${t}</td></tr>`).join('');
+      root.querySelector('[data-idhint]')!.textContent =
+        i.arrangement === 'piston' ? `Pick the stock ID just below the groove root (${((i.groove.min + i.groove.max) / 2).toFixed(2)} mm) for 1–5% stretch.`
+        : i.arrangement === 'rod' ? 'Pick the stock ID at or just below the rod diameter, so the ring OD seats against the groove.'
+        : 'Internal pressure: ring OD close to the groove OD. External pressure: ring ID close to the groove ID.';
+
+      bar(g);
+      section(i, g);
+      mats(i.tMin, i.tMax, med, cmp.code);
+    }
+
+    function bar(g: ReturnType<typeof analyseGland>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-bar]')!;
+      svg.replaceChildren();
+      const X = (v: number) => 20 + (Math.max(0, Math.min(0.4, v)) / 0.4) * 440;
+      for (let v = 0; v <= 0.4001; v += 0.05) {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: 20, y2: 62, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(v), y: 76, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, `${Math.round(v * 100)}%`));
+      }
+      svg.append(el('rect', { x: X(g.bands.wc[0] / 100), y: 28, width: X(g.bands.wc[1] / 100) - X(g.bands.wc[0] / 100), height: 26, fill: 'var(--rd-ok)', 'fill-opacity': 0.12 }));
+      svg.append(el('rect', { x: X(g.bands.nom[0] / 100), y: 28, width: X(g.bands.nom[1] / 100) - X(g.bands.nom[0] / 100), height: 26, fill: 'var(--rd-ok)', 'fill-opacity': 0.25 }));
+      const lo = Math.min(g.sqMinEol, g.sqMinPressurised);
+      svg.append(el('line', { x1: X(lo), x2: X(g.sqMax), y1: 41, y2: 41, stroke: 'var(--rd-ink)', 'stroke-width': 3 }));
+      for (const [v, c, t] of [[g.sqMinCold, 'var(--rd-blue)', 'cold'], [g.sqMinEol, 'var(--rd-warn)', 'set'], [g.sqMax, 'var(--rd-accent)', 'max']] as const) {
+        svg.append(el('circle', { cx: X(v), cy: 41, r: 4.5, fill: c }));
+      }
+      if (g.sqMinPressurised < g.sqMinEol - 1e-6) svg.append(el('circle', { cx: X(g.sqMinPressurised), cy: 41, r: 4.5, fill: 'var(--rd-accent)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 }));
+      svg.append(el('rect', { x: X(g.sqNom) - 2, y: 30, width: 4, height: 22, fill: 'var(--rd-ink)' }));
+      svg.append(el('text', { x: 20, y: 14, 'font-size': 10, fill: 'var(--rd-muted)' }, 'worst-case squeeze range · bar = nominal · shading = target, limit'));
+      svg.append(el('text', { x: 20, y: 92, 'font-size': 10, fill: 'var(--rd-blue)' }, '● cold'));
+      svg.append(el('text', { x: 70, y: 92, 'font-size': 10, fill: 'var(--rd-warn)' }, '● after set'));
+      svg.append(el('text', { x: 150, y: 92, 'font-size': 10, fill: 'var(--rd-accent)' }, '● max / opened'));
+    }
+
+    function section(i: ORingInputs, g: ReturnType<typeof analyseGland>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-sec]')!;
+      svg.replaceChildren();
+      const w = (i.width.min + i.width.max) / 2, gl = g.gNom, cs = i.cs;
+      const span = Math.max(w * 2.4, cs * 3);
+      const k = 400 / span; // px per mm, to scale
+      const x0 = 240 - (w * k) / 2, yTop = 40, yRoot = yTop + gl * k + 0.0;
+      const gapPx = Math.max(2, ((i.arrangement === 'face' ? (i.faceGap.min + i.faceGap.max) / 2 : (i.bore.min + i.bore.max - i.shaft.min - i.shaft.max) / 4)) * k);
+      // mating surface
+      svg.append(el('rect', { x: 20, y: yTop - 26, width: 440, height: 26, fill: 'var(--rd-steel)' }));
+      // grooved part
+      svg.append(el('path', { d: `M20,${yTop + gapPx} H${x0} V${yRoot} H${x0 + w * k} V${yTop + gapPx} H460 V${yRoot + 30} H20 Z`, fill: 'var(--rd-steel)', 'fill-opacity': 0.7 }));
+      // ring at nominal squeeze: ellipse of same area (approximate shape)
+      const h = gl * k, a = (Math.PI / 4) * cs * cs * k * k, rx = Math.min((w * k) / 2 - 1, a / (Math.PI * (h / 2)));
+      svg.append(el('ellipse', { cx: x0 + rx + 1, cy: yTop + h / 2, rx, ry: h / 2, fill: 'var(--rd-ink)', 'fill-opacity': 0.85 }));
+      svg.append(el('text', { x: 240, y: yRoot + 52, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-muted)' },
+        `to scale · ${cs.toFixed(2)} CS in ${w.toFixed(2)} × ${gl.toFixed(2)} mm gland (nominal) · ${(g.sqNom * 100).toFixed(1)}% squeeze`));
+      svg.setAttribute('viewBox', `0 0 480 ${yRoot + 64}`);
+    }
+
+    function mats(tMin: number, tMax: number, med: string, sel: string) {
+      root.querySelector('[data-mats]')!.innerHTML = data.compounds.map((c: any) => {
+        const tOk = tMin >= c.tMin && tMax <= c.tMax;
+        const m = c.media[med];
+        const fit = !tOk || m === 'no' ? 'bad' : m === 'lim' ? 'warn' : 'ok';
+        return `<tr class="${c.code === sel ? 'sel' : ''}"><td><b>${c.code}</b> ${c.name}</td><td>${c.tMin} to ${c.tMax}</td><td class="st-${fit}">${fit === 'ok' ? '✓ suitable' : fit === 'warn' ? '! check grade' : '✗ ' + (!tOk ? 'temperature' : 'medium')}</td><td>${c.note} <em>${c.watch}</em></td></tr>`;
+      }).join('');
+    }
+
+    root.querySelector('[data-suggest]')!.addEventListener('click', () => {
+      const i = inputs();
+      if (i.arrangement === 'face') {
+        const s = suggestGroove('face', 0, i.cs, i.id, 0.25, 0.75);
+        field('grooveMin').value = (s.depth - 0.05).toFixed(2); field('grooveMax').value = (s.depth + 0.05).toFixed(2);
+        field('wMin').value = (s.width - 0.1).toFixed(2); field('wMax').value = (s.width + 0.1).toFixed(2);
+      } else {
+        const mating = i.arrangement === 'piston' ? (i.bore.min + i.bore.max) / 2 : (i.shaft.min + i.shaft.max) / 2;
+        const ids: number[] = data.idsA[field('cs').value];
+        const guessId = i.arrangement === 'piston' ? (mating - 2 * i.cs * 0.8) / 1.02 : mating;
+        field('id').value = String(nearestId(ids.filter((v) => (i.arrangement === 'piston' ? v <= mating - 2 * i.cs * 0.8 : v <= mating)), guessId) ?? nearestId(ids, guessId));
+        const s = suggestGroove(i.arrangement, mating, i.cs, num('id'), i.duty === 'dynamic' ? 0.14 : 0.2, 0.75);
+        field('grooveMin').value = (s.groove - 0.05).toFixed(2); field('grooveMax').value = (s.groove + 0.05).toFixed(2);
+        field('wMin').value = (s.width - 0.1).toFixed(2); field('wMax').value = (s.width + 0.1).toFixed(2);
+      }
+      run();
+    });
+    field('cs').addEventListener('change', () => fillIds(num('id') || 100));
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    fillIds(139.29);
+    run();
+  });
+</script>

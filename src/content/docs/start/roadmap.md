@@ -57,7 +57,7 @@ The reason this site exists, so it goes first.
 | Z47 | Threads | ⏳ |
 | Z49 | Locking & retention | ⏳ |
 | Z50 | Sealing strategy | ⏳ |
-| Z51 | O-ring design | ⏳ |
+| Z51 | O-ring design — worst-case squeeze, fill, stretch, extrusion, compounds | ✅ [O-ring design](../../seals/o-ring-design/) |
 | Z30 | Differential expansion | ⏳ |
 | Z46 | Residual stress | ⏳ |
 | Z29 | Hand calcs | ⏳ |

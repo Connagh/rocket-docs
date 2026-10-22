@@ -49,6 +49,9 @@ const materials = MATS.map((m) => {
     yield: m.y, // MPa
     maxServiceTemp: m.t, // °C
     weldable: !!m.w,
+    corrosion: m.c ?? null, // 1–5 rating, 5 = best
+    machinability: m.m ?? null, // 1–5 rating, 5 = best
+    pricePerKg: m.pk ?? null, // indicative relative cost, £/kg
     spec: m.sp ?? '',
     E, // GPa
     k, // W/m·K
@@ -60,3 +63,37 @@ const materials = MATS.map((m) => {
 
 writeFileSync(OUT, JSON.stringify({ source: 'public/legacy/index.html', materials }, null, 2) + '\n');
 console.log(`Wrote ${materials.length} materials to src/data/materials.json`);
+
+// Specification sheets, designation cross-reference and O-ring data.
+const write = (file, obj) =>
+  writeFileSync(new URL(`../src/data/${file}`, import.meta.url), JSON.stringify({ source: 'public/legacy/index.html', ...obj }, null, 2) + '\n');
+
+const SPECS = runInNewContext(`(${literal('SPECS')})`, {});
+write('specs.json', {
+  specs: SPECS.map((s) => ({
+    name: s.n, designation: s.desig, family: s.fam, base: s.base ?? '', composition: s.comp ?? '',
+    forms: (s.forms ?? []).map(([form, standard, note]) => ({ form, standard, note: note === '—' ? '' : note })),
+    tempers: (s.tempers ?? []).map(([code, note]) => ({ code, note })),
+    finishes: (s.fin ?? []).map(([name, spec, note]) => ({ name, spec, note })),
+    callout: (s.callout ?? '').split('\n').map((l) => l.replace(/^\s{10}/, '          ')).join('\n'),
+    tips: s.tips ?? [],
+  })),
+});
+console.log(`Wrote ${SPECS.length} specification sheets to src/data/specs.json`);
+
+const XREF = runInNewContext(`(${literal('XREF')})`, {});
+write('xref.json', {
+  rows: XREF.map(([name, family, en, enNo, legacyBs, uns, aero, note]) => ({ name, family, en, enNo, legacyBs, uns, aero, note })),
+});
+console.log(`Wrote ${XREF.length} cross-reference rows to src/data/xref.json`);
+
+write('orings.json', {
+  classA: runInNewContext(`(${literal('OR_CS_A')})`, {}),
+  classB: runInNewContext(`(${literal('OR_CS_B')})`, {}),
+  idsA: runInNewContext(`(${literal('OR_ID_A')})`, {}),
+  compounds: runInNewContext(`(${literal('OR_MATS')})`, {}).map((m) => ({
+    code: m.a, name: m.n, tMin: m.tmin, tMax: m.tmax, hardness: m.sh, media: m.media, note: m.note, watch: m.watch,
+  })),
+  media: runInNewContext(`(${literal('OR_MEDIA')})`, {}).map(([key, name]) => ({ key, name })),
+});
+console.log('Wrote O-ring sizes, compounds and media to src/data/orings.json');

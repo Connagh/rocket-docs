@@ -1,0 +1,705 @@
+{
+  "source": "public/legacy/index.html",
+  "rows": [
+    {
+      "name": "Aluminium 1050A",
+      "family": "al",
+      "en": "EN AW-1050A / Al99.5",
+      "enNo": "3.0255",
+      "legacyBs": "BS 1B",
+      "uns": "A91050",
+      "aero": "ISO 209 Al 99.5",
+      "note": "Commercially pure. EN 485-2 sheet, EN 755-2 extrusion."
+    },
+    {
+      "name": "Aluminium 2014A",
+      "family": "al",
+      "en": "EN AW-2014A / AlCu4SiMg",
+      "enNo": "3.1255",
+      "legacyBs": "HE15 / H15 / HP15 / HT15",
+      "uns": "A92014",
+      "aero": "BS L168 (bar T6511)",
+      "note": "High-strength forgings. Legacy UK 'L' spec still on heritage drawings."
+    },
+    {
+      "name": "Aluminium 2024",
+      "family": "al",
+      "en": "EN AW-2024 / AlCu4Mg1",
+      "enNo": "3.1355",
+      "legacyBs": "—",
+      "uns": "A92024",
+      "aero": "AMS-QQ-A-250/4",
+      "note": "Fatigue-tolerant sheet. Usually clad (2024 Alclad)."
+    },
+    {
+      "name": "Aluminium 2219",
+      "family": "al",
+      "en": "EN AW-2219 / AlCu6Mn",
+      "enNo": "3.1341",
+      "legacyBs": "—",
+      "uns": "A92219",
+      "aero": "AMS 4095",
+      "note": "The weldable cryogenic tankage alloy."
+    },
+    {
+      "name": "Aluminium 5083",
+      "family": "al",
+      "en": "EN AW-5083 / AlMg4.5Mn0.7",
+      "enNo": "3.3547",
+      "legacyBs": "BS N8",
+      "uns": "A95083",
+      "aero": "EN 485-2",
+      "note": "Marine and weldable plate."
+    },
+    {
+      "name": "Aluminium 6061",
+      "family": "al",
+      "en": "EN AW-6061 / AlMg1SiCu",
+      "enNo": "3.3211",
+      "legacyBs": "HE20",
+      "uns": "A96061",
+      "aero": "AMS-QQ-A-200/8",
+      "note": "US general-purpose equivalent of 6082."
+    },
+    {
+      "name": "Aluminium 6082",
+      "family": "al",
+      "en": "EN AW-6082 / AlSi1MgMn",
+      "enNo": "3.2315",
+      "legacyBs": "HE30",
+      "uns": "A96082",
+      "aero": "EN 755-2 / EN 485-2",
+      "note": "The UK workhorse. Highest strength of the 6000 series."
+    },
+    {
+      "name": "Aluminium 6063",
+      "family": "al",
+      "en": "EN AW-6063 / AlMg0.7Si",
+      "enNo": "3.3206",
+      "legacyBs": "HE9",
+      "uns": "A96063",
+      "aero": "EN 755-2",
+      "note": "Architectural and smooth-finish extrusion."
+    },
+    {
+      "name": "Aluminium 7020",
+      "family": "al",
+      "en": "EN AW-7020 / AlZn4.5Mg1",
+      "enNo": "3.4335",
+      "legacyBs": "HE17",
+      "uns": "A97020",
+      "aero": "EN 755-2",
+      "note": "Weldable high-strength; age-hardens naturally after welding."
+    },
+    {
+      "name": "Aluminium 7075",
+      "family": "al",
+      "en": "EN AW-7075 / AlZn5.5MgCu",
+      "enNo": "3.4365",
+      "legacyBs": "—",
+      "uns": "A97075",
+      "aero": "AMS 4045 / 4147 (T73)",
+      "note": "High-strength fittings. T73 for stress-corrosion resistance."
+    },
+    {
+      "name": "Aluminium 7050",
+      "family": "al",
+      "en": "EN AW-7050 / AlZn6CuMgZr",
+      "enNo": "3.4144",
+      "legacyBs": "—",
+      "uns": "A97050",
+      "aero": "AMS 4050",
+      "note": "Thick plate, better through-thickness properties."
+    },
+    {
+      "name": "Aluminium A356 / LM25",
+      "family": "al",
+      "en": "EN AC-42100 / AlSi7Mg0.3",
+      "enNo": "—",
+      "legacyBs": "BS 1490 LM25",
+      "uns": "A03560",
+      "aero": "EN 1706",
+      "note": "The general-purpose casting alloy."
+    },
+    {
+      "name": "Magnesium AZ31B",
+      "family": "mg",
+      "en": "No EN 1753 designation — wrought",
+      "enNo": "3.5312",
+      "legacyBs": "BS 3370 MAG-S-1101",
+      "uns": "M11311",
+      "aero": "ASTM B90 (sheet) / B107 (extrusion)",
+      "note": "EN 1753 covers ingots and castings only, so wrought AZ31 has no EN-MB/MC number. Procure to the ASTM product standards."
+    },
+    {
+      "name": "Magnesium AZ91",
+      "family": "mg",
+      "en": "EN-MC21120 / MgAl9Zn1(A)",
+      "enNo": "3.5912",
+      "legacyBs": "BS 2970 MAG7",
+      "uns": "M11914",
+      "aero": "EN 1753 / ISO 16220",
+      "note": "Most common die-casting magnesium. MB prefix = ingot, MC = casting."
+    },
+    {
+      "name": "Magnesium ZE41A",
+      "family": "mg",
+      "en": "EN-MC35110 / MgZn4RE1Zr",
+      "enNo": "—",
+      "legacyBs": "BS 2970 MAG6",
+      "uns": "M16410",
+      "aero": "AMS 4439",
+      "note": "Pressure-tight castings, gearbox housings."
+    },
+    {
+      "name": "Magnesium WE43",
+      "family": "mg",
+      "en": "EN-MC95320 / MgY4RE3Zr",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "M18430",
+      "aero": "AMS 4427 / ASTM B80",
+      "note": "Rare-earth, high temperature, self-extinguishing."
+    },
+    {
+      "name": "Magnesium Elektron 21",
+      "family": "mg",
+      "en": "EN-MC65120 / MgRE3Zn2Zr",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "M12310",
+      "aero": "ASTM B80 (EV31A)",
+      "note": "Modern castable RE alloy. EV31A is the ASTM designation."
+    },
+    {
+      "name": "CP Titanium Grade 2",
+      "family": "ti",
+      "en": "EN ISO Ti2 / Ti99.5",
+      "enNo": "3.7035",
+      "legacyBs": "—",
+      "uns": "R50400",
+      "aero": "AMS 4902 / EN 10204",
+      "note": "Formable, corrosion resistant, weldable."
+    },
+    {
+      "name": "Ti-6Al-4V (Grade 5)",
+      "family": "ti",
+      "en": "TiAl6V4",
+      "enNo": "3.7165 (see note)",
+      "legacyBs": "—",
+      "uns": "R56400",
+      "aero": "AMS 4911 sheet / 4928 bar",
+      "note": "W.Nr usage varies between 3.7164/3.7165 by supplier and condition — UNS R56400 is the reliable discriminator."
+    },
+    {
+      "name": "Ti-6Al-4V ELI (Grade 23)",
+      "family": "ti",
+      "en": "TiAl6V4 ELI",
+      "enNo": "3.7165 (see note)",
+      "legacyBs": "—",
+      "uns": "R56401",
+      "aero": "AMS 4907 / ISO 5832-2",
+      "note": "Fracture-critical and cryogenic grade. UNS R56401 distinguishes it from Grade 5."
+    },
+    {
+      "name": "Ti-3Al-2.5V (Grade 9)",
+      "family": "ti",
+      "en": "TiAl3V2.5",
+      "enNo": "3.7195",
+      "legacyBs": "—",
+      "uns": "R56320",
+      "aero": "AMS 4945 (tube)",
+      "note": "The standard lightweight tubing alloy."
+    },
+    {
+      "name": "Ti-5Al-2.5Sn (Grade 6)",
+      "family": "ti",
+      "en": "TiAl5Sn2.5",
+      "enNo": "3.7115",
+      "legacyBs": "—",
+      "uns": "R54520",
+      "aero": "AMS 4926",
+      "note": "Weldable alpha alloy, cryogenic service."
+    },
+    {
+      "name": "Ti-6Al-2Sn-4Zr-2Mo",
+      "family": "ti",
+      "en": "TiAl6Sn2Zr4Mo2",
+      "enNo": "3.7145",
+      "legacyBs": "—",
+      "uns": "R54620",
+      "aero": "AMS 4919",
+      "note": "High-temperature titanium, creep resistant."
+    },
+    {
+      "name": "Structural steel S355",
+      "family": "steel",
+      "en": "S355J2+N (EN 10025-2)",
+      "enNo": "1.0577",
+      "legacyBs": "BS 4360 50D",
+      "uns": "K12043",
+      "aero": "EN 10025-2",
+      "note": "Rigs, frames, tooling. Never flight hardware."
+    },
+    {
+      "name": "4130 chrome-moly",
+      "family": "steel",
+      "en": "25CrMo4 (EN 10083-3)",
+      "enNo": "1.7218",
+      "legacyBs": "BS 970 708A25 / CDS-110",
+      "uns": "G41300",
+      "aero": "AMS 6345 / 6360",
+      "note": "Weldable tube and sheet structure."
+    },
+    {
+      "name": "4140",
+      "family": "steel",
+      "en": "42CrMo4 (EN 10083-3)",
+      "enNo": "1.7225",
+      "legacyBs": "BS 970 708M40 (EN19)",
+      "uns": "G41400",
+      "aero": "AMS 6382",
+      "note": "General high-strength shafts and tooling."
+    },
+    {
+      "name": "4340 / EN24",
+      "family": "steel",
+      "en": "34CrNiMo6 (EN 10083-3)",
+      "enNo": "1.6582",
+      "legacyBs": "BS 970 817M40 (EN24)",
+      "uns": "G43400",
+      "aero": "AMS 6415",
+      "note": "Shafts, pins, gears. Bake after plating."
+    },
+    {
+      "name": "15CDV6",
+      "family": "steel",
+      "en": "15CrMoV6",
+      "enNo": "1.7734",
+      "legacyBs": "—",
+      "uns": "K11562",
+      "aero": "AIR 9160C",
+      "note": "Weldable case steel — no post-weld heat treatment needed."
+    },
+    {
+      "name": "D6AC",
+      "family": "steel",
+      "en": "—",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "K24728",
+      "aero": "AMS 6431 (VAR)",
+      "note": "Classic solid motor case steel. No direct EN equivalent."
+    },
+    {
+      "name": "300M",
+      "family": "steel",
+      "en": "—",
+      "enNo": "—",
+      "legacyBs": "S155 (legacy)",
+      "uns": "K44220",
+      "aero": "AMS 6417",
+      "note": "Ultra-high strength; extremely hydrogen sensitive."
+    },
+    {
+      "name": "Maraging 18Ni-250",
+      "family": "steel",
+      "en": "X2NiCoMo18-8-5",
+      "enNo": "1.6359",
+      "legacyBs": "—",
+      "uns": "K92890",
+      "aero": "AMS 6512 / 6520",
+      "note": "Ages with almost no distortion; welds annealed."
+    },
+    {
+      "name": "Tool steel H13",
+      "family": "steel",
+      "en": "X40CrMoV5-1 (EN ISO 4957)",
+      "enNo": "1.2344",
+      "legacyBs": "BS 4659 BH13",
+      "uns": "T20813",
+      "aero": "EN ISO 4957",
+      "note": "Hot-work dies and moulds."
+    },
+    {
+      "name": "Tool steel D2",
+      "family": "steel",
+      "en": "X153CrMoV12 (EN ISO 4957)",
+      "enNo": "1.2379",
+      "legacyBs": "BS 4659 BD2",
+      "uns": "T30402",
+      "aero": "EN ISO 4957",
+      "note": "Cold-work blanking tools."
+    },
+    {
+      "name": "Tool steel O1",
+      "family": "steel",
+      "en": "100MnCrW4 (EN ISO 4957)",
+      "enNo": "1.2510",
+      "legacyBs": "BS 4659 BO1",
+      "uns": "T31501",
+      "aero": "EN ISO 4957",
+      "note": "Oil-hardening gauges and jigs."
+    },
+    {
+      "name": "Grey cast iron",
+      "family": "steel",
+      "en": "EN-GJL-250 (EN 1561)",
+      "enNo": "EN-JL1040",
+      "legacyBs": "BS 1452 Grade 250",
+      "uns": "F12401",
+      "aero": "EN 1561",
+      "note": "Machine bases, damping-critical tooling."
+    },
+    {
+      "name": "Stainless 304L",
+      "family": "ss",
+      "en": "X2CrNi18-9 (EN 10088-3)",
+      "enNo": "1.4307",
+      "legacyBs": "BS 970 304S11",
+      "uns": "S30403",
+      "aero": "EN 10088-2 sheet",
+      "note": "General austenitic, ground equipment."
+    },
+    {
+      "name": "Stainless 316L",
+      "family": "ss",
+      "en": "X2CrNiMo17-12-2 (EN 10088-3)",
+      "enNo": "1.4404",
+      "legacyBs": "BS 970 316S11",
+      "uns": "S31603",
+      "aero": "EN 10088-2",
+      "note": "Mo-bearing, wet systems and marine."
+    },
+    {
+      "name": "Stainless 321",
+      "family": "ss",
+      "en": "X6CrNiTi18-10 (EN 10088-3)",
+      "enNo": "1.4541",
+      "legacyBs": "BS 970 321S31",
+      "uns": "S32100",
+      "aero": "AMS 5510",
+      "note": "Ti-stabilised for welded hot ducting."
+    },
+    {
+      "name": "Stainless 347",
+      "family": "ss",
+      "en": "X6CrNiNb18-10 (EN 10088-3)",
+      "enNo": "1.4550",
+      "legacyBs": "BS 970 347S31",
+      "uns": "S34700",
+      "aero": "AMS 5512",
+      "note": "Nb-stabilised alternative to 321."
+    },
+    {
+      "name": "Stainless 410",
+      "family": "ss",
+      "en": "X12Cr13 (EN 10088-3)",
+      "enNo": "1.4006",
+      "legacyBs": "BS 970 410S21",
+      "uns": "S41000",
+      "aero": "EN 10088-3",
+      "note": "Hardenable martensitic."
+    },
+    {
+      "name": "Stainless 440C",
+      "family": "ss",
+      "en": "X105CrMo17 (EN 10088-3)",
+      "enNo": "1.4125",
+      "legacyBs": "BS 970 440C",
+      "uns": "S44004",
+      "aero": "AMS 5630",
+      "note": "Bearings and wear pins, ~58 HRC."
+    },
+    {
+      "name": "17-4PH",
+      "family": "ss",
+      "en": "X5CrNiCuNb16-4 (EN 10088-3)",
+      "enNo": "1.4542",
+      "legacyBs": "BS 970 (no direct)",
+      "uns": "S17400",
+      "aero": "AMS 5643",
+      "note": "ALWAYS state the H-condition (H900/H1025/H1075)."
+    },
+    {
+      "name": "15-5PH",
+      "family": "ss",
+      "en": "X5CrNiCuNb15-5",
+      "enNo": "1.4545",
+      "legacyBs": "—",
+      "uns": "S15500",
+      "aero": "AMS 5659",
+      "note": "Cleaner, tougher 17-4 variant for forgings."
+    },
+    {
+      "name": "13-8Mo PH",
+      "family": "ss",
+      "en": "X3CrNiMoAl13-8-2",
+      "enNo": "1.4534",
+      "legacyBs": "—",
+      "uns": "S13800",
+      "aero": "AMS 5629",
+      "note": "Highest-strength PH stainless."
+    },
+    {
+      "name": "Duplex 2205",
+      "family": "ss",
+      "en": "X2CrNiMoN22-5-3 (EN 10088-3)",
+      "enNo": "1.4462",
+      "legacyBs": "—",
+      "uns": "S32205",
+      "aero": "EN 10088-3",
+      "note": "Chloride and stress-corrosion resistant."
+    },
+    {
+      "name": "A286",
+      "family": "ss",
+      "en": "X5NiCrTi26-15 (EN 10269)",
+      "enNo": "1.4980",
+      "legacyBs": "—",
+      "uns": "S66286",
+      "aero": "AMS 5731 / 5737",
+      "note": "Budget superalloy fastener stock to ~650 °C."
+    },
+    {
+      "name": "21-6-9 (Nitronic 40)",
+      "family": "ss",
+      "en": "X8CrMnNiN18-8",
+      "enNo": "1.3815",
+      "legacyBs": "—",
+      "uns": "S21900",
+      "aero": "AMS 5561 (tube)",
+      "note": "High-pressure pneumatic/hydraulic tubing."
+    },
+    {
+      "name": "Inconel 718",
+      "family": "ni",
+      "en": "NiCr19Fe19Nb5Mo3 (EN 10302)",
+      "enNo": "2.4668",
+      "legacyBs": "HR 8 / HR 401",
+      "uns": "N07718",
+      "aero": "AMS 5662 / 5663",
+      "note": "The PH superalloy workhorse."
+    },
+    {
+      "name": "Inconel 625",
+      "family": "ni",
+      "en": "NiCr22Mo9Nb",
+      "enNo": "2.4856",
+      "legacyBs": "HR 6",
+      "uns": "N06625",
+      "aero": "AMS 5599 / 5666",
+      "note": "Weldable, oxidation resistant, serves hotter than 718."
+    },
+    {
+      "name": "Inconel 600",
+      "family": "ni",
+      "en": "NiCr15Fe",
+      "enNo": "2.4816",
+      "legacyBs": "HR 204",
+      "uns": "N06600",
+      "aero": "AMS 5540",
+      "note": "General high-temperature."
+    },
+    {
+      "name": "Inconel X-750",
+      "family": "ni",
+      "en": "NiCr15Fe7TiAl",
+      "enNo": "2.4669",
+      "legacyBs": "HR 505",
+      "uns": "N07750",
+      "aero": "AMS 5598 / 5667",
+      "note": "Hot springs and fasteners."
+    },
+    {
+      "name": "Waspaloy",
+      "family": "ni",
+      "en": "NiCr19Co14Mo4Ti3Al",
+      "enNo": "2.4654",
+      "legacyBs": "HR 10",
+      "uns": "N07001",
+      "aero": "AMS 5704 / 5708",
+      "note": "Where 718 runs out of temperature."
+    },
+    {
+      "name": "Hastelloy X",
+      "family": "ni",
+      "en": "NiCr22Fe18Mo",
+      "enNo": "2.4665",
+      "legacyBs": "HR 6 (rel.)",
+      "uns": "N06002",
+      "aero": "AMS 5536",
+      "note": "Formable hot sheet-metal structure."
+    },
+    {
+      "name": "Haynes 230",
+      "family": "ni",
+      "en": "NiCr22W14Mo",
+      "enNo": "2.4733",
+      "legacyBs": "—",
+      "uns": "N06230",
+      "aero": "AMS 5878",
+      "note": "Outstanding oxidation resistance to ~1150 °C."
+    },
+    {
+      "name": "Haynes 188",
+      "family": "ni",
+      "en": "CoCr22Ni22W14",
+      "enNo": "2.4683",
+      "legacyBs": "—",
+      "uns": "R30188",
+      "aero": "AMS 5772",
+      "note": "Cobalt-base hot-section alloy."
+    },
+    {
+      "name": "Nimonic 90",
+      "family": "ni",
+      "en": "NiCr20Co18Ti",
+      "enNo": "2.4632",
+      "legacyBs": "HR 2 / HR 502",
+      "uns": "N07090",
+      "aero": "BS HR 2",
+      "note": "Turbine blades and hot bolting."
+    },
+    {
+      "name": "Monel 400",
+      "family": "ni",
+      "en": "NiCu30Fe",
+      "enNo": "2.4360",
+      "legacyBs": "BS 3072 NA13",
+      "uns": "N04400",
+      "aero": "EN 10204",
+      "note": "Seawater and oxygen service."
+    },
+    {
+      "name": "Monel K-500",
+      "family": "ni",
+      "en": "NiCu30Al",
+      "enNo": "2.4375",
+      "legacyBs": "BS 3072 NA18",
+      "uns": "N05500",
+      "aero": "AMS 4676",
+      "note": "Age-hardened, good galling resistance."
+    },
+    {
+      "name": "Invar 36",
+      "family": "ni",
+      "en": "FeNi36",
+      "enNo": "1.3912",
+      "legacyBs": "—",
+      "uns": "K93600",
+      "aero": "ASTM F1684",
+      "note": "Near-zero expansion composite tooling."
+    },
+    {
+      "name": "Kovar",
+      "family": "ni",
+      "en": "FeNi29Co17",
+      "enNo": "1.3981",
+      "legacyBs": "—",
+      "uns": "K94610",
+      "aero": "ASTM F15",
+      "note": "Glass-to-metal and ceramic seals."
+    },
+    {
+      "name": "Copper C101 (ETP)",
+      "family": "cu",
+      "en": "Cu-ETP (EN 13601)",
+      "enNo": "CW004A",
+      "legacyBs": "BS 2870 C101",
+      "uns": "C11000",
+      "aero": "EN 13601",
+      "note": "Conductors, heat sinks, chill blocks."
+    },
+    {
+      "name": "Brass CZ121",
+      "family": "cu",
+      "en": "CuZn39Pb3 (EN 12164)",
+      "enNo": "CW614N",
+      "legacyBs": "BS 2874 CZ121",
+      "uns": "C38500",
+      "aero": "EN 12164",
+      "note": "The free-machining brass."
+    },
+    {
+      "name": "Beryllium copper",
+      "family": "cu",
+      "en": "CuBe2 (EN 12163)",
+      "enNo": "CW101C",
+      "legacyBs": "BS 2873 CB101",
+      "uns": "C17200",
+      "aero": "AMS 4533",
+      "note": "Non-sparking tools, springs, bushes."
+    },
+    {
+      "name": "Phosphor bronze",
+      "family": "cu",
+      "en": "CuSn6 (EN 12163)",
+      "enNo": "CW452K",
+      "legacyBs": "BS 2870 PB103",
+      "uns": "C51900",
+      "aero": "EN 12163",
+      "note": "Springs and electrical contacts."
+    },
+    {
+      "name": "Bearing bronze",
+      "family": "cu",
+      "en": "CuSn7Zn4Pb7 (EN 1982)",
+      "enNo": "CC493K",
+      "legacyBs": "BS 1400 LG2",
+      "uns": "C93200",
+      "aero": "EN 1982",
+      "note": "Bushes and plain bearings."
+    },
+    {
+      "name": "CuCrZr",
+      "family": "cu",
+      "en": "CuCr1Zr (EN 12163)",
+      "enNo": "CW106C",
+      "legacyBs": "—",
+      "uns": "C18150",
+      "aero": "EN 12163",
+      "note": "Conductive and heat resistant; resistance welding electrodes."
+    },
+    {
+      "name": "C-103 Niobium",
+      "family": "refract",
+      "en": "Nb-10Hf-1Ti",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "R04295",
+      "aero": "AMS 7857",
+      "note": "Radiation-cooled nozzle extensions. Needs silicide coating."
+    },
+    {
+      "name": "TZM Molybdenum",
+      "family": "refract",
+      "en": "Mo-Ti-Zr",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "R03640",
+      "aero": "ASTM B387",
+      "note": "Creep-resistant hot structure and tooling."
+    },
+    {
+      "name": "Tungsten",
+      "family": "refract",
+      "en": "W (EN ISO 4499 rel.)",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "R07005",
+      "aero": "ASTM B760",
+      "note": "Throat inserts, ballast, erosion resistance."
+    },
+    {
+      "name": "Ta-10W",
+      "family": "refract",
+      "en": "Ta-10W",
+      "enNo": "—",
+      "legacyBs": "—",
+      "uns": "R05255",
+      "aero": "ASTM B708",
+      "note": "Ductile refractory for small hot components."
+    }
+  ]
+}
