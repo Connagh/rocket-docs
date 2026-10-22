@@ -1,6 +1,6 @@
 # REF·DB
 
-**Live site: [dashroyy.github.io/ref-db](https://dashroyy.github.io/ref-db/)**
+**Live site: [rocketengdatabase.com](https://rocketengdatabase.com/)**
 
 A learning-first engineering reference for **solid rocket motor** and **mechanical design** — pressure vessels, motor
 components, materials, joints, tolerancing and design standards. Every topic explains the idea with an analogy and a
@@ -37,7 +37,8 @@ scripts/            extract-legacy-data.mjs — regenerates src/data from v1
 
 ## Deploying
 
-Pushing to `main` runs the tests, builds the site and publishes it with GitHub Pages
+Pushing to `main` runs the tests, builds the site and publishes it with GitHub Pages at
+https://rocketengdatabase.com (custom domain set in the repository's Pages settings; DNS at Namecheap)
 (`.github/workflows/deploy.yml`). In the repository on GitHub: **Settings → Pages → Source: GitHub Actions**.
 
 ## Content rules
