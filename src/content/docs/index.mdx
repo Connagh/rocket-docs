@@ -1,0 +1,51 @@
+---
+title: REF·DB
+description: Learn solid rocket motor and mechanical design from first principles — then use the tools.
+template: splash
+hero:
+  tagline: A working reference for solid rocket motor and mechanical design engineering. Learn the concept, see it, then run the numbers.
+  actions:
+    - text: How a solid rocket motor works
+      link: fundamentals/how-a-solid-motor-works/
+      icon: right-arrow
+    - text: Size a motor case
+      link: motor/case-sizing/
+      variant: minimal
+    - text: Legacy REF·DB (64 zones)
+      link: legacy/
+      variant: minimal
+      attrs:
+        target: _blank
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Built for learning and for doing
+
+<CardGrid>
+  <Card title="Intuition first" icon="star">
+    Every topic opens with an everyday analogy and a diagram before the first equation — a sausage in a pan for hoop
+    stress, a bath with the plug out for chamber pressure.
+  </Card>
+  <Card title="Interactive, not static" icon="setting">
+    Calculators and diagrams respond as you change the inputs, so you can see *why* the answer moves, not just that it
+    does.
+  </Card>
+  <Card title="Checked by hand" icon="approve-check">
+    Each tool comes with a worked example done step by step, and the calculation code is unit-tested against those
+    same numbers.
+  </Card>
+  <Card title="Honest about limits" icon="warning">
+    Every page says where the method stops and what experienced engineers watch for. Screening values are labelled as
+    screening values.
+  </Card>
+</CardGrid>
+
+## Start here
+
+<CardGrid>
+  <LinkCard title="How a solid rocket motor works" description="Anatomy, burn rate, and why chamber pressure balances itself." href="fundamentals/how-a-solid-motor-works/" />
+  <LinkCard title="Case & pressure vessel sizing" description="MEOP, proof and burst, thin vs thick wall, leak-before-break, with a calculator." href="motor/case-sizing/" />
+  <LinkCard title="How to use this site" description="How every page is laid out and how to read the numbers." href="start/how-to-use/" />
+  <LinkCard title="Migration roadmap" description="Which of the 64 legacy zones have been rebuilt, and what is next." href="start/roadmap/" />
+</CardGrid>

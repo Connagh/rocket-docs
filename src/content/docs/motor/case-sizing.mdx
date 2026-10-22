@@ -1,0 +1,183 @@
+---
+title: Case & pressure vessel sizing
+description: How to size a metallic solid rocket motor case for MEOP, proof and burst — with the physics, an interactive calculator, a worked example and the traps.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import HoopVsAxial from '../../../components/HoopVsAxial.astro';
+import PressureLadder from '../../../components/PressureLadder.astro';
+import CaseSizingCalc from '../../../components/CaseSizingCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Size the wall so it does not yield at proof and does not burst below design burst — then check it leaks before it breaks.</div>
+  <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid rocket motor works</a></div>
+  <div><b>Legacy zone</b>Z25 · Case sizing. Uses the same material data as REF·DB v1.</div>
+</div>
+
+## Why this matters
+
+The case is usually the heaviest inert part of a solid motor, and every kilogram of case is a kilogram of propellant
+you are not carrying. **Propellant mass fraction** — propellant mass over total motor mass — is the single biggest
+hardware lever on delivered performance. Case sizing is therefore a balance between being light enough to perform and
+strong enough to never fail, with no leak warning and an energetic payload inside.
+
+## The intuition: why cylinders split lengthwise
+
+<Analogy title="A sausage in a hot pan">
+  Overcooked sausages and frozen water pipes always split **along their length**, never around their circumference.
+  That is not a weakness in the skin — it is geometry. The force trying to open a lengthwise seam grows with the
+  *diameter*, but the force trying to pull the end off grows with the end *area* and is resisted by the whole
+  circumference. Work it through and the lengthwise seam carries exactly twice the stress.
+</Analogy>
+
+<HoopVsAxial />
+
+For a thin-walled cylinder of inner radius $r$ and wall $t$ at internal pressure $p$:
+
+$$
+\sigma_h = \frac{p\,r}{t} \qquad\qquad \sigma_a = \frac{p\,r}{2t} = \frac{\sigma_h}{2}
+$$
+
+A **sphere** has no "long direction" — every cut is the same as cut B — so its wall stress is $p\,r/2t$ in every
+direction. That is why a hemispherical dome needs only **half the wall** of the cylinder it closes, and why the
+sphere is the lightest possible pressure vessel. Domes are bubbles; flat closures are plates in bending and are heavy.
+
+## The three pressures
+
+A case is not designed to the operating pressure. It is judged against a ladder of pressures, every one referenced to
+the **maximum expected operating pressure (MEOP)**:
+
+<PressureLadder />
+
+- **MEOP** already contains the hot-day grain temperature, manufacturing spread, ignition spike and erosive burning.
+  See [why pressure is amplified](../../fundamentals/how-a-solid-motor-works/#the-consequence-for-hardware-small-changes-are-amplified).
+- **Proof** is applied to every case (or a defined sample) to show no yield and no leak. It is also your best
+  **flaw screen** — any crack big enough to fail at proof fails on the test stand, not in service.
+- **Design burst** is the minimum ultimate capability the design must have, shown by analysis and by test to failure
+  on qualification articles.
+
+That gives two sizing requirements, and the thicker wall wins:
+
+$$
+t_{\text{proof}}:\;\; \sigma_h(p_{\text{proof}}) \le \eta\,\sigma_y
+\qquad\qquad
+t_{\text{burst}}:\;\; \sigma_h(p_{\text{burst}}) \le \eta\,\sigma_{\text{UTS}}
+$$
+
+where $\eta$ is the weld (joint) efficiency. High-strength case steels have yield close to UTS, so burst usually
+governs; for lower yield-to-tensile ratios, proof can.
+
+## When "thin" stops being thin
+
+The thin-wall formula assumes the stress is uniform through the wall. It isn't — it is highest at the bore. Lamé's
+thick-cylinder solution gives the exact hoop stress at the inner surface:
+
+$$
+\sigma_{h,\text{bore}} = p\,\frac{r_o^2 + r_i^2}{r_o^2 - r_i^2}
+\qquad\Longrightarrow\qquad
+t = r_i\left(\sqrt{\frac{\sigma + p}{\sigma - p}} - 1\right)
+$$
+
+Below about $t/r = 0.1$ the two agree within a few percent. Motor cases are typically far thinner than that, but
+closures, bosses and high-pressure gas generators are not. The calculator below always uses Lamé and shows the
+thin-wall value alongside so you can see the difference.
+
+## Leak before break
+
+A case can fail two ways. In **leak-before-break**, a crack grows through the wall, vents gas and is noticed. In
+**break-before-leak**, a crack reaches critical size while still buried in the wall and the case ruptures without
+warning. The simplest screen (Irwin's) asks whether a crack that has just broken through — about as long as the wall
+is thick on each side, half-length $c \approx t$ — would be stable:
+
+$$
+c_{\text{crit}} = \frac{1}{\pi}\left(\frac{K_{IC}}{\sigma_h}\right)^2
+\qquad\text{leak before break if}\qquad c_{\text{crit}} \ge t
+$$
+
+<Analogy title="A balloon versus a football">
+  Prick a balloon and it bursts — the material is highly stressed and has little toughness, so the hole runs. Prick a
+  football and it just goes flat — the hole stays a hole. You want your case to behave like the football. Higher
+  strength steels let you thin the wall, but their toughness usually falls as strength rises, pushing you towards the
+  balloon.
+</Analogy>
+
+This is a screening check only. Real fracture-control plans use surface and embedded crack solutions, measured
+toughness at the right orientation, temperature and thickness, and crack-growth analysis over the motor's pressure
+history.
+
+## Calculator
+
+<CaseSizingCalc />
+
+## Worked example
+
+A welded D6AC case: internal diameter 300 mm, cylinder length 1000 mm, MEOP 10 MPa (100 bar), proof factor 1.10, burst
+factor 1.25, full-penetration welds fully radiographed ($\eta = 0.90$). Material values from the database: UTS 1520 MPa,
+yield 1450 MPa, $K_{IC} \approx 70$ MPa√m, density 7.85 g/cm³.
+
+1. **Design pressures.** $p_{\text{proof}} = 1.10 \times 10 = 11.0$ MPa; $p_{\text{burst}} = 1.25 \times 10 = 12.5$ MPa.
+2. **Allowables with weld efficiency.** $0.9 \times 1520 = 1368$ MPa ultimate; $0.9 \times 1450 = 1305$ MPa yield.
+3. **Thin-wall thicknesses.**
+   Burst: $t = 12.5 \times 150 / 1368 = 1.371$ mm. Proof: $t = 11.0 \times 150 / 1305 = 1.264$ mm.
+   **Burst governs.**
+4. **Lamé check.** $t = 150\left(\sqrt{1380.5/1355.5} - 1\right) = 1.377$ mm — within 0.5% of thin-wall, as
+   expected for $t/r \approx 0.009$.
+5. **Stress at MEOP.** $\sigma_h \approx 1094$ MPa hoop, about 547 MPa axial.
+6. **Leak before break.** $c_{\text{crit}} = \frac{1}{\pi}(70/1094)^2 = 1.30$ mm, which is **less than** the 1.38 mm
+   wall. A through-crack would not be stable: this case would be expected to **burst without leaking first**.
+7. **Mass.** Cylinder $\approx 10.2$ kg of steel holding about 85 litres (including hemispherical domes) at 10 MPa.
+
+<Aside type="tip" title="What the example teaches">
+  The membrane sizing is easy and the answer is startlingly thin: relative to its size, this wall is thinner than an
+  eggshell. The hard part is step 6. At this strength level the case is not leak-before-break, so its safety rests on
+  **NDT that reliably finds small flaws** and on the **proof test** screening anything larger. Load the calculator
+  with these inputs and try 15CDV6 or maraging 18Ni-250 instead to see how the trade moves.
+</Aside>
+
+## Where this tool stops
+
+<Aside type="caution" title="Membrane stress is the easy part">
+  The calculator sizes the **cylinder away from its ends**. Real cases fail at the discontinuities it does not model.
+</Aside>
+
+- **Dome-to-cylinder junctions.** A cylinder and a dome under the same pressure want to grow by different amounts.
+  Forcing them to match creates local bending that can raise stress well above membrane values. A 2:1 ellipsoidal
+  head also carries **compressive hoop stress** in its knuckle, which can buckle thin heads.
+- **Closures, bosses and joints.** Polar bosses, bolted or pinned closure joints, clevis joints and skirt attachments
+  are where load paths concentrate. These need their own analysis (and usually FEA).
+- **External and flight loads.** Axial thrust, bending from flight loads, and external pressure or handling loads add
+  to pressure stresses. Unpressurised thin cases can be governed by **buckling**, not burst.
+- **Temperature.** Allowables must be at the case's temperature during and after the burn, including heat soak-back
+  from the insulation after burnout.
+- **Composite cases.** Filament-wound cases are sized by netting analysis on fibre strength and wind angle, not by
+  isotropic membrane theory. They are covered on a separate (planned) page.
+
+## Defining it on the drawing
+
+- **Say more than the alloy.** Alloy, condition/temper, product form, governing specification and melt practice:
+  *"D6AC bar per AMS 6431, VAR, heat treated to 1520 MPa min UTS, double temper"* is a specification; *"D6AC"* is a
+  wish.
+- **Special processes get their own notes.** Heat treatment (with pyrometry to AMS 2750), welding procedure, NDT
+  method and acceptance class, coatings and cleanliness are each separate callouts with their own specification.
+- **Fracture-critical parts change the rules.** Once classified fracture-critical, the drawing carries the flaw-size
+  and NDE requirements, and material comes from a controlled quality class.
+- **Proof test is a drawing or acceptance requirement**, with pressure, hold time, medium, temperature and acceptance
+  criteria (no leak, permanent set limits) stated.
+
+## References and further reading
+
+- NASA SP-8025, *Solid Rocket Motor Metal Cases* (1970) — open NASA design monograph covering case design criteria.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017).
+- W. C. Young, R. G. Budynas & A. M. Sadegh, *Roark's Formulas for Stress and Strain*, 8th ed., McGraw-Hill (2011) —
+  thick cylinders, shells and heads.
+- T. L. Anderson, *Fracture Mechanics: Fundamentals and Applications*, 4th ed., CRC Press (2017) — leak-before-break.
+- AIAA S-080 (metallic pressure vessels and pressurised structures) and AIAA S-081 (composite overwrapped pressure
+  vessels); ASME BPVC Section VIII; BS EN 13445 — for formal design rules where they apply.
+
+<Aside type="note">
+  Screening values for early design. Real case design is governed by the requirements of your programme and sign-off by
+  the responsible stress and safety authorities.
+</Aside>

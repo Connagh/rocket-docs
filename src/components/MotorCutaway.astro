@@ -1,0 +1,234 @@
+---
+// Interactive half-section of a generic case-bonded solid rocket motor.
+// Schematic only: proportions are chosen for legibility, not taken from any design.
+
+type Pt = [number, number];
+const CY = 170; // centreline
+const mirror = (pts: Pt[]): Pt[] => pts.map(([x, y]) => [x, 2 * CY - y]);
+const poly = (pts: Pt[]) => pts.map((p) => p.join(',')).join(' ');
+
+const housing: Pt[] = [[730, 126], [786, 126], [786, 134], [744, 134], [744, 151.8], [730, 140]];
+const insert: Pt[] = [[744, 134], [782, 134], [782, 148.9], [760, 158], [744, 151.8]];
+const exitCone: Pt[] = [[782, 148.9], [782, 134], [900, 86], [900, 100]];
+
+const parts = [
+  { key: 'igniter', n: 1, name: 'Igniter', at: [140, 170],
+    desc: 'A small pyrotechnic charge — on larger motors, a miniature rocket motor in its own right — that fires hot gas and particles down the bore. It has to heat the whole exposed grain surface past ignition temperature and pressurise the chamber within tens of milliseconds, so burning becomes self-sustaining everywhere at once. Think of a barbecue lighter sized to light every coal simultaneously, not one corner.' },
+  { key: 'fwd', n: 2, name: 'Forward dome / closure', at: [122, 118],
+    desc: 'Closes the forward end of the pressure vessel and usually carries the igniter boss. A dome is far more efficient than a flat plate: a hemisphere carries pressure in pure membrane tension and needs only half the wall of the cylinder, while a flat plate has to resist the same pressure in bending.' },
+  { key: 'case', n: 3, name: 'Case (pressure shell)', at: [330, 83],
+    desc: 'The structural pressure vessel. It carries chamber pressure (hoop stress dominates), plus thrust, flight and handling loads. Typical materials are ultra-high-strength steels (D6AC, maraging 18Ni, 15CDV6), titanium, or filament-wound carbon/aramid composite. Case mass is the largest inert-mass lever on motor performance.' },
+  { key: 'insul', n: 4, name: 'Insulation + liner', at: [470, 90],
+    desc: 'A rubbery thermal barrier (typically EPDM, NBR or silicone, often aramid- or silica-filled) that keeps ~3000 K combustion gas off the case — the case only keeps its strength if it stays near ambient temperature. The liner is the thin, tacky layer that bonds propellant to insulation. Insulation is thickest where hot gas reaches it earliest and longest: the aft dome and areas that burn out first.' },
+  { key: 'grain', n: 5, name: 'Propellant grain', at: [330, 120],
+    desc: 'The propellant itself. Composite propellant is typically ammonium perchlorate (oxidiser) and aluminium powder (fuel) held in a cured HTPB rubber binder — fuel and oxidiser premixed into a solid, rubbery block. It burns only on exposed surfaces, receding perpendicular to the surface like a sugar cube dissolving layer by layer.' },
+  { key: 'bore', n: 6, name: 'Bore (combustion port)', at: [420, 170],
+    desc: 'The open channel through the grain. Its cross-section shape (circle, star, slots, fins) sets how the burning area changes as the surface regresses — and so the thrust–time curve. It is also the flow passage carrying gas to the nozzle; high port velocities cause erosive burning.' },
+  { key: 'aft', n: 7, name: 'Aft dome / closure', at: [697, 103],
+    desc: 'Transfers nozzle loads into the case and holds the polar boss the nozzle bolts to. Gas accelerates as it turns into the nozzle, so this is the most thermally aggressive region of the chamber and the insulation here is thickest.' },
+  { key: 'throat', n: 8, name: 'Throat insert', at: [763, 141],
+    desc: 'The narrowest point of the nozzle. The flow is choked here (Mach 1), so throat area sets chamber pressure for a given burning area. Made from erosion-resistant graphite, carbon-carbon or refractory metal — any throat erosion during the burn enlarges the throat and lowers pressure and thrust.' },
+  { key: 'exit', n: 9, name: 'Exit cone', at: [850, 109],
+    desc: 'The divergent section, where gas expands and accelerates to supersonic speed, turning chamber pressure into exhaust velocity. Usually carbon- or silica-phenolic ablative over a structural shell: it chars and erodes slowly by design, absorbing heat as it goes.' },
+  { key: 'skirt', n: 10, name: 'Skirts', at: [150, 77],
+    desc: 'Cylindrical extensions of the case that attach the motor to the rest of the vehicle. They carry interface and flight loads past the domes, so the pressure-carrying domes are not also bending under vehicle loads.' },
+];
+---
+
+<figure class="viz cutaway" data-cutaway>
+  <p class="viz-title">Solid rocket motor — half-section (schematic, not to scale)</p>
+  <svg viewBox="0 0 960 340" role="img" aria-labelledby="cutaway-desc">
+    <desc id="cutaway-desc">
+      Longitudinal section of a solid rocket motor showing, from left to right, the igniter in the forward dome, the
+      cylindrical case lined with insulation, the propellant grain with a central bore, the aft dome, and the nozzle with
+      its throat insert and exit cone. Hot gas flows from the bore out through the nozzle.
+    </desc>
+    <defs>
+      <linearGradient id="cw-plume" x1="0" x2="1">
+        <stop offset="0" stop-color="var(--rd-hot)" stop-opacity="0.75"></stop>
+        <stop offset="1" stop-color="var(--rd-hot)" stop-opacity="0"></stop>
+      </linearGradient>
+    </defs>
+
+    <!-- thrust direction -->
+    <g class="cw-thrust" stroke="var(--rd-muted)" fill="var(--rd-muted)">
+      <line x1="120" y1="24" x2="40" y2="24" stroke-width="2"></line>
+      <path d="M32,24 L44,18 L44,30 Z" stroke="none"></path>
+      <text x="128" y="28" font-size="12" stroke="none">THRUST</text>
+    </g>
+
+    <!-- plume -->
+    <path d="M900,100 L960,70 V270 L900,240 Z" fill="url(#cw-plume)"></path>
+
+    <!-- skirts -->
+    <g data-part="skirt" fill="var(--rd-steel)">
+      <rect x="96" y="72" width="96" height="8"></rect>
+      <rect x="96" y="260" width="96" height="8"></rect>
+      <rect x="636" y="72" width="80" height="8"></rect>
+      <rect x="636" y="260" width="80" height="8"></rect>
+    </g>
+
+    <!-- insulation (case inner surface to cavity) -->
+    <path data-part="insul" fill="var(--rd-insul)"
+      d="M170,86 H660 A54,84 0 0 1 710.4,140 L730,140 V200 L710.4,200 A54,84 0 0 1 660,254 H170 A54,84 0 0 1 170,86 Z"></path>
+    <!-- gas cavity: opaque base so the insulation does not show through, then hot-gas tint -->
+    {['var(--rd-panel)', 'var(--rd-hot)'].map((fill, i) => (
+      <path fill={fill} fill-opacity={i ? 0.22 : 1}
+        d="M170,94 H660 A46,76 0 0 1 704,148 L730,148 L730,192 L704,192 A46,76 0 0 1 660,246 H170 A46,76 0 0 1 170,94 Z"></path>
+    ))}
+    <!-- propellant -->
+    <path data-part="grain" fill="var(--rd-propellant)"
+      d="M170,94 H636 V152 H150 V188 H636 V246 H170 A46,76 0 0 1 170,94 Z"></path>
+    <rect data-part="bore" x="150" y="152" width="486" height="36" fill="var(--rd-hot)" fill-opacity="0.35"></rect>
+
+    <!-- case: forward dome, cylinder, aft dome + boss -->
+    <path data-part="fwd" fill="var(--rd-steel)" d="M170,80 A60,90 0 0 0 170,260 L170,254 A54,84 0 0 1 170,86 Z"></path>
+    <g data-part="case" fill="var(--rd-steel)">
+      <rect x="170" y="80" width="490" height="6"></rect>
+      <rect x="170" y="254" width="490" height="6"></rect>
+    </g>
+    <path data-part="aft" fill="var(--rd-steel)"
+      d="M660,80 A60,90 0 0 1 712.3,126 L730,126 L730,140 L710.4,140 A54,84 0 0 0 660,86 Z
+         M660,260 A60,90 0 0 0 712.3,214 L730,214 L730,200 L710.4,200 A54,84 0 0 1 660,254 Z"></path>
+
+    <!-- nozzle -->
+    <g data-part="exit" fill="var(--rd-insul)" fill-opacity="0.85">
+      <polygon points={poly(exitCone)}></polygon>
+      <polygon points={poly(mirror(exitCone))}></polygon>
+    </g>
+    <g data-part="aft" fill="var(--rd-steel)">
+      <polygon points={poly(housing)}></polygon>
+      <polygon points={poly(mirror(housing))}></polygon>
+    </g>
+    <g data-part="throat" fill="var(--rd-ink)" fill-opacity="0.75">
+      <polygon points={poly(insert)}></polygon>
+      <polygon points={poly(mirror(insert))}></polygon>
+    </g>
+
+    <!-- igniter -->
+    <g data-part="igniter">
+      <rect x="116" y="162" width="50" height="16" rx="3" fill="var(--rd-ok)"></rect>
+      <path d="M166,170 L196,162 M166,170 L200,170 M166,170 L196,178" stroke="var(--rd-ok)" stroke-width="2"></path>
+    </g>
+
+    <!-- gas flow -->
+    <line class="flow" x1="210" y1="170" x2="955" y2="170" stroke="var(--rd-hot)" stroke-width="2" stroke-dasharray="10 14"></line>
+
+    <!-- markers -->
+    {parts.map((p) => (
+      <g class="cw-marker" data-part={p.key} tabindex="0" role="button" aria-label={`${p.n}. ${p.name}`}>
+        <circle cx={p.at[0]} cy={p.at[1]} r="10"></circle>
+        <text x={p.at[0]} y={p.at[1] + 4} text-anchor="middle" font-size="11">{p.n}</text>
+      </g>
+    ))}
+  </svg>
+
+  <div class="cw-legend" role="list">
+    {parts.map((p) => (
+      <button type="button" role="listitem" data-part={p.key}>
+        <span class="n">{p.n}</span>{p.name}
+      </button>
+    ))}
+  </div>
+  <div class="cw-desc" aria-live="polite">
+    <p class="cw-desc-title" data-title>Hover over or tap any part</p>
+    <p data-desc>Each numbered part is explained here. Tap again to unpin.</p>
+  </div>
+  <script type="application/json" data-parts set:html={JSON.stringify(Object.fromEntries(parts.map((p) => [p.key, { name: `${p.n}. ${p.name}`, desc: p.desc }])))}></script>
+</figure>
+
+<style>
+  .cutaway [data-part] { transition: opacity 0.18s ease; cursor: pointer; }
+  .cutaway.has-active svg [data-part]:not(.active) { opacity: 0.22; }
+  .cw-marker circle { fill: var(--rd-panel); stroke: var(--rd-accent); stroke-width: 2; }
+  .cw-marker text { fill: var(--rd-ink); font-weight: 600; pointer-events: none; }
+  .cw-marker.active circle { fill: var(--rd-accent); }
+  .cw-marker.active text { fill: var(--rd-panel); }
+  .cw-marker:focus-visible circle { stroke-width: 4; }
+  .cw-thrust text { font-family: var(--sl-font-mono); letter-spacing: 0.1em; }
+  .flow { animation: cw-flow 1.2s linear infinite; }
+  @keyframes cw-flow { to { stroke-dashoffset: -24; } }
+
+  .cw-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .cw-legend button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font: inherit;
+    font-size: var(--sl-text-sm);
+    color: var(--rd-ink);
+    background: var(--rd-panel2);
+    border: 1px solid var(--rd-line);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem 0.2rem 0.25rem;
+    cursor: pointer;
+    margin: 0;
+  }
+  .cw-legend button.active { border-color: var(--rd-accent); color: var(--rd-accent); }
+  .cw-legend .n {
+    display: inline-grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--rd-accent);
+    font-family: var(--sl-font-mono);
+    font-size: 0.7rem;
+  }
+  .cw-desc {
+    margin-top: 0.75rem !important;
+    padding: 0.75rem 0.9rem;
+    border-radius: 6px;
+    background: var(--rd-panel2);
+    min-height: 6.5rem;
+  }
+  .cw-desc p { margin: 0; font-size: var(--sl-text-sm); }
+  .cw-desc .cw-desc-title { font-weight: 600; color: var(--sl-color-white); margin-bottom: 0.3rem; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-cutaway]').forEach((root) => {
+    const info = JSON.parse(root.querySelector('[data-parts]')!.textContent!);
+    const title = root.querySelector('[data-title]')!;
+    const desc = root.querySelector('[data-desc]')!;
+    const defaults = [title.textContent, desc.textContent];
+    let pinned: string | null = null;
+
+    const show = (key: string | null) => {
+      root.classList.toggle('has-active', !!key);
+      root.querySelectorAll<HTMLElement | SVGElement>('[data-part]').forEach((el) =>
+        el.classList.toggle('active', el.dataset.part === key),
+      );
+      title.textContent = key ? info[key].name : defaults[0];
+      desc.textContent = key ? info[key].desc : defaults[1];
+    };
+    const keyOf = (e: Event) => (e.target as Element).closest<HTMLElement>('[data-part]')?.dataset.part ?? null;
+
+    root.addEventListener('pointerover', (e) => {
+      const k = keyOf(e);
+      if (k && e instanceof PointerEvent && e.pointerType === 'mouse') show(k);
+    });
+    root.addEventListener('pointerleave', () => show(pinned));
+    root.addEventListener('click', (e) => {
+      const k = keyOf(e);
+      if (!k) return;
+      pinned = pinned === k ? null : k;
+      show(pinned ?? k);
+    });
+    root.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && keyOf(e)) {
+        e.preventDefault();
+        (e.target as HTMLElement).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }
+    });
+    root.addEventListener('focusin', (e) => {
+      const k = keyOf(e);
+      if (k) show(k);
+    });
+  });
+</script>

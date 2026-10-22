@@ -1,0 +1,24 @@
+{
+  "name": "ref-db",
+  "type": "module",
+  "version": "2.0.0",
+  "private": true,
+  "description": "REF·DB — an open engineering reference and learning site for solid rocket motor and mechanical design.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test tests/*.test.ts",
+    "extract:legacy": "node scripts/extract-legacy-data.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.4",
+    "@astrojs/starlight": "^0.42.6",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "astro": "^7.4.2",
+    "katex": "^0.19.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  }
+}

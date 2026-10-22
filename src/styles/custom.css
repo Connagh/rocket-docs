@@ -1,0 +1,286 @@
+/* REF·DB theme on top of Starlight. Palette carried over from v1 (legacy). */
+
+:root {
+  --sl-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sl-font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  /* Dark (Starlight default) */
+  --sl-color-accent-low: #3a1913;
+  --sl-color-accent: #ff5a3d;
+  --sl-color-accent-high: #ffc9bd;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e2e9ed;
+  --sl-color-gray-2: #c3d0d7;
+  --sl-color-gray-3: #8ca0ac;
+  --sl-color-gray-4: #5a6b75;
+  --sl-color-gray-5: #26323a;
+  --sl-color-gray-6: #151d23;
+  --sl-color-black: #0e1418;
+
+  /* Diagram + tool tokens */
+  --rd-ink: #e2e9ed;
+  --rd-muted: #8ca0ac;
+  --rd-line: #34434c;
+  --rd-panel: #151d23;
+  --rd-panel2: #1b252c;
+  --rd-accent: #ff5a3d;
+  --rd-blue: #4fb3c6;
+  --rd-ok: #5bc48a;
+  --rd-warn: #e0a94e;
+  --rd-steel: #9fb2bd;
+  --rd-propellant: #b98a5a;
+  --rd-insul: #6b5a7a;
+  --rd-hot: #ff8a3d;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6d9d6;
+  --sl-color-accent: #b5121b;
+  --sl-color-accent-high: #5c0a0e;
+  --sl-color-white: #16232b;
+  --sl-color-gray-1: #1f2f38;
+  --sl-color-gray-2: #33444e;
+  --sl-color-gray-3: #5a6b75;
+  --sl-color-gray-4: #8ca0ac;
+  --sl-color-gray-5: #c9d2d6;
+  --sl-color-gray-6: #eaeeed;
+  --sl-color-gray-7: #f2f4f3;
+  --sl-color-black: #ffffff;
+
+  --rd-ink: #16232b;
+  --rd-muted: #5a6b75;
+  --rd-line: #c9d2d6;
+  --rd-panel: #ffffff;
+  --rd-panel2: #f2f4f3;
+  --rd-accent: #b5121b;
+  --rd-blue: #0e5a6d;
+  --rd-ok: #1e7a46;
+  --rd-warn: #8a5700;
+  --rd-steel: #6a7f8b;
+  --rd-propellant: #a87445;
+  --rd-insul: #7d6a8c;
+  --rd-hot: #d1561a;
+}
+
+.sl-markdown-content .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
+/* ---------- Figures ---------- */
+.viz {
+  margin: 1.5rem 0;
+  border: 1px solid var(--rd-line);
+  border-radius: 8px;
+  background: var(--rd-panel);
+  padding: 1rem;
+}
+.viz svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--sl-font-mono);
+}
+.viz figcaption {
+  margin-top: 0.75rem;
+  font-size: var(--sl-text-sm);
+  color: var(--rd-muted);
+}
+.viz .viz-title {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+  margin: 0 0 0.5rem;
+}
+
+/* ---------- Analogy callout ---------- */
+.analogy {
+  margin: 1.5rem 0;
+  padding: 1rem 1.1rem;
+  border-left: 4px solid var(--rd-blue);
+  background: color-mix(in srgb, var(--rd-blue) 9%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.analogy .analogy-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-blue);
+  margin: 0;
+}
+.analogy .analogy-title {
+  font-weight: 600;
+  margin: 0.35rem 0 0.25rem;
+  color: var(--sl-color-white);
+}
+.analogy > :not(:first-child) {
+  margin-top: 0.5rem;
+}
+
+/* ---------- Calculators ---------- */
+.calc {
+  margin: 1.5rem 0;
+  border: 1px solid var(--rd-line);
+  border-radius: 8px;
+  background: var(--rd-panel);
+  overflow: hidden;
+}
+.calc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: var(--rd-panel2);
+  border-bottom: 1px solid var(--rd-line);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.calc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 1.25rem;
+  padding: 1rem;
+}
+@media (max-width: 64rem) {
+  .calc-body { grid-template-columns: minmax(0, 1fr); }
+}
+.calc .sl-markdown-content :is(label, input, select) { margin: 0; }
+.calc fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+}
+.calc legend {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-accent);
+  margin-bottom: 0.4rem;
+}
+.calc label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: var(--sl-text-sm);
+  color: var(--rd-muted);
+}
+.calc input,
+.calc select {
+  width: 100%;
+  font: inherit;
+  font-family: var(--sl-font-mono);
+  color: var(--rd-ink);
+  background: var(--rd-panel2);
+  border: 1px solid var(--rd-line);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+.calc input[type='range'] { padding: 0; accent-color: var(--rd-accent); background: none; border: 0; }
+.calc .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.calc .hint { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+
+.readouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+.readout {
+  border: 1px solid var(--rd-line);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  background: var(--rd-panel2);
+  margin: 0 !important;
+}
+.readout dt {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.readout dd {
+  margin: 0.1rem 0 0;
+  font-family: var(--sl-font-mono);
+  font-size: 1.15rem;
+  color: var(--rd-ink);
+  font-variant-numeric: tabular-nums;
+}
+.readout dd small { font-size: 0.75rem; color: var(--rd-muted); }
+.readout.primary { border-color: var(--rd-accent); }
+.readout.primary dd { color: var(--rd-accent); font-size: 1.4rem; }
+.readout.ok dd { color: var(--rd-ok); }
+.readout.bad dd { color: var(--rd-accent); }
+.readout.warn dd { color: var(--rd-warn); }
+
+.verdict {
+  margin-top: 0.75rem !important;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: var(--sl-text-sm);
+  border: 1px solid var(--rd-line);
+}
+.verdict.ok { border-color: var(--rd-ok); background: color-mix(in srgb, var(--rd-ok) 10%, transparent); }
+.verdict.bad { border-color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 10%, transparent); }
+.verdict.warn { border-color: var(--rd-warn); background: color-mix(in srgb, var(--rd-warn) 10%, transparent); }
+
+.calc-foot {
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--rd-line);
+  font-size: var(--sl-text-xs);
+  color: var(--rd-muted);
+}
+.calc button.chip {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rd-ink);
+  background: transparent;
+  border: 1px solid var(--rd-line);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+.calc button.chip:hover { border-color: var(--rd-accent); color: var(--rd-accent); }
+
+/* Topic "at a glance" strip */
+.glance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.glance > div {
+  border: 1px solid var(--rd-line);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  background: var(--rd-panel);
+  margin: 0 !important;
+}
+.glance b {
+  display: block;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-accent);
+  margin-bottom: 0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz .flow { animation: none !important; }
+}

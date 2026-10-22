@@ -1,0 +1,72 @@
+---
+// Free-body diagrams showing why hoop stress is twice axial stress in a closed cylinder.
+const cx = 210, cy = 200, Ro = 110, Ri = 98;
+const hoopArrows = [130, 155, 180, 210, 240, 265, 290].map((x) => ({
+  x,
+  top: cy - Math.sqrt(Ri * Ri - (x - cx) ** 2) + 10,
+}));
+const capArrows = [128, 152, 176, 200, 224, 248, 272].map((y) => ({
+  y,
+  tip: 780 + 40 * Math.sqrt(Math.max(0, 1 - ((y - 200) / 90) ** 2)) - 8,
+}));
+---
+
+<figure class="viz hoop-axial">
+  <p class="viz-title">Two ways to cut a pressurised cylinder</p>
+  <svg viewBox="0 0 880 380" role="img" aria-labelledby="hva-desc">
+    <desc id="hva-desc">
+      Left: a cylinder cut lengthwise. Pressure pushes on a strip twice the radius wide, resisted by two wall sections,
+      giving hoop stress p r over t. Right: a cylinder cut across. Pressure pushes on the circular end, resisted by the whole
+      ring of wall, giving axial stress p r over 2 t — half the hoop stress.
+    </desc>
+    <defs>
+      <marker id="hva-ah-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-blue)"></path>
+      </marker>
+      <marker id="hva-ah-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- Panel A: hoop -->
+    <text x="20" y="28" font-size="13" fill="var(--rd-muted)" letter-spacing="1">A · CUT ALONG THE LENGTH</text>
+    <path fill="var(--rd-steel)"
+      d={`M${cx - Ro},${cy} A${Ro},${Ro} 0 0 1 ${cx + Ro},${cy} L${cx + Ri},${cy} A${Ri},${Ri} 0 0 0 ${cx - Ri},${cy} Z`}></path>
+    <line x1={cx - Ri} y1={cy} x2={cx + Ri} y2={cy} stroke="var(--rd-muted)" stroke-dasharray="5 4"></line>
+    {hoopArrows.map((a) => (
+      <line x1={a.x} y1={cy - 4} x2={a.x} y2={a.top} stroke="var(--rd-blue)" stroke-width="2" marker-end="url(#hva-ah-b)"></line>
+    ))}
+    <line x1={cx - Ro + 6} y1={cy + 4} x2={cx - Ro + 6} y2={cy + 52} stroke="var(--rd-accent)" stroke-width="4" marker-end="url(#hva-ah-r)"></line>
+    <line x1={cx + Ro - 6} y1={cy + 4} x2={cx + Ro - 6} y2={cy + 52} stroke="var(--rd-accent)" stroke-width="4" marker-end="url(#hva-ah-r)"></line>
+    <text x={cx - Ro - 6} y={cy + 72} font-size="13" fill="var(--rd-accent)">σ<tspan font-size="10" dy="3">h</tspan><tspan dy="-3"> · t</tspan></text>
+    <text x={cx + Ro - 30} y={cy + 72} font-size="13" fill="var(--rd-accent)">σ<tspan font-size="10" dy="3">h</tspan><tspan dy="-3"> · t</tspan></text>
+    <line x1={cx - Ri} y1={cy + 24} x2={cx + Ri} y2={cy + 24} stroke="var(--rd-muted)" marker-start="url(#hva-ah-b)" marker-end="url(#hva-ah-b)" opacity="0.6"></line>
+    <text x={cx} y={cy + 40} font-size="12" text-anchor="middle" fill="var(--rd-muted)">acts over width 2r</text>
+    <text x={cx} y="320" font-size="14" text-anchor="middle" fill="var(--rd-ink)">p · 2r · L  =  2 · σh · t · L</text>
+    <text x={cx} y="350" font-size="17" text-anchor="middle" fill="var(--rd-accent)" font-weight="600">σh = p r / t</text>
+
+    <line x1="440" y1="40" x2="440" y2="360" stroke="var(--rd-line)"></line>
+
+    <!-- Panel B: axial -->
+    <text x="470" y="28" font-size="13" fill="var(--rd-muted)" letter-spacing="1">B · CUT ACROSS</text>
+    <rect x="500" y="98" width="280" height="12" fill="var(--rd-steel)"></rect>
+    <rect x="500" y="290" width="280" height="12" fill="var(--rd-steel)"></rect>
+    <path fill="var(--rd-steel)" d="M780,98 A52,102 0 0 1 780,302 L780,290 A40,90 0 0 0 780,110 Z"></path>
+    <line x1="500" y1="90" x2="500" y2="310" stroke="var(--rd-muted)" stroke-dasharray="5 4"></line>
+    {capArrows.map((a) => (
+      <line x1="690" y1={a.y} x2={a.tip} y2={a.y} stroke="var(--rd-blue)" stroke-width="2" marker-end="url(#hva-ah-b)"></line>
+    ))}
+    <text x="600" y="204" font-size="12" text-anchor="middle" fill="var(--rd-muted)">pressure acts</text>
+    <text x="600" y="220" font-size="12" text-anchor="middle" fill="var(--rd-muted)">over area πr²</text>
+    <line x1="496" y1="104" x2="456" y2="104" stroke="var(--rd-accent)" stroke-width="4" marker-end="url(#hva-ah-r)"></line>
+    <line x1="496" y1="296" x2="456" y2="296" stroke="var(--rd-accent)" stroke-width="4" marker-end="url(#hva-ah-r)"></line>
+    <text x="456" y="84" font-size="13" fill="var(--rd-accent)">σ<tspan font-size="10" dy="3">a</tspan><tspan dy="-3"> · t  </tspan><tspan fill="var(--rd-muted)" font-size="12">all the way round 2πr</tspan></text>
+    <text x="660" y="320" font-size="14" text-anchor="middle" fill="var(--rd-ink)">p · πr²  =  σa · 2πr · t</text>
+    <text x="660" y="350" font-size="17" text-anchor="middle" fill="var(--rd-accent)" font-weight="600">σa = p r / 2t</text>
+  </svg>
+  <figcaption>
+    Same pressure, same wall. Cut lengthwise (A), only two thin strips of wall resist a force proportional to the
+    diameter. Cut across (B), the whole circumference resists a force proportional to the end area. The lengthwise
+    seam ends up carrying <strong>twice</strong> the stress — which is why cylinders split along their length.
+  </figcaption>
+</figure>
