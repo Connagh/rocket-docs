@@ -50,6 +50,10 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Verification',
+          items: [{ label: 'Proof testing', slug: 'verify/proof-testing' }],
+        },
+        {
           label: 'Legacy reference',
           items: [
             {

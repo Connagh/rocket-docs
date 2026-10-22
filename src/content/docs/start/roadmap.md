@@ -23,7 +23,7 @@ The reason this site exists, so it goes first.
 | Z27 | Ablative liners & insulation — char, erosion, exposure, soak-back, materials | ✅ | [Insulation & liners](../../motor/insulation/) |
 | Z28 | Transient thermal | ⏳ | Soak-back covered in Insulation; lumped-capacitance tool still in legacy |
 | Z33 | Leak before break | ⏳ | Screen covered in Case sizing |
-| Z35 | Proof testing | ⏳ | |
+| Z35 | Proof testing — proof factor, flaw screening, media & safety, acceptance | ✅ | [Proof testing](../../verify/proof-testing/) |
 | Z32 | Shell buckling | ⏳ | |
 | Z7 | Viscoelasticity | ⏳ | Basics covered in Propellant grain |
 | Z39 | Storage & ageing | ⏳ | Ageing / Arrhenius tool still in legacy Z26 |

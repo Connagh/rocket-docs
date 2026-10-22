@@ -1,0 +1,170 @@
+---
+// Proof-test rig: stored energy by medium, expected expansion, hold drift, and acceptance checks.
+import { MEDIA } from '../lib/proof';
+const VESSELS = [
+  { key: 'steel', name: 'Steel', E: 205000, nu: 0.3, alpha: 12 },
+  { key: 'ti', name: 'Titanium', E: 114000, nu: 0.34, alpha: 8.6 },
+  { key: 'al', name: 'Aluminium', E: 72000, nu: 0.33, alpha: 23 },
+  { key: 'cfrp', name: 'Carbon/epoxy (hoop-dominated)', E: 60000, nu: 0.3, alpha: 2 },
+];
+---
+
+<div class="calc prcalc" data-prcalc>
+  <div class="calc-head"><span>Test rig — energy, expansion, hold drift</span><span>thin cylinder with hemispherical ends</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Vessel</legend>
+        <div class="row2">
+          <label>Internal diameter (mm)<input name="d" type="number" min="1" step="any" value="300" /></label>
+          <label>Cylinder length (mm)<input name="L" type="number" min="0" step="any" value="1000" /></label>
+          <label>Wall (mm)<input name="t" type="number" min="0.1" step="any" value="1.377" /></label>
+          <label>Material
+            <select name="mat">{VESSELS.map((v) => <option value={v.key}>{v.name}</option>)}</select>
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Test</legend>
+        <div class="row2">
+          <label>Proof pressure (MPa)<input name="p" type="number" min="0.01" step="any" value="11" /></label>
+          <label>Medium
+            <select name="med">{MEDIA.map((m) => <option value={m.key}>{m.name}</option>)}</select>
+          </label>
+          <label>Trapped air (% of volume)<input name="air" type="number" min="0" max="50" step="0.5" value="0" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Measured (for acceptance)</legend>
+        <div class="row2">
+          <label>Pressure change in hold (MPa)<input name="dp" type="number" step="any" value="-0.15" /></label>
+          <label>Liquid temp change in hold (K)<input name="dT" type="number" step="any" value="-1.0" /></label>
+          <label>Total expansion at proof (mL)<input name="vt" type="number" min="0" step="any" placeholder="from water jacket" /></label>
+          <label>Permanent expansion (mL)<input name="vp" type="number" min="0" step="any" placeholder="after release" /></label>
+          <label>Permanent-set limit (% of total)<input name="lim" type="number" min="0" step="any" value="10" /></label>
+          <label>Allowed unexplained drop (MPa)<input name="tol" type="number" min="0" step="any" value="0.05" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>Stored energy, this medium</dt><dd data-r="E">—</dd></div>
+        <div class="readout"><dt>TNT equivalent</dt><dd data-r="tnt">—</dd></div>
+        <div class="readout"><dt>Internal volume</dt><dd data-r="V">—</dd></div>
+      </dl>
+      <svg class="pr-bars" viewBox="0 0 480 170" data-bars role="img" aria-label="Stored energy by test medium, logarithmic scale"></svg>
+      <p class="pv-sub">Expansion and hold</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Elastic expansion at proof</dt><dd data-r="dv">—</dd></div>
+        <div class="readout"><dt>Liquid to pump in</dt><dd data-r="pump">—</dd></div>
+        <div class="readout"><dt>Hold drift per kelvin</dt><dd data-r="drift">—</dd></div>
+        <div class="readout" data-cls="hold"><dt>Unexplained pressure change</dt><dd data-r="hold">—</dd></div>
+        <div class="readout" data-cls="perm"><dt>Permanent ÷ total expansion</dt><dd data-r="perm">—</dd></div>
+      </dl>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Stored energy: liquid compression p²V/2K, isentropic gas expansion to atmosphere, and elastic strain energy in the
+    wall (½p·ΔV). Membrane compliance of the cylinder only — domes, bosses and fittings add a little. Exclusion
+    distances come from your site safety rules, not from this number.
+  </div>
+  <script type="application/json" data-data set:html={JSON.stringify({ VESSELS })}></script>
+</div>
+
+<style>
+  .prcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .pr-bars { width: 100%; height: auto; margin-top: 0.8rem !important; font-family: var(--sl-font-mono); }
+  .prcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+  .prcalc .pv-notes li.bad { color: var(--rd-accent); }
+  .prcalc .pv-notes li.warn { color: var(--rd-warn); }
+</style>
+
+<script>
+  import { MEDIA, vesselCompliance, storedEnergy, holdDrift, expansion } from '../lib/proof';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const J = (e: number) => (e >= 1e6 ? `${f(e / 1e6, 2)} <small>MJ</small>` : e >= 1e3 ? `${f(e / 1e3, 1)} <small>kJ</small>` : `${f(e, 0)} <small>J</small>`);
+
+  document.querySelectorAll<HTMLElement>('[data-prcalc]').forEach((root) => {
+    const { VESSELS } = JSON.parse(root.querySelector('[data-data]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    function run() {
+      const v = VESSELS.find((x: any) => x.key === field('mat').value);
+      const ri = num('d') / 2, L = num('L'), t = num('t'), p = num('p');
+      if (!(ri > 0 && t > 0 && p > 0)) return;
+      const V = (Math.PI * ri * ri * L + (4 / 3) * Math.PI * ri ** 3) / 1e6; // litres
+      const C = vesselCompliance(ri, t, v.E, v.nu);
+      const med = MEDIA.find((m) => m.key === field('med').value)!;
+      const air = num('air') / 100;
+      const e = storedEnergy(p, V, C, med, med.kind === 'liquid' ? air : 0);
+      r('E').innerHTML = J(e.total);
+      r('tnt').innerHTML = e.tnt >= 1 ? `${f(e.tnt, 2)} <small>kg</small>` : `${f(e.tnt * 1000, 1)} <small>g</small>`;
+      r('V').innerHTML = `${f(V, 1)} <small>L</small>`;
+
+      // energy comparison bars (log scale)
+      const svg = root.querySelector<SVGSVGElement>('[data-bars]')!;
+      svg.replaceChildren();
+      const rows = MEDIA.map((m) => ({ name: m.name, e: storedEnergy(p, V, C, m).total, sel: m.key === med.key }));
+      if (med.kind === 'liquid' && air > 0) rows.push({ name: `${med.name} + ${f(air * 100, 1)}% air`, e: e.total, sel: true });
+      const lo = Math.floor(Math.log10(Math.min(...rows.map((x) => x.e)))), hi = Math.ceil(Math.log10(Math.max(...rows.map((x) => x.e))));
+      const X = (en: number) => 170 + ((Math.log10(en) - lo) / Math.max(1, hi - lo)) * 290;
+      for (let k = lo; k <= hi; k++) {
+        svg.append(el('line', { x1: X(10 ** k), x2: X(10 ** k), y1: 4, y2: 30 * rows.length + 4, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(10 ** k), y: 30 * rows.length + 18, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, k >= 6 ? `${10 ** (k - 6)} MJ` : k >= 3 ? `${10 ** (k - 3)} kJ` : `${10 ** k} J`));
+      }
+      rows.forEach((row, k) => {
+        const y = 8 + k * 30;
+        svg.append(el('text', { x: 164, y: y + 15, 'text-anchor': 'end', 'font-size': 11, fill: row.sel ? 'var(--rd-ink)' : 'var(--rd-muted)' }, row.name));
+        svg.append(el('rect', { x: 170, y, width: Math.max(2, X(row.e) - 170), height: 20, rx: 3, fill: MEDIA.find((m) => m.name === row.name)?.kind === 'gas' ? 'var(--rd-accent)' : 'var(--rd-blue)', 'fill-opacity': row.sel ? 0.9 : 0.4 }));
+      });
+      svg.setAttribute('viewBox', `0 0 480 ${30 * rows.length + 26}`);
+
+      const notes: [string, string][] = [];
+      const waterE = storedEnergy(p, V, C, MEDIA[0]).total, gasE = storedEnergy(p, V, C, MEDIA[2]).total;
+      notes.push(['', `Nitrogen at this pressure stores about ${f(gasE / waterE, 0)}× the energy of the same test with water. A liquid barely compresses, so most of its stored energy is the vessel's own elastic strain.`]);
+      if (med.kind === 'gas') notes.push(['bad', 'Pneumatic proof testing stores blast-level energy. It is used only where liquid is genuinely unacceptable, and then with larger exclusion zones, remote operation and specific approval.']);
+      if (med.kind === 'liquid' && air > 0) notes.push(['warn', `Trapped air raises the stored energy from ${J(storedEnergy(p, V, C, med).total).replace(/<[^>]+>/g, '')} to ${J(e.total).replace(/<[^>]+>/g, '')}. Its effect is largest in big, low-pressure tests. Bleed from the high point until only liquid comes out.`]);
+
+      if (med.kind === 'liquid') {
+        const ex = expansion(p, V, C, med.bulk);
+        r('dv').innerHTML = `${f(ex.vessel * 1000, 0)} <small>mL</small>`;
+        r('pump').innerHTML = `${f(ex.pumpIn * 1000, 0)} <small>mL</small>`;
+        const drift = holdDrift(med.beta, v.alpha * 1e-6, med.bulk, C);
+        r('drift').innerHTML = `${f(drift, 3)} <small>MPa/K</small>`;
+        const unexplained = num('dp') - drift * num('dT');
+        r('hold').innerHTML = `${unexplained >= 0 ? '+' : ''}${f(unexplained, 3)} <small>MPa</small>`;
+        const holdOk = unexplained >= -num('tol');
+        root.querySelector('[data-cls="hold"]')!.className = `readout ${holdOk ? 'ok' : 'bad'}`;
+        notes.push(['', `A 1 K change in liquid temperature moves the hold pressure by ${f(drift, 3)} MPa (${f((drift / p) * 100, 1)}% of proof). Most hold-pressure drift is temperature, not leakage — record the liquid temperature and correct for it.`]);
+        if (!holdOk) notes.push(['bad', `After temperature correction, ${f(-unexplained, 3)} MPa of the pressure drop is unexplained. Look for a leak at fittings, seals or the vessel before accepting.`]);
+        const vt = num('vt'), vp = num('vp');
+        if (vt > 0 && field('vp').value !== '') {
+          const ratio = (vp / vt) * 100;
+          r('perm').textContent = `${f(ratio, 1)} %`;
+          root.querySelector('[data-cls="perm"]')!.className = `readout ${ratio <= num('lim') ? 'ok' : 'bad'}`;
+          if (Math.abs(vt / (ex.vessel * 1000) - 1) > 0.2) notes.push(['warn', `Measured total expansion (${f(vt, 0)} mL) differs from the membrane estimate (${f(ex.vessel * 1000, 0)} mL) by more than 20%. Check the wall thickness, modulus and instrumentation before trusting either.`]);
+          if (ratio > num('lim')) notes.push(['bad', `Permanent expansion is ${f(ratio, 1)}% of total — above the ${f(num('lim'), 0)}% limit. The vessel yielded during proof.`]);
+        } else r('perm').textContent = 'enter measurements';
+      } else {
+        for (const k of ['dv', 'pump', 'drift', 'hold', 'perm']) r(k).textContent = '—';
+      }
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, tx]) => `<li class="${c}">${tx}</li>`).join('');
+    }
+
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    run();
+  });
+</script>

@@ -1,0 +1,81 @@
+---
+// Schematic of a hydrostatic proof-test rig and its safety features.
+---
+
+<figure class="viz">
+  <p class="viz-title">Hydrostatic proof rig — schematic</p>
+  <svg viewBox="0 0 820 330" role="img" aria-labelledby="rig-desc">
+    <desc id="rig-desc">
+      A remotely operated hydrostatic test rig. A pump in the control area feeds through a check valve and isolation
+      valve to a manifold with a relief valve set above proof pressure, two independent calibrated pressure
+      measurements, and a vent. The vessel sits in a test cell behind a barrier, with a vent at its highest point to bleed
+      air and a drain at its lowest point. Strain gauges on the vessel are read remotely.
+    </desc>
+    <defs>
+      <marker id="rig-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-blue)"></path>
+      </marker>
+    </defs>
+    <!-- zones -->
+    <rect x="10" y="30" width="300" height="270" rx="8" fill="var(--rd-panel2)" stroke="var(--rd-line)"></rect>
+    <text x="22" y="52" font-size="12" font-weight="600" fill="var(--rd-ink)">Control area (remote)</text>
+    <rect x="430" y="30" width="380" height="270" rx="8" fill="var(--rd-panel2)" stroke="var(--rd-accent)" stroke-dasharray="6 4"></rect>
+    <text x="442" y="52" font-size="12" font-weight="600" fill="var(--rd-accent)">Test cell — nobody inside when pressurised</text>
+    <rect x="410" y="30" width="12" height="270" fill="var(--rd-steel)"></rect>
+    <text x="416" y="318" text-anchor="middle" font-size="11" fill="var(--rd-muted)">barrier</text>
+
+    <!-- pump and tank -->
+    <rect x="30" y="200" width="70" height="60" rx="4" fill="var(--rd-blue)" fill-opacity="0.25" stroke="var(--rd-blue)"></rect>
+    <text x="65" y="234" text-anchor="middle" font-size="11" fill="var(--rd-ink)">tank</text>
+    <circle cx="150" cy="230" r="20" fill="var(--rd-panel)" stroke="var(--rd-ink)" stroke-width="2"></circle>
+    <text x="150" y="234" text-anchor="middle" font-size="11" fill="var(--rd-ink)">pump</text>
+    <line x1="100" y1="230" x2="130" y2="230" stroke="var(--rd-blue)" stroke-width="3"></line>
+
+    <!-- line to vessel -->
+    <path d="M170,230 H260 V150 H560" fill="none" stroke="var(--rd-blue)" stroke-width="3" marker-end="url(#rig-ah)"></path>
+    <!-- check valve -->
+    <polygon points="200,222 200,238 214,230" fill="var(--rd-ink)"></polygon>
+    <line x1="215" y1="221" x2="215" y2="239" stroke="var(--rd-ink)" stroke-width="2"></line>
+    <text x="207" y="256" text-anchor="middle" font-size="10" fill="var(--rd-muted)">check</text>
+    <!-- isolation valve -->
+    <polygon points="285,142 285,158 300,150" fill="var(--rd-ink)"></polygon>
+    <polygon points="315,142 315,158 300,150" fill="var(--rd-ink)"></polygon>
+    <text x="300" y="134" text-anchor="middle" font-size="10" fill="var(--rd-muted)">isolate</text>
+    <!-- relief valve -->
+    <line x1="350" y1="150" x2="350" y2="100" stroke="var(--rd-blue)" stroke-width="3"></line>
+    <rect x="338" y="80" width="24" height="20" fill="var(--rd-accent)"></rect>
+    <text x="350" y="72" text-anchor="middle" font-size="10" fill="var(--rd-accent)">relief, set above proof</text>
+    <!-- gauges -->
+    <line x1="380" y1="150" x2="380" y2="185" stroke="var(--rd-blue)" stroke-width="2"></line>
+    <circle cx="380" cy="198" r="13" fill="var(--rd-panel)" stroke="var(--rd-ink)" stroke-width="2"></circle>
+    <line x1="380" y1="198" x2="388" y2="191" stroke="var(--rd-accent)" stroke-width="2"></line>
+    <line x1="395" y1="150" x2="395" y2="230" stroke="var(--rd-blue)" stroke-width="2"></line>
+    <circle cx="395" cy="243" r="13" fill="var(--rd-panel)" stroke="var(--rd-ink)" stroke-width="2"></circle>
+    <line x1="395" y1="243" x2="403" y2="236" stroke="var(--rd-accent)" stroke-width="2"></line>
+    <text x="330" y="282" font-size="10" fill="var(--rd-muted)">two independent,</text>
+    <text x="330" y="294" font-size="10" fill="var(--rd-muted)">calibrated gauges</text>
+
+    <!-- vessel -->
+    <path d="M560,110 H730 A40,60 0 0 1 730,230 H560 A40,60 0 0 1 560,110 Z" fill="var(--rd-steel)" fill-opacity="0.35" stroke="var(--rd-steel)" stroke-width="5"></path>
+    <text x="645" y="175" text-anchor="middle" font-size="12" fill="var(--rd-ink)">case under test</text>
+    <!-- high-point vent -->
+    <line x1="645" y1="108" x2="645" y2="76" stroke="var(--rd-blue)" stroke-width="2"></line>
+    <polygon points="637,76 653,76 645,66" fill="var(--rd-ok)"></polygon>
+    <text x="632" y="72" text-anchor="end" font-size="10" fill="var(--rd-ok)">high-point vent: bleed all air</text>
+    <!-- drain -->
+    <line x1="645" y1="232" x2="645" y2="262" stroke="var(--rd-blue)" stroke-width="2"></line>
+    <text x="660" y="262" font-size="10" fill="var(--rd-muted)">low-point drain</text>
+    <!-- strain gauges -->
+    {[600, 640, 680].map((x) => <rect x={x - 6} y="104" width="12" height="6" fill="var(--rd-warn)"></rect>)}
+    <text x="560" y="96" font-size="10" fill="var(--rd-warn)">strain gauges</text>
+    <path d="M600,104 C560,60 470,60 330,60 H110 V90" fill="none" stroke="var(--rd-warn)" stroke-dasharray="3 3"></path>
+    <rect x="40" y="90" width="140" height="44" rx="4" fill="var(--rd-panel)" stroke="var(--rd-warn)"></rect>
+    <text x="110" y="110" text-anchor="middle" font-size="10" fill="var(--rd-ink)">data: pressure, strain,</text>
+    <text x="110" y="123" text-anchor="middle" font-size="10" fill="var(--rd-ink)">temperature, AE</text>
+  </svg>
+  <figcaption>
+    Every feature answers a failure mode: the relief valve caps an over-pressure, two gauges catch a lying gauge, the
+    high-point vent removes trapped air, the barrier and remote control keep people away from stored energy, and
+    strain gauges show the vessel tracking its predicted stiffness.
+  </figcaption>
+</figure>

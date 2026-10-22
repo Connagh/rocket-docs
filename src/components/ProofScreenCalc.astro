@@ -1,0 +1,243 @@
+---
+// Proof-test flaw screening and the crack-growth life it buys.
+// Calculations in src/lib/proof.ts (unit-tested); this file is UI only.
+import data from '../data/materials.json';
+import { PARIS_CLASSES } from '../lib/proof';
+
+const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
+const metals = data.materials.filter((m) => m.family in FAM && m.kic && m.yield > 300);
+const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
+---
+
+<div class="calc pscalc" data-pscalc>
+  <div class="calc-head"><span>Proof-test flaw screen</span><span>LEFM · constant geometry factor · Paris growth</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Material</legend>
+        <label>Alloy
+          <select name="m">
+            {groups.map((g) => (
+              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
+            ))}
+          </select>
+        </label>
+        <div class="row2">
+          <label>K<sub>IC</sub> at proof temp<input name="kp" type="number" min="1" step="any" /></label>
+          <label>K<sub>IC</sub> at coldest service<input name="ks" type="number" min="1" step="any" /></label>
+          <label>Yield (MPa)<input name="ys" type="number" min="1" step="any" /></label>
+          <label>Growth law
+            <select name="paris">{PARIS_CLASSES.map((p) => <option value={p.key}>{p.name}</option>)}</select>
+          </label>
+        </div>
+        <p class="hint" data-kichint></p>
+      </fieldset>
+      <fieldset>
+        <legend>Vessel &amp; test</legend>
+        <div class="row2">
+          <label>Stress at MEOP (MPa)<input name="s" type="number" min="1" step="any" value="1094" /></label>
+          <label>Wall (mm)<input name="t" type="number" min="0.1" step="any" value="1.377" /></label>
+          <label>Proof factor<input name="R" type="number" min="1" step="0.01" value="1.10" /></label>
+          <label>Geometry factor Y<input name="Y" type="number" min="0.5" step="0.01" value="1.12" /></label>
+        </div>
+        <p class="hint">Defaults are the D6AC case from the case-sizing page. Y = 1.12 is a long, shallow surface crack.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Service</legend>
+        <div class="row2">
+          <label>Pressurisations after proof<input name="n" type="number" min="1" step="1" value="2" /></label>
+          <label>Life factor<input name="lf" type="number" min="1" step="0.5" value="4" /></label>
+          <label>Range per cycle (× MEOP stress)<input name="rf" type="number" min="0.05" max="1" step="0.05" value="1" /></label>
+          <label>NDT reliable depth (mm)<input name="ndt" type="number" min="0" step="any" value="1.27" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="life"><dt>Cycles to failure from initial flaw</dt><dd data-r="life">—</dd></div>
+        <div class="readout" data-cls="lm"><dt>Life ÷ required</dt><dd data-r="lm">—</dd></div>
+      </dl>
+      <p class="pv-sub">Flaw sizes</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Proof screens flaws above</dt><dd data-r="as">—</dd></div>
+        <div class="readout"><dt>Critical at MEOP</dt><dd data-r="ac">—</dd></div>
+        <div class="readout" data-cls="ratio"><dt>Critical ÷ screened</dt><dd data-r="ratio">—</dd></div>
+        <div class="readout"><dt>Initial flaw set by</dt><dd data-r="init">—</dd></div>
+      </dl>
+      <p class="pv-sub">Test severity</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Proof stress</dt><dd data-r="sp">—</dd></div>
+        <div class="readout" data-cls="py"><dt>Proof stress ÷ yield</dt><dd data-r="py">—</dd></div>
+        <div class="readout"><dt>Critical depth ÷ wall</dt><dd data-r="at">—</dd></div>
+      </dl>
+      <figure class="ps-fig">
+        <svg viewBox="0 0 480 250" data-chart="k" role="img" aria-label="Stress intensity versus crack depth at proof and at MEOP"></svg>
+        <figcaption>K = Yσ√(πa) at proof and at MEOP. Where each line meets the toughness gives the screened and critical sizes.</figcaption>
+      </figure>
+      <figure class="ps-fig">
+        <svg viewBox="0 0 480 220" data-chart="r" role="img" aria-label="Life bought versus proof factor"></svg>
+        <figcaption>Life bought by the proof screen versus proof factor. Shaded: proof stress above yield.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Screening only: constant Y, linear-elastic fracture mechanics, no crack growth during the proof cycle itself, no
+    sustained-load (environment-assisted) growth. A released proof-test argument uses measured toughness and growth
+    data at the service condition, realistic flaw shapes, and the governing standard's factors.
+  </div>
+  <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.name, m])))}></script>
+</div>
+
+<style>
+  .pscalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .ps-fig { margin: 0.9rem 0 0 !important; }
+  .ps-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ps-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .pscalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+  .pscalc .pv-notes li.bad { color: var(--rd-accent); }
+  .pscalc .pv-notes li.warn { color: var(--rd-warn); }
+</style>
+
+<script>
+  import { proofScreen, PARIS_CLASSES, stressIntensity, type ScreenInputs } from '../lib/proof';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const cyc = (n: number) => (!Number.isFinite(n) ? '∞' : n >= 1e6 ? `${f(n / 1e6, 1)} M` : n >= 1e4 ? `${f(n / 1e3, 0)} k` : f(n, 0));
+
+  document.querySelectorAll<HTMLElement>('[data-pscalc]').forEach((root) => {
+    const mats = JSON.parse(root.querySelector('[data-mats]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string, primary = false) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout ${primary ? 'primary ' : ''}${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    const applyMat = () => {
+      const m = mats[field('m').value];
+      field('kp').value = m.kic; field('ks').value = m.kic; field('ys').value = m.yield;
+      field('paris').value = m.family === 'steel' ? (m.uts > 1100 ? 'mart' : 'fp') : m.family === 'ss' ? (/17-4|15-5|PH|FV520|maraging/i.test(m.name) ? 'mart' : 'aus') : m.family === 'ni' ? 'aus' : m.family;
+      root.querySelector('[data-kichint]')!.textContent =
+        `Database K_IC ${m.kic} MPa√m${m.kicIsFamilyDefault ? ' (family default)' : ''} — indicative. Toughness usually falls at low temperature: enter the cold value for service if you have it.`;
+    };
+
+    function inputs(R = num('R')): ScreenInputs {
+      const p = PARIS_CLASSES.find((x) => x.key === field('paris').value)!;
+      return {
+        sigmaOp: num('s'), proofFactor: R, Y: num('Y'), kProof: num('kp'), kService: num('ks'), wall: num('t'),
+        yieldStrength: num('ys'), C: p.C, m: p.m, rangeFraction: num('rf'), serviceCycles: num('n'), lifeFactor: num('lf'),
+        ndtDepth: num('ndt'),
+      };
+    }
+
+    function run() {
+      const i = inputs();
+      if (!(i.sigmaOp > 0 && i.proofFactor >= 1 && i.kProof > 0 && i.kService > 0)) return;
+      const s = proofScreen(i);
+      r('life').innerHTML = s.cycles > 0 ? `${cyc(s.cycles)} <small>cycles</small>` : 'none';
+      r('lm').textContent = s.required > 0 ? `${f(s.lifeMargin, 1)}×` : '—';
+      cls('life', s.cycles >= s.required ? 'ok' : 'bad', true);
+      cls('lm', s.lifeMargin >= 1 ? 'ok' : 'bad');
+      r('as').innerHTML = `${f(s.aScreen, 3)} <small>mm</small>`;
+      r('ac').innerHTML = `${f(s.aCrit, 3)} <small>mm</small>`;
+      r('ratio').textContent = `${f(s.ratio, 2)}×`;
+      cls('ratio', s.screenWorks ? 'ok' : 'bad');
+      r('init').innerHTML = `${s.governsInitial} <small>${f(s.aInit, 2)} mm</small>`;
+      r('sp').innerHTML = `${f(s.sigmaProof, 0)} <small>MPa</small>`;
+      r('py').textContent = f(s.proofToYield, 2);
+      cls('py', s.proofToYield >= 1 ? 'bad' : s.proofToYield > 0.9 ? 'warn' : 'ok');
+      r('at').textContent = f(s.deepCrack, 2);
+
+      const notes: [string, string][] = [];
+      if (!s.screenWorks) notes.push(['bad', `The proof test screens nothing useful: the largest flaw that survives proof (${f(s.aScreen, 2)} mm) is bigger than the flaw that fails at MEOP in service (${f(s.aCrit, 2)} mm). Usually this is lower toughness in service than at the proof temperature — proof cold, or show the toughness does not fall.`]);
+      else notes.push(['', `Every case that survives proof has no crack deeper than ${f(s.aScreen, 2)} mm, whether or not anyone could find it. The ratio of critical to screened size is (proof factor)² × (K_service/K_proof)² = ${f(s.ratio, 2)}.`]);
+      if (s.proofToYield >= 1) notes.push(['bad', 'Proof stress exceeds yield: the test would permanently deform the vessel. Lower the proof factor or rethink the wall.']);
+      else if (s.proofToYield > 0.9) notes.push(['warn', 'Proof stress is within 10% of yield — little room for local stress raisers, weld peaking or a low-strength heat.']);
+      if (s.deepCrack > 0.5) notes.push(['warn', `The critical crack is ${f(s.deepCrack * 100, 0)}% of the wall. A constant Y underestimates K for deep cracks (the back face matters), so these sizes are optimistic. Use a surface-crack solution such as Newman–Raju, and check leak-before-break on the case-sizing page.`]);
+      if (s.governsInitial === 'NDT') notes.push(['', 'NDT reliably finds smaller flaws than the proof screen here, so inspection sets the initial flaw. Proof still covers anything the inspection missed.']);
+      if (s.cycles > 0 && s.cycles < s.required) notes.push(['bad', `Only ${cyc(s.cycles)} cycles from initial flaw to failure, against ${f(s.required, 0)} required (${f(num('n'), 0)} × life factor ${f(num('lf'), 1)}). Raise the proof factor (if yield allows), lower the operating stress, or improve NDT.`]);
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+      chartK(i, s);
+      chartR();
+    }
+
+    function axes(svg: SVGSVGElement, W: number, H: number, xMax: number, yMax: number, xl: string, yl: string, yLog = false, xMin = 0) {
+      const L = 50, R = 12, T = 12, B = 36;
+      svg.replaceChildren();
+      const X = (x: number) => L + ((x - xMin) / (xMax - xMin)) * (W - L - R);
+      const lmin = 0, lmax = Math.max(1, Math.ceil(Math.log10(yMax)));
+      const Y = yLog ? (y: number) => H - B - ((Math.log10(Math.max(y, 1)) - lmin) / (lmax - lmin)) * (H - T - B) : (y: number) => H - B - (y / yMax) * (H - T - B);
+      const nice = (m: number) => { const e = Math.pow(10, Math.floor(Math.log10(m))); return [1, 2, 2.5, 5, 10].map((k) => k * e).find((s) => m / s <= 6)!; };
+      const sx = nice(xMax - xMin);
+      for (let x = Math.ceil(xMin / sx) * sx; x <= xMax + 1e-9; x += sx) {
+        svg.append(el('line', { x1: X(x), x2: X(x), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(x), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(+x.toFixed(2))));
+      }
+      if (yLog) for (let e = lmin; e <= lmax; e++) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(10 ** e) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, e >= 6 ? `${10 ** (e - 6)}M` : e >= 3 ? `${10 ** (e - 3)}k` : String(10 ** e)));
+      }
+      else { const sy = nice(yMax); for (let y = 0; y <= yMax + 1e-9; y += sy) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(y), y2: Y(y), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(y) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(+y.toFixed(1))));
+      } }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, xl));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, yl));
+      return { X, Y, T, B, H, L, R };
+    }
+
+    function chartK(i: ScreenInputs, s: ReturnType<typeof proofScreen>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart="k"]')!;
+      const xMax = Math.max(s.aCrit, s.aScreen, i.wall, i.ndtDepth) * 1.25;
+      const kMax = Math.max(i.kProof, i.kService) * 1.35;
+      const A = axes(svg, 480, 250, xMax, kMax, 'crack depth a, mm', 'K, MPa√m');
+      const line = (sig: number) => Array.from({ length: 81 }, (_, k) => (k / 80) * xMax).map((a, k) => `${k ? 'L' : 'M'}${A.X(a).toFixed(1)},${A.Y(Math.min(stressIntensity(sig, a, i.Y), kMax)).toFixed(1)}`).join('');
+      svg.append(el('rect', { x: A.X(Math.min(s.aScreen, s.aCrit)), y: A.T, width: Math.abs(A.X(s.aCrit) - A.X(s.aScreen)), height: A.H - A.B - A.T, fill: s.screenWorks ? 'var(--rd-ok)' : 'var(--rd-accent)', 'fill-opacity': 0.12 }));
+      svg.append(el('line', { x1: A.L, x2: 480 - A.R, y1: A.Y(i.kProof), y2: A.Y(i.kProof), stroke: 'var(--rd-blue)', 'stroke-dasharray': '6 4' }));
+      if (Math.abs(i.kService - i.kProof) > 0.01)
+        svg.append(el('line', { x1: A.L, x2: 480 - A.R, y1: A.Y(i.kService), y2: A.Y(i.kService), stroke: 'var(--rd-accent)', 'stroke-dasharray': '6 4' }));
+      svg.append(el('path', { d: line(s.sigmaProof), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      svg.append(el('path', { d: line(i.sigmaOp), fill: 'none', stroke: 'var(--rd-accent)', 'stroke-width': 2.5 }));
+      svg.append(el('line', { x1: A.X(i.wall), x2: A.X(i.wall), y1: A.T, y2: A.H - A.B, stroke: 'var(--rd-steel)', 'stroke-width': 2 }));
+      svg.append(el('text', { x: A.X(i.wall) - 4, y: A.T + 12, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-steel)' }, 'wall'));
+      if (i.ndtDepth > 0) {
+        svg.append(el('line', { x1: A.X(i.ndtDepth), x2: A.X(i.ndtDepth), y1: A.T, y2: A.H - A.B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: A.X(i.ndtDepth) + 4, y: A.T + 26, 'font-size': 10, fill: 'var(--rd-muted)' }, 'NDT'));
+      }
+      for (const [a, k, c] of [[s.aScreen, i.kProof, 'var(--rd-blue)'], [s.aCrit, i.kService, 'var(--rd-accent)']] as const)
+        svg.append(el('circle', { cx: A.X(a), cy: A.Y(k), r: 5, fill: 'var(--rd-panel)', stroke: c, 'stroke-width': 2.5 }));
+      svg.append(el('text', { x: A.L + 6, y: A.H - A.B - 24, 'font-size': 10, fill: 'var(--rd-blue)' }, 'at proof'));
+      svg.append(el('text', { x: A.L + 6, y: A.H - A.B - 10, 'font-size': 10, fill: 'var(--rd-accent)' }, 'at MEOP'));
+    }
+
+    function chartR() {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart="r"]')!;
+      const Rs = Array.from({ length: 51 }, (_, k) => 1.0 + k * 0.01);
+      const lives = Rs.map((R) => { const s = proofScreen({ ...inputs(R), ndtDepth: 0 }); return s.cyclesFromProof; });
+      const yMax = Math.max(10, ...lives.filter(Number.isFinite));
+      const A = axes(svg, 480, 220, 1.5, yMax, 'proof factor', 'cycles', true, 1.0);
+      const ys = num('ys'), sOp = num('s');
+      const rYield = ys / sOp;
+      if (rYield < 1.5) svg.append(el('rect', { x: A.X(Math.max(1, rYield)), y: A.T, width: 480 - A.R - A.X(Math.max(1, rYield)), height: A.H - A.B - A.T, fill: 'var(--rd-accent)', 'fill-opacity': 0.12 }));
+      svg.append(el('path', { d: Rs.map((R, k) => `${k ? 'L' : 'M'}${A.X(R).toFixed(1)},${A.Y(Math.max(1, lives[k])).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-ok)', 'stroke-width': 2.5 }));
+      const req = num('n') * num('lf');
+      svg.append(el('line', { x1: A.L, x2: 480 - A.R, y1: A.Y(req), y2: A.Y(req), stroke: 'var(--rd-ink)', 'stroke-dasharray': '6 4' }));
+      svg.append(el('text', { x: A.L + 6, y: A.Y(req) - 5, 'font-size': 10, fill: 'var(--rd-ink)' }, `required ${req}`));
+      const R0 = num('R');
+      if (R0 >= 1 && R0 <= 1.5) svg.append(el('line', { x1: A.X(R0), x2: A.X(R0), y1: A.T, y2: A.H - A.B, stroke: 'var(--rd-blue)', 'stroke-width': 1.5 }));
+    }
+
+    field('m').addEventListener('change', applyMat);
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    applyMat();
+    run();
+  });
+</script>

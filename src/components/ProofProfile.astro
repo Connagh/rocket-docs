@@ -1,0 +1,44 @@
+---
+// An illustrative hydrostatic proof-test schedule.
+const pts: [number, number][] = [
+  [0, 0], [40, 0], [70, 0.25], [140, 0.25], [160, 0.5], [200, 0.5], [220, 0.75], [260, 0.75], [285, 1.0], [325, 1.0],
+  [380, 1.1], [470, 1.1], [520, 0.0], [600, 0],
+];
+const X = (t: number) => 70 + t * 1.2, Y = (p: number) => 250 - p * 170;
+const steps = [
+  { t: 20, p: 0, label: 'fill, bleed all air', dy: -12 },
+  { t: 105, p: 0.25, label: 'leak check', dy: -12 },
+  { t: 230, p: 0.75, label: 'step up, hold', dy: -12 },
+  { t: 425, p: 1.1, label: 'proof hold', dy: -12 },
+  { t: 560, p: 0, label: 'depressurise, inspect', dy: -12 },
+];
+---
+
+<figure class="viz">
+  <p class="viz-title">A typical hydrostatic proof schedule — illustrative, not a procedure</p>
+  <svg viewBox="0 0 820 300" role="img" aria-labelledby="pp-desc">
+    <desc id="pp-desc">
+      Pressure versus time for a proof test: fill and bleed air at zero pressure, a low-pressure leak check, stepped
+      increases with holds up to MEOP, a slow ramp to proof pressure, a hold at proof, then depressurisation and
+      inspection.
+    </desc>
+    <line x1="70" y1="250" x2="800" y2="250" stroke="var(--rd-muted)"></line>
+    <line x1="70" y1="40" x2="70" y2="250" stroke="var(--rd-muted)"></line>
+    {[0, 0.5, 1.0, 1.1].map((p) => (
+      <g>
+        <line x1="70" y1={Y(p)} x2="800" y2={Y(p)} stroke="var(--rd-line)" stroke-dasharray={p === 1.1 ? '6 4' : undefined}></line>
+        <text x="62" y={Y(p) + 4} text-anchor="end" font-size="11" fill="var(--rd-muted)">{p === 1 ? 'MEOP' : p === 1.1 ? 'proof' : `${p * 100}%`}</text>
+      </g>
+    ))}
+    <path d={pts.map(([t, p], i) => `${i ? 'L' : 'M'}${X(t)},${Y(p)}`).join('')} fill="none" stroke="var(--rd-blue)" stroke-width="3"></path>
+    {steps.map((s) => (
+      <text x={X(s.t)} y={Y(s.p) + s.dy} text-anchor="middle" font-size="12" fill="var(--rd-ink)">{s.label}</text>
+    ))}
+    <text x={X(330)} y={Y(1.05) + 26} text-anchor="middle" font-size="11" fill="var(--rd-muted)">slow final ramp</text>
+    <text x="435" y="285" text-anchor="middle" font-size="12" fill="var(--rd-ink)">time →</text>
+  </svg>
+  <figcaption>
+    Small steps with holds let you stop before proof if something leaks, creaks or does not track the expected
+    strain. The actual pressures, rates and hold times come from the governing test specification.
+  </figcaption>
+</figure>
