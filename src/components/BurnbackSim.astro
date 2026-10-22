@@ -1,0 +1,401 @@
+---
+// Interactive grain burn-back and thrust-profile simulator.
+// Geometry + ballistics live in src/lib/grain.ts (unit-tested); this is UI only.
+const presets = [
+  { key: 'tube', label: 'Tube (progressive)' },
+  { key: 'star', label: '7-point star' },
+  { key: 'slots', label: 'Slotted' },
+  { key: 'bates', label: 'BATES ×4' },
+  { key: 'end', label: 'End burner' },
+];
+---
+
+<div class="calc bbsim" data-bbsim>
+  <div class="calc-head">
+    <span>Grain burn-back &amp; thrust profile</span>
+    <span class="bb-presets">
+      {presets.map((p) => <button type="button" class="chip" data-preset={p.key}>{p.label}</button>)}
+    </span>
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Port shape</legend>
+        <label>Cross-section
+          <select name="kind">
+            <option value="circular">Circular (tube)</option>
+            <option value="star">Star</option>
+            <option value="slots">Core + radial slots</option>
+            <option value="end">None — end burner</option>
+          </select>
+        </label>
+        <div data-show="circular"><label>Port diameter (mm)<input name="d" type="number" min="1" step="any" value="80" /></label></div>
+        <div data-show="star" class="row2">
+          <label>Points<input name="points" type="number" min="3" max="16" step="1" value="7" /></label>
+          <label>Tip Ø (mm)<input name="tipD" type="number" min="1" step="any" value="110" /></label>
+          <label>Valley Ø (mm)<input name="valleyD" type="number" min="1" step="any" value="40" /></label>
+        </div>
+        <div data-show="slots" class="row2">
+          <label>Slots<input name="slots" type="number" min="1" max="16" step="1" value="6" /></label>
+          <label>Core Ø (mm)<input name="coreD" type="number" min="1" step="any" value="40" /></label>
+          <label>Slot width (mm)<input name="slotW" type="number" min="0.5" step="any" value="8" /></label>
+          <label>Slot tip Ø (mm)<input name="slotD" type="number" min="1" step="any" value="110" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Grain</legend>
+        <div class="row2">
+          <label>Grain OD (mm)<input name="od" type="number" min="10" step="any" value="150" /></label>
+          <label>Segment length (mm)<input name="length" type="number" min="1" step="any" value="600" /></label>
+          <label>Segments<input name="segments" type="number" min="1" max="20" step="1" value="1" /></label>
+          <label>Burning ends / segment
+            <select name="ends"><option value="0">0 — inhibited</option><option value="1">1</option><option value="2">2</option></select>
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Propellant &amp; nozzle</legend>
+        <div class="row2">
+          <label>a (mm/s at 1 MPa)<input name="a" type="number" min="0.1" step="any" value="4.05" /></label>
+          <label>n<input name="n" type="number" min="0" max="0.95" step="0.01" value="0.35" /></label>
+          <label>Density (kg/m³)<input name="rho" type="number" min="100" step="any" value="1770" /></label>
+          <label>c* (m/s)<input name="cstar" type="number" min="100" step="any" value="1540" /></label>
+          <label>C<sub>F</sub><input name="cf" type="number" min="0.5" step="0.01" value="1.50" /></label>
+        </div>
+        <label>Throat
+          <select name="tmode">
+            <option value="peak">Size it for a peak pressure</option>
+            <option value="fixed">Fixed diameter</option>
+          </select>
+        </label>
+        <div data-show-mode="peak"><label>Peak chamber pressure (MPa)<input name="ppeak" type="number" min="0.5" step="any" value="7" /></label></div>
+        <div data-show-mode="fixed"><label>Throat diameter (mm)<input name="dt" type="number" min="1" step="any" value="30" /></label></div>
+        <p class="hint">Defaults are generic AP/HTPB-like values for illustration, not a real propellant.</p>
+      </fieldset>
+    </form>
+
+    <div class="bb-out">
+      <div class="bb-map">
+        <canvas width="300" height="300" aria-label="Grain cross-section coloured by burn distance" role="img" data-canvas></canvas>
+        <div class="bb-scrub">
+          <button type="button" class="chip" data-play>▶ Burn</button>
+          <input type="range" min="0" max="1000" value="0" aria-label="Web burned" data-scrub />
+        </div>
+        <p class="bb-scrubtext" data-scrubtext></p>
+      </div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>Thrust profile</dt><dd data-r="profile">—</dd></div>
+        <div class="readout"><dt>Burn time</dt><dd data-r="tb">—</dd></div>
+        <div class="readout"><dt>Total impulse</dt><dd data-r="it">—</dd></div>
+        <div class="readout"><dt>Main-burn avg / peak thrust</dt><dd data-r="f">—</dd></div>
+        <div class="readout"><dt>Main-burn avg / peak p<sub>c</sub></dt><dd data-r="p">—</dd></div>
+        <div class="readout"><dt>Propellant mass</dt><dd data-r="m">—</dd></div>
+        <div class="readout"><dt>Volumetric loading</dt><dd data-r="vl">—</dd></div>
+        <div class="readout"><dt>Web fraction</dt><dd data-r="wf">—</dd></div>
+        <div class="readout"><dt>Sliver</dt><dd data-r="sl">—</dd></div>
+        <div class="readout"><dt>A<sub>b</sub> max ÷ min</dt><dd data-r="prog">—</dd></div>
+        <div class="readout"><dt>Throat Ø · K<sub>n</sub> start</dt><dd data-r="thr">—</dd></div>
+        <div class="readout"><dt>Port ÷ throat area</dt><dd data-r="pt">—</dd></div>
+      </dl>
+    </div>
+  </div>
+  <div class="bb-charts">
+    <figure>
+      <figcaption>Burning surface area vs web burned</figcaption>
+      <svg viewBox="0 0 480 240" data-chart="ab" role="img" aria-label="Burning area versus web distance burned"></svg>
+    </figure>
+    <figure>
+      <figcaption>Chamber pressure and thrust vs time</figcaption>
+      <svg viewBox="0 0 480 240" data-chart="pt" role="img" aria-label="Chamber pressure and thrust versus time"></svg>
+    </figure>
+  </div>
+  <ul class="pv-notes bb-notes" data-notes></ul>
+  <div class="calc-foot">
+    Quasi-steady 0-D model: uniform burn rate everywhere, no erosive burning, ignition transient, throat erosion or
+    nozzle losses. Star points are sharp (real stars have fillet radii that change the sliver). Good for understanding
+    and early layout; real motors are designed with full internal-ballistics codes and test data.
+  </div>
+</div>
+
+<style>
+  .bb-presets { display: flex; flex-wrap: wrap; gap: 0.3rem; flex: 1 1 100%; margin: 0 !important; }
+  .bb-presets .chip { white-space: nowrap; }
+  .bbsim .calc-head { flex-wrap: wrap; }
+  .bb-map { display: grid; justify-items: center; gap: 0.4rem; margin-bottom: 0.9rem; }
+  .bb-map canvas { width: min(100%, 300px); aspect-ratio: 1; image-rendering: auto; }
+  .bb-scrub { display: flex; gap: 0.5rem; align-items: center; width: min(100%, 360px); margin: 0 !important; }
+  .bb-scrub input { flex: 1; accent-color: var(--rd-accent); }
+  .bb-scrubtext { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); color: var(--rd-muted); margin: 0 !important; text-align: center; }
+  .bb-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    padding: 0 1rem 1rem;
+  }
+  .bb-charts figure { margin: 0; }
+  .bb-charts figcaption { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.06em; text-transform: uppercase; color: var(--rd-muted); margin-bottom: 0.3rem; }
+  .bb-charts svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .bb-notes { padding: 0 1rem 0 2.1rem; }
+  .pv-notes li.bad { color: var(--rd-accent); }
+  .pv-notes li.warn { color: var(--rd-warn); }
+  [data-show], [data-show-mode] { margin: 0 !important; }
+  .bbsim [hidden] { display: none !important; }
+</style>
+
+<script>
+  import { burnBack, performance as motorPerformance, throatForPeak, type GrainGeometry, type Port, type BurnBack, type Performance } from '../lib/grain';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const PRESETS: Record<string, Record<string, string | number>> = {
+    tube: { kind: 'circular', d: 80, od: 150, length: 600, segments: 1, ends: 0 },
+    star: { kind: 'star', points: 7, tipD: 110, valleyD: 40, od: 150, length: 600, segments: 1, ends: 0 },
+    slots: { kind: 'slots', slots: 6, coreD: 40, slotW: 8, slotD: 110, od: 150, length: 600, segments: 1, ends: 0 },
+    bates: { kind: 'circular', d: 60, od: 150, length: 255, segments: 4, ends: 2 },
+    end: { kind: 'end', od: 150, length: 300, segments: 1, ends: 1 },
+  };
+  const GRID = 300;
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+
+  function hexToRgb(hex: string): [number, number, number] {
+    const h = hex.trim().replace('#', '');
+    const v = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
+  }
+  const mix = (a: number[], b: number[], t: number) => a.map((x, i) => Math.round(x + (b[i] - x) * t));
+
+  document.querySelectorAll<HTMLElement>('[data-bbsim]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+    const scrub = root.querySelector<HTMLInputElement>('[data-scrub]')!;
+    const svgEl = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    let bb: BurnBack | null = null;
+    let perf: Performance | null = null;
+    let geomKey = '';
+
+    function geometry(): GrainGeometry {
+      const kind = field('kind').value as Port['kind'];
+      const port: Port =
+        kind === 'circular' ? { kind, d: num('d') }
+        : kind === 'star' ? { kind, points: Math.round(num('points')), tipD: num('tipD'), valleyD: num('valleyD') }
+        : kind === 'slots' ? { kind, slots: Math.round(num('slots')), coreD: num('coreD'), slotW: num('slotW'), slotD: num('slotD') }
+        : { kind: 'end' };
+      return {
+        od: num('od'), length: num('length'), segments: Math.max(1, Math.round(num('segments'))),
+        burningEnds: kind === 'end' ? 1 : (Math.round(num('ends')) as 0 | 1 | 2), port,
+      };
+    }
+
+    function validate(g: GrainGeometry): string | null {
+      const R = g.od / 2, p = g.port;
+      if (!(g.od > 0 && g.length > 0)) return 'Grain OD and length must be positive.';
+      if (p.kind === 'circular' && !(p.d > 0 && p.d < g.od)) return 'Port diameter must be between 0 and the grain OD.';
+      if (p.kind === 'star' && !(p.valleyD > 0 && p.tipD > p.valleyD && p.tipD < g.od)) return 'Star needs 0 < valley Ø < tip Ø < grain OD.';
+      if (p.kind === 'slots' && !(p.coreD > 0 && p.slotD < g.od && p.slotD > p.coreD && p.slotW > 0 && p.slotW < p.coreD))
+        return 'Slots need core Ø < slot tip Ø < grain OD, and slot width < core Ø.';
+      return R > 0 ? null : 'Check the geometry.';
+    }
+
+    function syncVisibility() {
+      const kind = field('kind').value;
+      root.querySelectorAll<HTMLElement>('[data-show]').forEach((el) => (el.hidden = el.dataset.show !== kind));
+      const mode = field('tmode').value;
+      root.querySelectorAll<HTMLElement>('[data-show-mode]').forEach((el) => (el.hidden = el.dataset.showMode !== mode));
+      (field('ends') as HTMLSelectElement).disabled = kind === 'end';
+    }
+
+    function compute() {
+      syncVisibility();
+      const g = geometry();
+      const err = validate(g);
+      const notes = root.querySelector('[data-notes]')!;
+      if (err) {
+        notes.innerHTML = `<li class="bad">${err}</li>`;
+        return;
+      }
+      const key = JSON.stringify(g);
+      if (key !== geomKey) {
+        bb = burnBack(g, 160, GRID);
+        geomKey = key;
+      }
+      const prop = { rhoP: num('rho'), a: num('a'), n: Math.min(0.95, num('n')), cStar: num('cstar') };
+      const dt = field('tmode').value === 'peak' ? throatForPeak(bb!, prop, num('ppeak')) : num('dt');
+      perf = motorPerformance(bb!, prop, dt, num('cf'));
+      readouts(g);
+      charts();
+      draw();
+    }
+
+    function readouts(g: GrainGeometry) {
+      const p = perf!, b = bb!;
+      const names = { progressive: 'Progressive', neutral: 'Neutral', regressive: 'Regressive', 'progressive-regressive': 'Rises then falls' };
+      r('profile').textContent = names[p.profile];
+      r('tb').innerHTML = p.mainBurnTime < p.burnTime - 0.01
+        ? `${f(p.mainBurnTime, 2)} <small>s main · ${f(p.burnTime, 2)} total</small>`
+        : `${f(p.burnTime, 2)} <small>s</small>`;
+      r('it').innerHTML = `${f(p.impulse / 1000, 1)} <small>kN·s</small>`;
+      r('f').innerHTML = `${f(p.fAvg / 1000, 2)} / ${f(p.fMax / 1000, 2)} <small>kN</small>`;
+      r('p').innerHTML = `${f(p.pAvg, 2)} / ${f(p.pMax, 2)} <small>MPa</small>`;
+      r('m').innerHTML = `${f(p.propMass, 2)} <small>kg</small>`;
+      r('vl').textContent = `${f(b.volumetricLoading * 100, 0)} %`;
+      r('wf').textContent = g.port.kind === 'end' ? '—' : `${f(b.web / (g.od / 2), 2)}`;
+      r('sl').textContent = `${f(b.sliverFraction * 100, 1)} %`;
+      r('prog').textContent = `${f(p.progressivity, 2)}`;
+      r('thr').innerHTML = `${f(p.throatD, 1)} <small>mm</small> · ${f(p.trace[0].kn, 0)}`;
+      r('pt').textContent = g.port.kind === 'end' ? '—' : f(p.portToThroat, 2);
+
+      const notes: [string, string][] = [];
+      const n = num('n');
+      notes.push(['', `Pressure swings by (A<sub>b</sub> max ÷ min)<sup>1/(1−n)</sup> = ${f(Math.pow(p.progressivity, 1 / (1 - n)), 2)}× over the main burn — the burning-area swing, amplified.`]);
+      if (g.port.kind !== 'end' && p.portToThroat < 2)
+        notes.push(['warn', `Port area is only ${f(p.portToThroat, 2)}× the throat area at ignition. Gas races down the bore: expect erosive burning and an ignition pressure spike that this model does not show. A common rule of thumb keeps this ratio above about 2.`]);
+      if (b.sliverFraction > 0.08)
+        notes.push(['warn', `${f(b.sliverFraction * 100, 0)}% of the propellant is sliver, burning in the low-pressure tail-off after the flame first reaches the case. Fillets, sliver inserts or a different geometry reduce it.`]);
+      if (p.pMax > 0 && p.pMax / Math.max(1e-6, p.pAvg) > 1.5)
+        notes.push(['warn', `Peak pressure is ${f(p.pMax / p.pAvg, 2)}× the average. The case has to be sized for the peak (and then for MEOP), so a peaky trace costs case mass.`]);
+      if (g.port.kind === 'end')
+        notes.push(['', 'An end burner has the most propellant and the longest burn for its size, but the lowest thrust, and the case is exposed to hot gas for the whole burn behind the receding face.']);
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+    }
+
+    function axes(svg: SVGSVGElement, xMax: number, yMax: number, xLabel: string, yLabel: string, y2?: { max: number; label: string }) {
+      const W = 480, H = 240, L = 54, R = y2 ? 54 : 14, T = 14, B = 38;
+      svg.replaceChildren();
+      const X = (x: number) => L + (x / xMax) * (W - L - R);
+      const Y = (y: number) => H - B - (y / yMax) * (H - T - B);
+      const nice = (m: number) => { const e = Math.pow(10, Math.floor(Math.log10(m))); return [1, 2, 2.5, 5, 10].map((k) => k * e).find((s) => m / s <= 6)!; };
+      const sx = nice(xMax), sy = nice(yMax);
+      for (let x = 0; x <= xMax + 1e-9; x += sx) {
+        svg.append(svgEl('line', { x1: X(x), x2: X(x), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(svgEl('text', { x: X(x), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(+x.toFixed(3))));
+      }
+      for (let y = 0; y <= yMax + 1e-9; y += sy) {
+        svg.append(svgEl('line', { x1: L, x2: W - R, y1: Y(y), y2: Y(y), stroke: 'var(--rd-line)' }));
+        svg.append(svgEl('text', { x: L - 6, y: Y(y) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(+y.toFixed(3))));
+        if (y2) svg.append(svgEl('text', { x: W - R + 6, y: Y(y) + 3, 'font-size': 10, fill: 'var(--rd-blue)' }, f((y / yMax) * y2.max, y2.max < 10 ? 1 : 0)));
+      }
+      svg.append(svgEl('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, xLabel));
+      svg.append(svgEl('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, yLabel));
+      if (y2) svg.append(svgEl('text', { x: W - 16, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-blue)', transform: `rotate(90 ${W - 16} ${(T + H - B) / 2})` }, y2.label));
+      return { X, Y, T, B, H };
+    }
+
+    function charts() {
+      const b = bb!, p = perf!;
+      // Burning area vs web
+      const sa = root.querySelector<SVGSVGElement>('[data-chart="ab"]')!;
+      const abMax = Math.max(...b.steps.map((s) => s.burnArea)) / 100 || 1;
+      const A = axes(sa, b.burnout, abMax * 1.1, 'web burned, mm', 'burning area, cm²');
+      sa.append(svgEl('path', { d: b.steps.map((s, i) => `${i ? 'L' : 'M'}${A.X(s.y).toFixed(1)},${A.Y(s.burnArea / 100).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
+      if (b.web < b.burnout - 1e-6) {
+        sa.append(svgEl('line', { x1: A.X(b.web), x2: A.X(b.web), y1: A.T, y2: A.H - A.B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '4 4' }));
+        sa.append(svgEl('text', { x: A.X(b.web) - 4, y: A.T + 12, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'flame reaches case → sliver'));
+      }
+      sa.append(svgEl('line', { 'data-cursor': '', x1: 0, x2: 0, y1: A.T, y2: A.H - A.B, stroke: 'var(--rd-accent)', 'stroke-width': 1.5 }));
+
+      // Pressure and thrust vs time (proportional here: F = C_F · p · A_t)
+      const sp = root.querySelector<SVGSVGElement>('[data-chart="pt"]')!;
+      const tMax = p.burnTime || 1;
+      const P = axes(sp, tMax, p.pMax * 1.15 || 1, 'time, s', 'chamber pressure, MPa', { max: (p.fMax * 1.15) / 1000, label: 'thrust, kN' });
+      sp.append(svgEl('path', { d: p.trace.map((s, i) => `${i ? 'L' : 'M'}${P.X(s.t).toFixed(1)},${P.Y(s.p).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      sp.append(svgEl('line', { 'data-cursor': '', x1: 0, x2: 0, y1: P.T, y2: P.H - P.B, stroke: 'var(--rd-accent)', 'stroke-width': 1.5 }));
+      (sa as any)._X = A.X;
+      (sp as any)._X = P.X;
+    }
+
+    function draw() {
+      const b = bb!, p = perf!;
+      const frac = +scrub.value / 1000;
+      const y = frac * b.burnout;
+      // time at this web
+      let t = 0;
+      for (let i = 1; i < p.trace.length; i++) if (p.trace[i].y <= y) t = p.trace[i].t;
+      root.querySelector('[data-scrubtext]')!.textContent = `web burned ${f(y, 1)} mm · t = ${f(t, 2)} s`;
+      for (const [sel, x] of [['ab', y], ['pt', t]] as const) {
+        const svg = root.querySelector<SVGSVGElement>(`[data-chart="${sel}"]`)! as any;
+        const c = svg.querySelector('[data-cursor]');
+        if (c && svg._X) { c.setAttribute('x1', svg._X(x)); c.setAttribute('x2', svg._X(x)); }
+      }
+
+      const cs = getComputedStyle(root);
+      const col = (v: string) => hexToRgb(cs.getPropertyValue(v) || '#888888');
+      const panel = col('--rd-panel'), prop = col('--rd-propellant'), hot = col('--rd-hot'), front = col('--rd-accent');
+      const gas = mix(panel, hot, 0.22);
+      const ctx = canvas.getContext('2d')!;
+      const W = canvas.width;
+      ctx.clearRect(0, 0, W, W);
+
+      if (!b.map) {
+        // End burner: draw the face, shaded by how much has burned.
+        ctx.fillStyle = `rgb(${mix(prop, gas, frac).join(',')})`;
+        ctx.beginPath(); ctx.arc(W / 2, W / 2, W / 2 - 4, 0, 2 * Math.PI); ctx.fill();
+        ctx.fillStyle = `rgb(${col('--rd-ink').join(',')})`;
+        ctx.font = '12px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('burns face-on, along the length', W / 2, W / 2);
+      } else {
+        const { n, dist, h } = b.map;
+        const img = ctx.createImageData(n, n);
+        const band = Math.max(b.web, 1) / 8;
+        for (let k = 0; k < n * n; k++) {
+          const d = dist[k];
+          let c: number[] | null;
+          if (Number.isNaN(d)) c = null;
+          else if (d === 0 || d < y - 1.2 * h) c = gas;
+          else if (Math.abs(d - y) <= 1.2 * h && y > 0) c = front;
+          else c = mix(prop, panel, Math.floor(d / band) % 2 ? 0.12 : 0);
+          const o = 4 * k;
+          if (c) { img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255; }
+        }
+        const off = new OffscreenCanvas(n, n);
+        off.getContext('2d')!.putImageData(img, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(off, 4, 4, W - 8, W - 8);
+      }
+      ctx.strokeStyle = `rgb(${col('--rd-steel').join(',')})`;
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(W / 2, W / 2, W / 2 - 3, 0, 2 * Math.PI); ctx.stroke();
+    }
+
+    let playing = 0;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    playBtn.addEventListener('click', () => {
+      if (playing) { cancelAnimationFrame(playing); playing = 0; playBtn.textContent = '▶ Burn'; return; }
+      if (+scrub.value >= 1000) scrub.value = '0';
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { scrub.value = '1000'; draw(); return; }
+      playBtn.textContent = '❚❚ Pause';
+      let last = performance.now();
+      const tick = (now: number) => {
+        scrub.value = String(Math.min(1000, +scrub.value + ((now - last) / 5000) * 1000));
+        last = now;
+        draw();
+        if (+scrub.value < 1000) playing = requestAnimationFrame(tick);
+        else { playing = 0; playBtn.textContent = '▶ Burn'; }
+      };
+      playing = requestAnimationFrame(tick);
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        for (const [k, v] of Object.entries(PRESETS[btn.dataset.preset!])) field(k).value = String(v);
+        scrub.value = '0';
+        compute();
+      }),
+    );
+
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(compute, 120); });
+    form.addEventListener('change', compute);
+    scrub.addEventListener('input', draw);
+    new MutationObserver(() => bb && draw()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    compute();
+  });
+</script>

@@ -43,7 +43,10 @@ export default defineConfig({
         },
         {
           label: 'Motor hardware',
-          items: [{ label: 'Case & pressure vessel sizing', slug: 'motor/case-sizing' }],
+          items: [
+            { label: 'Case & pressure vessel sizing', slug: 'motor/case-sizing' },
+            { label: 'Propellant grain', slug: 'motor/propellant-grain' },
+          ],
         },
         {
           label: 'Legacy reference',

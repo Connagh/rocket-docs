@@ -18,15 +18,15 @@ The reason this site exists, so it goes first.
 | — | How a solid rocket motor works | ✅ | [Fundamentals](../../fundamentals/how-a-solid-motor-works/) |
 | Z25 | Case & pressure vessel sizing | ✅ | [Case sizing](../../motor/case-sizing/) |
 | Z23 | Rocket motor components | 🔨 | Anatomy done in Fundamentals; per-component pages next |
-| Z26 | Propellant grain (structural) | ⏳ | |
+| Z26 | Propellant grain — burn-back, thrust profile, structural integrity | ✅ | [Propellant grain](../../motor/propellant-grain/) |
 | Z24 | Propellant | ⏳ | |
 | Z27 | Ablative liners & insulation | ⏳ | |
 | Z28 | Transient thermal | ⏳ | |
 | Z33 | Leak before break | ⏳ | Screen covered in Case sizing |
 | Z35 | Proof testing | ⏳ | |
 | Z32 | Shell buckling | ⏳ | |
-| Z7 | Viscoelasticity | ⏳ | |
-| Z39 | Storage & ageing | ⏳ | |
+| Z7 | Viscoelasticity | ⏳ | Basics covered in Propellant grain |
+| Z39 | Storage & ageing | ⏳ | Ageing / Arrhenius tool still in legacy Z26 |
 | — | Composite (filament-wound) cases — netting analysis | ⏳ | New topic |
 | — | Nozzle design — throat erosion, expansion ratio | ⏳ | New topic |
 

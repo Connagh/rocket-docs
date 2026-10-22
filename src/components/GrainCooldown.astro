@@ -1,0 +1,73 @@
+---
+// Case-bonded grain under the two classic loads: cool-down from the stress-free
+// temperature, and pressurisation at ignition. Deformations are exaggerated.
+const cx = 120, cy = 130, case_ = 98;
+const arrowsOut = (r1: number, r2: number, n = 8, off = 0) =>
+  Array.from({ length: n }, (_, k) => {
+    const a = ((k + off) * 2 * Math.PI) / n;
+    return { x1: cx + r1 * Math.cos(a), y1: cy + r1 * Math.sin(a), x2: cx + r2 * Math.cos(a), y2: cy + r2 * Math.sin(a) };
+  });
+const panels = [
+  { x: 0, title: 'At cure — stress-free', bore: 34, bore0: null as number | null, caseR: case_ },
+  { x: 260, title: 'Cold soak — e.g. −40 °C', bore: 44, bore0: 34, caseR: case_ },
+  { x: 520, title: 'Ignition — pressurised', bore: 48, bore0: 34, caseR: case_ + 4 },
+];
+---
+
+<figure class="viz">
+  <p class="viz-title">What the grain feels — deformation exaggerated</p>
+  <svg viewBox="0 0 780 330" role="img" aria-labelledby="gc-desc">
+    <desc id="gc-desc">
+      Three cross-sections of a case-bonded grain. At the cure temperature the grain is stress free. When cold, the
+      propellant tries to shrink much more than the case, but its outside is glued to the case, so the bore is pulled
+      open, stretching the bore surface in the hoop direction and pulling the grain away from the case at the bond. When
+      pressurised, the case grows slightly and, because the propellant cannot change volume, the bore must grow by much
+      more.
+    </desc>
+    <defs>
+      <marker id="gc-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-accent)"></path>
+      </marker>
+      <marker id="gc-ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-blue)"></path>
+      </marker>
+    </defs>
+    {panels.map((p, i) => (
+      <g transform={`translate(${p.x} 0)`}>
+        <text x={cx} y="18" text-anchor="middle" font-size="13" font-weight="600" fill="var(--rd-ink)">{p.title}</text>
+        <circle cx={cx} cy={cy} r={p.caseR} fill="var(--rd-steel)"></circle>
+        <circle cx={cx} cy={cy} r={p.caseR - 6} fill="var(--rd-propellant)"></circle>
+        <circle cx={cx} cy={cy} r={p.bore} fill="var(--rd-panel)"></circle>
+        <circle cx={cx} cy={cy} r={p.bore} fill="var(--rd-hot)" fill-opacity={i === 2 ? 0.45 : 0.12}></circle>
+        {p.bore0 && <circle cx={cx} cy={cy} r={p.bore0} fill="none" stroke="var(--rd-ink)" stroke-dasharray="4 4" opacity="0.7"></circle>}
+        {i === 1 && arrowsOut(p.bore0! + 1, p.bore - 2).map((a) => (
+          <line {...a} stroke="var(--rd-accent)" stroke-width="2.5" marker-end="url(#gc-ah)"></line>
+        ))}
+        {i === 1 && arrowsOut(p.caseR - 8, p.caseR - 22, 8, 0.5).map((a) => (
+          <line {...a} stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#gc-ahb)"></line>
+        ))}
+        {i === 2 && arrowsOut(p.bore - 20, p.bore - 4, 8, 0.5).map((a) => (
+          <line {...a} stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#gc-ah)"></line>
+        ))}
+        {i === 2 && arrowsOut(case_ - 2, p.caseR + 12, 4, 0.5).map((a) => (
+          <line {...a} stroke="var(--rd-ink)" stroke-width="1.5" marker-end="url(#gc-ahb)"></line>
+        ))}
+      </g>
+    ))}
+    <text x="120" y="252" text-anchor="middle" font-size="11" fill="var(--rd-muted)">propellant glued to case</text>
+    <text x="120" y="267" text-anchor="middle" font-size="11" fill="var(--rd-muted)">at cure temperature</text>
+
+    <text x="380" y="252" text-anchor="middle" font-size="11" fill="var(--rd-accent)">bore pulled open → hoop strain</text>
+    <text x="380" y="267" text-anchor="middle" font-size="11" fill="var(--rd-accent)">(bore cracks start here)</text>
+    <text x="380" y="285" text-anchor="middle" font-size="11" fill="var(--rd-blue)">grain pulls on the bond</text>
+    <text x="380" y="300" text-anchor="middle" font-size="11" fill="var(--rd-blue)">(debonds start here)</text>
+
+    <text x="640" y="252" text-anchor="middle" font-size="11" fill="var(--rd-muted)">case grows a fraction of a %</text>
+    <text x="640" y="267" text-anchor="middle" font-size="11" fill="var(--rd-accent)">bore grows ≈ (b/a)² times more</text>
+    <text x="640" y="285" text-anchor="middle" font-size="11" fill="var(--rd-muted)">propellant can't change volume</text>
+  </svg>
+  <figcaption>
+    The dashed circle is the bore at cure. In both loads the outer surface is held by the case, and because propellant
+    is nearly incompressible, the only place the volume change can go is the bore.
+  </figcaption>
+</figure>

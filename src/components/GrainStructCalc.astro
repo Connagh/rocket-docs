@@ -1,0 +1,236 @@
+---
+// Case-bonded cylindrical grain: closed-form structural screening.
+// Formulas in src/lib/grain.ts (unit-tested); this file is UI only.
+
+// Propellant classes carried over from REF·DB v1. Illustrative, not measured data.
+const PROPS = [
+  { key: 'comp', name: 'Composite (HTPB type)', alpha: 100, E: 3.6, capWarm: 42, capCold: 10, tg: -70 },
+  { key: 'cmdb', name: 'Composite-modified double-base', alpha: 85, E: 105, capWarm: 25, capCold: 3, tg: -5 },
+  { key: 'db', name: 'Double-base', alpha: 80, E: 180, capWarm: 22, capCold: 2, tg: 5 },
+];
+const CASES = [
+  { key: 'steel', name: 'Steel', alpha: 12, E: 205, nu: 0.3 },
+  { key: 'al', name: 'Aluminium', alpha: 23, E: 72, nu: 0.33 },
+  { key: 'cfrp', name: 'Carbon/epoxy, filament-wound (hoop)', alpha: 2, E: 60, nu: 0.3 },
+];
+---
+
+<div class="calc gscalc" data-gscalc>
+  <div class="calc-head"><span>Case-bonded grain — structural screen</span><span>long cylinder · incompressible propellant</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Materials</legend>
+        <label>Propellant class
+          <select name="prop">{PROPS.map((p) => <option value={p.key}>{p.name}</option>)}</select>
+        </label>
+        <div class="row2">
+          <label>CTE α<sub>p</sub> (µm/m·K)<input name="ap" type="number" step="any" value="100" /></label>
+          <label>Relaxed modulus (MPa)<input name="E" type="number" step="any" value="3.6" /></label>
+          <label>Bulk modulus K (MPa)<input name="K" type="number" step="any" value="3500" /></label>
+        </div>
+        <label>Case
+          <select name="case">{CASES.map((c) => <option value={c.key}>{c.name}</option>)}</select>
+        </label>
+        <div class="row2">
+          <label>CTE α<sub>c</sub> (µm/m·K)<input name="ac" type="number" step="any" value="12" /></label>
+          <label>Modulus (GPa)<input name="Ec" type="number" step="any" value="205" /></label>
+          <label>Poisson's ratio<input name="nu" type="number" step="any" value="0.3" /></label>
+          <label>Case wall (mm)<input name="h" type="number" step="any" value="1.377" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Geometry &amp; loads</legend>
+        <div class="row2">
+          <label>Grain OD, 2b (mm)<input name="od" type="number" min="1" step="any" value="300" /></label>
+          <label>Bore Ø, 2a (mm)<input name="bore" type="number" min="1" step="any" value="100" /></label>
+          <label>Stress-free temp (°C)<input name="tsf" type="number" step="any" value="60" /></label>
+          <label>Coldest service temp (°C)<input name="tlow" type="number" step="any" value="-40" /></label>
+          <label>MEOP (MPa)<input name="p" type="number" min="0" step="any" value="10" /></label>
+          <label>Bore strain conc. factor<input name="kt" type="number" min="1" step="0.1" value="1" /></label>
+        </div>
+        <p class="hint">Concentration factor: 1 for a circular bore; star points and slot tips are typically several times higher and need FEA.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Capability</legend>
+        <div class="row2">
+          <label>Strain cap., slow &amp; cold (%)<input name="capS" type="number" step="any" value="39.6" /></label>
+          <label>Strain cap., ignition &amp; cold (%)<input name="capF" type="number" step="any" value="39.6" /></label>
+          <label>Bond strength (MPa)<input name="bond" type="number" step="any" value="0.7" /></label>
+          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+        </div>
+        <p class="hint" data-caphint></p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout"><dt>m = b / a</dt><dd data-r="m">—</dd></div>
+        <div class="readout"><dt>Web fraction</dt><dd data-r="wf">—</dd></div>
+        <div class="readout"><dt>Case hoop strain at MEOP</dt><dd data-r="ch">—</dd></div>
+      </dl>
+      <p class="pv-sub">Bore hoop strain and margin</p>
+      <dl class="readouts">
+        <div class="readout" data-ms="th"><dt>Cool-down</dt><dd data-r="th">—</dd></div>
+        <div class="readout" data-ms="pr"><dt>Pressurisation</dt><dd data-r="pr">—</dd></div>
+        <div class="readout primary" data-ms="co"><dt>Cold ignition (sum)</dt><dd data-r="co">—</dd></div>
+      </dl>
+      <p class="pv-sub">Case bond, cool-down</p>
+      <dl class="readouts">
+        <div class="readout" data-ms="bd"><dt>Radial tension at bond</dt><dd data-r="bd">—</dd></div>
+      </dl>
+      <figure class="gs-fig">
+        <svg viewBox="0 0 480 250" data-chart role="img" aria-label="Bore strain versus web fraction"></svg>
+        <figcaption>Bore strain vs web fraction for this propellant, case and temperature. The dot is your design.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Closed-form screening (generalised plane strain, elastic, incompressible except for the bulk-modulus term in
+    pressurisation). Ignores grain ends, stress-relief flaps, gravity slump, acceleration, thermal gradients, ageing and
+    cumulative damage. Default capabilities are an illustrative curve from REF·DB v1, not data for any real propellant.
+  </div>
+  <script type="application/json" data-presets set:html={JSON.stringify({ PROPS, CASES })}></script>
+</div>
+
+<style>
+  .gscalc .pv-sub {
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rd-muted);
+    margin: 1rem 0 0.4rem !important;
+  }
+  .gs-fig { margin: 1rem 0 0 !important; }
+  .gs-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .gs-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .gscalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+  .gscalc .pv-notes li.bad { color: var(--rd-accent); }
+  .gscalc .pv-notes li.warn { color: var(--rd-warn); }
+</style>
+
+<script>
+  import { grainStructure, type GrainStructInputs } from '../lib/grain';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  // Illustrative capability-vs-temperature curve from REF·DB v1 (smooth glass transition).
+  const capCurve = (T: number, warm: number, cold: number, tg: number) => cold + (warm - cold) / (1 + Math.exp(-(T - tg) / 12));
+
+  document.querySelectorAll<HTMLElement>('[data-gscalc]').forEach((root) => {
+    const { PROPS, CASES } = JSON.parse(root.querySelector('[data-presets]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    const applyProp = () => {
+      const p = PROPS.find((x: any) => x.key === field('prop').value);
+      field('ap').value = p.alpha; field('E').value = p.E;
+      applyCap();
+    };
+    const applyCase = () => {
+      const c = CASES.find((x: any) => x.key === field('case').value);
+      field('ac').value = c.alpha; field('Ec').value = c.E; field('nu').value = c.nu;
+    };
+    const applyCap = () => {
+      const p = PROPS.find((x: any) => x.key === field('prop').value);
+      const cap = capCurve(num('tlow'), p.capWarm, p.capCold, p.tg);
+      field('capS').value = cap.toFixed(1);
+      field('capF').value = cap.toFixed(1);
+      root.querySelector('[data-caphint]')!.textContent =
+        `Filled from an illustrative ${p.name.toLowerCase()} curve at ${num('tlow')} °C. Replace with measured values for your propellant, aged, at the right rate and temperature.`;
+    };
+
+    function inputs(boreD = num('bore')): GrainStructInputs {
+      return {
+        boreD, od: num('od'),
+        alphaP: num('ap') * 1e-6, alphaC: num('ac') * 1e-6,
+        dT: num('tlow') - num('tsf'),
+        eRelaxed: num('E'), bulkK: num('K'), pressure: num('p'),
+        caseE: num('Ec') * 1000, caseNu: num('nu'), caseT: num('h'), kt: num('kt'),
+      };
+    }
+
+    function run() {
+      const notes: [string, string][] = [];
+      if (!(num('bore') > 0 && num('od') > num('bore'))) {
+        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Bore diameter must be smaller than the grain OD.</li>';
+        return;
+      }
+      const s = grainStructure(inputs());
+      const sf = num('sf');
+      const capS = num('capS') / 100, capF = num('capF') / 100;
+      const ms = (cap: number, e: number) => (e > 0 ? cap / (sf * e) - 1 : Infinity);
+      const msTh = ms(capS, s.thermal), msPr = ms(capF, s.pressure), msCo = ms(capF, s.combined);
+      const msBd = s.bond > 0 ? num('bond') / (sf * s.bond) - 1 : Infinity;
+      const MS = (v: number) => (Number.isFinite(v) ? `MS ${v >= 0 ? '+' : ''}${f(v, 2)}` : 'no tension');
+
+      r('m').textContent = f(s.m, 2);
+      r('wf').textContent = f(s.webFraction, 2);
+      r('ch').textContent = `${f(s.caseHoop * 100, 2)} %`;
+      r('th').innerHTML = `${f(s.thermal * 100, 1)} % <small>${MS(msTh)}</small>`;
+      r('pr').innerHTML = `${f(s.pressure * 100, 1)} % <small>${MS(msPr)}</small>`;
+      r('co').innerHTML = `${f(s.combined * 100, 1)} % <small>${MS(msCo)}</small>`;
+      r('bd').innerHTML = `${f(s.bond, 3)} <small>MPa · ${MS(msBd)}</small>`;
+      for (const [k, v] of [['th', msTh], ['pr', msPr], ['co', msCo], ['bd', msBd]] as const)
+        root.querySelector(`[data-ms="${k}"]`)!.className = `readout ${k === 'co' ? 'primary ' : ''}${v < 0 ? 'bad' : v < 0.25 ? 'warn' : 'ok'}`;
+
+      if (num('tlow') >= num('tsf')) notes.push(['', 'The service temperature is not below the stress-free temperature, so cool-down puts the bore in compression, not tension.']);
+      if (msCo < 0) notes.push(['bad', `Cold ignition fails the screen: ${f(s.combined * 100, 1)}% × SF ${f(sf, 1)} exceeds ${f(capF * 100, 1)}% capability. Options: a smaller web (larger bore), a propellant with more low-temperature strain capability, a stiffer case, a higher minimum firing temperature, or stress-relief features.`]);
+      if (msBd < 0) notes.push(['bad', 'Bond tension exceeds the bond strength with this safety factor. Debonds usually start at the grain ends, where the stress is far higher than this long-cylinder value — that is what stress-relief flaps are for.']);
+      if (num('kt') === 1) notes.push(['', 'Circular bore assumed. A star or slotted bore concentrates strain at its points: try a concentration factor of 2–3 to see what that does.']);
+      if (s.pressure > 0 && s.caseHoop > 0) notes.push(['', `The case stretches ${f(s.caseHoop * 100, 2)}% at MEOP; the bore stretches ${f(s.pressure / s.caseHoop, 1)}× that. A stiffer or thicker case directly lowers ignition strain.`]);
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+      chart(s.webFraction, capS, capF, sf);
+    }
+
+    function chart(wf0: number, capS: number, capF: number, sf: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      const W = 480, H = 250, L = 46, R = 12, T = 12, B = 36;
+      const od = num('od');
+      const wfs = Array.from({ length: 61 }, (_, i) => 0.2 + (i / 60) * 0.65);
+      const at = (wf: number) => grainStructure(inputs(od * (1 - wf)));
+      const th = wfs.map((w) => at(w).thermal), co = wfs.map((w) => at(w).combined);
+      const allow = Math.min(capS, capF) / sf;
+      const yMax = Math.min(1.5, Math.max(...co, allow) * 1.1);
+      const X = (w: number) => L + ((w - 0.2) / 0.65) * (W - L - R);
+      const Y = (e: number) => H - B - (Math.min(e, yMax) / yMax) * (H - T - B);
+      const step = yMax > 0.6 ? 0.2 : yMax > 0.3 ? 0.1 : 0.05;
+      for (let e = 0; e <= yMax + 1e-9; e += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(e), y2: Y(e), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(e) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, `${Math.round(e * 100)}%`));
+      }
+      for (const w of [0.2, 0.4, 0.6, 0.8]) {
+        svg.append(el('line', { x1: X(w), x2: X(w), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(w), y: H - B + 14, 'text-anchor': w === 0.2 ? 'start' : 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, w.toFixed(1)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'web fraction  (b − a) / b'));
+      const line = (ys: number[]) => wfs.map((w, i) => `${i ? 'L' : 'M'}${X(w).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join('');
+      svg.append(el('line', { x1: L, x2: W - R, y1: Y(allow), y2: Y(allow), stroke: 'var(--rd-accent)', 'stroke-dasharray': '6 4' }));
+      svg.append(el('text', { x: L + 6, y: Y(allow) - 5, 'font-size': 10, fill: 'var(--rd-accent)' }, 'capability ÷ SF'));
+      svg.append(el('path', { d: line(th), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      svg.append(el('path', { d: line(co), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
+      svg.append(el('text', { x: W - R - 4, y: Y(co[co.length - 1]) + 14, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-hot)' }, 'cold ignition'));
+      svg.append(el('text', { x: W - R - 4, y: Y(th[th.length - 1]) + 14, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-blue)' }, 'cool-down'));
+      const me = at(wf0);
+      if (wf0 >= 0.2 && wf0 <= 0.85)
+        svg.append(el('circle', { cx: X(wf0), cy: Y(me.combined), r: 5.5, fill: 'var(--rd-panel)', stroke: 'var(--rd-ink)', 'stroke-width': 2.5 }));
+    }
+
+    field('prop').addEventListener('change', () => { applyProp(); run(); });
+    field('case').addEventListener('change', () => { applyCase(); run(); });
+    field('tlow').addEventListener('input', applyCap);
+    form.addEventListener('input', run);
+    applyCap();
+    run();
+  });
+</script>
