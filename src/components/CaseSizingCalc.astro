@@ -131,7 +131,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
   <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.name, m])))}></script>
 </div>
 
-<style>
+<style is:global>
   .pv-sub {
     font-family: var(--sl-font-mono);
     font-size: var(--sl-text-xs);

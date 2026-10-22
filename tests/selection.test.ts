@@ -30,3 +30,14 @@ test('ranking for a weldable metallic case above 150 °C', () => {
   assert.deepEqual(r.slice(0, 2).map((x) => x.m.name), ['Maraging 18Ni-300', 'Ti-6Al-2Sn-4Zr-2Mo']);
   assert.ok(r.findIndex((x) => x.m.name.startsWith('D6AC')) < 10);
 });
+
+test('worked example on the selection page: mass index then crack at yield', () => {
+  const r = rank(mats, index('tie'), { families: ['steel', 'ss', 'ti', 'al', 'ni'], minServiceTemp: 150, weldableOnly: true, hideDefaultToughness: true });
+  assert.deepEqual(r.slice(0, 8).map((x) => x.m.name), [
+    'Maraging 18Ni-300', 'Ti-6Al-2Sn-4Zr-2Mo', 'AerMet 100', 'Maraging 18Ni-250', 'Ti-6Al-4V (Gr 5)', 'Al-Li 2195', 'Ti-6Al-4V ELI (Gr 23)', 'D6AC (AMS 6431)',
+  ]);
+  const crack = (n: string) => { const m = get(n); return (1 / Math.PI) * (m.kic! / (1.12 * m.yield)) ** 2 * 1000; };
+  close(crack('Maraging 18Ni-300'), 0.47, 0.02);
+  close(crack('Ti-6Al-4V ELI'), 3.68, 0.01);
+  close(crack('D6AC'), 0.59, 0.02);
+});

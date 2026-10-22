@@ -1,0 +1,137 @@
+---
+// Home: three ways in, the systems-status board (one station per phase, live
+// counts from the zone plan), and the v1 task cards. All derived — no zone
+// numbers are written here.
+import { PHASES, route, hrefOf } from '../../data/zones.mjs';
+
+const base = import.meta.env.BASE_URL;
+const items = route();
+
+// v1 HOME_TASKS, verbatim questions; each lands on its zone (v2 page or v1 archive).
+const TASKS = [
+  { q: 'Which alloy should I use?', z: 'materials', d: '156 materials on a property chart, ranked by what the part actually needs' },
+  { q: 'How thick does the case wall have to be?', z: 'pv', d: 'Thin wall, Lamé, proof and burst — and the failure mode that governs' },
+  { q: 'Will the grain survive cold soak?', z: 'grain', d: 'Bore strain and bond stress against capability at temperature' },
+  { q: 'How thick does the insulation need to be?', z: 'ablative', d: 'Erosion, char and soak-back, with the bondline limit' },
+  { q: 'What does the proof test actually buy me?', z: 'proof', d: 'Screened flaw size, life to critical, and the test-rig energy' },
+  { q: 'Will this O-ring seal at −40 °C?', z: 'oring', d: 'Squeeze and fill at the worst tolerance corner, cold, with the joint open' },
+  { q: 'How do I call this material up on a drawing?', z: 'matspec', d: 'Form standard, condition, finish — a copy-ready callout' },
+  { q: 'Does it leak or does it burst?', z: 'lbb', d: 'Critical flaw against the wall you just sized' },
+  { q: 'Will it survive the ride?', z: 'vibration', d: 'Miles, and where the damage actually accumulates' },
+  { q: 'How tight do I torque this bolt?', z: 'bolts', d: 'VDI 2230, and what the joint does with the load' },
+  { q: 'Will my tolerances stack up?', z: 'stack', d: 'Worst case, RSS and Monte Carlo, side by side' },
+  { q: 'Can these two metals touch?', z: 'galvanic', d: 'Anodic index, area ratio and the environment' },
+].map((t) => ({ ...t, item: items.find((i) => i.key === t.z)! })).filter((t) => t.item);
+
+const firstOf = (k: string) => items.find((i) => i.phase === k && i.slug !== null) ?? items.find((i) => i.phase === k)!;
+---
+
+<section class="mh-ways" aria-label="Three ways in">
+  <button type="button" class="mh-way" data-open-search>
+    <span class="mh-way-k">01 · SEARCH</span>
+    <span class="mh-way-t">You know the word</span>
+    <span class="mh-way-d">Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> and type it — alloys, standards, equations, tools.</span>
+  </button>
+  <a class="mh-way" href="#start-a-task">
+    <span class="mh-way-k">02 · START A TASK</span>
+    <span class="mh-way-t">You know the job</span>
+    <span class="mh-way-d">Pick the question you are trying to answer; it lands on the tool, not a menu.</span>
+  </a>
+  <a class="mh-way" href="#the-route-through">
+    <span class="mh-way-k">03 · FOLLOW THE ROUTE</span>
+    <span class="mh-way-t">You want the whole picture</span>
+    <span class="mh-way-d">Eight phases in the order a component is actually designed, from the problem to the release.</span>
+  </a>
+</section>
+
+<h2 id="the-route-through">The route through</h2>
+<div class="mh-board" role="list">
+  <div class="mh-board-head" aria-hidden="true"><span>SYSTEMS STATUS · EIGHT PHASES · SELECT A STATION</span><span class="go">ALL STATIONS GO</span></div>
+  {PHASES.map((p, i) => {
+    const zs = items.filter((z) => z.phase === p.k && !z.primer);
+    const v2 = zs.filter((z) => z.slug !== null);
+    const primers = items.filter((z) => z.phase === p.k && z.primer);
+    return (
+      <a role="listitem" class="mh-station" href={hrefOf(firstOf(p.k), base)} style={`--pc: var(--ph-${p.k})`}>
+        <svg class="mh-planet" viewBox="0 0 48 48" aria-hidden="true">
+          <defs>
+            <radialGradient id={`mhP_${p.k}`} cx=".35" cy=".35" r=".75">
+              <stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color={`var(--ph-${p.k})`}></stop><stop offset="1" stop-color="#000"></stop>
+            </radialGradient>
+          </defs>
+          <ellipse cx="24" cy="24" rx="22" ry="7" fill="none" stroke={`var(--ph-${p.k})`} stroke-width="1" opacity=".5" transform="rotate(-18 24 24)"></ellipse>
+          <circle cx="24" cy="24" r="13" fill={`url(#mhP_${p.k})`}></circle>
+        </svg>
+        <span class="mh-st-k">PHASE {i + 1} · {p.ico}</span>
+        <span class="mh-st-n">{p.n}</span>
+        <span class="mh-st-s">{p.sub}</span>
+        <span class="mh-st-bar" aria-hidden="true"><i style={`width:${(v2.length / zs.length) * 100}%`}></i></span>
+        <span class="mh-st-c">{v2.length}/{zs.length} zones in v2{primers.length ? ` · ${primers.length} primer` : ''}</span>
+        <span class="mh-st-list">
+          {v2.map((z) => <span>{z.tag} {z.label}</span>)}
+          {primers.map((z) => <span>{z.tag} {z.label}</span>)}
+        </span>
+      </a>
+    );
+  })}
+</div>
+
+<h2 id="start-a-task">Start a task</h2>
+<div class="mh-tasks">
+  {TASKS.map((t) => (
+    <a class:list={['mh-task', t.item.slug !== null ? 'v2' : 'v1']} href={hrefOf(t.item, base)} style={`--pc: var(--ph-${t.item.phase})`}>
+      <span class="mh-task-k">{t.item.tag} · {t.item.label}{t.item.slug === null ? ' · v1' : ''}</span>
+      <span class="mh-task-q">{t.q}</span>
+      <span class="mh-task-d">{t.d}</span>
+    </a>
+  ))}
+</div>
+
+<script>
+  document.querySelectorAll('[data-open-search]').forEach((b) =>
+    b.addEventListener('click', () => document.querySelector<HTMLButtonElement>('site-search button[data-open-modal]')?.click()),
+  );
+</script>
+
+<style>
+  .mh-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 0.75rem; margin-top: 1.5rem !important; }
+  .mh-way {
+    display: grid; gap: 0.35rem; text-align: left; font: inherit; cursor: pointer; text-decoration: none; margin: 0 !important;
+    padding: 0.9rem 1rem; border: 1px solid var(--hud-edge-strong); border-radius: 6px; color: var(--sl-color-gray-2);
+    background: linear-gradient(160deg, rgba(79, 179, 198, 0.08), transparent 60%);
+  }
+  .mh-way:hover { border-color: var(--sl-color-accent); }
+  .mh-way-k { font-family: var(--sl-font-mono); font-size: 0.68rem; letter-spacing: 0.14em; color: var(--sl-color-accent); }
+  .mh-way-t { font-size: 1.05rem; font-weight: 600; color: var(--sl-color-white); }
+  .mh-way-d { font-size: var(--sl-text-sm); }
+  .mh-way kbd { font-family: var(--sl-font-mono); font-size: 0.75em; border: 1px solid var(--hud-edge-strong); border-radius: 3px; padding: 0 0.3em; }
+
+  .mh-board { border: 1px solid var(--hud-edge-strong); border-radius: 6px; display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11.5rem), 1fr)); gap: 1px; background: var(--hud-edge); overflow: hidden; }
+  .mh-board-head { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0.8rem;
+    background: var(--hud-plate); font-family: var(--sl-font-mono); font-size: 0.64rem; letter-spacing: 0.14em; color: var(--sl-color-gray-3); margin: 0 !important; }
+  .mh-board-head .go { color: var(--rd-ok); }
+  .mh-station { display: grid; gap: 0.2rem; align-content: start; padding: 0.8rem 0.9rem 0.9rem; text-decoration: none; margin: 0 !important;
+    background: var(--hud-plate); color: var(--sl-color-gray-2); position: relative; }
+  .mh-station:hover { background: color-mix(in srgb, var(--pc) 9%, var(--hud-plate)); }
+  .mh-station:hover .mh-planet { transform: scale(1.08); }
+  .mh-planet { width: 44px; height: 44px; transition: transform 0.25s; }
+  .mh-st-k { font-family: var(--sl-font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: var(--sl-color-gray-3); }
+  .mh-st-n { font-family: var(--sl-font-mono); font-size: 1rem; font-weight: 600; letter-spacing: 0.1em; color: var(--pc); }
+  .mh-st-s { font-size: var(--sl-text-sm); color: var(--sl-color-white); }
+  .mh-st-bar { height: 3px; background: var(--hud-edge); margin-top: 0.35rem; border-radius: 2px; overflow: hidden; }
+  .mh-st-bar i { display: block; height: 100%; background: var(--pc); box-shadow: 0 0 6px var(--pc); }
+  .mh-st-c { font-family: var(--sl-font-mono); font-size: 0.62rem; letter-spacing: 0.06em; color: var(--sl-color-gray-3); }
+  .mh-st-list { display: grid; gap: 0.1rem; margin-top: 0.3rem; font-family: var(--sl-font-mono); font-size: 0.62rem; letter-spacing: 0.04em; color: var(--sl-color-gray-2); }
+
+  .mh-tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.6rem; }
+  .mh-task { display: grid; gap: 0.25rem; align-content: start; padding: 0.75rem 0.9rem; text-decoration: none; margin: 0 !important;
+    border: 1px solid var(--hud-edge); border-left: 3px solid var(--pc); border-radius: 0 6px 6px 0; color: var(--sl-color-gray-2);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--pc) 9%, transparent), transparent 70%); }
+  .mh-task.v1 { border-left-style: dashed; }
+  .mh-task:hover { border-color: var(--pc); }
+  .mh-task-k { font-family: var(--sl-font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: var(--pc); }
+  .mh-task-q { font-weight: 600; color: var(--sl-color-white); line-height: 1.3; }
+  .mh-task-d { font-size: var(--sl-text-sm); }
+  @media (prefers-reduced-motion: reduce) { .mh-planet { transition: none; } }
+</style>

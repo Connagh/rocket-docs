@@ -1,0 +1,165 @@
+---
+title: Selecting materials
+description: Choose materials by the combination of properties the part needs — performance indices on a property chart — then screen by constraints and check what the chart can't see.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import IndexShapes from '../../../components/IndexShapes.astro';
+import MaterialChart from '../../../components/MaterialChart.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Rank materials by the combination of properties the job rewards — a performance index — not by the biggest number on a datasheet.</div>
+  <div><b>Leads to</b><a href="../specification/">Specifying materials</a> · <a href="../../motor/case-sizing/">Case sizing</a></div>
+</div>
+
+## Why this matters
+
+Material choice is usually the largest single lever on mass, cost and risk, and it is made early, when changing your mind
+is cheap. It is also where designs most often go wrong for a simple reason: they get sized on the wrong number. A
+datasheet's room-temperature *typical* yield is not the *minimum* strength at the service temperature, in the load
+direction, for the product form you can actually buy. This page is about making the right comparison first; the
+[specification page](../specification/) is about pinning the result down on a drawing.
+
+## The idea: a performance index
+
+<Analogy title="Choosing a minibus by fuel used per passenger">
+  If you need to move eight people, the car with the best miles per gallon is not the answer — a two-seater sports car
+  would win that. What matters is miles per gallon *per seat*: the combination of properties that serves the job. A
+  performance index is the same idea for materials. For a light, strong pressure vessel it is strength divided by
+  density, not strength alone.
+</Analogy>
+
+Ashby's method turns a design requirement into that index in four steps:
+
+1. **Function** — what does the part do? (Contain pressure, carry a bending load, conduct heat.)
+2. **Objective** — what are you minimising or maximising? (Usually mass, sometimes cost or deflection.)
+3. **Constraints** — what must it achieve no matter what? (Not yield at proof, not burst, survive 150 °C, be weldable.)
+4. **Free variables** — what are you allowed to change? (Wall thickness, section size, the material itself.)
+
+Write the objective, use the constraint to eliminate the free variable, and what remains is a group of material
+properties. Maximise that group.
+
+### Worked derivation — a light motor case
+
+A thin cylinder of radius $r$ and length $L$ holds pressure $p$. Its mass is $m = 2\pi r L\,t\,\rho$, and the wall must
+carry the hoop stress without exceeding the allowable $\sigma$: $t = p\,r/\sigma$. Substituting the free variable $t$:
+
+$$
+m = 2\pi r^2 L\,p\;\cdot\;\frac{\rho}{\sigma}
+\qquad\Longrightarrow\qquad
+\text{maximise}\;\; M = \frac{\sigma}{\rho}
+$$
+
+Everything before the dot is fixed by the design; only $\rho/\sigma$ belongs to the material. That is the specific
+strength — the same index as a light tie in tension — and it is exactly why the [case-sizing page](../../motor/case-sizing/)
+reports $p_bV/W$.
+
+### Shape changes the index
+
+<IndexShapes />
+
+For a beam of square section with a stiffness target, deflection goes as $1/(E\,I)$ with $I \propto A^2$; eliminating the
+area gives $m \propto \rho/E^{1/2}$. For a panel of fixed width, $I \propto t^3$, so $m \propto \rho/E^{1/3}$. Taking logs
+turns each index into a straight line on a log–log property chart:
+
+$$
+M = \frac{E^{1/2}}{\rho} \;\;\Longrightarrow\;\; \log E = 2\log\rho + 2\log M
+$$
+
+— a line of slope 2. Every material on that line performs identically for the job; every material above it does
+better. That is the dashed guideline on the chart below.
+
+<Analogy title="Contour lines on a map">
+  A property chart is a map of the material world. The families are countries — metals over here, polymers down there,
+  composites in a long thin island. A performance index is a set of contour lines drawn across the whole map: walking
+  along one changes the material but not the performance; walking uphill, perpendicular to them, makes the part better.
+</Analogy>
+
+### Fracture needs its own index
+
+Strength-per-weight rewards the strongest alloys — but toughness generally falls as strength rises. Two fracture
+indices capture the other side:
+
+- **Yield before break,** $K_{IC}/\sigma_y$ — the critical crack size at yield scales with its square:
+  $a_c = \frac{1}{\pi}\left(\frac{K_{IC}}{Y\sigma_y}\right)^2$. Large is forgiving.
+- **Leak before break,** $K_{IC}^2/\sigma_y$ — the largest wall a pressure vessel can have and still leak before it
+  breaks (see the [leak-before-break screen](../../motor/case-sizing/#leak-before-break)).
+
+On their own these pick soft, tough metals that are hopeless for a light case. Used **together** with the mass index
+they expose the real trade: how much toughness you give up for each kilogram saved.
+
+## The chart
+
+Pick what you are designing, choose families, apply must-haves, then click any point (or table row) to make it the
+reference the guideline runs through. Hover for values.
+
+<MaterialChart />
+
+## Worked example — choosing a case material
+
+**Function:** contain chamber pressure. **Objective:** minimum mass. **Constraints:** weldable, service temperature at
+least 150 °C, metallic (for this example). **Free variable:** wall thickness.
+
+1. **Rank by** $\sigma_y/\rho$ (the chart's default). The top eight, in kN·m/kg:
+
+   | # | Material | $\sigma_y/\rho$ | $K_{IC}/\sigma_y$ (√m) | Crack at yield, $Y = 1.12$ |
+   | --- | --- | --- | --- | --- |
+   | 1 | Maraging 18Ni-300 | 233 | 0.043 | 0.47 mm |
+   | 2 | Ti-6Al-2Sn-4Zr-2Mo | 218 | 0.066 | 1.09 mm |
+   | 3 | AerMet 100 | 218 | 0.067 | 1.13 mm |
+   | 4 | Maraging 18Ni-250 | 211 | 0.059 | 0.89 mm |
+   | 5 | Ti-6Al-4V | 199 | 0.085 | 1.84 mm |
+   | 6 | Al-Li 2195 | 194 | 0.057 | 0.83 mm |
+   | 7 | Ti-6Al-4V ELI | 187 | 0.120 | 3.68 mm |
+   | 8 | D6AC | 185 | 0.048 | 0.59 mm |
+
+2. **Check fracture.** The lightest choice, maraging 300, tolerates a crack of only about half a millimetre at yield —
+   close to the limit of reliable inspection. Maraging 250 gives up 10% of the mass index for nearly twice the crack
+   size. Ti-6Al-4V ELI costs 20% of the mass index against maraging 300 but tolerates a crack nearly eight times
+   deeper. That is the yield-before-break trade in numbers.
+3. **Check what the chart can't see.** D6AC ranks eighth on mass and low on toughness, yet it has flown on many large
+   motors. The reasons are off the chart: large forgings and plate are available, heat treatment and welding are well
+   understood, the indicative price in the database is roughly a quarter to a third of maraging steel's, and decades of test data back it.
+   Titanium brings cost and availability in large sections; maraging steels carry cobalt price and supply risk.
+4. **Composites.** Switch on the composites family and filament-wound carbon/epoxy lands far above every metal — but on
+   *fibre-direction* strength. A real filament-wound case is a laminate whose wall strength is a fraction of that
+   number, and it brings its own failure modes (matrix cracking, impact damage, stress rupture). It still usually wins
+   on mass, which is why so many modern cases are composite.
+
+<Aside type="tip" title="What the example teaches">
+  An index ranks; it doesn't decide. Use the mass index to find the candidates, a second index to expose what they cost
+  you, and judgement for everything the chart can't plot — supply, process, cost, compatibility and heritage.
+</Aside>
+
+## Where this stops
+
+<Aside type="caution" title="Screening data, not allowables">
+  The chart uses typical room-temperature values shared with REF·DB v1. Designs are sized on statistically based
+  allowables (for example MMPDS A- or B-basis) for the specific product form, thickness, grain direction and
+  temperature, from your organisation's approved data.
+</Aside>
+
+- **Temperature.** Strength and toughness at the service temperature, including after any thermal exposure, decide the
+  case. The max-temperature filter only screens.
+- **Product form and direction.** Plate, forging and extrusion differ, and the short-transverse direction of thick plate
+  can be much weaker and less tough than the rolling direction. See [specifying materials](../specification/#product-form-and-grain-direction).
+- **Environment.** Stress-corrosion cracking, hydrogen embrittlement and compatibility with propellant, fluids and
+  coatings remove candidates that the chart ranks highly.
+- **Cost and availability** are real constraints, not afterthoughts — and they change.
+
+## References and further reading
+
+- M. F. Ashby, *Materials Selection in Mechanical Design*, 5th ed., Butterworth-Heinemann (2016) — performance indices
+  and property charts.
+- M. F. Ashby & D. R. H. Jones, *Engineering Materials 1*, 5th ed., Butterworth-Heinemann (2019).
+- *Metallic Materials Properties Development and Standardization* (MMPDS) — statistically based design allowables for
+  aerospace metals.
+- ASM Handbook, Vol. 1 (*Properties and Selection: Irons, Steels*) and Vol. 2 (*Nonferrous Alloys*).
+
+<Aside type="note">
+  Screening and educational material. Final material selection is governed by your programme's requirements, approved
+  allowables and the responsible materials and stress authorities.
+</Aside>

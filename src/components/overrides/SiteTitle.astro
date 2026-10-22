@@ -1,0 +1,47 @@
+---
+// Wordmark in the v1 style: REF·DB with the stamp dot, and a mission line.
+const base = import.meta.env.BASE_URL;
+---
+
+<a href={base} class="site-title">
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <rect x="10" y="22" width="34" height="20" rx="3" fill="none" stroke="var(--sl-color-accent)" stroke-width="4"></rect>
+    <path d="M44 27 L52 24 V40 L44 37" fill="none" stroke="var(--sl-color-accent)" stroke-width="4" stroke-linejoin="round"></path>
+    <path d="M16 32 H38" stroke="var(--rd-blue)" stroke-width="4" stroke-linecap="round"></path>
+  </svg>
+  <span class="brand">REF<span class="stamp">·</span>DB</span>
+  <span class="brand-sub">Rocket motor &amp; mechanical design reference</span>
+</a>
+
+<style>
+  .site-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--sl-color-white);
+    min-width: 0;
+  }
+  .mark { width: 2rem; height: 2rem; flex: none; }
+  .brand {
+    font-family: var(--sl-font-mono);
+    font-weight: 600;
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .stamp { color: var(--sl-color-accent); }
+  .brand-sub {
+    font-family: var(--sl-font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 1px solid var(--sl-color-gray-5);
+    padding-left: 0.6rem;
+  }
+  @media (max-width: 72rem) { .brand-sub { display: none; } }
+</style>

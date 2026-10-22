@@ -117,7 +117,7 @@ const presets = [
   </div>
 </div>
 
-<style>
+<style is:global>
   .bb-presets { display: flex; flex-wrap: wrap; gap: 0.3rem; flex: 1 1 100%; margin: 0 !important; }
   .bb-presets .chip { white-space: nowrap; }
   .bbsim .calc-head { flex-wrap: wrap; }
@@ -138,7 +138,7 @@ const presets = [
   .bb-notes { padding: 0 1rem 0 2.1rem; }
   .pv-notes li.bad { color: var(--rd-accent); }
   .pv-notes li.warn { color: var(--rd-warn); }
-  [data-show], [data-show-mode] { margin: 0 !important; }
+  .bbsim [data-show], .bbsim [data-show-mode] { margin: 0 !important; }
   .bbsim [hidden] { display: none !important; }
 </style>
 

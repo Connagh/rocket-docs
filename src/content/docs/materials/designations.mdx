@@ -1,0 +1,72 @@
+---
+title: Material designations
+description: The same alloy has a different name in every system — BS EN, EN number, legacy BS, UNS, AMS. How each numbering system reads, and a searchable cross-reference.
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import XrefTable from '../../../components/XrefTable.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Translate between naming systems freely — but substitute between specifications only with engineering approval.</div>
+  <div><b>Leads to</b><a href="../specification/">Specifying materials</a></div>
+</div>
+
+## Why this matters
+
+A heritage drawing calls up HE30, the supplier quotes EN AW-6082, the US partner says 6061, and the certificate carries
+a UNS number. They are related, not identical. Knowing how to read each system lets you follow a material across
+drawings, suppliers and countries; knowing where they differ stops a "nearest equivalent" quietly becoming a
+non-conformance.
+
+<Analogy title="A person's names on different documents">
+  Your passport, your driving licence and your employee badge all identify you, but each carries different details and
+  is accepted for different things. A material's designations are the same: EN, UNS and AMS all point at broadly the
+  same alloy, but the *specification* — the document — is what sets the limits, the tests and what is accepted.
+</Analogy>
+
+## How the numbering systems read
+
+**EN aluminium (EN 573).** `EN AW-6082`: **AW** is aluminium wrought (AC is cast); the four digits follow the
+international series (1xxx pure, 2xxx Cu, 5xxx Mg, 6xxx Mg–Si, 7xxx Zn). The temper follows the designation
+(`EN AW-6082-T6`) and is defined by EN 515. Composition is EN 573-3; properties come from the product standard —
+EN 485 sheet and plate, EN 755 extrusions, EN 754 drawn bar and tube.
+
+**EN steels (EN 10027).** Two parallel systems. The *name* encodes composition: `34CrNiMo6` is about 0.34% carbon with
+chromium, nickel and molybdenum, the last number giving the main alloying element's content multiplied by a factor. The
+*number* (`1.6582`) is a catalogue entry: 1.xxxx for steels.
+
+**EN stainless (EN 10088).** `X2CrNiMo17-12-2`: **X** marks a high-alloy steel, then carbon ×100, the elements, and their
+percentages — this one is 316L, number `1.4404`. Part 2 covers sheet and plate, part 3 bar, rod and sections.
+
+**UNS.** One letter and five digits across all metals: A aluminium, C copper, G carbon and alloy steels, K
+miscellaneous steels (D6AC is K24728), N nickel, R reactive and refractory metals including titanium, S stainless.
+Often the cleanest way to pin down exactly which grade someone means.
+
+**Aerospace specifications (AMS, BS L-series, AIR).** These are *specifications*, not just names: they fix chemistry,
+product form, condition, testing and acceptance. Two L-series specs can be the same alloy and temper with different
+tolerances, and stock certified to one does not satisfy a drawing calling the other.
+
+## Cross-reference
+
+<XrefTable />
+
+<Aside type="caution" title="Equivalent is not identical">
+  Cross-reference tables map nearest grades. Composition ranges, permitted impurities, melt practice, test requirements
+  and acceptance criteria differ between systems. Never substitute across a row on a flight or safety-significant part
+  without engineering approval and a materials review.
+</Aside>
+
+<Aside type="tip" title="Which one goes on the drawing?">
+  In the UK, working to BS 8888, the BS EN designation plus the governing product standard is the usual callout — for
+  example `EN AW-6082-T6 TO BS EN 755-2`. Add the UNS or AMS reference only where the supply chain genuinely needs it.
+  Legacy BS names (HE30, 817M40, 304S11) are for reading old drawings, not writing new ones.
+</Aside>
+
+## References
+
+- BS EN 573 (aluminium designations and composition), BS EN 515 (aluminium tempers).
+- BS EN 10027-1 and -2 (steel names and numbers), BS EN 10088 (stainless steels).
+- SAE/ASTM, *Metals and Alloys in the Unified Numbering System* (UNS).

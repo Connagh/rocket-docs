@@ -26,14 +26,24 @@ npm run build      # static site in dist/
 
 ```
 src/
-  content/docs/     topic pages (Markdown / MDX) — the sidebar mirrors this
+  data/zones.mjs    THE ZONE PLAN — single source of truth for the rail, numbering, banners,
+                    orbit map, route footer, home status board and roadmap (v1 ZONE_PLAN + PHASES)
+  content/docs/     topic pages (Markdown / MDX)
   components/       interactive diagrams and calculators (.astro)
+    overrides/      Starlight overrides: mission rail, zone banner, route footer, HUD header,
+                    dark-by-default theme switch, page frame
+    hud/            deep-field sky (ported from v1), mission-control home, roadmap
   lib/              calculation code, pure TypeScript, unit-tested in tests/
-  data/             materials.json, extracted from the v1 database
-  styles/custom.css theme (v1 palette) and shared tool styles
-public/legacy/      REF·DB v1, unchanged
+  data/             materials, specs, cross-reference and O-ring data extracted from v1
+  styles/           custom.css (tokens, tools) and hud.css (the mission HUD layer)
+public/legacy/      REF·DB v1 — unchanged except a small appended script for ?z=<zone> deep links
+                    and a link back to v2
 scripts/            extract-legacy-data.mjs — regenerates src/data from v1
 ```
+
+To add a rebuilt zone: write the page, then map its zone key to the page slug in `REBUILT` in
+`src/data/zones.mjs`. Everything else — rail, numbering, banners, roadmap — follows. `npm test` fails if a page is
+orphaned or a mapped page is missing.
 
 ## Deploying
 

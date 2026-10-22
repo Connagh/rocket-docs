@@ -1,0 +1,22 @@
+---
+// MODE switch in the v1 style: dark ⇄ light, dark by default.
+---
+
+<button type="button" class="hud-chip mode-switch" data-mode-switch aria-label="Switch between dark and light theme">
+  <span class="k">MODE</span><span class="v" data-mode-label>DARK</span>
+</button>
+
+<script>
+  const KEY = 'starlight-theme';
+  const root = document.documentElement;
+  const set = (t: 'dark' | 'light') => {
+    root.dataset.theme = t;
+    try { localStorage.setItem(KEY, t); } catch {}
+    document.querySelectorAll('[data-mode-label]').forEach((el) => (el.textContent = t === 'dark' ? 'DARK' : 'LIGHT'));
+    document.querySelectorAll('[data-mode-switch]').forEach((el) => el.setAttribute('aria-pressed', String(t === 'light')));
+  };
+  set(root.dataset.theme === 'light' ? 'light' : 'dark');
+  document.querySelectorAll('[data-mode-switch]').forEach((b) =>
+    b.addEventListener('click', () => set(root.dataset.theme === 'light' ? 'dark' : 'light')),
+  );
+</script>

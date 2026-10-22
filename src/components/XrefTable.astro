@@ -1,0 +1,71 @@
+---
+// Searchable designation cross-reference (REF·DB v1 data).
+import data from '../data/xref.json';
+const FAM: Record<string, string> = { al: 'Aluminium', mg: 'Magnesium', ti: 'Titanium', steel: 'Steel', ss: 'Stainless', ni: 'Nickel / cobalt', cu: 'Copper', refract: 'Refractory' };
+const fams = [...new Set(data.rows.map((r) => r.family))];
+---
+
+<div class="calc xref" data-xref>
+  <div class="calc-head"><span>Designation cross-reference</span><span data-count></span></div>
+  <div class="xr-controls">
+    <input type="search" placeholder="Search any name or number — 6082, 1.4404, K24728, HE30, AMS 4911…" aria-label="Search designations" data-q />
+    <div class="xr-fams">
+      <button type="button" class="chip on" data-fam="">All</button>
+      {fams.map((f) => <button type="button" class="chip" data-fam={f}>{FAM[f] ?? f}</button>)}
+    </div>
+  </div>
+  <div class="xr-wrap">
+    <table>
+      <thead><tr><th>Common name</th><th>BS EN / ISO</th><th>EN No.</th><th>Legacy BS</th><th>UNS</th><th>Aero / other</th><th>Note</th></tr></thead>
+      <tbody>
+        {data.rows.map((r) => (
+          <tr data-row data-f={r.family} data-s={Object.values(r).join(' ').toLowerCase()}>
+            <td><b>{r.name}</b></td><td>{r.en}</td><td>{r.enNo}</td><td>{r.legacyBs}</td><td>{r.uns}</td><td>{r.aero}</td><td class="xr-note">{r.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <div class="calc-foot">Nearest equivalents, not interchangeable grades. Composition limits, melt practice, testing and acceptance differ between systems.</div>
+</div>
+
+<style>
+  .xr-controls { display: grid; gap: 0.6rem; padding: 0.9rem 1rem 0.4rem; }
+  .xr-controls input { width: 100%; font: inherit; font-family: var(--sl-font-mono); font-size: 0.85rem; padding: 0.5rem 0.7rem;
+    color: var(--sl-color-white); background: var(--rd-panel2); border: 1px solid var(--hud-edge-strong); border-radius: 4px; }
+  .xr-fams { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0 !important; }
+  .xref .chip { font-family: var(--sl-font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+    color: var(--sl-color-gray-2); background: transparent; border: 1px solid var(--hud-edge-strong); border-radius: 3px; padding: 0.2rem 0.5rem; margin: 0 !important; }
+  .xref .chip.on, .xref .chip:hover { color: var(--sl-color-accent); border-color: var(--sl-color-accent); }
+  .xr-wrap { overflow-x: auto; padding: 0 1rem 0.5rem; max-height: 34rem; overflow-y: auto; }
+  .xr-wrap table { display: table; width: 100%; font-size: 0.76rem; margin: 0 !important; }
+  .xr-wrap th { position: sticky; top: 0; background: var(--hud-plate); z-index: 1; white-space: nowrap; }
+  .xr-wrap td { vertical-align: top; }
+  .xr-wrap td:not(.xr-note) { white-space: nowrap; font-family: var(--sl-font-mono); }
+  .xr-note { min-width: 16rem; color: var(--sl-color-gray-3); }
+  .xr-wrap tr[hidden] { display: none; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-xref]').forEach((root) => {
+    const q = root.querySelector<HTMLInputElement>('[data-q]')!;
+    let fam = '';
+    const rows = Array.from(root.querySelectorAll<HTMLTableRowElement>('[data-row]'));
+    const run = () => {
+      const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+      let n = 0;
+      for (const r of rows) {
+        const show = (!fam || r.dataset.f === fam) && terms.every((t) => r.dataset.s!.includes(t));
+        r.hidden = !show; if (show) n++;
+      }
+      root.querySelector('[data-count]')!.textContent = `${n} of ${rows.length}`;
+    };
+    q.addEventListener('input', run);
+    root.querySelectorAll<HTMLButtonElement>('[data-fam]').forEach((b) => b.addEventListener('click', () => {
+      fam = b.dataset.fam!;
+      root.querySelectorAll('[data-fam]').forEach((x) => x.classList.toggle('on', x === b));
+      run();
+    }));
+    run();
+  });
+</script>

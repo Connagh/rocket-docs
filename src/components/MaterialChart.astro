@@ -1,0 +1,295 @@
+---
+// Ashby-style material selection chart. Indices, properties and ranking come from
+// src/lib/selection.ts (unit-tested), so the chart and the ranking table always agree.
+import data from '../data/materials.json';
+import { INDICES, PROPERTIES } from '../lib/selection';
+
+const FAMILIES: [string, string, string][] = [
+  ['steel', 'Steels', '#e05a47'], ['ss', 'Stainless', '#6fa8a0'], ['ti', 'Titanium', '#9b7fd4'], ['al', 'Aluminium', '#4e9fd1'],
+  ['ni', 'Nickel & cobalt', '#d4a017'], ['mg', 'Magnesium', '#5fbf6a'], ['cu', 'Copper', '#d98c3a'], ['refract', 'Refractory', '#b0702a'],
+  ['comp', 'Composites', '#e07ad4'], ['cc', 'Carbon & ablatives', '#8a8a8a'], ['poly', 'Polymers', '#2fb5ad'], ['elast', 'Elastomers', '#8f8fe8'],
+];
+const DEFAULT_FAMS = ['steel', 'ss', 'ti', 'al', 'ni']; // the worked example: metallic case candidates
+---
+
+<div class="calc mcalc" data-mcalc>
+  <div class="calc-head"><span>Material selection chart</span><span data-count></span></div>
+  <div class="mc-body">
+    <form class="mc-controls" data-form onsubmit="return false">
+      <fieldset>
+        <legend>What are you designing?</legend>
+        <label>Performance index
+          <select name="idx">
+            {INDICES.map((i) => <option value={i.key} selected={i.key === 'tie'}>{i.name}</option>)}
+            <option value="">— free axes, no index —</option>
+          </select>
+        </label>
+        <p class="hint" data-idxuse></p>
+        <div class="row2">
+          <label>X axis<select name="x">{PROPERTIES.map((p) => <option value={p.key}>{p.label}</option>)}</select></label>
+          <label>Y axis<select name="y">{PROPERTIES.map((p) => <option value={p.key}>{p.label}</option>)}</select></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Families</legend>
+        <div class="mc-fams">
+          {FAMILIES.map(([k, n, c]) => (
+            <label class="mc-fam" style={`--fc:${c}`}>
+              <input type="checkbox" name="fam" value={k} checked={DEFAULT_FAMS.includes(k)} /><span>{n}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Must have</legend>
+        <div class="row2">
+          <label>Service temp at least (°C)<input name="tmin" type="number" step="10" value="150" /></label>
+          <label>Label top<select name="lab"><option value="0">none</option><option value="5" selected>5</option><option value="10">10</option></select></label>
+        </div>
+        <label class="inline"><input type="checkbox" name="weld" checked /> Weldable only</label>
+        <label class="inline"><input type="checkbox" name="hidek" checked /> Hide family-default toughness (fracture indices)</label>
+      </fieldset>
+    </form>
+    <div class="mc-plot">
+      <svg viewBox="0 0 640 470" data-chart role="img" aria-label="Material property chart"></svg>
+      <div class="mc-tip" data-tip hidden></div>
+      <div class="mc-legend">
+        {FAMILIES.map(([k, n, c]) => <span data-leg={k} style={`--fc:${c}`}><i></i>{n}</span>)}
+      </div>
+    </div>
+  </div>
+  <div class="mc-detail" data-detail></div>
+  <div class="mc-rank">
+    <p class="pv-sub">Ranking by the selected index</p>
+    <div class="mc-rank-wrap"><table><thead data-rhead></thead><tbody data-rank></tbody></table></div>
+  </div>
+  <div class="calc-foot">
+    Typical room-temperature values for screening and ranking, not design allowables (shared with REF·DB v1). Strength is
+    0.2% proof for metals, failure stress for ceramics and ablatives, and <b>fibre-direction</b> strength for composites —
+    a real laminate is far lower — so cross-family rankings involving composites flatter them. Toughness is indicative.
+  </div>
+  <script type="application/json" data-data set:html={JSON.stringify({ materials: data.materials, FAMILIES })}></script>
+</div>
+
+<style is:global>
+  .mc-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; padding: 1rem; }
+  .mc-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 0.25rem 1.25rem; align-items: start; }
+  .mc-controls fieldset { margin: 0 !important; }
+  .mcalc .inline { display: flex; align-items: center; gap: 0.4rem; }
+  .mcalc .inline input { width: auto; }
+  .mc-fams { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .mc-fam { display: inline-flex !important; align-items: center; gap: 0.3rem; margin: 0 !important; cursor: pointer;
+    font-size: 0.72rem !important; padding: 0.15rem 0.45rem; border: 1px solid var(--hud-edge-strong); border-radius: 99px; }
+  .mc-fam input { width: auto !important; accent-color: var(--fc); margin: 0; }
+  .mc-fam:has(input:checked) { border-color: var(--fc); color: var(--sl-color-white); }
+  .mc-plot { position: relative; margin: 0 !important; }
+  .mc-plot svg { width: 100%; height: auto; display: block; font-family: var(--sl-font-mono); }
+  .mc-plot .pt { cursor: pointer; transition: r 0.15s; }
+  .mc-plot .pt:hover { stroke: var(--sl-color-white); stroke-width: 2; }
+  .mc-plot .pt.ref { stroke: var(--sl-color-white); stroke-width: 2.5; }
+  .mc-plot .pt.dim { opacity: 0.18; }
+  .mc-tip { position: absolute; pointer-events: none; z-index: 5; min-width: 12rem; max-width: 18rem; margin: 0 !important;
+    background: rgba(6, 10, 18, 0.96); color: #e2e9ed; border: 1px solid var(--hud-edge-strong); border-radius: 4px;
+    padding: 0.45rem 0.6rem; font-size: 0.72rem; line-height: 1.4; font-family: var(--sl-font-mono); }
+  .mc-tip b { color: #fff; font-family: var(--sl-font); font-size: 0.82rem; }
+  .mc-legend { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; margin-top: 0.4rem !important; font-size: 0.68rem; color: var(--sl-color-gray-3); }
+  .mc-legend span { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0 !important; }
+  .mc-legend span.off { opacity: 0.35; }
+  .mc-legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--fc); }
+  .mc-detail { padding: 0 1rem; }
+  .mc-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.3rem 1rem; padding: 0.75rem 0.9rem; margin: 0 !important;
+    border: 1px solid var(--hud-edge); border-left: 3px solid var(--fc); border-radius: 0 6px 6px 0; }
+  .mc-card h4 { margin: 0 !important; font-size: 1rem; }
+  .mc-card .mc-sum { grid-column: 1 / -1; font-size: var(--sl-text-sm); color: var(--sl-color-gray-2); margin: 0 !important; }
+  .mc-card .mc-props { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-family: var(--sl-font-mono); font-size: 0.7rem; color: var(--sl-color-gray-3); margin: 0 !important; }
+  .mc-card .mc-props b { color: var(--sl-color-white); font-weight: 400; }
+  .mc-card .mc-idx { font-family: var(--sl-font-mono); color: var(--pc, var(--sl-color-accent)); text-align: right; }
+  .mc-rank { padding: 0.5rem 1rem 1rem; }
+  .mc-rank .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 0.5rem 0 0.4rem !important; }
+  .mc-rank-wrap { overflow-x: auto; }
+  .mc-rank table { width: 100%; font-size: 0.78rem; display: table; margin: 0 !important; }
+  .mc-rank td, .mc-rank th { padding: 0.3rem 0.5rem; white-space: nowrap; }
+  .mc-rank tr { cursor: pointer; }
+  .mc-rank tr.ref td { background: color-mix(in srgb, var(--pc, var(--sl-color-accent)) 14%, transparent); }
+  .mc-rank td:first-child { font-family: var(--sl-font-mono); color: var(--sl-color-gray-3); }
+  .mc-rank .sw { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; }
+</style>
+
+<script>
+  import { INDICES, prop, index, rank, guideline, type Material, type Index } from '../lib/selection';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const fmt = (v: number) => (!Number.isFinite(v) ? '—' : v >= 1000 ? v.toFixed(0) : v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v >= 1 ? v.toFixed(2) : v.toPrecision(2));
+
+  document.querySelectorAll<HTMLElement>('[data-mcalc]').forEach((root) => {
+    const { materials, FAMILIES } = JSON.parse(root.querySelector('[data-data]')!.textContent!) as { materials: Material[]; FAMILIES: [string, string, string][] };
+    const famColor = Object.fromEntries(FAMILIES.map(([k, , c]) => [k, c]));
+    const famName = Object.fromEntries(FAMILIES.map(([k, n]) => [k, n]));
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const tip = root.querySelector<HTMLElement>('[data-tip]')!;
+    let refName: string | null = null;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    const applyIndex = () => {
+      const k = field('idx').value;
+      if (!k) return;
+      const i = index(k);
+      field('x').value = i.x; field('y').value = i.y;
+      refName = null;
+    };
+
+    function state() {
+      const fams = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="fam"]:checked')).map((i) => i.value);
+      const idxKey = field('idx').value;
+      const idx = idxKey ? index(idxKey) : null;
+      return {
+        fams, idx, x: prop(field('x').value), y: prop(field('y').value),
+        filters: { families: fams, minServiceTemp: +field('tmin').value || -1e9, weldableOnly: (field('weld') as HTMLInputElement).checked,
+          hideDefaultToughness: (field('hidek') as HTMLInputElement).checked },
+        labels: +field('lab').value,
+      };
+    }
+
+    function run() {
+      const s = state();
+      const idxOnAxes = !!s.idx && s.idx.x === s.x.key && s.idx.y === s.y.key;
+      root.querySelector('[data-idxuse]')!.innerHTML = s.idx
+        ? `<b>M = ${s.idx.tex.replace(/\\sigma_y/g, 'σ<sub>y</sub>').replace(/\\rho/g, 'ρ').replace(/\\alpha/g, 'α').replace(/K_\{IC\}/g, 'K<sub>IC</sub>').replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>').replace(/\^(\d)/g, '<sup>$1</sup>').replace(/\\/g, '')}</b> — ${s.idx.use}`
+        : 'Free axes: pick any two properties.';
+      const ranked = s.idx ? rank(materials, s.idx, s.filters) : [];
+      const pass = new Set((s.idx ? ranked.map((r) => r.m) : materials.filter((m) =>
+        s.fams.includes(m.family) && m.maxServiceTemp >= s.filters.minServiceTemp && (!s.filters.weldableOnly || m.weldable))).map((m) => m.name));
+      if (s.idx && (!refName || !ranked.some((r) => r.m.name === refName))) refName = ranked[0]?.m.name ?? null;
+      const ref = materials.find((m) => m.name === refName) ?? null;
+
+      // points on the chart: every material in the chosen families with both properties
+      const pts = materials.filter((m) => s.fams.includes(m.family))
+        .map((m) => ({ m, x: s.x.get(m), y: s.y.get(m) }))
+        .filter((p): p is { m: Material; x: number; y: number } => !!p.x && !!p.y && p.x > 0 && p.y > 0);
+      root.querySelector('[data-count]')!.textContent = `${pass.size} of ${materials.length} pass · ${pts.length} plotted`;
+      for (const [k] of FAMILIES) root.querySelector(`[data-leg="${k}"]`)!.classList.toggle('off', !s.fams.includes(k));
+
+      // axes
+      svg.replaceChildren();
+      const W = 640, H = 470, L = 58, R = 14, T = 14, B = 46;
+      const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+      if (!pts.length) { svg.append(el('text', { x: W / 2, y: H / 2, 'text-anchor': 'middle', fill: 'var(--sl-color-gray-3)', 'font-size': 13 }, 'Nothing to plot — choose some families.')); return; }
+      const lx0 = Math.floor(Math.log10(Math.min(...xs)) - 0.05), lx1 = Math.ceil(Math.log10(Math.max(...xs)) + 0.05);
+      const ly0 = Math.floor(Math.log10(Math.min(...ys)) - 0.05), ly1 = Math.ceil(Math.log10(Math.max(...ys)) + 0.05);
+      const X = (v: number) => L + ((Math.log10(v) - lx0) / Math.max(1e-9, lx1 - lx0)) * (W - L - R);
+      const Y = (v: number) => H - B - ((Math.log10(v) - ly0) / Math.max(1e-9, ly1 - ly0)) * (H - T - B);
+      const clip = el('clipPath', { id: 'mcClip' }); clip.append(el('rect', { x: L, y: T, width: W - L - R, height: H - T - B })); svg.append(clip);
+      const tickLbl = (v: number) => (v >= 1000 ? `${v / 1000}k` : v < 0.01 ? v.toExponential(0) : String(+v.toPrecision(2)));
+      for (let d = lx0; d <= lx1; d++) for (const m of [1, 2, 5]) {
+        const v = m * 10 ** d; if (Math.log10(v) > lx1 + 1e-9) continue;
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--hud-edge)', 'stroke-dasharray': m === 1 ? '' : '2 4' }));
+        if (m === 1 || lx1 - lx0 <= 2) svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--sl-color-gray-3)' }, tickLbl(v)));
+      }
+      for (let d = ly0; d <= ly1; d++) for (const m of [1, 2, 5]) {
+        const v = m * 10 ** d; if (Math.log10(v) > ly1 + 1e-9) continue;
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--hud-edge)', 'stroke-dasharray': m === 1 ? '' : '2 4' }));
+        if (m === 1 || ly1 - ly0 <= 2) svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--sl-color-gray-3)' }, tickLbl(v)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--sl-color-white)' }, `${s.x.label}, ${s.x.unit} (log)`));
+      svg.append(el('text', { x: 14, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--sl-color-white)', transform: `rotate(-90 14 ${(T + H - B) / 2})` }, `${s.y.label}, ${s.y.unit} (log)`));
+
+      // guideline through the reference material, better side shaded
+      const g = el('g', { 'clip-path': 'url(#mcClip)' }); svg.append(g);
+      if (idxOnAxes && ref && s.idx) {
+        const x0 = s.x.get(ref)!, y0 = s.y.get(ref)!;
+        const xa = 10 ** lx0, xb = 10 ** lx1;
+        const ya = guideline(xa, x0, y0, s.idx.slope), yb = guideline(xb, x0, y0, s.idx.slope);
+        g.append(el('path', { d: `M${X(xa)},${Y(ya)} L${X(xb)},${Y(yb)} L${X(xb)},${T - 400} L${X(xa)},${T - 400} Z`, fill: 'var(--pc, var(--sl-color-accent))', 'fill-opacity': 0.07 }));
+        g.append(el('line', { x1: X(xa), y1: Y(ya), x2: X(xb), y2: Y(yb), stroke: 'var(--pc, var(--sl-color-accent))', 'stroke-width': 1.8, 'stroke-dasharray': '7 5' }));
+        // contours at ×2 and ×0.5 index for linear indices (M ∝ y/xˢ); lbb is M ∝ (y/x^½)², so scale y by √
+        const kf = s.idx.key === 'lbb' ? Math.SQRT2 : 2;
+        for (const f of [kf, 1 / kf]) g.append(el('line', { x1: X(xa), y1: Y(ya * f), x2: X(xb), y2: Y(yb * f), stroke: 'var(--pc, var(--sl-color-accent))', 'stroke-width': 0.8, 'stroke-dasharray': '2 5', opacity: 0.6 }));
+        const lblX = Math.min(W - R - 6, Math.max(L + 6, X(x0) + 40));
+        svg.append(el('text', { x: lblX, y: Math.max(T + 12, Math.min(H - B - 6, Y(guideline(10 ** ((Math.log10(10 ** lx0) + Math.log10(10 ** lx1)) / 2), x0, y0, s.idx.slope)) - 6)), 'font-size': 10, fill: 'var(--pc, var(--sl-color-accent))' }, 'equal performance · better ↖ above'));
+      }
+
+      // points: passing materials bright, filtered-out ones dimmed
+      const order = [...pts].sort((a, b) => (pass.has(a.m.name) ? 1 : 0) - (pass.has(b.m.name) ? 1 : 0));
+      for (const p of order) {
+        const c = el('circle', { cx: X(p.x), cy: Y(p.y), r: p.m.name === refName ? 6.5 : 4.6, fill: famColor[p.m.family],
+          class: `pt${p.m.name === refName ? ' ref' : ''}${pass.has(p.m.name) ? '' : ' dim'}` });
+        c.addEventListener('mouseenter', (e) => showTip(e as MouseEvent, p.m, s.idx));
+        c.addEventListener('mousemove', (e) => moveTip(e as MouseEvent));
+        c.addEventListener('mouseleave', () => (tip.hidden = true));
+        c.addEventListener('click', () => { refName = p.m.name; run(); });
+        g.append(c);
+      }
+      // labels for the top of the ranking
+      // labels for the top of the ranking, nudged apart so close neighbours stay readable
+      const placed: { x0: number; x1: number; y: number }[] = [];
+      if (s.idx && s.labels) ranked.slice(0, s.labels).forEach((r, i) => {
+        const x = s.x.get(r.m), y = s.y.get(r.m); if (!x || !y) return;
+        const txt = `${i + 1}. ${r.m.name.replace(/ \(.*\)$/, '')}`;
+        const w = txt.length * 5.7;
+        let lx = X(x) + 8, ly = Y(y) - 6;
+        if (lx + w > W - R) lx = X(x) - 8 - w;
+        for (let k = 0; k < 12 && placed.some((p) => Math.abs(p.y - ly) < 11 && p.x0 < lx + w && lx < p.x1); k++) ly += 11;
+        placed.push({ x0: lx, x1: lx + w, y: ly });
+        if (Math.abs(ly - (Y(y) - 6)) > 4) svg.append(el('line', { x1: X(x), y1: Y(y), x2: lx, y2: ly - 3, stroke: 'var(--sl-color-gray-3)', 'stroke-width': 0.6 }));
+        svg.append(el('text', { x: lx, y: ly, 'font-size': 9.5, fill: 'var(--sl-color-white)', 'paint-order': 'stroke', stroke: 'var(--hud-plate)', 'stroke-width': 3 }, txt));
+      });
+
+      detail(ref, s.idx, ranked);
+      table(ranked, s);
+    }
+
+    function showTip(e: MouseEvent, m: Material, idx: Index | null) {
+      const s = state();
+      tip.innerHTML = `<b>${m.name}</b><br>${famName[m.family]} · ${m.summary}<br>${s.x.label}: ${fmt(s.x.get(m)!)} ${s.x.unit}<br>${s.y.label}: ${fmt(s.y.get(m)!)} ${s.y.unit}` +
+        (idx && idx.value(m) !== undefined ? `<br>Index: ${fmt(idx.value(m)!)}` : '') + `<br><span style="opacity:.7">click to use as reference</span>`;
+      tip.hidden = false; moveTip(e);
+    }
+    function moveTip(e: MouseEvent) {
+      const box = root.querySelector('.mc-plot')!.getBoundingClientRect();
+      const x = e.clientX - box.left, y = e.clientY - box.top;
+      tip.style.left = `${Math.min(x + 14, box.width - 200)}px`;
+      tip.style.top = `${Math.max(0, y - 10)}px`;
+    }
+
+    function detail(m: Material | null, idx: Index | null, ranked: { m: Material; v: number }[]) {
+      const box = root.querySelector('[data-detail]')!;
+      if (!m) { box.innerHTML = ''; return; }
+      const pos = ranked.findIndex((r) => r.m.name === m.name);
+      const v = idx?.value(m);
+      const p = (k: string) => { const pr = prop(k); const val = pr.get(m); return val !== undefined ? `${pr.label.replace(/ K_IC/, '')} <b>${fmt(val)}</b> ${pr.unit}` : ''; };
+      box.innerHTML = `<div class="mc-card" style="--fc:${famColor[m.family]}">
+        <h4>${m.name}</h4>
+        <span class="mc-idx">${idx && v !== undefined ? `#${pos + 1} · M = ${fmt(v)}` : ''}</span>
+        <p class="mc-sum">${m.summary}. ${m.spec}</p>
+        <p class="mc-props">${['density', 'yield', 'uts', 'E', 'kic', 'tmax', 'cte', 'k'].map(p).filter(Boolean).join(' · ')}${m.weldable ? ' · weldable' : ''}${m.kicIsFamilyDefault ? ' · K<sub>IC</sub> is a family default' : ''}</p>
+      </div>`;
+    }
+
+    function table(ranked: { m: Material; v: number }[], s: ReturnType<typeof state>) {
+      const head = root.querySelector('[data-rhead]')!, body = root.querySelector('[data-rank]')!;
+      if (!s.idx) { head.innerHTML = ''; body.innerHTML = '<tr><td>Choose a performance index to rank materials.</td></tr>'; return; }
+      head.innerHTML = `<tr><th>#</th><th>Material</th><th>Index M</th><th>${s.x.label}</th><th>${s.y.label}</th><th>Max °C</th></tr>`;
+      const top = ranked.slice(0, 12);
+      const best = top[0]?.v ?? 1;
+      body.innerHTML = top.map((r, i) => `<tr data-name="${r.m.name.replace(/"/g, '&quot;')}" class="${r.m.name === refName ? 'ref' : ''}">
+        <td>${i + 1}</td><td><span class="sw" style="background:${famColor[r.m.family]}"></span>${r.m.name}</td>
+        <td>${fmt(r.v)} <small style="opacity:.6">${((r.v / best) * 100).toFixed(0)}%</small></td>
+        <td>${fmt(s.x.get(r.m) ?? NaN)}</td><td>${fmt(s.y.get(r.m) ?? NaN)}</td><td>${r.m.maxServiceTemp}</td></tr>`).join('') ||
+        '<tr><td colspan="6">Nothing passes these filters.</td></tr>';
+      body.querySelectorAll<HTMLTableRowElement>('tr[data-name]').forEach((tr) => tr.addEventListener('click', () => { refName = tr.dataset.name!; run(); }));
+    }
+
+    field('idx').addEventListener('change', applyIndex);
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    applyIndex();
+    run();
+  });
+</script>

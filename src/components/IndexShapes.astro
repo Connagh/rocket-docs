@@ -1,0 +1,69 @@
+---
+// Same objective (minimum mass for a given stiffness), three shapes, three indices —
+// and the slope each index draws on a log–log chart.
+const panels = [
+  { x: 0, t: 'Tie in tension', idx: 'E / ρ', slope: 1, free: 'free: area A', why: 'stiffness ∝ E·A' },
+  { x: 260, t: 'Beam in bending', idx: 'E½ / ρ', slope: 2, free: 'free: section size', why: 'stiffness ∝ E·A²' },
+  { x: 520, t: 'Panel in bending', idx: 'E⅓ / ρ', slope: 3, free: 'free: thickness t', why: 'stiffness ∝ E·t³' },
+];
+---
+
+<figure class="viz">
+  <p class="viz-title">One objective, three shapes, three indices</p>
+  <svg viewBox="0 0 780 330" role="img" aria-labelledby="ixs-desc">
+    <desc id="ixs-desc">
+      Three components that must be stiff at minimum mass. A tie in tension is best served by maximising E over density; a
+      beam in bending by the square root of E over density; a panel in bending by the cube root of E over density. On a
+      log–log chart of modulus against density those indices are straight lines of slope 1, 2 and 3.
+    </desc>
+    <defs>
+      <marker id="ixs-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-blue)"></path>
+      </marker>
+    </defs>
+    {panels.map((p, i) => (
+      <g transform={`translate(${p.x} 0)`}>
+        <text x="125" y="20" text-anchor="middle" font-size="13" font-weight="600" fill="var(--sl-color-white)">{p.t}</text>
+        {i === 0 && (
+          <g>
+            <rect x="40" y="62" width="170" height="22" fill="var(--rd-steel)"></rect>
+            <line x1="38" y1="73" x2="10" y2="73" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#ixs-ah)"></line>
+            <line x1="212" y1="73" x2="240" y2="73" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#ixs-ah)"></line>
+          </g>
+        )}
+        {i === 1 && (
+          <g>
+            <path d="M40,70 Q125,92 210,70 L210,88 Q125,110 40,88 Z" fill="var(--rd-steel)"></path>
+            <path d="M36,92 L44,92 L40,84 Z M206,92 L214,92 L210,84 Z" fill="var(--sl-color-gray-3)"></path>
+            <line x1="125" y1="40" x2="125" y2="72" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#ixs-ah)"></line>
+          </g>
+        )}
+        {i === 2 && (
+          <g>
+            <path d="M40,70 L180,58 L210,74 L70,86 Z" fill="var(--rd-steel)" fill-opacity="0.85"></path>
+            <path d="M70,86 L210,74 L210,80 L70,92 Z" fill="var(--rd-steel)"></path>
+            <line x1="125" y1="34" x2="125" y2="66" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#ixs-ah)"></line>
+          </g>
+        )}
+        <text x="125" y="122" text-anchor="middle" font-size="11" fill="var(--sl-color-gray-3)">{p.why} · {p.free}</text>
+        <text x="125" y="150" text-anchor="middle" font-size="18" font-weight="600" fill="var(--pc, var(--sl-color-accent))">maximise {p.idx}</text>
+        <!-- mini log-log chart with the guideline slope -->
+        <rect x="50" y="170" width="150" height="120" fill="none" stroke="var(--hud-edge-strong)"></rect>
+        {[1, 0.5, 2].map((k) => {
+          const x1 = 50, x2 = 200;
+          const yMid = 230 - Math.log10(k) * 40;
+          const dy = (p.slope * 150) / 3.2; // slope in decades-per-decade, scaled to the box
+          return <line x1={x1} y1={yMid + dy / 2} x2={x2} y2={yMid - dy / 2} stroke="var(--pc, var(--sl-color-accent))" stroke-width={k === 1 ? 2 : 1} stroke-dasharray={k === 1 ? '6 4' : '2 4'} opacity={k === 1 ? 1 : 0.6} clip-path={`url(#ixs-c${i})`}></line>;
+        })}
+        <clipPath id={`ixs-c${i}`}><rect x="50" y="170" width="150" height="120"></rect></clipPath>
+        <text x="125" y="306" text-anchor="middle" font-size="10" fill="var(--sl-color-gray-3)">log ρ →   ↑ log E</text>
+        <text x="125" y="322" text-anchor="middle" font-size="11" fill="var(--sl-color-white)">guideline slope {p.slope}</text>
+      </g>
+    ))}
+  </svg>
+  <figcaption>
+    Shape changes the answer. A tie only needs area, so modulus pays off one-for-one. A beam or panel gets stiffness from
+    its depth cubed, so a lighter, less stiff material can simply be made thicker — which is why aluminium, magnesium
+    and composites win for panels even when steel wins for ties.
+  </figcaption>
+</figure>

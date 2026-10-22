@@ -1,0 +1,34 @@
+---
+// Wraps Starlight's frame with the deep-field sky, the phase colour tokens
+// (generated from the zone plan, so they can never drift), and scroll telemetry.
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+import SpaceSky from '../hud/SpaceSky.astro';
+import { PHASES, route, toSlug } from '../../data/zones.mjs';
+
+const tokens =
+  `:root{${PHASES.map((p) => `--ph-${p.k}:${p.dark};`).join('')}}` +
+  `:root[data-theme='light']{${PHASES.map((p) => `--ph-${p.k}:${p.light};`).join('')}}`;
+const here = route().find((r) => r.slug !== null && r.slug === toSlug(Astro.url.pathname, import.meta.env.BASE_URL));
+const pc = here ? `var(--ph-${here.phase})` : 'var(--sl-color-accent)';
+---
+
+<style is:inline set:html={tokens + `:root{--pc:${pc};}`}></style>
+<SpaceSky />
+<div id="scrollTelemetry" aria-hidden="true"><i></i></div>
+<Default>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('#scrollTelemetry i');
+  const update = () => {
+    if (!bar) return;
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    bar.style.transform = `scaleX(${Math.min(1, scrollY / max)})`;
+  };
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  update();
+</script>

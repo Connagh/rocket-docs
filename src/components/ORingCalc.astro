@@ -98,7 +98,7 @@ import data from '../data/orings.json';
   <script type="application/json" data-data set:html={JSON.stringify(data)}></script>
 </div>
 
-<style>
+<style is:global>
   .orcalc .inline { display: flex; align-items: center; gap: 0.4rem; }
   .orcalc .inline input { width: auto; }
   .or-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem 0.5rem; align-items: center; font-size: var(--sl-text-sm); color: var(--rd-muted); }

@@ -21511,5 +21511,33 @@ ${"__EXAMPLE__"}`;
   window.REFDB_UI = {sync, buildBanners};
 })();
 </script>
+<script>/* REF·DB v2 glue (added for rocketengdatabase.com; the rest of this file is v1, unchanged).
+   ?z=<zone key> opens that zone directly — v1's own #session links lose to a saved session.
+   A small chip links back to the v2 site. Decoration only: never throws. */
+(function(){
+  try{
+    var z = new URLSearchParams(location.search).get("z");
+    if(z){
+      z = z.replace(/[^a-z]/g, "");
+      window.addEventListener("load", function(){
+        setTimeout(function(){
+          var b = document.querySelector('nav.zones button[data-zone="' + z + '"]');
+          if(b){ b.click(); try{ window.scrollTo(0, 0); }catch(e){} }
+        }, 0);
+      });
+    }
+    if(window.top === window.self){
+      var a = document.createElement("a");
+      a.href = "../"; a.id = "v2Back"; a.textContent = "← REF·DB v2";
+      a.title = "Back to the REF·DB v2 site";
+      a.style.cssText = "position:fixed;left:14px;bottom:16px;z-index:80;font:600 12px/1 var(--mono,monospace);letter-spacing:.12em;" +
+        "padding:10px 14px;border-radius:24px;background:var(--panel,#151D23);color:var(--ink,#E2E9ED);" +
+        "border:1px solid var(--accent,#FF5A3D);text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)";
+      (document.body ? Promise.resolve() : new Promise(function(r){ document.addEventListener("DOMContentLoaded", r); }))
+        .then(function(){ document.body.appendChild(a); });
+    }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

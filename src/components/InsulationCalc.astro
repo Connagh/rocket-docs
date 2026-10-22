@@ -103,7 +103,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
   <script type="application/json" data-data set:html={JSON.stringify({ LINER_MATERIALS, BACKUP_MATERIALS, REGIMES, CASE_WALL })}></script>
 </div>
 
-<style>
+<style is:global>
   .inscalc .pv-sub {
     font-family: var(--sl-font-mono);
     font-size: var(--sl-text-xs);

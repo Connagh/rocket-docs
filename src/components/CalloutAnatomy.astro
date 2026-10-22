@@ -1,0 +1,41 @@
+---
+// The anatomy of a complete material callout — each part labelled with what it controls.
+const parts = [
+  { t: 'D6AC STEEL (UNS K24728)', k: 'Alloy', d: 'Chemistry — and nothing else. On its own it is a wish.' },
+  { t: 'BAR', k: 'Product form', d: 'Grain direction, tolerances, how much you machine away.' },
+  { t: 'TO AMS 6431', k: 'Material standard', d: 'Properties, test method, sampling and acceptance for that form.' },
+  { t: 'VAR', k: 'Melt practice', d: 'Cleanliness — fatigue and fracture depend on it.' },
+  { t: 'HARDEN + DOUBLE TEMPER, 1520 MPa MIN UTS, AMS 2759/2', k: 'Condition', d: 'The strength you designed to, and the process that delivers it.' },
+  { t: 'PRIMER AND PAINT TO <SPEC>', k: 'Finish', d: 'Its own specification, every time.' },
+];
+---
+
+<figure class="viz anat">
+  <p class="viz-title">Anatomy of a complete material callout</p>
+  <ol class="anat-list">
+    {parts.map((p, i) => (
+      <li style={`--i:${i}`}>
+        <code>{p.t}</code>
+        <span class="anat-k">{p.k}</span>
+        <span class="anat-d">{p.d}</span>
+      </li>
+    ))}
+  </ol>
+  <figcaption>
+    "D6AC" names a chemistry. Only the full block — form, standard, melt, condition and finish — names something an
+    inspector can accept or reject.
+  </figcaption>
+</figure>
+
+<style>
+  .anat-list { list-style: none; padding: 0; margin: 0 !important; display: grid; gap: 0.35rem; counter-reset: a; }
+  .anat-list li {
+    display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.1rem 1rem; align-items: baseline; margin: 0 !important;
+    padding: 0.45rem 0.6rem; border-left: 3px solid color-mix(in srgb, var(--pc, var(--sl-color-accent)) calc(100% - var(--i) * 12%), var(--rd-blue));
+    background: color-mix(in srgb, var(--rd-blue) 5%, transparent);
+  }
+  .anat-list code { grid-row: span 2; font-size: 0.78rem; background: none; padding: 0; color: var(--sl-color-white); white-space: normal; }
+  .anat-k { font-family: var(--sl-font-mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pc, var(--sl-color-accent)); }
+  .anat-d { font-size: var(--sl-text-xs); color: var(--sl-color-gray-3); }
+  @media (max-width: 40rem) { .anat-list li { grid-template-columns: 1fr; } .anat-list code { grid-row: auto; } }
+</style>

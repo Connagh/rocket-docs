@@ -89,7 +89,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
   <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.name, m])))}></script>
 </div>
 
-<style>
+<style is:global>
   .pscalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
   .ps-fig { margin: 0.9rem 0 0 !important; }
   .ps-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }

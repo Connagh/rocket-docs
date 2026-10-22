@@ -1,0 +1,70 @@
+---
+// Product form decides grain direction: rolled plate (L, LT, ST) and a closure
+// forged to shape versus the same closure machined from bar.
+const grains = (x0: number, y0: number, w: number, h: number, rows: number, len: number) =>
+  Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: Math.ceil(w / len) }, (_, c) => ({
+      x: x0 + c * len + ((r % 2) * len) / 2, y: y0 + (r + 0.5) * (h / rows), len: len * 0.8,
+    })).filter((g) => g.x + g.len < x0 + w),
+  ).flat();
+const plate = grains(40, 90, 230, 60, 7, 26);
+---
+
+<figure class="viz">
+  <p class="viz-title">Product form sets the grain — and the weak direction</p>
+  <svg viewBox="0 0 800 300" role="img" aria-labelledby="gf-desc">
+    <desc id="gf-desc">
+      Left: a block of rolled plate with grains elongated in the rolling direction, labelled L (longitudinal), LT (long
+      transverse) and ST (short transverse, through the thickness), which is the weakest direction. Right: a dome closure
+      forged so the grain follows its contour, compared with the same shape machined from bar, which cuts across the grain
+      at the corners.
+    </desc>
+    <defs>
+      <marker id="gf-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-blue)"></path>
+      </marker>
+    </defs>
+    <!-- rolled plate block -->
+    <text x="155" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="var(--sl-color-white)">Rolled plate</text>
+    <path d="M40,90 L270,90 L300,62 L70,62 Z" fill="var(--rd-steel)" fill-opacity="0.45"></path>
+    <path d="M270,90 L300,62 L300,122 L270,150 Z" fill="var(--rd-steel)" fill-opacity="0.65"></path>
+    <rect x="40" y="90" width="230" height="60" fill="var(--rd-steel)" fill-opacity="0.85"></rect>
+    {plate.map((g) => <line x1={g.x} y1={g.y} x2={g.x + g.len} y2={g.y} stroke="var(--hud-plate)" stroke-width="2" opacity="0.55"></line>)}
+    <line x1="60" y1="190" x2="200" y2="190" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
+    <text x="130" y="210" text-anchor="middle" font-size="12" fill="var(--rd-blue)">L — rolling direction: strongest</text>
+    <line x1="285" y1="160" x2="312" y2="132" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
+    <text x="318" y="140" font-size="12" fill="var(--rd-blue)">LT</text>
+    <line x1="25" y1="150" x2="25" y2="95" stroke="var(--sl-color-accent)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
+    <text x="22" y="240" font-size="12" fill="var(--sl-color-accent)">ST — through thickness:</text>
+    <text x="22" y="256" font-size="12" fill="var(--sl-color-accent)">lowest ductility, toughness</text>
+    <text x="22" y="272" font-size="12" fill="var(--sl-color-accent)">and stress-corrosion resistance</text>
+
+    <line x1="390" y1="30" x2="390" y2="280" stroke="var(--hud-edge-strong)"></line>
+
+    <!-- forged vs machined closure -->
+    <text x="510" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="var(--sl-color-white)">Forged to shape</text>
+    <path d="M430,170 Q430,80 510,80 Q590,80 590,170 L570,170 Q570,100 510,100 Q450,100 450,170 Z" fill="var(--rd-steel)"></path>
+    {[0, 1, 2, 3].map((k) => {
+      const o = 4 + k * 4;
+      return <path d={`M${430 + o},170 Q${430 + o},${80 + o} 510,${80 + o} Q${590 - o},${80 + o} ${590 - o},170`} fill="none" stroke="var(--hud-plate)" stroke-width="1.5" opacity="0.6"></path>;
+    })}
+    <text x="510" y="196" text-anchor="middle" font-size="11" fill="var(--rd-ok)">grain follows the contour</text>
+
+    <text x="700" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="var(--sl-color-white)">Machined from bar</text>
+    <path d="M620,170 Q620,80 700,80 Q780,80 780,170 L760,170 Q760,100 700,100 Q640,100 640,170 Z" fill="var(--rd-steel)"></path>
+    <clipPath id="gf-clip"><path d="M620,170 Q620,80 700,80 Q780,80 780,170 L760,170 Q760,100 700,100 Q640,100 640,170 Z"></path></clipPath>
+    <g clip-path="url(#gf-clip)">
+      {[84, 92, 100, 108, 116, 124, 132, 140, 148, 156, 164].map((y) => <line x1="615" y1={y} x2="785" y2={y} stroke="var(--hud-plate)" stroke-width="1.5" opacity="0.6"></line>)}
+    </g>
+    <circle cx="628" cy="118" r="11" fill="none" stroke="var(--sl-color-accent)" stroke-width="2"></circle>
+    <circle cx="772" cy="118" r="11" fill="none" stroke="var(--sl-color-accent)" stroke-width="2"></circle>
+    <text x="700" y="196" text-anchor="middle" font-size="11" fill="var(--sl-color-accent)">end grain exposed at knuckles</text>
+    <text x="600" y="240" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-3)">Same alloy, same shape:</text>
+    <text x="600" y="256" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-3)">the forging is loaded along its grain,</text>
+    <text x="600" y="272" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-3)">the part cut from bar across it.</text>
+  </svg>
+  <figcaption>
+    Wrought metal has a grain, like wood. Plate and bar are strongest along the rolling direction and weakest through
+    the thickness. Forging lets the grain follow the part, which is why pressure-vessel closures and bosses are forged.
+  </figcaption>
+</figure>
