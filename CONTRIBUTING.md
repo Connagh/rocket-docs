@@ -41,3 +41,11 @@ This is a public site. Only content that is already in the open literature belon
   design data, formulations and manufacturing know-how can be. **If in doubt, leave it out** and ask your export
   control officer.
 - No propellant formulation, processing or energetics manufacturing detail.
+
+### Scope compared with REF·DB v1
+
+v1 deliberately stayed mechanical and structural, leaving out internal ballistics and grain performance. **v2 widens
+that on purpose** (owner's decision, October 2026): textbook-level internal ballistics — burn rate laws, chamber
+pressure balance, grain burn-back and thrust profiles — is in scope, because it is open-literature teaching material
+(Sutton, NASA SP-8076) and the structural topics depend on it. Everything in the list above still stays out:
+formulations, energetics processing and initiation, and anything beyond what a standard textbook already publishes.
