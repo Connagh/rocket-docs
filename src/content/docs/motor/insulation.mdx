@@ -1,0 +1,244 @@
+---
+title: Insulation & ablative liners
+description: How internal insulation and nozzle ablatives erode, char and protect the structure; how exposure time sets thickness; soak-back; and how to choose the material.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import CharLayers from '../../../components/CharLayers.astro';
+import InsulationZones from '../../../components/InsulationZones.astro';
+import InsulationCalc from '../../../components/InsulationCalc.astro';
+import ExposureMap from '../../../components/ExposureMap.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Thickness = what the flame takes (erosion + char), with margin, plus enough virgin material to keep the bondline cool — including after burnout.</div>
+  <div><b>Before this</b><a href="../propellant-grain/">Propellant grain</a> (exposure comes from burn-back) · <a href="../case-sizing/">Case sizing</a></div>
+  <div><b>Legacy zone</b>Z27 · Ablative liners, with the soak-back idea from Z28</div>
+</div>
+
+## Why this matters
+
+Combustion gas is around 3000 K. High-strength case steels lose strength quickly above a few hundred °C, composite
+case resins soften at around 120–200 °C, and the adhesive bonding insulation to case may be limited lower still. The
+insulation is all that stands between them. Too thin, and the case or bond overheats or burns through — a
+catastrophic failure. Too thick, and it is inert mass, which costs performance just like case mass. Insulation can be a
+significant share of a motor's inert mass, so it is sized region by region, not with one blanket thickness.
+
+## Two jobs at once
+
+<CharLayers />
+
+An ablative insulator protects the structure in two ways:
+
+1. **It gives up its surface on purpose.** Heat decomposes the rubber or resin (pyrolysis), leaving a porous carbon
+   **char**. The decomposition absorbs heat, and the gases it releases percolate out through the char and thicken the
+   boundary layer, blocking some of the incoming heat ("blowing"). The flow scours the char away slowly — **erosion**.
+2. **The virgin material behind it insulates.** Low conductivity keeps the heat near the surface, so the bondline and
+   case stay cool.
+
+<Analogy title="A log in a campfire">
+  A thick log burns for hours because its outside turns to charcoal, and charcoal is a good insulator: the wood inside
+  stays brown and cool while the surface glows. Poke the log and knock the char off, and it burns much faster. Motor
+  insulation is the same: the char layer protects what is behind it, and anything that strips the char — fast gas,
+  impinging aluminium-oxide droplets — speeds up the attack.
+</Analogy>
+
+**Material affected depth (MAD)** is everything the flame has used up: eroded material plus char. It is the number
+measured by sectioning insulation after a firing, and the basis of most insulation design rules.
+
+<Analogy title="An oven glove versus a cast-iron pan">
+  A cast-iron pan doesn't burn on the hob, but its handle gets too hot to hold: it resists the flame and passes the
+  heat on. An oven glove chars if you hold it in the flame, but your hand stays cool. Graphite and carbon-carbon
+  behave like the pan — superb surface resistance, poor insulation — and rubbers and phenolics like the glove. That is
+  why a graphite throat insert always has an insulator behind it.
+</Analogy>
+
+## Exposure time sets the thickness
+
+Insulation only works while hot gas touches it, so the first question for any location is **how long is it
+exposed?** That comes straight from the grain design.
+
+<InsulationZones />
+
+- **Under the grain**, the cylinder insulation is covered by propellant until the web burns through. Exposure is only
+  the tail-off, so this is usually the thinnest insulation in the motor.
+- **Domes and grain ends** are exposed from ignition, so their exposure is close to the full burn time.
+- **The aft dome and nozzle entrance** add the fastest, turning flow and aluminium-oxide particles hitting the
+  surface, so erosion dominates. This is where the thickest, toughest grades go.
+
+With a star or slotted grain, the flame reaches the case under the star tips long before it reaches the case under
+the valleys. Exposure — and the thickness needed — therefore varies **around the circumference**, not just along the
+motor:
+
+<ExposureMap />
+
+## The physics of charring
+
+### Heat soaks in as the square root of time
+
+Treat the insulation as a thick slab whose surface is suddenly held at a high temperature. Heat spreads in by
+conduction, and the temperature rise at depth $x$ after time $t$ is
+
+$$
+\frac{T - T_0}{T_s - T_0} = \operatorname{erfc}\!\left(\frac{x}{2\sqrt{\alpha t}}\right),
+\qquad \alpha = \frac{k}{\rho\,c_p}
+$$
+
+where $\alpha$ is thermal diffusivity. Every depth scales with $\sqrt{\alpha t}$: **double the time and the heat
+reaches only about 1.4 times deeper**.
+
+<Analogy title="Roasting a joint of meat">
+  Cooking time goes with the square of thickness, which is why a joint twice as thick takes about four times as long,
+  not twice. The same √t law sets how far heat reaches into insulation. For insulation it is good news: a long burn is
+  less punishing per second than simple arithmetic suggests.
+</Analogy>
+
+### Erosion changes the shape of the problem
+
+If the surface also recedes at a steady rate $v$, the exact solution for a semi-infinite solid with its surface held
+at $T_s$ is:
+
+$$
+\theta(\xi, t) = \tfrac{1}{2}\left[\operatorname{erfc}\!\left(\frac{\xi + v t}{2\sqrt{\alpha t}}\right)
++ e^{-v\xi/\alpha}\,\operatorname{erfc}\!\left(\frac{\xi - v t}{2\sqrt{\alpha t}}\right)\right]
+$$
+
+where $\xi$ is depth below the *current* surface. The char front is where $\theta$ falls to the pyrolysis level
+$\theta_p = (T_p - T_0)/(T_s - T_0)$. Two limits make it easy to read:
+
+- **No erosion ($v = 0$):** char grows as $\sqrt{t}$ indefinitely.
+- **Long times:** the profile settles into $\theta = e^{-v\xi/\alpha}$, which travels with the surface. The char layer
+  stops growing at a **steady thickness**
+
+$$
+\delta_{\text{char}} = \frac{\alpha}{v}\,\ln\frac{1}{\theta_p}
+$$
+
+  and the affected depth then grows linearly with time, $\text{MAD} \approx v\,t + \delta_\text{char}$.
+
+So **short burns are char-dominated and long burns are erosion-dominated.** That is why the erosion rate — which
+depends on the local flow, not just the material — is the number insulation designers argue about most.
+
+### After burnout: soak-back
+
+When the motor stops, the hot char and insulation still hold a lot of heat. With no gas flow to carry it away, much
+of it flows **inward**, the only way left to go. The bondline often reaches its peak temperature **minutes after
+burnout**, long after the insulation surface has started to cool.
+
+<Analogy title="A stone pizza oven">
+  Rake the fire out of a stone oven and it keeps cooking for hours, because the heat stored in the stone keeps flowing
+  into the bread. The insulation layer is that stone; the bondline and case are the bread.
+</Analogy>
+
+How much of the stored heat goes inward depends on how the motor cools after burnout: radiation to the cold nozzle
+opening, venting, and heat absorbed by continuing pyrolysis. The calculator brackets it with two bounds:
+**insulated face** (all stored heat soaks inward — conservative) and **radiating face** (the surface radiates to cold
+surroundings — optimistic for most of a closed case).
+
+## Sizing rule
+
+Two requirements, and the thicker wins:
+
+$$
+t \;\ge\; SF \times \text{MAD}
+\qquad\text{and}\qquad
+T_\text{bond,peak}(t) \;\le\; T_\text{limit}
+$$
+
+plus a **minimum gauge** for manufacture and handling. Safety factors of around 1.5–2.0 on measured affected depth
+are common in the open literature. Your programme sets its own, often higher in the aft dome and other regions with
+large uncertainty.
+
+## Calculator
+
+<InsulationCalc />
+
+## Worked example — EPDM over a thin steel case
+
+Aramid-filled EPDM ($k = 0.25$ W/m·K, $\rho = 1100$ kg/m³, $c_p = 2000$ J/kg·K) on the 1.4 mm D6AC case from the
+[case-sizing example](../case-sizing/#worked-example), in a low-velocity region exposed for 20 s. Effective surface
+temperature 1200 °C, char front 450 °C, erosion 0.025 mm/s, bondline limit 150 °C, safety factor 1.5. These are the
+calculator's defaults.
+
+1. **Diffusivity.** $\alpha = 0.25 / (1100 \times 2000) = 1.14 \times 10^{-7}$ m²/s, so $\sqrt{\alpha t} = 1.51$ mm
+   at 20 s.
+2. **Char front level.** $\theta_p = (450 - 20)/(1200 - 20) = 0.364$.
+3. **Without erosion** the char would reach $2\sqrt{\alpha t}\;\operatorname{erfc}^{-1}(0.364) = 3.02 \times 0.64 =
+   1.93$ mm.
+4. **With erosion**, 0.5 mm of surface is removed, and the moving-surface solution puts the char front 1.64 mm below
+   the new surface. Affected depth at burnout is $0.5 + 1.64 = 2.14$ mm. The calculator's transient model gets the same
+   1.64 mm, and the automated tests check that agreement.
+5. **Soak-back** pushes the char front a little deeper after burnout: MAD ≈ 2.4 mm, so $1.5 \times \text{MAD} =
+   3.6$ mm.
+6. **Bondline.** Keeping the peak bondline temperature below 150 °C needs about **8.9 mm** with the insulated-face
+   assumption (peak about 6 minutes after burnout), or 6.7 mm with the radiating face.
+
+**The bondline governs, by a wide margin.** The affected depth alone suggests 3.6 mm, but a 1.4 mm steel case has very
+little heat capacity to absorb soak-back. Try the carbon/epoxy case, a 60 s exposure, or the high-velocity regime, and
+watch which requirement takes over. The steady char thickness, $(\alpha/v)\ln(1/\theta_p) = 4.6$ mm, shows that at this
+erosion rate the char layer would never exceed about 4.6 mm, however long the burn.
+
+## Choosing the material
+
+| Material | Where it's used | Strengths | Watch out for |
+| --- | --- | --- | --- |
+| EPDM, aramid-fibre filled | Case insulation, most regions | Lowest density and conductivity, good ageing, good bond | Lower erosion resistance in high-velocity, particle-laden flow |
+| EPDM, carbon-fibre filled | Aft domes, high-flow regions | Tougher, more adherent char | Higher conductivity than aramid grades |
+| NBR, silica filled | Case insulation (older and some current designs) | Good propellant compatibility, tough char | Denser; historically asbestos filled — phased out |
+| Silicone, silica filled | Flexible joints, wide-temperature service | Silica-rich char, flexible when cold | Bonding needs special primers |
+| Carbon phenolic | Nozzle throat region, entrance (large motors) | High erosion resistance, good insulation | Precursor supply; delamination and pocketing if made badly |
+| Silica / glass phenolic | Exit cones, insulation behind inserts | Cheaper, lower conductivity than carbon phenolic | Lower erosion resistance; silica melts at high heat flux |
+| Carbon-carbon | Throats and exit cones | Very low erosion, light, strong when hot | Conducts heat — needs backing insulation; cost; oxidation |
+| Bulk graphite | Throat inserts in small motors | Cheap, low erosion | Thermal shock cracking; very conductive |
+
+How to choose, in order:
+
+1. **Exposure and flow first.** Long exposure in fast, particle-laden flow needs an erosion-resistant grade. Short,
+   gentle exposure is driven by conductivity and density.
+2. **Then mass.** Density × thickness is the cost. A slightly less erosion-resistant but much lighter insulator often
+   wins in low-velocity regions.
+3. **Compatibility with the propellant.** Plasticiser and burn-rate catalysts can migrate from the propellant into the
+   liner and insulation over years of storage. That weakens the bond and changes the propellant next to it. The liner
+   is formulated partly as a barrier against this migration.
+4. **Bond and processing.** How the insulation is laid up (calendered sheet, cured in place or co-cured with a
+   composite case), and how it bonds to the case and the propellant liner, are as important as its thermal numbers.
+5. **Ageing.** Insulation has to keep its properties and its bonds for the motor's whole service life.
+
+## Where this model stops
+
+<Aside type="caution" title="Screening model, not a qualified thermal analysis">
+  The calculator holds the surface at one effective temperature, uses constant virgin properties throughout, and
+  ignores pyrolysis heat absorption, gas blowing and the char's different properties. That makes the bondline result
+  conservative in some ways and optimistic in others. Real insulation is sized with charring-ablation codes calibrated
+  against material-affected depths from sectioned motors, and bondline thermocouple data from firings.
+</Aside>
+
+- **Erosion is an input, not a prediction.** It depends on local velocity, particle impingement, pressure, propellant
+  aluminium content and the material's char strength. Use measured rates.
+- **2-D effects** at joints, flaps, grain terminations and the nozzle entrance can dominate locally.
+- **Nozzle throats** erode much faster than case insulation and change chamber pressure as they do — covered on the
+  planned nozzle page.
+
+## On the drawing
+
+- **Thickness map** — insulation thickness by zone, with tolerances. Show where it is measured and with what method.
+- **Material and process specifications** — compound, lay-up and cure, bond surface preparation and primers.
+- **Bond inspection** — NDT of the case-to-insulation and insulation-to-liner bonds, with acceptance criteria.
+- **Stress-relief flaps** — geometry, and the release agent that lets them open.
+
+## References and further reading
+
+- NASA SP-8093, *Solid Rocket Motor Internal Insulation* (1976).
+- NASA SP-8115, *Solid Rocket Motor Nozzles* (1975).
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — chapters on solid motor components
+  and nozzles.
+- H. S. Carslaw & J. C. Jaeger, *Conduction of Heat in Solids*, 2nd ed., Oxford (1959) — semi-infinite and
+  moving-boundary solutions.
+- A. Davenas (ed.), *Solid Rocket Propulsion Technology*, Pergamon (1993).
+
+<Aside type="note">
+  Screening and educational material. Insulation design and qualification are governed by your programme's
+  requirements, material data from your own firings, and sign-off by the responsible thermal and safety authorities.
+</Aside>

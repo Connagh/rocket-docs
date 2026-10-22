@@ -1,0 +1,284 @@
+---
+// Insulation / ablative liner thickness sizing at one location.
+// Physics in src/lib/insulation.ts (unit-tested); this file is UI only.
+import { LINER_MATERIALS, BACKUP_MATERIALS } from '../lib/insulation';
+
+const REGIMES = [
+  { key: 'none', label: 'No erosion — char only', f: 0 },
+  { key: 'low', label: 'Low velocity (forward dome, behind grain)', f: 0.25 },
+  { key: 'mod', label: 'Moderate flow', f: 1 },
+  { key: 'high', label: 'High velocity / particle impingement (aft dome)', f: 4 },
+];
+const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
+---
+
+<div class="calc inscalc" data-inscalc>
+  <div class="calc-head"><span>Insulation thickness at one location</span><span data-busy>1-D transient · erosion + char + soak-back</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Insulator</legend>
+        <label>Material
+          <select name="mat">
+            <optgroup label="Case insulation">
+              {LINER_MATERIALS.filter((m) => m.role === 'case').map((m) => <option value={m.key}>{m.name}</option>)}
+            </optgroup>
+            <optgroup label="Nozzle ablatives">
+              {LINER_MATERIALS.filter((m) => m.role === 'nozzle').map((m) => <option value={m.key}>{m.name}</option>)}
+            </optgroup>
+          </select>
+        </label>
+        <p class="hint" data-matnote></p>
+        <div class="row2">
+          <label>k (W/m·K)<input name="k" type="number" min="0.01" step="any" /></label>
+          <label>Density (kg/m³)<input name="rho" type="number" min="1" step="any" /></label>
+          <label>c<sub>p</sub> (J/kg·K)<input name="cp" type="number" min="1" step="any" /></label>
+          <label>Char front temp (°C)<input name="tp" type="number" step="any" placeholder="none" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Exposure</legend>
+        <label>Flow regime
+          <select name="regime">{REGIMES.map((r) => <option value={r.key} selected={r.key === 'low'}>{r.label}</option>)}</select>
+        </label>
+        <div class="row2">
+          <label>Erosion rate (mm/s)<input name="er" type="number" min="0" step="any" /></label>
+          <label>Exposure time (s)<input name="te" type="number" min="0.1" step="any" value="20" /></label>
+          <label>Effective surface temp (°C)<input name="ts" type="number" step="any" value="1200" /></label>
+          <label>Initial temp (°C)<input name="t0" type="number" step="any" value="20" /></label>
+        </div>
+        <p class="hint">Erosion rates and the effective surface temperature are calibration values. Defaults are illustrative; fit them to char and erosion depths measured on your own firings.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Behind it</legend>
+        <label>Structure
+          <select name="case">{BACKUP_MATERIALS.map((c) => <option value={c.key}>{c.name}</option>)}</select>
+        </label>
+        <div class="row2">
+          <label>Wall (mm)<input name="cw" type="number" min="0.1" step="any" value="1.4" /></label>
+          <label>Bondline limit (°C)<input name="lim" type="number" step="any" value="150" /></label>
+          <label>Safety factor on MAD<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+          <label>Minimum gauge (mm)<input name="min" type="number" min="0" step="any" value="1" /></label>
+        </div>
+        <label>Check an as-designed thickness (mm, optional)
+          <input name="chk" type="number" min="0" step="any" placeholder="blank = size it" />
+        </label>
+      </fieldset>
+    </form>
+
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt data-r="reqLabel">Required thickness</dt><dd data-r="req">—</dd></div>
+        <div class="readout"><dt>Governed by</dt><dd data-r="gov" class="small-dd">—</dd></div>
+        <div class="readout"><dt>Mass per area</dt><dd data-r="mass">—</dd></div>
+      </dl>
+      <p class="pv-sub">Material affected depth</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Eroded</dt><dd data-r="ero">—</dd></div>
+        <div class="readout"><dt>Char at burnout</dt><dd data-r="charB">—</dd></div>
+        <div class="readout"><dt>MAD incl. soak-back</dt><dd data-r="mad">—</dd></div>
+        <div class="readout"><dt>SF × MAD</dt><dd data-r="tmad">—</dd></div>
+      </dl>
+      <p class="pv-sub">Bondline temperature</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Thickness for limit — insulated face</dt><dd data-r="tbA">—</dd></div>
+        <div class="readout"><dt>…radiating face</dt><dd data-r="tbR">—</dd></div>
+        <div class="readout" data-peak><dt>Peak at this thickness</dt><dd data-r="peak">—</dd></div>
+      </dl>
+      <div class="ins-wall">
+        <svg viewBox="0 0 480 64" data-wall role="img" aria-label="Wall section to scale"></svg>
+      </div>
+      <figure class="ins-fig">
+        <svg viewBox="0 0 480 240" data-chart role="img" aria-label="Bondline temperature versus time"></svg>
+        <figcaption>Bondline temperature at this thickness. Shaded band: between the radiating-face and insulated-face assumptions after burnout.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    1-D implicit conduction through insulation and case, hot face held at the effective surface temperature and
+    receding at the erosion rate; char = material that reached the char-front temperature. Neglects pyrolysis heat
+    absorption and gas blowing (both lower the bondline temperature), property changes in the char, and 2-D effects.
+  </div>
+  <script type="application/json" data-data set:html={JSON.stringify({ LINER_MATERIALS, BACKUP_MATERIALS, REGIMES, CASE_WALL })}></script>
+</div>
+
+<style>
+  .inscalc .pv-sub {
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rd-muted);
+    margin: 1rem 0 0.4rem !important;
+  }
+  .inscalc .small-dd { font-size: 0.85rem !important; }
+  .ins-wall { margin-top: 0.9rem !important; }
+  .ins-wall svg, .ins-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ins-fig { margin: 0.75rem 0 0 !important; }
+  .ins-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .inscalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+  .inscalc .pv-notes li.bad { color: var(--rd-accent); }
+  .inscalc .pv-notes li.warn { color: var(--rd-warn); }
+  .inscalc.busy .readouts { opacity: 0.55; }
+</style>
+
+<script>
+  import { sizeInsulation, simulateWall, type SizingInputs, type WallResult } from '../lib/insulation';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+
+  document.querySelectorAll<HTMLElement>('[data-inscalc]').forEach((root) => {
+    const { LINER_MATERIALS, BACKUP_MATERIALS, REGIMES, CASE_WALL } = JSON.parse(root.querySelector('[data-data]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const mat = () => LINER_MATERIALS.find((m: any) => m.key === field('mat').value);
+    const backup = () => BACKUP_MATERIALS.find((m: any) => m.key === field('case').value);
+
+    const applyMat = () => {
+      const m = mat();
+      field('k').value = m.k; field('rho').value = m.rho; field('cp').value = m.cp;
+      field('tp').value = m.tPyro ?? '';
+      root.querySelector('[data-matnote]')!.textContent = m.note;
+      applyRegime();
+    };
+    const applyRegime = () => {
+      const g = REGIMES.find((x: any) => x.key === field('regime').value);
+      field('er').value = String(+(mat().erosion * g.f).toFixed(4));
+    };
+    const applyCase = () => {
+      const c = backup();
+      field('cw').value = CASE_WALL[c.key];
+      field('lim').value = c.tLimit;
+    };
+
+    function inputs(): SizingInputs {
+      const c = backup();
+      return {
+        ins: { k: num('k'), rho: num('rho'), cp: num('cp') },
+        caseT: num('cw'), case: { k: c.k, rho: c.rho, cp: c.cp },
+        t0: num('t0'), tSurface: num('ts'), tPyro: field('tp').value === '' ? null : num('tp'),
+        erosion: num('er'), exposure: num('te'), soak: 300, hOut: 10,
+        safetyFactor: num('sf'), bondLimit: num('lim'), minGauge: num('min'),
+      };
+    }
+
+    function run() {
+      const s = inputs();
+      const notes: [string, string][] = [];
+      if (!(s.ins.k > 0 && s.ins.rho > 0 && s.ins.cp > 0 && s.exposure > 0 && s.caseT > 0)) {
+        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Check the inputs: properties, exposure and wall must be positive.</li>';
+        return;
+      }
+      const ad = sizeInsulation({ ...s, afterBurnout: 'adiabatic' });
+      const ra = sizeInsulation({ ...s, afterBurnout: 'radiating' });
+      const chk = num('chk');
+      const L = chk > 0 ? chk : ad.required;
+      const resA: WallResult | null = Number.isFinite(L) ? simulateWall({ ...s, insT: L, afterBurnout: 'adiabatic' }) : null;
+      const resR: WallResult | null = Number.isFinite(L) ? simulateWall({ ...s, insT: L, afterBurnout: 'radiating' }) : null;
+
+      r('reqLabel').textContent = chk > 0 ? 'Thickness checked' : 'Required thickness';
+      r('req').innerHTML = Number.isFinite(L) ? `${f(L, 2)} <small>mm</small>` : 'none works';
+      r('gov').textContent = chk > 0 ? `required ${f(ad.required, 2)} mm` : ad.governs;
+      r('mass').innerHTML = Number.isFinite(L) ? `${f((s.ins.rho * L) / 1000, 1)} <small>kg/m²</small>` : '—';
+      r('ero').innerHTML = `${f(ad.result?.erosion ?? s.erosion * s.exposure, 2)} <small>mm</small>`;
+      r('charB').innerHTML = resA ? `${f(resA.charFrontBurnout - resA.erosion, 2)} <small>mm</small>` : '—';
+      r('mad').innerHTML = `${f(ad.mad, 2)} <small>mm</small>`;
+      r('tmad').innerHTML = `${f(ad.tMad, 2)} <small>mm</small>`;
+      r('tbA').innerHTML = Number.isFinite(ad.tBond) ? `${f(ad.tBond, 2)} <small>mm</small>` : 'none';
+      r('tbR').innerHTML = Number.isFinite(ra.tBond) ? `${f(ra.tBond, 2)} <small>mm</small>` : 'none';
+      if (resA && resR) {
+        r('peak').innerHTML = `${f(resR.bondPeak, 0)}–${f(resA.bondPeak, 0)} <small>°C · at ${f(resA.tBondPeak / 60, 1)} min</small>`;
+        const ok = resA.bondPeak <= s.bondLimit + 0.5 && !resA.burnThrough && L >= s.safetyFactor * ad.mad - 1e-6;
+        root.querySelector('[data-peak]')!.className = `readout ${resA.bondPeak > s.bondLimit + 0.5 ? (resR.bondPeak > s.bondLimit + 0.5 ? 'bad' : 'warn') : 'ok'}`;
+        if (chk > 0 && !ok) notes.push(['bad', `${f(chk, 2)} mm does not meet the requirement of ${f(ad.required, 2)} mm (${ad.governs}).`]);
+        if (resA.burnThrough) notes.push(['bad', 'Burn-through: the affected depth reaches the case.']);
+        if (resA.tBondPeak > s.exposure * 1.5)
+          notes.push(['', `The bondline peaks ${f((resA.tBondPeak - s.exposure) / 60, 1)} minutes after burnout. That is soak-back: heat stored in the hot char and insulation keeps flowing inward once the gas has gone.`]);
+        drawWall(L, resA, s.caseT);
+        chart(resA, resR, s.bondLimit, s.exposure);
+      }
+      if (ad.governs === 'bondline temperature')
+        notes.push(['', `The bondline limit, not the affected depth, sets the thickness here. Options: a thicker or higher-capacity case, a lower-conductivity insulator, or a higher-temperature bond system.`]);
+      if (field('tp').value === '' && s.ins.k > 5)
+        notes.push(['warn', 'This material does not char and conducts heat well: it protects the surface but not the structure. It needs a separate insulator behind it — size that layer with a charring insulator.']);
+      if (Math.abs(ra.tBond - ad.tBond) > 0.25 * ad.tBond && Number.isFinite(ad.tBond))
+        notes.push(['', `The two after-burnout assumptions differ by ${f(Math.abs(ad.tBond - ra.tBond), 1)} mm. Which is closer depends on how the motor cools after burnout, which is why bondline thermocouples on firings matter.`]);
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+    }
+
+    function drawWall(L: number, res: WallResult, caseT: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-wall]')!;
+      svg.replaceChildren();
+      const total = L + caseT, X = (mm: number) => 10 + (mm / total) * 460;
+      const seg = (a: number, b: number, fill: string, label: string, dark = false) => {
+        if (b - a <= 0) return;
+        svg.append(el('rect', { x: X(a), y: 8, width: Math.max(0.5, X(b) - X(a)), height: 26, fill, ...(fill === 'none' ? { stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' } : {}) }));
+        if (X(b) - X(a) > 34) svg.append(el('text', { x: (X(a) + X(b)) / 2, y: 25, 'text-anchor': 'middle', 'font-size': 10, fill: dark ? '#e8ecef' : 'var(--rd-ink)' }, label));
+      };
+      seg(0, res.erosion, 'none', 'eroded');
+      seg(res.erosion, res.charFront, '#1b1d1f', 'char', true);
+      seg(res.charFront, L, 'var(--rd-insul)', 'virgin');
+      seg(L, total, 'var(--rd-steel)', 'case');
+      svg.append(el('text', { x: 10, y: 52, 'font-size': 10, fill: 'var(--rd-muted)' }, `to scale · ${f(L, 2)} mm insulation + ${f(caseT, 2)} mm case · hot gas on the left`));
+    }
+
+    function chart(a: WallResult, b: WallResult, lim: number, te: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      const W = 480, H = 240, Lm = 46, R = 12, T = 12, B = 36;
+      const tMax = Math.max(a.history[a.history.length - 1].t, te * 3);
+      const yMax = Math.max(lim * 1.25, ...a.history.map((p) => p.bond)) * 1.05;
+      const yMin = Math.min(...a.history.map((p) => p.bond)) - 5;
+      // square-root time axis: resolves the burn and the long soak on one chart
+      const X = (t: number) => Lm + Math.sqrt(t / tMax) * (W - Lm - R);
+      const Y = (v: number) => H - B - ((v - yMin) / (yMax - yMin)) * (H - T - B);
+      const ticks = [te, 60, 300, 600, 1200, 1800, 3600].filter((t) => t <= tMax);
+      for (const t of [0, ...new Set(ticks)]) {
+        svg.append(el('line', { x1: X(t), x2: X(t), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(t), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: t === te ? 'var(--rd-accent)' : 'var(--rd-muted)' }, t === te ? 'burnout' : t >= 60 ? `${t / 60} min` : `${t}`));
+      }
+      const step = (yMax - yMin) > 200 ? 50 : 25;
+      for (let v = Math.ceil(yMin / step) * step; v <= yMax; v += step) {
+        svg.append(el('line', { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: Lm - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, `${v}`));
+      }
+      svg.append(el('text', { x: (Lm + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'time (square-root scale)'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'bondline °C'));
+      const path = (h: { t: number; bond: number }[]) => h.filter((p) => p.t <= tMax).map((p, i) => `${i ? 'L' : 'M'}${X(p.t).toFixed(1)},${Y(p.bond).toFixed(1)}`).join('');
+      const band = path(a.history) + b.history.filter((p) => p.t <= tMax).reverse().map((p) => `L${X(p.t).toFixed(1)},${Y(p.bond).toFixed(1)}`).join('') + 'Z';
+      svg.append(el('path', { d: band, fill: 'var(--rd-hot)', 'fill-opacity': 0.15 }));
+      svg.append(el('line', { x1: Lm, x2: W - R, y1: Y(lim), y2: Y(lim), stroke: 'var(--rd-accent)', 'stroke-dasharray': '6 4' }));
+      svg.append(el('text', { x: W - R - 4, y: Y(lim) - 5, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-accent)' }, `limit ${lim} °C`));
+      svg.append(el('path', { d: path(b.history), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2 }));
+      svg.append(el('path', { d: path(a.history), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
+      svg.append(el('circle', { cx: X(a.tBondPeak), cy: Y(a.bondPeak), r: 4.5, fill: 'var(--rd-panel)', stroke: 'var(--rd-hot)', 'stroke-width': 2 }));
+      svg.append(el('text', { x: Lm + 6, y: T + 12, 'font-size': 10, fill: 'var(--rd-hot)' }, 'insulated face after burnout'));
+      svg.append(el('text', { x: Lm + 6, y: T + 26, 'font-size': 10, fill: 'var(--rd-blue)' }, 'radiating face after burnout'));
+    }
+
+    let timer = 0;
+    const schedule = () => {
+      root.classList.add('busy');
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { run(); root.classList.remove('busy'); }, 250);
+    };
+    field('mat').addEventListener('change', applyMat);
+    field('regime').addEventListener('change', applyRegime);
+    field('case').addEventListener('change', applyCase);
+    form.addEventListener('input', schedule);
+    form.addEventListener('change', schedule);
+    applyMat();
+    applyCase();
+    run();
+  });
+</script>

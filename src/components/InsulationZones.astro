@@ -1,0 +1,90 @@
+---
+// Where insulation goes in a motor and why its thickness varies. Thicknesses exaggerated.
+const zones = [
+  { n: 1, at: [150, 120], label: [90, 40], title: 'Forward dome', text: 'Exposed early in the burn, but the gas is slow here. Moderate thickness.' },
+  { n: 2, at: [380, 85], label: [380, 40], title: 'Cylinder under the grain', text: 'Covered by propellant until the web burns through, so it only sees the tail-off. Usually the thinnest insulation in the motor.' },
+  { n: 3, at: [640, 130], label: [700, 60], title: 'Aft dome and nozzle entrance', text: 'Exposed for the whole burn to fast, turning flow and impinging aluminium-oxide particles. Thickest, in an erosion-resistant grade.' },
+  { n: 4, at: [580, 97], label: [560, 40], title: 'Stress-relief flap', text: 'An unbonded insulation flap at the grain end that lets the grain shrink without tearing the bond. Insulated on both faces.' },
+  { n: 5, at: [750, 158], label: [800, 230], title: 'Nozzle', text: 'Graphite or carbon-carbon throat insert, always backed by an insulator; carbon phenolic at the entrance; silica or glass phenolic in the exit cone.' },
+];
+---
+
+<figure class="viz">
+  <p class="viz-title">Insulation thickness follows exposure — half-section, thickness exaggerated</p>
+  <svg viewBox="0 0 900 260" role="img" aria-labelledby="iz-desc">
+    <desc id="iz-desc">
+      Half-section of a solid motor showing internal insulation. It is thin along the cylinder where propellant covers it
+      until late in the burn, moderate on the forward dome, and thickest on the aft dome and around the nozzle entrance,
+      where gas flows fastest for the whole burn and aluminium oxide particles impinge. The nozzle has a graphite or
+      carbon-carbon throat insert backed by insulation, carbon phenolic at the entrance and silica or glass phenolic in the
+      exit cone.
+    </desc>
+    <!-- case -->
+    <path d="M190,70 H600 A70,110 0 0 1 664,140 H690 V180 H190 A70,110 0 0 1 190,70 Z" fill="none"></path>
+    <path fill="var(--rd-steel)" d="M190,70 H600 A70,110 0 0 1 664,140 L680,140 L680,150 L652,150 A60,98 0 0 0 600,82 H190 A60,98 0 0 0 132,175 L120,175 A70,110 0 0 1 190,70 Z"></path>
+
+    <!-- insulation: forward dome (moderate), cylinder (thin), aft dome (thick) -->
+    <path fill="var(--rd-insul)" d="M132,175 A60,98 0 0 1 190,82 L210,82 L210,88 L190,94 A50,86 0 0 0 146,175 Z"></path>
+    <rect x="210" y="82" width="380" height="5" fill="var(--rd-insul)"></rect>
+    <path fill="var(--rd-insul)" d="M590,82 L600,82 A60,98 0 0 1 652,150 L652,175 L628,175 L628,160 A44,72 0 0 0 590,104 Z"></path>
+    <!-- stress-relief flap -->
+    <path d="M560,92 L600,104" stroke="var(--rd-insul)" stroke-width="4"></path>
+
+    <!-- propellant -->
+    <path fill="var(--rd-propellant)" d="M150,175 A46,82 0 0 1 196,93 L560,93 L560,150 L180,150 L170,175 Z"></path>
+
+    <!-- nozzle -->
+    <polygon points="680,140 720,140 732,152 760,156 760,175 700,175 690,160 680,160" fill="var(--rd-insul)" fill-opacity="0.75"></polygon>
+    <polygon points="732,152 760,150 760,166 744,166" fill="var(--rd-ink)" fill-opacity="0.75"></polygon>
+    <polygon points="760,150 880,100 880,112 760,162" fill="var(--rd-propellant)" fill-opacity="0.6"></polygon>
+
+    <!-- centreline -->
+    <line x1="100" y1="175" x2="890" y2="175" stroke="var(--rd-muted)" stroke-dasharray="8 6"></line>
+
+    <!-- numbered markers (descriptions in the legend below) -->
+    {zones.map((z) => (
+      <g>
+        <line x1={z.at[0]} y1={z.at[1]} x2={z.label[0]} y2={z.label[1]} stroke="var(--rd-muted)"></line>
+        <circle cx={z.label[0]} cy={z.label[1]} r="13" fill="var(--rd-panel)" stroke="var(--rd-accent)" stroke-width="2"></circle>
+        <text x={z.label[0]} y={z.label[1] + 5} text-anchor="middle" font-size="14" font-weight="600" fill="var(--rd-ink)">{z.n}</text>
+      </g>
+    ))}
+  </svg>
+  <ol class="iz-legend">
+    {zones.map((z) => (
+      <li><span class="n">{z.n}</span><div><b>{z.title}</b><span>{z.text}</span></div></li>
+    ))}
+  </ol>
+  <figcaption>
+    Insulation is not one thickness. Each region is sized for how long it is exposed and how aggressive the flow is
+    there — which is why the thickness map is drawn from the grain burn-back and the internal flow, not chosen once.
+  </figcaption>
+</figure>
+
+<style>
+  .iz-legend {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 0 !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.6rem;
+  }
+  .iz-legend li { display: flex; gap: 0.55rem; margin: 0 !important; font-size: var(--sl-text-sm); }
+  .iz-legend li div { display: grid; gap: 0.1rem; align-content: start; }
+  .iz-legend li div > * { margin: 0 !important; }
+  .iz-legend b { color: var(--sl-color-white); }
+  .iz-legend span:not(.n) { color: var(--rd-muted); }
+  .iz-legend .n {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid var(--rd-accent);
+    font-family: var(--sl-font-mono);
+    font-size: 0.75rem;
+    color: var(--rd-ink);
+  }
+</style>

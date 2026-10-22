@@ -46,6 +46,7 @@ export default defineConfig({
           items: [
             { label: 'Case & pressure vessel sizing', slug: 'motor/case-sizing' },
             { label: 'Propellant grain', slug: 'motor/propellant-grain' },
+            { label: 'Insulation & ablative liners', slug: 'motor/insulation' },
           ],
         },
         {

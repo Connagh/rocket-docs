@@ -20,8 +20,8 @@ The reason this site exists, so it goes first.
 | Z23 | Rocket motor components | 🔨 | Anatomy done in Fundamentals; per-component pages next |
 | Z26 | Propellant grain — burn-back, thrust profile, structural integrity | ✅ | [Propellant grain](../../motor/propellant-grain/) |
 | Z24 | Propellant | ⏳ | |
-| Z27 | Ablative liners & insulation | ⏳ | |
-| Z28 | Transient thermal | ⏳ | |
+| Z27 | Ablative liners & insulation — char, erosion, exposure, soak-back, materials | ✅ | [Insulation & liners](../../motor/insulation/) |
+| Z28 | Transient thermal | ⏳ | Soak-back covered in Insulation; lumped-capacitance tool still in legacy |
 | Z33 | Leak before break | ⏳ | Screen covered in Case sizing |
 | Z35 | Proof testing | ⏳ | |
 | Z32 | Shell buckling | ⏳ | |

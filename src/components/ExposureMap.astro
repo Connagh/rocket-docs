@@ -1,0 +1,133 @@
+---
+// Exposure time and affected-depth thickness around the case, from the grain burn-back.
+---
+
+<div class="calc expmap" data-expmap>
+  <div class="calc-head"><span>Where the case is exposed first</span><span>cylinder section · from the grain burn-back</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Grain (from the propellant grain page)</legend>
+        <label>Port
+          <select name="grain">
+            <option value="star">7-point star</option>
+            <option value="slots">Core + 6 slots</option>
+            <option value="tube">Tube</option>
+          </select>
+        </label>
+        <p class="hint">150 mm grain, 600 mm long, generic AP/HTPB-like propellant, peak pressure 7 MPa.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Insulation</legend>
+        <div class="row2">
+          <label>Erosion rate (mm/s)<input name="er" type="number" min="0" step="any" value="0.025" /></label>
+          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+          <label>Effective surface (°C)<input name="ts" type="number" step="any" value="1200" /></label>
+          <label>Char front (°C)<input name="tp" type="number" step="any" value="450" /></label>
+        </div>
+        <p class="hint">EPDM properties (k 0.25 W/m·K, ρ 1100 kg/m³, c<sub>p</sub> 2000 J/kg·K). Thickness here is SF × affected depth at burnout only — check the bondline with the calculator above.</p>
+      </fieldset>
+      <dl class="readouts">
+        <div class="readout"><dt>Burn time (incl. tail-off)</dt><dd data-r="tb">—</dd></div>
+        <div class="readout"><dt>Exposure min / max</dt><dd data-r="ex">—</dd></div>
+        <div class="readout primary"><dt>Thickness min / max</dt><dd data-r="th">—</dd></div>
+      </dl>
+      <p class="hint em-note" data-r="note"></p>
+    </form>
+    <figure class="em-fig">
+      <svg viewBox="-155 -155 310 310" data-polar role="img" aria-label="Polar map of insulation exposure time and thickness around the case"></svg>
+      <figcaption>Ring shade: exposure time (darker = longer). Ring width: required thickness, exaggerated. Red dot: thickest point; blue dot: thinnest. Inner outline: the port at ignition.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<style>
+  .em-fig { margin: 0; }
+  .em-note { margin-top: 0.6rem !important; }
+  .em-fig svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; font-family: var(--sl-font-mono); }
+  .em-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); text-align: center; }
+</style>
+
+<script>
+  import { exposureAroundCase, isothermDepth } from '../lib/insulation';
+  import { portOutline, type Port } from '../lib/grain';
+
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const PORTS: Record<string, Port> = {
+    star: { kind: 'star', points: 7, tipD: 110, valleyD: 40 },
+    slots: { kind: 'slots', slots: 6, coreD: 40, slotW: 8, slotD: 110 },
+    tube: { kind: 'circular', d: 80 },
+  };
+  const prop = { rhoP: 1770, a: 4.05, n: 0.35, cStar: 1540 };
+  const ins = { k: 0.25, rho: 1100, cp: 2000 };
+
+  document.querySelectorAll<HTMLElement>('[data-expmap]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let cacheKey = '', cache: ReturnType<typeof exposureAroundCase> | null = null;
+
+    function run() {
+      const key = field('grain').value;
+      const port = PORTS[key];
+      if (key !== cacheKey) {
+        cache = exposureAroundCase({ od: 150, length: 600, segments: 1, burningEnds: 0, port }, prop, 7);
+        cacheKey = key;
+      }
+      const e = cache!;
+      const alpha = ins.k / (ins.rho * ins.cp);
+      const thetaP = (num('tp') - 20) / (num('ts') - 20);
+      const v = num('er') / 1000;
+      const thick = e.exposure.map((t) => (t > 0 ? num('sf') * (v * t + isothermDepth(t, v, alpha, thetaP)) * 1000 : 0));
+      const tMin = Math.min(...thick), tMax = Math.max(...thick);
+      r('tb').innerHTML = `${f(e.burnTime, 2)} <small>s</small>`;
+      r('ex').innerHTML = `${f(Math.min(...e.exposure), 1)} / ${f(Math.max(...e.exposure), 1)} <small>s</small>`;
+      r('th').innerHTML = `${f(tMin, 2)} / ${f(tMax, 2)} <small>mm</small>`;
+      r('note').textContent = Math.max(...e.exposure) < 0.5
+        ? 'A tube grain reaches the case everywhere at once, so in this ideal model the cylinder is barely exposed. Real motors still insulate it for tail-off, uneven burn-back, ignition and handling — minimum gauge governs here.'
+        : `The case under the ${key === 'star' ? 'star tips' : 'slot tips'} is uncovered first and needs the most insulation; under the ${key === 'star' ? 'valleys' : 'webs between slots'} the flame arrives last.`;
+
+      const svg = root.querySelector<SVGSVGElement>('[data-polar]')!;
+      svg.replaceChildren();
+      const R = 120; // case inner radius on screen (grain OD 150 → scale 1.6 px/mm)
+      const scale = R / 75;
+      const exMax = Math.max(...e.exposure, 1e-6);
+      const wMax = 34; // px for the thickest point
+      const n = e.angles.length;
+      for (let i = 0; i < n; i++) {
+        const a0 = ((e.angles[i] - 180 / n) * Math.PI) / 180, a1 = ((e.angles[i] + 180 / n) * Math.PI) / 180;
+        const w = tMax > 0 ? (thick[i] / tMax) * wMax : 0;
+        const ri = R - w, ro = R;
+        const p = (rr: number, a: number) => `${(rr * Math.cos(a)).toFixed(2)},${(rr * Math.sin(a)).toFixed(2)}`;
+        svg.append(el('path', {
+          d: `M${p(ro, a0)} A${ro},${ro} 0 0 1 ${p(ro, a1)} L${p(ri, a1)} A${ri},${ri} 0 0 0 ${p(ri, a0)} Z`,
+          fill: 'var(--rd-insul)', 'fill-opacity': (0.25 + 0.75 * (e.exposure[i] / exMax)).toFixed(3), stroke: 'none',
+        }));
+      }
+      svg.append(el('circle', { cx: 0, cy: 0, r: R + 5, fill: 'none', stroke: 'var(--rd-steel)', 'stroke-width': 10 }));
+      svg.append(el('circle', { cx: 0, cy: 0, r: R - wMax - 2, fill: 'var(--rd-propellant)', 'fill-opacity': 0.35 }));
+      const pts = portOutline(port, 1);
+      if (pts.length) {
+        // portOutline uses the same angle convention as the exposure bins (atan2(y, x)), so plot directly.
+        svg.append(el('path', { d: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${(x * scale).toFixed(1)},${(y * scale).toFixed(1)}`).join('') + 'Z', fill: 'var(--rd-panel)', stroke: 'var(--rd-hot)', 'stroke-width': 1.5 }));
+      }
+      const iMax = thick.indexOf(tMax), iMin = thick.indexOf(tMin);
+      for (const [i, col] of [[iMax, 'var(--rd-accent)'], [iMin, 'var(--rd-blue)']] as const) {
+        const a = (e.angles[i] * Math.PI) / 180;
+        svg.append(el('circle', { cx: Math.cos(a) * (R + 22), cy: Math.sin(a) * (R + 22), r: 7, fill: col }));
+      }
+    }
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
