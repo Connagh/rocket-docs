@@ -1,5 +1,7 @@
 # REF·DB
 
+**Live site: [dashroyy.github.io/ref-db](https://dashroyy.github.io/ref-db/)**
+
 A learning-first engineering reference for **solid rocket motor** and **mechanical design** — pressure vessels, motor
 components, materials, joints, tolerancing and design standards. Every topic explains the idea with an analogy and a
 diagram before the equations, then gives you an interactive tool, a worked example and the traps.
