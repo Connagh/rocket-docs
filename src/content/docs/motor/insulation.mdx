@@ -146,9 +146,9 @@ t \;\ge\; SF \times \text{MAD}
 T_\text{bond,peak}(t) \;\le\; T_\text{limit}
 $$
 
-plus a **minimum gauge** for manufacture and handling. Safety factors of around 1.5–2.0 on measured affected depth
-are common in the open literature. Your programme sets its own, often higher in the aft dome and other regions with
-large uncertainty.
+plus a **minimum gauge** for manufacture and handling. The safety factor on affected depth comes from your
+programme's requirements, and it often differs by region — larger where the uncertainty is larger, such as the aft
+dome. The calculator starts with it blank.
 
 ## Calculator
 
@@ -158,8 +158,8 @@ large uncertainty.
 
 Aramid-filled EPDM ($k = 0.25$ W/m·K, $\rho = 1100$ kg/m³, $c_p = 2000$ J/kg·K) on the 1.4 mm D6AC case from the
 [case-sizing example](../case-sizing/#worked-example), in a low-velocity region exposed for 20 s. Effective surface
-temperature 1200 °C, char front 450 °C, erosion 0.025 mm/s, bondline limit 150 °C, safety factor 1.5. These are the
-calculator's defaults.
+temperature 1200 °C, char front 450 °C, erosion 0.025 mm/s, bondline limit 150 °C, and a safety factor of 1.5 for
+the example only. Press **Load worked example** in the calculator to load these inputs.
 
 1. **Diffusivity.** $\alpha = 0.25 / (1100 \times 2000) = 1.14 \times 10^{-7}$ m²/s, so $\sqrt{\alpha t} = 1.51$ mm
    at 20 s.

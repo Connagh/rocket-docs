@@ -16,7 +16,7 @@ const CASES = [
 ---
 
 <div class="calc gscalc" data-gscalc>
-  <div class="calc-head"><span>Case-bonded grain — structural screen</span><span>long cylinder · incompressible propellant</span></div>
+  <div class="calc-head"><span>Case-bonded grain — structural screen</span><span class="head-btns"><span>long cylinder · incompressible propellant</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -57,9 +57,11 @@ const CASES = [
           <label>Strain cap., slow &amp; cold (%)<input name="capS" type="number" step="any" value="39.6" /></label>
           <label>Strain cap., ignition &amp; cold (%)<input name="capF" type="number" step="any" value="39.6" /></label>
           <label>Bond strength (MPa)<input name="bond" type="number" step="any" value="0.7" /></label>
-          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" placeholder="your value" autocomplete="off" /></label>
         </div>
         <p class="hint" data-caphint></p>
+        <p class="hint">Enter your programme's safety factor — it comes from the governing requirement, not from this site.</p>
+        <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
     </form>
     <div>
@@ -112,6 +114,7 @@ const CASES = [
 
 <script>
   import { grainStructure, type GrainStructInputs } from '../lib/grain';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -166,12 +169,13 @@ const CASES = [
         return;
       }
       const s = grainStructure(inputs());
-      const sf = num('sf');
+      // Without a safety factor the strains still show; margins read NaN ("needs SF").
+      const sf = readFactor(field('sf').value);
       const capS = num('capS') / 100, capF = num('capF') / 100;
-      const ms = (cap: number, e: number) => (e > 0 ? cap / (sf * e) - 1 : Infinity);
+      const ms = (cap: number, e: number) => (e > 0 ? (sf === null ? NaN : cap / (sf * e) - 1) : Infinity);
       const msTh = ms(capS, s.thermal), msPr = ms(capF, s.pressure), msCo = ms(capF, s.combined);
-      const msBd = s.bond > 0 ? num('bond') / (sf * s.bond) - 1 : Infinity;
-      const MS = (v: number) => (Number.isFinite(v) ? `MS ${v >= 0 ? '+' : ''}${f(v, 2)}` : 'no tension');
+      const msBd = ms(num('bond'), s.bond);
+      const MS = (v: number) => (Number.isNaN(v) ? 'needs SF' : Number.isFinite(v) ? `MS ${v >= 0 ? '+' : ''}${f(v, 2)}` : 'no tension');
 
       r('m').textContent = f(s.m, 2);
       r('wf').textContent = f(s.webFraction, 2);
@@ -181,10 +185,11 @@ const CASES = [
       r('co').innerHTML = `${f(s.combined * 100, 1)} % <small>${MS(msCo)}</small>`;
       r('bd').innerHTML = `${f(s.bond, 3)} <small>MPa · ${MS(msBd)}</small>`;
       for (const [k, v] of [['th', msTh], ['pr', msPr], ['co', msCo], ['bd', msBd]] as const)
-        root.querySelector(`[data-ms="${k}"]`)!.className = `readout ${k === 'co' ? 'primary ' : ''}${v < 0 ? 'bad' : v < 0.25 ? 'warn' : 'ok'}`;
+        root.querySelector(`[data-ms="${k}"]`)!.className = `readout ${k === 'co' ? 'primary ' : ''}${Number.isNaN(v) ? '' : v < 0 ? 'bad' : v < 0.25 ? 'warn' : 'ok'}`;
 
+      if (sf === null) notes.push(['warn', `Strains are shown. ${awaitingMessage(['safety factor'], 'the margins')}`]);
       if (num('tlow') >= num('tsf')) notes.push(['', 'The service temperature is not below the stress-free temperature, so cool-down puts the bore in compression, not tension.']);
-      if (msCo < 0) notes.push(['bad', `Cold ignition fails the screen: ${f(s.combined * 100, 1)}% × SF ${f(sf, 1)} exceeds ${f(capF * 100, 1)}% capability. Options: a smaller web (larger bore), a propellant with more low-temperature strain capability, a stiffer case, a higher minimum firing temperature, or stress-relief features.`]);
+      if (msCo < 0) notes.push(['bad', `Cold ignition fails the screen: ${f(s.combined * 100, 1)}% × SF ${f(sf!, 1)} exceeds ${f(capF * 100, 1)}% capability. Options: a smaller web (larger bore), a propellant with more low-temperature strain capability, a stiffer case, a higher minimum firing temperature, or stress-relief features.`]);
       if (msBd < 0) notes.push(['bad', 'Bond tension exceeds the bond strength with this safety factor. Debonds usually start at the grain ends, where the stress is far higher than this long-cylinder value — that is what stress-relief flaps are for.']);
       if (num('kt') === 1) notes.push(['', 'Circular bore assumed. A star or slotted bore concentrates strain at its points: try a concentration factor of 2–3 to see what that does.']);
       if (s.pressure > 0 && s.caseHoop > 0) notes.push(['', `The case stretches ${f(s.caseHoop * 100, 2)}% at MEOP; the bore stretches ${f(s.pressure / s.caseHoop, 1)}× that. A stiffer or thicker case directly lowers ignition strain.`]);
@@ -192,7 +197,7 @@ const CASES = [
       chart(s.webFraction, capS, capF, sf);
     }
 
-    function chart(wf0: number, capS: number, capF: number, sf: number) {
+    function chart(wf0: number, capS: number, capF: number, sf: number | null) {
       const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
       svg.replaceChildren();
       const W = 480, H = 250, L = 46, R = 12, T = 12, B = 36;
@@ -200,7 +205,7 @@ const CASES = [
       const wfs = Array.from({ length: 61 }, (_, i) => 0.2 + (i / 60) * 0.65);
       const at = (wf: number) => grainStructure(inputs(od * (1 - wf)));
       const th = wfs.map((w) => at(w).thermal), co = wfs.map((w) => at(w).combined);
-      const allow = Math.min(capS, capF) / sf;
+      const allow = Math.min(capS, capF) / (sf ?? 1);
       const yMax = Math.min(1.5, Math.max(...co, allow) * 1.1);
       const X = (w: number) => L + ((w - 0.2) / 0.65) * (W - L - R);
       const Y = (e: number) => H - B - (Math.min(e, yMax) / yMax) * (H - T - B);
@@ -216,7 +221,7 @@ const CASES = [
       svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'web fraction  (b − a) / b'));
       const line = (ys: number[]) => wfs.map((w, i) => `${i ? 'L' : 'M'}${X(w).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join('');
       svg.append(el('line', { x1: L, x2: W - R, y1: Y(allow), y2: Y(allow), stroke: 'var(--rd-accent)', 'stroke-dasharray': '6 4' }));
-      svg.append(el('text', { x: L + 6, y: Y(allow) - 5, 'font-size': 10, fill: 'var(--rd-accent)' }, 'capability ÷ SF'));
+      svg.append(el('text', { x: L + 6, y: Y(allow) - 5, 'font-size': 10, fill: 'var(--rd-accent)' }, sf === null ? 'capability (no SF applied)' : 'capability ÷ SF'));
       svg.append(el('path', { d: line(th), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
       svg.append(el('path', { d: line(co), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
       svg.append(el('text', { x: W - R - 4, y: Y(co[co.length - 1]) + 14, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-hot)' }, 'cold ignition'));
@@ -230,6 +235,14 @@ const CASES = [
     field('case').addEventListener('change', () => { applyCase(); run(); });
     field('tlow').addEventListener('input', applyCap);
     form.addEventListener('input', run);
+    wireWorkedExample({
+      root, onLoad: () => { applyCap(); run(); }, factorFields: ['sf'],
+      note: 'Worked-example safety factor loaded: 1.5',
+      values: {
+        prop: 'comp', case: 'steel', ap: '100', E: '3.6', K: '3500', ac: '12', Ec: '205', nu: '0.3', h: '1.377',
+        od: '300', bore: '100', tsf: '60', tlow: '-40', p: '10', kt: '1', bond: '0.7', sf: '1.5',
+      },
+    });
     applyCap();
     run();
   });

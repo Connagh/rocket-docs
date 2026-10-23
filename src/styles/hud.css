@@ -400,3 +400,10 @@ mobile-starlight-toc .display-current { color: var(--pc, var(--sl-color-accent))
 .pv-notes li.warn { color: var(--rd-warn); }
 /* heading anchor icons would hang in the gutter outside the plate on phones */
 @media (max-width: 50rem) { .sl-anchor-link { display: none; } }
+
+/* factor rule: worked-example loader */
+.calc-head .head-btns { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; justify-content: flex-end; }
+.calc [data-load-example] { border-color: var(--pc, var(--sl-color-accent)) !important; color: var(--sl-color-white) !important; }
+.calc .example-note { color: var(--rd-warn) !important; font-weight: 600; }
+.calc .factor-await { color: var(--rd-warn) !important; }
+.calc input::placeholder { color: var(--sl-color-gray-4); font-style: italic; }

@@ -21,7 +21,10 @@ const DEFAULT = 'D6AC (AMS 6431)';
 <div class="calc pvcalc" data-pvcalc>
   <div class="calc-head">
     <span>Motor case sizing — metallic, membrane only</span>
-    <button type="button" class="chip" data-share>Copy link to these inputs</button>
+    <span class="head-btns">
+      <button type="button" class="chip" data-load-example>Load worked example</button>
+      <button type="button" class="chip" data-share>Copy link to these inputs</button>
+    </span>
   </div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
@@ -62,10 +65,11 @@ const DEFAULT = 'D6AC (AMS 6431)';
           </label>
         </div>
         <div class="row2">
-          <label>Proof factor<input name="pf" type="number" min="1" step="0.01" value="1.10" /></label>
-          <label>Burst factor<input name="bf" type="number" min="1" step="0.01" value="1.25" /></label>
+          <label>Proof factor<input name="pf" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Burst factor<input name="bf" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
         </div>
-        <p class="hint">Example factors. Use the values your governing requirement sets.</p>
+        <p class="hint">Enter your programme's factors — they come from the governing requirement, not from this site.</p>
+        <p class="hint example-note" data-example-note hidden></p>
         <label>Weld / joint efficiency
           <select name="e">
             <option value="1">1.00 — seamless, no weld in the pressure boundary</option>
@@ -151,6 +155,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
 
 <script>
   import { sizeCase, units, type PressureUnit, type DomeType } from '../lib/pv';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -179,23 +184,40 @@ const DEFAULT = 'D6AC (AMS 6431)';
       const u = field('u').value as PressureUnit;
       const toMPa = units[u];
       const P = (mpa: number) => `${f(mpa / toMPa, u === 'psi' ? 0 : u === 'bar' ? 1 : 2)} <small>${u}</small>`;
-      const res = sizeCase({
-        idMm: +field('id').value,
-        lengthMm: +field('L').value,
-        meop: +field('p').value * toMPa,
-        proofFactor: +field('pf').value,
-        burstFactor: +field('bf').value,
-        weldEff: +field('e').value,
-        dome: field('dome').value as DomeType,
-        tMm: +field('t').value || undefined,
-        material: m,
-      });
+      const pf = readFactor(field('pf').value), bf = readFactor(field('bf').value);
+      const haveFactors = pf !== null && bf !== null;
       const checking = !!(+field('t').value);
 
       root.querySelector('[data-matinfo]')!.textContent =
         `UTS ${m.uts} MPa · yield ${m.yield} MPa · ρ ${m.density} g/cm³ · K_IC ≈ ${m.kic ?? '—'} MPa√m` +
         (m.kicIsFamilyDefault ? ' (family default)' : '') + ` · max service ~${m.maxServiceTemp} °C. ${m.spec}`;
 
+      // Without the programme's factors there is no required wall and no margins. With an
+      // as-designed wall we can still show everything that doesn't depend on a factor.
+      if (!haveFactors && !checking) {
+        root.querySelectorAll<HTMLElement>('[data-r]').forEach((el) => { if (el.dataset.r !== 'tLabel') el.textContent = '—'; });
+        r('tLabel').textContent = 'Minimum wall';
+        root.querySelectorAll('[data-ms], [data-lbb]').forEach((el) => (el.className = 'readout'));
+        root.querySelector<SVGSVGElement>('[data-bar]')!.replaceChildren();
+        root.querySelector<SVGSVGElement>('[data-ring]')!.replaceChildren();
+        root.querySelector('[data-notes]')!.innerHTML =
+          `<li class="warn">${awaitingMessage(['proof factor', 'burst factor'], 'the required wall, test pressures and margins')}</li>` +
+          '<li>Or enter an as-designed wall to see its stresses, burst pressure, leak-before-break and mass without them.</li>';
+        return;
+      }
+      const res = sizeCase({
+        idMm: +field('id').value,
+        lengthMm: +field('L').value,
+        meop: +field('p').value * toMPa,
+        proofFactor: pf ?? 1,
+        burstFactor: bf ?? 1,
+        weldEff: +field('e').value,
+        dome: field('dome').value as DomeType,
+        tMm: +field('t').value || undefined,
+        material: m,
+      });
+
+      if (!haveFactors) return showUnfactored(res, P);
       r('tLabel').textContent = checking ? 'Wall checked' : 'Minimum wall';
       r('t').innerHTML = Number.isFinite(res.t) ? `${f(res.t, 3)} <small>mm</small>` : 'none';
       r('gov').textContent = checking ? `min ${f(res.tReq, 3)} mm (${res.governs})` : res.governs === 'burst' ? 'Burst (UTS)' : 'Proof (yield)';
@@ -237,10 +259,35 @@ const DEFAULT = 'D6AC (AMS 6431)';
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
     }
 
+    // As-designed wall, no factors entered: factor-independent results only.
+    function showUnfactored(res: ReturnType<typeof sizeCase>, P: (mpa: number) => string) {
+      const need = '<small>needs factors</small>';
+      r('tLabel').textContent = 'Wall checked';
+      r('t').innerHTML = `${f(res.t, 3)} <small>mm</small>`;
+      r('gov').innerHTML = need; r('tthin').innerHTML = need;
+      r('tr').innerHTML = `${f(res.tOverR, 4)} <small>${res.thinWallOk ? 'thin' : 'thick'}</small>`;
+      r('hoop').innerHTML = `${f(res.hoopMeop, 0)} <small>MPa</small>`;
+      r('axial').innerHTML = `${f(res.axialMeop, 0)} <small>MPa</small>`;
+      r('domet').innerHTML = `${f(res.domeT, 3)} <small>mm</small>`;
+      r('pp').innerHTML = need; r('pb').innerHTML = need; r('msb').innerHTML = need; r('msp').innerHTML = need; r('cp').innerHTML = need;
+      r('pred').innerHTML = P(res.predictedBurst);
+      root.querySelectorAll('[data-ms]').forEach((el) => (el.className = 'readout'));
+      r('cm').innerHTML = `${f(res.cMeop, 2)} <small>mm</small>`;
+      r('lbb').textContent = res.leakBeforeBreak === null ? '—' : res.leakBeforeBreak ? 'Likely' : 'No';
+      root.querySelector('[data-lbb]')!.className = `readout ${res.leakBeforeBreak ? 'ok' : 'bad'}`;
+      r('mass').innerHTML = `${f(res.mass, 2)} <small>kg</small>`;
+      r('vol').innerHTML = `${f(res.volume / 1e6, 1)} <small>L</small>`;
+      r('pvw').innerHTML = `${f(res.pvw / 1000, 1)} <small>km · ${f(res.pvw / 0.0254 / 1e6, 2)}×10⁶ in</small>`;
+      root.querySelector<SVGSVGElement>('[data-bar]')!.replaceChildren();
+      drawRing(res);
+      root.querySelector('[data-notes]')!.innerHTML =
+        `<li class="warn">Showing the as-designed wall without factors. ${awaitingMessage(['proof factor', 'burst factor'], 'its test pressures and margins')}</li>`;
+    }
+
     function drawBar(res: ReturnType<typeof sizeCase>, toMPa: number, u: string) {
       const svg = root.querySelector<SVGSVGElement>('[data-bar]')!;
       svg.replaceChildren();
-      const meop = res.pProof / +field('pf').value;
+      const meop = res.pProof / (readFactor(field('pf').value) ?? 1);
       const marks = [
         { p: meop, label: 'MEOP', c: 'var(--rd-ink)' },
         { p: res.pProof, label: 'proof', c: 'var(--rd-blue)' },
@@ -284,7 +331,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
       const q = new URLSearchParams();
       for (const el of Array.from(form.elements) as HTMLInputElement[]) if (el.name && el.value) q.set(el.name, el.value);
       const url = `${location.origin}${location.pathname}?${q}#calculator`;
-      history.replaceState(null, '', url);
+      try { history.replaceState(null, '', url); } catch {} // throws in opaque origins
       const btn = e.currentTarget as HTMLButtonElement;
       try {
         await navigator.clipboard.writeText(url);
@@ -293,6 +340,11 @@ const DEFAULT = 'D6AC (AMS 6431)';
         btn.textContent = 'Link in address bar';
       }
       setTimeout(() => (btn.textContent = 'Copy link to these inputs'), 2000);
+    });
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['pf', 'bf'],
+      note: 'Worked-example factors loaded: proof 1.10, burst 1.25',
+      values: { m: 'D6AC (AMS 6431)', id: '300', L: '1000', dome: 'hemi', p: '10', u: 'MPa', pf: '1.10', bf: '1.25', e: '0.9', t: '' },
     });
     run();
   });

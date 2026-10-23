@@ -62,8 +62,8 @@ The factor is squeezed from both sides:
 | Must cover toughness lost at the service temperature | Composites: fibre damage, stress-rupture and damage accumulation |
 | Must screen to a size NDT cannot reliably see | Good hardware lost in the test, schedule and cost |
 
-The governing standard sets the factor for the vessel class — typically somewhere between about 1.05 and 1.5 — and the
-fracture-control plan checks it buys enough life. Two corrections are routinely applied on top:
+The governing standard sets the factor for the vessel class, and the fracture-control plan checks it buys enough
+life. This site never supplies the value: the calculator below starts with it blank. Two corrections are routinely applied on top:
 
 - **Temperature.** If the case is weaker at its service temperature than at the test temperature, raise the proof
   pressure by the ratio of strengths, so the proof stress-to-strength ratio covers the service condition.
@@ -89,7 +89,7 @@ $$
 \frac{a_\text{crit}}{a_\text{screen}} = R^2 \left(\frac{K_{IC,\text{service}}}{K_{IC,\text{proof}}}\right)^2
 $$
 
-where $R$ is the proof factor. A 1.10 proof leaves room for the surviving cracks to grow by 21% before they become
+where $R$ is the proof factor. In the worked example below, $R = 1.10$ leaves room for the surviving cracks to grow by 21% before they become
 critical at MEOP. Raising $R$ helps as $R^2$; losing toughness in service hurts as the square of the toughness ratio.
 
 The crack-growth life between the two comes from the Paris law, $da/dN = C\,(\Delta K)^m$. With a constant $Y$ it
@@ -109,7 +109,8 @@ times** the service life.
 ## Worked example — the D6AC case
 
 The case from the [case-sizing example](../../motor/case-sizing/#worked-example): hoop stress 1094 MPa at 10 MPa MEOP,
-1.377 mm wall, $K_{IC} \approx 70$ MPa√m, proof factor 1.10, long surface crack ($Y = 1.12$).
+1.377 mm wall, $K_{IC} \approx 70$ MPa√m, proof factor 1.10, long surface crack ($Y = 1.12$). The proof and life
+factors are for this example only; press **Load worked example** in the calculator to load these inputs.
 
 1. **Proof stress.** $1.10 \times 1094 = 1204$ MPa — 83% of the 1450 MPa yield.
 2. **Screened flaw.** $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1204}\right)^2 = 0.86$ mm. No case that passes proof has

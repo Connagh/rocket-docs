@@ -13,7 +13,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
 ---
 
 <div class="calc inscalc" data-inscalc>
-  <div class="calc-head"><span>Insulation thickness at one location</span><span data-busy>1-D transient · erosion + char + soak-back</span></div>
+  <div class="calc-head"><span>Insulation thickness at one location</span><span class="head-btns"><span data-busy>1-D transient · erosion + char + soak-back</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -57,12 +57,14 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
         <div class="row2">
           <label>Wall (mm)<input name="cw" type="number" min="0.1" step="any" value="1.4" /></label>
           <label>Bondline limit (°C)<input name="lim" type="number" step="any" value="150" /></label>
-          <label>Safety factor on MAD<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+          <label>Safety factor on MAD<input name="sf" type="number" min="1" step="0.1" placeholder="your value" autocomplete="off" /></label>
           <label>Minimum gauge (mm)<input name="min" type="number" min="0" step="any" value="1" /></label>
         </div>
         <label>Check an as-designed thickness (mm, optional)
           <input name="chk" type="number" min="0" step="any" placeholder="blank = size it" />
         </label>
+        <p class="hint">Enter your programme's safety factor — it comes from the governing requirement, not from this site.</p>
+        <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
     </form>
 
@@ -125,6 +127,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
 
 <script>
   import { sizeInsulation, simulateWall, type SizingInputs, type WallResult } from '../lib/insulation';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -168,7 +171,8 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
         caseT: num('cw'), case: { k: c.k, rho: c.rho, cp: c.cp },
         t0: num('t0'), tSurface: num('ts'), tPyro: field('tp').value === '' ? null : num('tp'),
         erosion: num('er'), exposure: num('te'), soak: 300, hOut: 10,
-        safetyFactor: num('sf'), bondLimit: num('lim'), minGauge: num('min'),
+        // affected depth and the bondline thickness don't depend on the factor; run() hides what does
+        safetyFactor: readFactor(field('sf').value) ?? 1, bondLimit: num('lim'), minGauge: num('min'),
       };
     }
 
@@ -181,33 +185,44 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
       }
       const ad = sizeInsulation({ ...s, afterBurnout: 'adiabatic' });
       const ra = sizeInsulation({ ...s, afterBurnout: 'radiating' });
+      const sf = readFactor(field('sf').value);
+      const need = '<small>needs SF</small>';
       const chk = num('chk');
-      const L = chk > 0 ? chk : ad.required;
+      const L = chk > 0 ? chk : sf !== null ? ad.required : NaN;
       const resA: WallResult | null = Number.isFinite(L) ? simulateWall({ ...s, insT: L, afterBurnout: 'adiabatic' }) : null;
       const resR: WallResult | null = Number.isFinite(L) ? simulateWall({ ...s, insT: L, afterBurnout: 'radiating' }) : null;
 
       r('reqLabel').textContent = chk > 0 ? 'Thickness checked' : 'Required thickness';
-      r('req').innerHTML = Number.isFinite(L) ? `${f(L, 2)} <small>mm</small>` : 'none works';
-      r('gov').textContent = chk > 0 ? `required ${f(ad.required, 2)} mm` : ad.governs;
+      r('req').innerHTML = Number.isFinite(L) ? `${f(L, 2)} <small>mm</small>` : sf === null ? need : 'none works';
+      if (sf === null) r('gov').innerHTML = need;
+      else r('gov').textContent = chk > 0 ? `required ${f(ad.required, 2)} mm` : ad.governs;
       r('mass').innerHTML = Number.isFinite(L) ? `${f((s.ins.rho * L) / 1000, 1)} <small>kg/m²</small>` : '—';
       r('ero').innerHTML = `${f(ad.result?.erosion ?? s.erosion * s.exposure, 2)} <small>mm</small>`;
       r('charB').innerHTML = resA ? `${f(resA.charFrontBurnout - resA.erosion, 2)} <small>mm</small>` : '—';
       r('mad').innerHTML = `${f(ad.mad, 2)} <small>mm</small>`;
-      r('tmad').innerHTML = `${f(ad.tMad, 2)} <small>mm</small>`;
+      r('tmad').innerHTML = sf === null ? need : `${f(ad.tMad, 2)} <small>mm</small>`;
       r('tbA').innerHTML = Number.isFinite(ad.tBond) ? `${f(ad.tBond, 2)} <small>mm</small>` : 'none';
       r('tbR').innerHTML = Number.isFinite(ra.tBond) ? `${f(ra.tBond, 2)} <small>mm</small>` : 'none';
       if (resA && resR) {
         r('peak').innerHTML = `${f(resR.bondPeak, 0)}–${f(resA.bondPeak, 0)} <small>°C · at ${f(resA.tBondPeak / 60, 1)} min</small>`;
         const ok = resA.bondPeak <= s.bondLimit + 0.5 && !resA.burnThrough && L >= s.safetyFactor * ad.mad - 1e-6;
         root.querySelector('[data-peak]')!.className = `readout ${resA.bondPeak > s.bondLimit + 0.5 ? (resR.bondPeak > s.bondLimit + 0.5 ? 'bad' : 'warn') : 'ok'}`;
-        if (chk > 0 && !ok) notes.push(['bad', `${f(chk, 2)} mm does not meet the requirement of ${f(ad.required, 2)} mm (${ad.governs}).`]);
+        if (chk > 0 && !ok && sf !== null) notes.push(['bad', `${f(chk, 2)} mm does not meet the requirement of ${f(ad.required, 2)} mm (${ad.governs}).`]);
         if (resA.burnThrough) notes.push(['bad', 'Burn-through: the affected depth reaches the case.']);
         if (resA.tBondPeak > s.exposure * 1.5)
           notes.push(['', `The bondline peaks ${f((resA.tBondPeak - s.exposure) / 60, 1)} minutes after burnout. That is soak-back: heat stored in the hot char and insulation keeps flowing inward once the gas has gone.`]);
         drawWall(L, resA, s.caseT);
         chart(resA, resR, s.bondLimit, s.exposure);
+      } else {
+        r('peak').textContent = '—';
+        root.querySelector('[data-peak]')!.className = 'readout';
+        root.querySelectorAll<SVGSVGElement>('[data-wall], [data-chart]').forEach((svg) => svg.replaceChildren());
       }
-      if (ad.governs === 'bondline temperature')
+      if (sf === null)
+        notes.unshift(['warn', chk > 0
+          ? `Checking ${f(chk, 2)} mm against the bondline limit only. ${awaitingMessage(['safety factor on MAD'], 'the affected-depth check')}`
+          : `Affected depth and the bondline thickness are shown. ${awaitingMessage(['safety factor on MAD'], 'the required thickness')} You can also enter an as-designed thickness to check its bondline temperature.`]);
+      if (sf !== null && ad.governs === 'bondline temperature')
         notes.push(['', `The bondline limit, not the affected depth, sets the thickness here. Options: a thicker or higher-capacity case, a lower-conductivity insulator, or a higher-temperature bond system.`]);
       if (field('tp').value === '' && s.ins.k > 5)
         notes.push(['warn', 'This material does not char and conducts heat well: it protects the surface but not the structure. It needs a separate insulator behind it — size that layer with a charring insulator.']);
@@ -277,6 +292,14 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
     field('case').addEventListener('change', applyCase);
     form.addEventListener('input', schedule);
     form.addEventListener('change', schedule);
+    wireWorkedExample({
+      root, onLoad: schedule, factorFields: ['sf'],
+      note: 'Worked-example safety factor loaded: 1.5',
+      values: {
+        mat: 'epdm', regime: 'low', case: 'steel', er: '0.025', te: '20', ts: '1200', t0: '20',
+        cw: '1.4', lim: '150', sf: '1.5', min: '1', chk: '',
+      },
+    });
     applyMat();
     applyCase();
     run();

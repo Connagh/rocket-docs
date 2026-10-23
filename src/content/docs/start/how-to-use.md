@@ -42,6 +42,10 @@ description: How topic pages are laid out, how to search, and how to read the nu
 - **Units.** SI throughout: MPa, mm, kg, °C. Pressures can be shown in bar or psi where it helps.
 - **Margin of safety.** $MS = \dfrac{\text{allowable}}{\text{applied}} - 1$. Zero means exactly at the limit;
   negative means it fails the requirement.
+- **Factors are yours to enter.** Safety, proof, burst and life factors come from your programme's governing
+  requirement, so the calculators start with them blank and show everything that doesn't need them. **Load worked
+  example** fills in the page's example — including its factors, which are there only to reproduce the hand
+  calculation.
 - **Material data** is typical or minimum published data for early design, shared with REF·DB v1. Fracture toughness
   ($K_{IC}$) varies strongly with heat treatment, orientation, thickness and temperature, and is always flagged as
   indicative.

@@ -3,7 +3,7 @@
 ---
 
 <div class="calc expmap" data-expmap>
-  <div class="calc-head"><span>Where the case is exposed first</span><span>cylinder section · from the grain burn-back</span></div>
+  <div class="calc-head"><span>Where the case is exposed first</span><span class="head-btns"><span>cylinder section · from the grain burn-back</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -21,16 +21,18 @@
         <legend>Insulation</legend>
         <div class="row2">
           <label>Erosion rate (mm/s)<input name="er" type="number" min="0" step="any" value="0.025" /></label>
-          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" value="1.5" /></label>
+          <label>Safety factor<input name="sf" type="number" min="1" step="0.1" placeholder="your value" autocomplete="off" /></label>
           <label>Effective surface (°C)<input name="ts" type="number" step="any" value="1200" /></label>
           <label>Char front (°C)<input name="tp" type="number" step="any" value="450" /></label>
         </div>
-        <p class="hint">EPDM properties (k 0.25 W/m·K, ρ 1100 kg/m³, c<sub>p</sub> 2000 J/kg·K). Thickness here is SF × affected depth at burnout only — check the bondline with the calculator above.</p>
+        <p class="hint">EPDM properties (k 0.25 W/m·K, ρ 1100 kg/m³, c<sub>p</sub> 2000 J/kg·K). Thickness here is your programme's safety factor × affected depth at burnout only — check the bondline with the calculator below.</p>
+        <p class="hint factor-await" data-await hidden></p>
+        <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
       <dl class="readouts">
         <div class="readout"><dt>Burn time (incl. tail-off)</dt><dd data-r="tb">—</dd></div>
         <div class="readout"><dt>Exposure min / max</dt><dd data-r="ex">—</dd></div>
-        <div class="readout primary"><dt>Thickness min / max</dt><dd data-r="th">—</dd></div>
+        <div class="readout primary"><dt data-r="thLabel">Thickness min / max</dt><dd data-r="th">—</dd></div>
       </dl>
       <p class="hint em-note" data-r="note"></p>
     </form>
@@ -51,7 +53,7 @@
 <script>
   import { exposureAroundCase, isothermDepth } from '../lib/insulation';
   import { portOutline, type Port } from '../lib/grain';
-
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -87,7 +89,13 @@
       const alpha = ins.k / (ins.rho * ins.cp);
       const thetaP = (num('tp') - 20) / (num('ts') - 20);
       const v = num('er') / 1000;
-      const thick = e.exposure.map((t) => (t > 0 ? num('sf') * (v * t + isothermDepth(t, v, alpha, thetaP)) * 1000 : 0));
+      // No factor entered: show the unfactored affected depth (the map's shape doesn't change).
+      const sf = readFactor(field('sf').value);
+      const thick = e.exposure.map((t) => (t > 0 ? (sf ?? 1) * (v * t + isothermDepth(t, v, alpha, thetaP)) * 1000 : 0));
+      r('thLabel').textContent = sf === null ? 'Affected depth min / max (no SF)' : 'Thickness min / max';
+      const wait = root.querySelector<HTMLElement>('[data-await]')!;
+      wait.hidden = sf !== null;
+      wait.textContent = sf === null ? `Showing affected depth without a factor. ${awaitingMessage(['safety factor'], 'the required thickness')}` : '';
       const tMin = Math.min(...thick), tMax = Math.max(...thick);
       r('tb').innerHTML = `${f(e.burnTime, 2)} <small>s</small>`;
       r('ex').innerHTML = `${f(Math.min(...e.exposure), 1)} / ${f(Math.max(...e.exposure), 1)} <small>s</small>`;
@@ -128,6 +136,11 @@
     }
     form.addEventListener('input', run);
     form.addEventListener('change', run);
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['sf'],
+      note: 'Worked-example safety factor loaded: 1.5',
+      values: { grain: 'star', er: '0.025', sf: '1.5', ts: '1200', tp: '450' },
+    });
     run();
   });
 </script>
