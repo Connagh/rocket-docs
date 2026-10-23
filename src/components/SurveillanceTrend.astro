@@ -1,0 +1,68 @@
+---
+// How surveillance updates a service-life prediction. Illustrative numbers only.
+const W = 640, H = 340, L = 64, R = 20, T = 36, B = 46, YMAX = 30, PMIN = 50;
+const X = (yr: number) => L + (yr / YMAX) * (W - L - R);
+const Y = (p: number) => H - B - ((p - PMIN) / (100 - PMIN)) * (H - T - B);
+const LIMIT = 60;
+const pred = (t: number) => 100 - 2 * t; // predicted retention, % of new
+const band = (t: number) => 0.45 * t; // prediction uncertainty grows with extrapolation
+const data = [[2, 97.2], [4, 94.3], [6, 91.0], [8, 88.5], [10, 84.8]] as const;
+const trend = (t: number) => 100 - 1.5 * t;
+const ts = Array.from({ length: 51 }, (_, k) => (k / 50) * YMAX);
+const line = (fn: (t: number) => number, t0 = 0, t1 = YMAX) =>
+  ts.filter((t) => t >= t0 && t <= t1).map((t, k) => `${k ? 'L' : 'M'}${X(t).toFixed(1)},${Y(Math.max(PMIN, fn(t))).toFixed(1)}`).join('');
+const bandPath = ts.map((t, k) => `${k ? 'L' : 'M'}${X(t).toFixed(1)},${Y(Math.min(100, pred(t) + band(t))).toFixed(1)}`).join('')
+  + [...ts].reverse().map((t) => `L${X(t).toFixed(1)},${Y(Math.max(PMIN, pred(t) - band(t))).toFixed(1)}`).join('') + 'Z';
+const lifePred = (100 - LIMIT) / 2, lifeTrend = (100 - LIMIT) / 1.5;
+---
+
+<figure class="viz">
+  <p class="viz-title">Surveillance — prediction first, then evidence (illustrative)</p>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="sv-desc" class="sv-svg">
+    <desc id="sv-desc">
+      A property, such as bond strength as a percentage of its new value, plotted against years in storage. A predicted
+      decline from accelerated tests reaches the end-of-life limit at 20 years, with an uncertainty band that widens with
+      age. Surveillance results from samples withdrawn every two years fall above the prediction; their trend reaches
+      the limit at about 27 years, supporting a longer service life.
+    </desc>
+    {[50, 60, 70, 80, 90, 100].map((p) => (
+      <g>
+        <line x1={L} x2={W - R} y1={Y(p)} y2={Y(p)} stroke="var(--rd-line)"></line>
+        <text x={L - 8} y={Y(p) + 4} text-anchor="end" font-size="12" fill="var(--rd-muted)">{p}%</text>
+      </g>
+    ))}
+    {[0, 5, 10, 15, 20, 25, 30].map((y) => (
+      <g>
+        <line x1={X(y)} x2={X(y)} y1={T} y2={H - B} stroke="var(--rd-line)"></line>
+        <text x={X(y)} y={H - B + 16} text-anchor="middle" font-size="12" fill="var(--rd-muted)">{y}</text>
+      </g>
+    ))}
+    <text x={(L + W - R) / 2} y={H - 6} text-anchor="middle" font-size="12" fill="var(--rd-ink)">years in storage</text>
+    <text x="14" y={(T + H - B) / 2} text-anchor="middle" font-size="12" fill="var(--rd-ink)" transform={`rotate(-90 14 ${(T + H - B) / 2})`}>property, % of new</text>
+
+    <path d={bandPath} fill="var(--rd-blue)" fill-opacity="0.12"></path>
+    <path d={line(pred)} fill="none" stroke="var(--rd-blue)" stroke-width="2.5"></path>
+    <text x={X(1.5)} y={Y(71)} font-size="12" fill="var(--rd-blue)">prediction, with</text>
+    <text x={X(1.5)} y={Y(71) + 15} font-size="12" fill="var(--rd-blue)">its uncertainty</text>
+
+    <line x1={L} x2={W - R} y1={Y(LIMIT)} y2={Y(LIMIT)} stroke="var(--rd-accent)" stroke-width="2"></line>
+    <text x={L + 6} y={Y(LIMIT) - 6} font-size="12" fill="var(--rd-accent)">end-of-life limit</text>
+
+    <path d={line(trend, 0, 10)} fill="none" stroke="var(--rd-ok)" stroke-width="2.5"></path>
+    <path d={line(trend, 10, YMAX)} fill="none" stroke="var(--rd-ok)" stroke-width="2" stroke-dasharray="6 4"></path>
+    {data.map(([t, p]) => <circle cx={X(t)} cy={Y(p)} r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle>)}
+    <text x={X(11)} y={Y(92)} font-size="12" fill="var(--rd-ok)">surveillance results and their trend</text>
+
+    <line x1={X(lifePred)} x2={X(lifePred)} y1={Y(LIMIT)} y2={H - B} stroke="var(--rd-blue)" stroke-dasharray="3 3"></line>
+    <line x1={X(lifeTrend)} x2={X(lifeTrend)} y1={Y(LIMIT)} y2={H - B} stroke="var(--rd-ok)" stroke-dasharray="3 3"></line>
+    <text x={X(lifePred) - 4} y={H - B - 8} text-anchor="end" font-size="12" fill="var(--rd-blue)">predicted life</text>
+    <text x={X(lifeTrend) + 4} y={H - B - 22} font-size="12" fill="var(--rd-ok)">supported</text>
+    <text x={X(lifeTrend) + 4} y={H - B - 8} font-size="12" fill="var(--rd-ok)">by data</text>
+    {[12, 14].map((t) => <path d={`M${X(t) - 6},${T - 14} l12,0 l-6,10 z`} fill="var(--rd-muted)"></path>)}
+    <text x={X(13)} y={T - 20} text-anchor="middle" font-size="11" fill="var(--rd-muted)">next withdrawals</text>
+  </svg>
+  <figcaption>
+    A prediction says what should happen; surveillance says what did. Extending a service life rests on the trend of
+    real aged hardware staying clear of the limit — with enough withdrawals left to catch it if it turns.
+  </figcaption>
+</figure>

@@ -66,6 +66,7 @@ export const REBUILT = {
   buckling: 'verify/shell-buckling',
   lbb: 'verify/leak-before-break',
   proof: 'verify/proof-testing',
+  ageing: 'verify/storage-ageing',
   oring: 'seals/o-ring-design',
   matspec: 'materials/specification',
 };
