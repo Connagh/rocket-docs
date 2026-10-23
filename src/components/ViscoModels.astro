@@ -1,0 +1,77 @@
+---
+// The classic spring-and-dashpot models, each with sketches of its relaxation and creep response.
+const COLW = 220, TOP = 34, BOT = 136;
+
+const spring = (x: number, y1: number, y2: number) => {
+  const n = 6, h = (y2 - y1 - 12) / n;
+  let d = `M${x},${y1} L${x},${y1 + 6}`;
+  for (let k = 0; k < n; k++) d += ` L${x + (k % 2 ? -7 : 7)},${y1 + 6 + h * (k + 0.5)}`;
+  return d + ` L${x},${y2 - 6} L${x},${y2}`;
+};
+const dashpot = (x: number, y1: number, y2: number) => {
+  const m = (y1 + y2) / 2;
+  return {
+    body: `M${x - 9},${m - 10} L${x - 9},${y2 - 6} L${x + 9},${y2 - 6} L${x + 9},${m - 10} M${x},${y2 - 6} L${x},${y2}`,
+    rod: `M${x},${y1} L${x},${m} M${x - 6},${m} L${x + 6},${m}`,
+  };
+};
+// mini plots: [relaxation σ(t) after a strain step, creep ε(t) after a stress step], normalised 0..1
+type Curve = (u: number) => number;
+const MODELS: { name: string; good: string; bad: string; relax: Curve; creep: Curve; log?: boolean }[] = [
+  { name: 'Maxwell', good: 'Relaxes', bad: 'Flows for ever under load', relax: (u) => Math.exp(-4 * u), creep: (u) => 0.25 + 0.7 * u },
+  { name: 'Kelvin–Voigt', good: 'Creeps to a limit', bad: 'No sudden strain; no relaxation', relax: () => 0.45, creep: (u) => 0.9 * (1 - Math.exp(-4 * u)) },
+  { name: 'Standard linear solid', good: 'Right shape for both', bad: 'One time constant only', relax: (u) => 0.3 + 0.6 * Math.exp(-5 * u), creep: (u) => 0.3 + 0.6 * (1 - Math.exp(-3 * u)) },
+  { name: 'Generalised Maxwell (Prony)', good: 'Many arms, many decades', bad: 'Needs data for every arm', relax: (u) => 0.12 + 0.78 / (1 + Math.pow(10, 4 * (u - 0.5))), creep: (u) => 0.12 + 0.78 - 0.78 / (1 + Math.pow(10, 4 * (u - 0.62))), log: true },
+];
+const mini = (x0: number, y0: number, w: number, h: number, fn: Curve) =>
+  Array.from({ length: 41 }, (_, k) => k / 40).map((u, k) => `${k ? 'L' : 'M'}${(x0 + u * w).toFixed(1)},${(y0 + h - fn(u) * h).toFixed(1)}`).join('');
+---
+
+<figure class="viz vm">
+  <p class="viz-title">Springs and dashpots — what each model gets right and wrong</p>
+  <div class="vm-grid">
+    {MODELS.map((m, i) => {
+      const cx = COLW / 2;
+      const px = cx - 92, pw = 84, ph = 52, py = 196;
+      return (
+        <svg viewBox={`0 0 ${COLW} 300`} role="img" aria-label={`${m.name}: ${m.good.toLowerCase()}; ${m.bad.toLowerCase()}.`}>
+          <line x1={cx - 70} x2={cx + 70} y1={TOP - 8} y2={TOP - 8} stroke="var(--rd-muted)" stroke-width="3"></line>
+          {i === 0 && (() => { const d = dashpot(cx, 86, BOT); return (<g stroke="var(--rd-ink)" fill="none" stroke-width="1.6"><path d={spring(cx, TOP - 8, 86)}></path><path d={d.body}></path><path d={d.rod}></path></g>); })()}
+          {i === 1 && (() => { const d = dashpot(cx + 22, TOP + 4, BOT - 4); return (<g stroke="var(--rd-ink)" fill="none" stroke-width="1.6">
+            <path d={`M${cx - 22},${TOP - 8} L${cx - 22},${TOP + 4} M${cx + 22},${TOP - 8} L${cx + 22},${TOP + 4}`}></path>
+            <path d={spring(cx - 22, TOP + 4, BOT - 4)}></path><path d={d.body}></path><path d={d.rod}></path>
+            <path d={`M${cx - 22},${BOT - 4} L${cx - 22},${BOT} M${cx + 22},${BOT - 4} L${cx + 22},${BOT}`}></path></g>); })()}
+          {i === 2 && (() => { const d = dashpot(cx + 24, 86, BOT); return (<g stroke="var(--rd-ink)" fill="none" stroke-width="1.6">
+            <path d={spring(cx - 26, TOP - 8, BOT)}></path><path d={spring(cx + 24, TOP - 8, 86)}></path><path d={d.body}></path><path d={d.rod}></path></g>); })()}
+          {i === 3 && (<g stroke="var(--rd-ink)" fill="none" stroke-width="1.4">
+            <path d={spring(cx - 60, TOP - 8, BOT)}></path>
+            {[-22, 14, 50].map((dx) => { const d = dashpot(cx + dx, 84, BOT); return (<g><path d={spring(cx + dx, TOP - 8, 84)}></path><path d={d.body}></path><path d={d.rod}></path></g>); })}
+            <text x={cx + 72} y={(TOP + BOT) / 2} font-size="14" fill="var(--rd-muted)" stroke="none">…</text></g>)}
+          <line x1={cx - 70} x2={cx + 70} y1={BOT} y2={BOT} stroke="var(--rd-muted)" stroke-width="3"></line>
+          <text x={cx} y={BOT + 22} text-anchor="middle" font-size="12" font-weight="600" fill="var(--rd-ink)">{m.name}</text>
+
+          <rect x={px} y={py} width={pw} height={ph} fill="none" stroke="var(--rd-line)"></rect>
+          <path d={mini(px + 2, py + 2, pw - 4, ph - 4, m.relax)} fill="none" stroke="var(--rd-hot)" stroke-width="2"></path>
+          {i === 1 && <path d={`M${px + 3},${py + ph - 2} L${px + 3},${py + 4}`} stroke="var(--rd-hot)" stroke-width="2" stroke-dasharray="2 2"></path>}
+          <text x={px + pw / 2} y={py - 5} text-anchor="middle" font-size="10" fill="var(--rd-hot)">relaxation</text>
+          <rect x={px + pw + 16} y={py} width={pw} height={ph} fill="none" stroke="var(--rd-line)"></rect>
+          <path d={mini(px + pw + 18, py + 2, pw - 4, ph - 4, m.creep)} fill="none" stroke="var(--rd-blue)" stroke-width="2"></path>
+          <text x={px + pw + 16 + pw / 2} y={py - 5} text-anchor="middle" font-size="10" fill="var(--rd-blue)">creep</text>
+          {m.log && <text x={cx} y={py + ph + 12} text-anchor="middle" font-size="9.5" fill="var(--rd-muted)">log time</text>}
+          <text x={cx} y={py + ph + 30} text-anchor="middle" font-size="10.5" fill="var(--rd-ok)">✓ {m.good}</text>
+          <text x={cx} y={py + ph + 46} text-anchor="middle" font-size="10.5" fill="var(--rd-accent)">✗ {m.bad}</text>
+        </svg>
+      );
+    })}
+  </div>
+  <figcaption>
+    Relaxation: hold a strain, watch the stress. Creep: hold a stress, watch the strain. Real polymers relax over many
+    decades of time, which only the many-armed generalised Maxwell model — the Prony series — can follow.
+  </figcaption>
+</figure>
+
+<style>
+  .vm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.5rem 1rem; }
+  .vm-grid > * { margin: 0 !important; }
+  .vm-grid svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+</style>

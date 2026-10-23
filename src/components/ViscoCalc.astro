@@ -1,0 +1,295 @@
+---
+// Prony-series workbench: relaxation and creep, recovery after release (warm vs cold), DMA sweep, solver card.
+// Maths in src/lib/visco.ts (unit-tested); this file is UI only. Presets are illustrative, not real compounds.
+const PRESETS = {
+  seal: {
+    label: 'Seal elastomer (FKM-like)', eInf: 6, tg: -20, tRef: 20,
+    arms: [[276, 1e-7], [195, 3.16e-7], [138, 1e-6], [98, 3.16e-6], [69.4, 1e-5], [49.1, 3.16e-5], [34.8, 1e-4], [24.6, 3.16e-4], [17.4, 1e-3], [12.3, 3.16e-3], [8.73, 0.01], [6.18, 0.0316], [4.38, 0.1], [3.1, 0.316], [2.19, 1], [1.55, 3.16], [1.1, 10], [0.778, 31.6], [0.551, 100], [0.39, 316], [0.276, 1e3], [0.195, 3.16e3], [0.138, 1e4], [0.098, 3.16e4], [0.0694, 1e5], [0.0491, 3.16e5], [0.0348, 1e6]],
+  },
+  prop: {
+    label: 'Propellant (HTPB-like)', eInf: 3, tg: -70, tRef: -20,
+    arms: [[483, 1e-8], [342, 3.16e-8], [242, 1e-7], [171, 3.16e-7], [121, 1e-6], [86, 3.16e-6], [60.9, 1e-5], [43.1, 3.16e-5], [30.5, 1e-4], [21.6, 3.16e-4], [15.3, 1e-3], [10.8, 3.16e-3], [7.66, 0.01], [5.42, 0.0316], [3.84, 0.1], [2.72, 0.316], [1.92, 1], [1.36, 3.16], [0.964, 10], [0.683, 31.6], [0.483, 100], [0.342, 316], [0.242, 1e3], [0.171, 3.16e3], [0.121, 1e4], [0.086, 3.16e4], [0.0609, 1e5], [0.0431, 3.16e5], [0.0305, 1e6], [0.0216, 3.16e6], [0.0153, 1e7], [0.0108, 3.16e7], [0.00766, 1e8]],
+  },
+};
+const armsText = (a: number[][]) => a.map(([e, t]) => `${e}, ${t}`).join('\n');
+const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 86400], ['years', 3.156e7]];
+---
+
+<div class="calc vecalc" data-vecalc>
+  <div class="calc-head"><span>Viscoelastic workbench</span><span>Prony series · WLF from T<sub>g</sub></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Material</legend>
+        <div class="ve-presets">
+          {Object.entries(PRESETS).map(([k, p]) => <button type="button" class="chip" data-preset={k}>{p.label}</button>)}
+        </div>
+        <div class="row2">
+          <label>E<sub>∞</sub>, long-term (MPa)<input name="einf" type="number" min="0" step="any" value={PRESETS.seal.eInf} /></label>
+          <label>Glass transition T<sub>g</sub> (°C)<input name="tg" type="number" step="any" value={PRESETS.seal.tg} /></label>
+          <label>Data measured at (°C)<input name="tref" type="number" step="any" value={PRESETS.seal.tRef} /></label>
+          <label>ν, for the solver card<input name="nu" type="number" min="0" max="0.4999" step="0.001" value="0.495" /></label>
+        </div>
+        <label>Prony arms — E<sub>i</sub> (MPa), τ<sub>i</sub> (s), one per line
+          <textarea name="arms" rows="6">{armsText(PRESETS.seal.arms)}</textarea>
+        </label>
+        <p class="hint">Illustrative presets, not measurements of any real compound. Shift factors use the general WLF constants referred to T<sub>g</sub>.</p>
+      </fieldset>
+      <fieldset>
+        <legend>The seal's story</legend>
+        <div class="row2">
+          <label>Stored squeezed at (°C)<input name="ts" type="number" step="any" value="40" /></label>
+          <label>for
+            <span class="ve-dur"><input name="hold" type="number" min="0" step="any" value="1" /><select name="unit">{UNITS.map(([u, s]) => <option value={s} selected={u === 'years'}>{u}</option>)}</select></span>
+          </label>
+          <label>Released at (°C)<input name="tc" type="number" step="any" value="0" /></label>
+          <label>Recovery window (s)<input name="win" type="number" min="0.0001" step="any" value="0.1" /></label>
+        </div>
+        <p class="hint">Held at constant squeeze (relaxation), then the gap opens and the stress comes off (recovery). Compared with releasing it at the storage temperature.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>Squeeze recovered in the window — released cold</dt><dd data-r="recC">—</dd></div>
+        <div class="readout"><dt>…released at storage temperature</dt><dd data-r="recS">—</dd></div>
+        <div class="readout"><dt>Sealing force left after storage</dt><dd data-r="ret">—</dd></div>
+      </dl>
+      <p class="pv-sub">The material</p>
+      <dl class="readouts">
+        <div class="readout"><dt>E at 1 s, storage temperature</dt><dd data-r="e1">—</dd></div>
+        <div class="readout"><dt>Instantaneous E<sub>0</sub> · long-term E<sub>∞</sub></dt><dd data-r="e0">—</dd></div>
+        <div class="readout"><dt>Shift factor, cold vs storage</dt><dd data-r="at">—</dd></div>
+        <div class="readout"><dt>tan δ peak at 1 Hz</dt><dd data-r="tp">—</dd></div>
+      </dl>
+      <figure class="ve-fig">
+        <svg viewBox="0 0 480 240" data-rc role="img" aria-label="Relaxation modulus and inverse creep compliance against time"></svg>
+        <figcaption>At the storage temperature: the relaxation modulus E(t) and the inverse creep compliance 1/J(t). The same material, two experiments — 1/J(t) never falls below E(t), and for a broad spectrum like this one the two stay close.</figcaption>
+      </figure>
+      <figure class="ve-fig">
+        <svg viewBox="0 0 480 230" data-rec role="img" aria-label="Recovered fraction of squeeze against time after release"></svg>
+        <figcaption>After the storage hold, the squeeze comes off. How much of it the seal gives back, against time, warm and cold.</figcaption>
+      </figure>
+      <figure class="ve-fig">
+        <svg viewBox="0 0 480 230" data-dma role="img" aria-label="DMA temperature sweep at 1 Hz"></svg>
+        <figcaption>A DMA temperature sweep at 1 Hz from the same Prony series: storage modulus E′ (log scale) and tan δ. The tan δ peak marks the glass transition at this frequency.</figcaption>
+      </figure>
+      <div class="ve-card">
+        <div class="ve-card-head"><span>Solver card (Abaqus form)</span><button type="button" class="chip" data-copy>Copy</button></div>
+        <pre data-card></pre>
+      </div>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Linear viscoelasticity, thermorheologically simple (one shift factor for every arm), WLF shift — valid from about
+    T<sub>g</sub> to T<sub>g</sub> + 100 K. Real seals also take a chemical set as they age, and real propellants dewet;
+    neither is in a linear model.
+  </div>
+  <script type="application/json" data-presets set:html={JSON.stringify(PRESETS)}></script>
+</div>
+
+<style is:global>
+  .vecalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .vecalc .ve-presets { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .vecalc .ve-presets > * { margin: 0 !important; }
+  .vecalc .ve-dur { display: grid !important; grid-template-columns: 1fr auto; gap: 0.3rem; margin-top: 0.2rem; }
+  .vecalc .ve-dur > * { margin: 0 !important; }
+  .vecalc textarea { width: 100%; display: block; margin-top: 0.2rem; font-family: var(--sl-font-mono); background: var(--rd-panel2); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; }
+  .ve-fig { margin: 0.9rem 0 0 !important; }
+  .ve-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ve-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .vecalc .ve-card { margin-top: 0.9rem !important; border: 1px solid var(--rd-line); border-radius: 6px; overflow: hidden; }
+  .vecalc .ve-card-head { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0.6rem; background: var(--rd-panel2); font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); color: var(--rd-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .vecalc .ve-card pre { margin: 0 !important; padding: 0.6rem; font-size: 0.75rem; max-height: 14rem; overflow: auto; }
+  .vecalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { instantaneous, relaxation, dynamic, wlfFromTg, logShift, creepCompliance, recoveryAfterHold, abaqusCard, type Prony } from '../lib/visco';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const deg = (c: number) => `${f(c, 0).replace('-', '−')} °C`;
+  const sci = (v: number) => { if (v >= 0.01 && v < 1e4) return f(v, v < 10 ? 2 : 0); const e = Math.floor(Math.log10(v)); return `${f(v / 10 ** e, 1)}×10${String(e).replace('-', '⁻').replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+d])}`; };
+  const sup = (e: number) => `10${String(e).replace('-', '⁻').replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+d])}`;
+
+  document.querySelectorAll<HTMLElement>('[data-vecalc]').forEach((root) => {
+    const PRESETS: Record<string, { eInf: number; tg: number; tRef: number; arms: number[][] }> = JSON.parse(root.querySelector('[data-presets]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const axes = (svg: SVGSVGElement, W: number, H: number, L: number, R: number, T: number, B: number) => ({ W, H, L, R, T, B, pw: W - L - R, ph: H - T - B });
+
+    function run() {
+      const notes = root.querySelector('[data-notes]')!;
+      const terms = field('arms').value.split('\n').map((l) => l.split(/[,\s;]+/).filter(Boolean).map(Number))
+        .filter((a) => a.length >= 2 && a[0] > 0 && a[1] > 0).map(([e, tau]) => ({ e, tau }));
+      const p: Prony = { eInf: Math.max(0, num('einf')), terms };
+      const tg = num('tg'), tRef = num('tref'), ts = num('ts'), tc = num('tc'), win = num('win');
+      const hold = num('hold') * num('unit');
+      if (!terms.length || !(p.eInf > 0) || !(win > 0)) {
+        notes.innerHTML = '<li class="bad">Enter at least one Prony arm (E<sub>i</sub>, τ<sub>i</sub> both positive), a positive long-term modulus and a recovery window.</li>';
+        return;
+      }
+      const { c1, c2 } = wlfFromTg(tg, tRef);
+      const okT = (T: number) => c2 + T - tRef > 5;
+      if (!okT(ts) || !okT(tc)) {
+        notes.innerHTML = `<li class="bad">Too far below T<sub>g</sub> for the WLF shift (it is only used from about T<sub>g</sub> upward). Raise the temperatures or check T<sub>g</sub>.</li>`;
+        return;
+      }
+      const aT = (T: number) => 10 ** logShift(T, tRef, c1, c2);
+      const aS = aT(ts), aC = aT(tc);
+      const xiHold = hold / aS;
+      const recS = recoveryAfterHold(p, xiHold, [win / aS]).at[0];
+      const recC = recoveryAfterHold(p, xiHold, [win / aC]).at[0];
+      const ret = hold > 1 ? relaxation(p, xiHold) / relaxation(p, 1 / aS) : 1;
+      r('recC').innerHTML = `${f(recC * 100, 1)}% <small>at ${deg(tc)}</small>`;
+      r('recS').innerHTML = `${f(recS * 100, 1)}% <small>at ${deg(ts)}</small>`;
+      r('ret').innerHTML = `${f(ret * 100, 1)}% <small>of the value 1 s after squeezing</small>`;
+      r('e1').innerHTML = `${f(relaxation(p, 1 / aS), 2)} <small>MPa</small>`;
+      r('e0').innerHTML = `${f(instantaneous(p), 0)} · ${f(p.eInf, 2)} <small>MPa</small>`;
+      r('at').textContent = `${sci(aC / aS)}× slower`;
+      let peak = { tan: 0, T: NaN };
+      for (let T = Math.ceil(tRef - c2 + 6); T <= tg + 150; T += 0.5) { const d = dynamic(p, 2 * Math.PI * aT(T)); if (d.tanDelta > peak.tan) peak = { tan: d.tanDelta, T }; }
+      r('tp').innerHTML = `${deg(peak.T)} <small>tan δ ${f(peak.tan, 2)}</small>`;
+      root.querySelector('[data-card]')!.textContent = abaqusCard(p, num('nu'), tRef, c1, c2);
+
+      const out: [string, string][] = [];
+      out.push(['', `At ${deg(tc)} every relaxation process runs ${sci(aC / aS)} times slower than at ${deg(ts)}. Released cold, the seal gives back ${f(recC * 100, 1)}% of its squeeze in ${f(win, win < 1 ? 2 : 0)} s, against ${f(recS * 100, 1)}% warm.`]);
+      if (recC < 0.25) out.push(['warn', 'A seal that cannot spring back as fast as the gap opens loses contact, and hot gas finds the path. That was the Challenger mechanism: cold O-rings that had lost their resilience. See the O-ring page.']);
+      out.push(['', `Stored squeezed for ${f(num('hold'), 0)} ${field('unit').selectedOptions[0].text} at ${deg(ts)}, it keeps ${f(ret * 100, 0)}% of its initial sealing force — the rest has relaxed away. Real compounds also take a chemical set as they age, which this linear model does not include.`]);
+      const g = 1 - p.eInf / instantaneous(p);
+      if (g > 0.999) out.push(['warn', `The arms carry ${f(g * 100, 2)}% of the instantaneous modulus — the relaxed modulus is tiny compared with the glassy one. Check that the Prony data and E∞ are on the same basis.`]);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+
+      rcChart(p, aS, hold);
+      recChart(p, xiHold, aS, aC, win, ts, tc);
+      dmaChart(p, aT, tg, tRef, c2, peak.T);
+    }
+
+    function logAxes(svg: SVGSVGElement, a: ReturnType<typeof axes>, x1: number, x2: number, y1: number, y2: number, xl: string, yl: string, yLog = true) {
+      const X = (lx: number) => a.L + ((lx - x1) / (x2 - x1)) * a.pw;
+      const Y = (v: number) => a.H - a.B - (((yLog ? v : v) - y1) / (y2 - y1)) * a.ph;
+      const xStep = x2 - x1 > 10 ? 2 : 1;
+      for (let e = Math.ceil(x1); e <= x2; e += xStep) {
+        svg.append(el('line', { x1: X(e), x2: X(e), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(e), y: a.H - a.B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, sup(e)));
+      }
+      svg.append(el('text', { x: (a.L + a.W - a.R) / 2, y: a.H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, xl));
+      svg.append(el('text', { x: 12, y: (a.T + a.H - a.B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(a.T + a.H - a.B) / 2})` }, yl));
+      return { X, Y };
+    }
+
+    function rcChart(p: Prony, aS: number, hold: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-rc]')!;
+      svg.replaceChildren();
+      const a = axes(svg, 480, 240, 50, 12, 12, 34);
+      // start a decade before the fastest arm (in real time at this temperature) so the glassy end shows
+      const x1 = Math.max(-12, Math.floor(Math.log10(Math.min(...p.terms.map((a) => a.tau)) * aS)) - 1), x2 = 9;
+      const y1 = Math.floor(Math.log10(p.eInf)) , y2 = Math.ceil(Math.log10(instantaneous(p)));
+      const { X, Y } = logAxes(svg, a, x1, x2, y1, y2, 'time at the storage temperature, s', 'MPa');
+      for (let e = y1; e <= y2; e++) {
+        svg.append(el('line', { x1: a.L, x2: a.W - a.R, y1: Y(e), y2: Y(e), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: a.L - 6, y: Y(e) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(10 ** e)));
+      }
+      const lts = Array.from({ length: 131 }, (_, k) => x1 + (k / 130) * (x2 - x1));
+      const ts = lts.map((l) => 10 ** l);
+      const J = creepCompliance(p, ts.map((t) => t / aS));
+      const path = (vals: number[]) => lts.map((l, k) => `${k ? 'L' : 'M'}${X(l).toFixed(1)},${Y(Math.log10(vals[k])).toFixed(1)}`).join('');
+      svg.append(el('path', { d: path(ts.map((t) => relaxation(p, t / aS))), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
+      svg.append(el('path', { d: path(J.map((j) => 1 / j)), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5, 'stroke-dasharray': '6 4' }));
+      svg.append(el('text', { x: a.W - a.R - 4, y: a.T + 12, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-hot)' }, 'relaxation E(t)'));
+      svg.append(el('text', { x: a.W - a.R - 4, y: a.T + 26, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-blue)' }, 'creep, 1/J(t)'));
+      if (hold > 0 && Math.log10(hold) >= x1 && Math.log10(hold) <= x2) {
+        svg.append(el('line', { x1: X(Math.log10(hold)), x2: X(Math.log10(hold)), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: X(Math.log10(hold)) - 4, y: a.H - a.B - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'storage'));
+      }
+    }
+
+    function recChart(p: Prony, xiHold: number, aS: number, aC: number, win: number, ts: number, tc: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-rec]')!;
+      svg.replaceChildren();
+      const a = axes(svg, 480, 230, 50, 12, 12, 34);
+      const x1 = -4, x2 = 8;
+      const { X } = logAxes(svg, a, x1, x2, 0, 1, 'time after release, s', 'recovered');
+      const Y = (v: number) => a.H - a.B - v * a.ph;
+      for (let v = 0; v <= 1.0001; v += 0.25) {
+        svg.append(el('line', { x1: a.L, x2: a.W - a.R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: a.L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, `${v * 100}%`));
+      }
+      const lts = Array.from({ length: 97 }, (_, k) => x1 + (k / 96) * (x2 - x1));
+      for (const [aF, col, lab] of [[aS, 'var(--rd-hot)', `released at ${deg(ts)}`], [aC, 'var(--rd-blue)', `released at ${deg(tc)}`]] as const) {
+        const rec = recoveryAfterHold(p, xiHold, lts.map((l) => 10 ** l / aF)).at;
+        svg.append(el('path', { d: lts.map((l, k) => `${k ? 'L' : 'M'}${X(l).toFixed(1)},${Y(rec[k]).toFixed(1)}`).join(''), fill: 'none', stroke: col, 'stroke-width': 2.5 }));
+        const kLab = Math.round(0.55 * (lts.length - 1));
+        svg.append(el('text', { x: X(lts[kLab]) + 4, y: Y(rec[kLab]) - 6, 'font-size': 10, fill: col }, lab));
+      }
+      if (Math.log10(win) >= x1 && Math.log10(win) <= x2) {
+        svg.append(el('line', { x1: X(Math.log10(win)), x2: X(Math.log10(win)), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: X(Math.log10(win)) + 4, y: a.T + 12, 'font-size': 10, fill: 'var(--rd-muted)' }, 'window'));
+      }
+    }
+
+    function dmaChart(p: Prony, aT: (T: number) => number, tg: number, tRef: number, c2: number, tPeak: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-dma]')!;
+      svg.replaceChildren();
+      const a = axes(svg, 480, 230, 50, 44, 12, 34);
+      const T1 = Math.max(tg - 30, tRef - c2 + 6), T2 = tg + 130;
+      // fine sampling: near Tg the shift factor moves a decade every few kelvin
+      const Ts = Array.from({ length: 801 }, (_, k) => T1 + (k / 800) * (T2 - T1));
+      const d = Ts.map((T) => dynamic(p, 2 * Math.PI * aT(T)));
+      const ly1 = Math.floor(Math.log10(Math.min(...d.map((x) => x.storage)))), ly2 = Math.ceil(Math.log10(Math.max(...d.map((x) => x.storage))));
+      const tMax = Math.max(0.5, Math.ceil(Math.max(...d.map((x) => x.tanDelta)) * 4) / 4);
+      const X = (T: number) => a.L + ((T - T1) / (T2 - T1)) * a.pw;
+      const YE = (e: number) => a.H - a.B - ((Math.log10(e) - ly1) / (ly2 - ly1)) * a.ph;
+      const YT = (v: number) => a.H - a.B - (v / tMax) * a.ph;
+      for (let e = ly1; e <= ly2; e++) {
+        svg.append(el('line', { x1: a.L, x2: a.W - a.R, y1: YE(10 ** e), y2: YE(10 ** e), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: a.L - 6, y: YE(10 ** e) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-hot)' }, String(10 ** e)));
+      }
+      for (let v = 0; v <= tMax + 1e-9; v += tMax / 4) svg.append(el('text', { x: a.W - a.R + 6, y: YT(v) + 3, 'font-size': 10, fill: 'var(--rd-blue)' }, v.toFixed(2)));
+      const step = T2 - T1 > 120 ? 40 : 20;
+      for (let T = Math.ceil(T1 / step) * step; T <= T2; T += step) {
+        svg.append(el('line', { x1: X(T), x2: X(T), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(T), y: a.H - a.B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, `${T}`));
+      }
+      svg.append(el('text', { x: (a.L + a.W - a.R) / 2, y: a.H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'temperature, °C — 1 Hz'));
+      svg.append(el('text', { x: 12, y: (a.T + a.H - a.B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-hot)', transform: `rotate(-90 12 ${(a.T + a.H - a.B) / 2})` }, "E′, MPa"));
+      svg.append(el('text', { x: a.W - 8, y: (a.T + a.H - a.B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-blue)', transform: `rotate(90 ${a.W - 8} ${(a.T + a.H - a.B) / 2})` }, 'tan δ'));
+      svg.append(el('path', { d: Ts.map((T, k) => `${k ? 'L' : 'M'}${X(T).toFixed(1)},${YE(d[k].storage).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));
+      svg.append(el('path', { d: Ts.map((T, k) => `${k ? 'L' : 'M'}${X(T).toFixed(1)},${YT(d[k].tanDelta).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      if (Number.isFinite(tPeak)) {
+        svg.append(el('line', { x1: X(tPeak), x2: X(tPeak), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-blue)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: X(tPeak) + 4, y: a.T + 12, 'font-size': 10, fill: 'var(--rd-blue)' }, `tan δ peak ${deg(tPeak)}`));
+      }
+      svg.append(el('line', { x1: X(tg), x2: X(tg), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '2 4' }));
+      svg.append(el('text', { x: X(tg) - 4, y: a.H - a.B - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'Tg'));
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+      const pr = PRESETS[b.dataset.preset!];
+      field('einf').value = String(pr.eInf); field('tg').value = String(pr.tg); field('tref').value = String(pr.tRef);
+      field('arms').value = pr.arms.map(([e, t]) => `${e}, ${t}`).join('\n');
+      if (b.dataset.preset === 'prop') { field('ts').value = '20'; field('tc').value = '-40'; }
+      else { field('ts').value = '40'; field('tc').value = '0'; }
+      run();
+    }));
+    root.querySelector('[data-copy]')!.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      try { await navigator.clipboard.writeText(root.querySelector('[data-card]')!.textContent!); btn.textContent = 'Copied'; }
+      catch { btn.textContent = 'Select and copy'; }
+      setTimeout(() => (btn.textContent = 'Copy'), 2000);
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
