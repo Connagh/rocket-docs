@@ -14,8 +14,8 @@ const list = (names: string[]) =>
   names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
 /** The message shown in place of results that need a factor the user hasn't entered. */
-export const awaitingMessage = (names: string[], what = 'this') =>
-  `Enter your programme's ${list(names)} to see ${what}. Factors come from your governing requirement — programme design rules or the applicable standard — not from this site. Or press “Load worked example”.`;
+export const awaitingMessage = (names: string[], what = 'this', example = true) =>
+  `Enter your programme's ${list(names)} to see ${what}. Factors come from your governing requirement — programme design rules or the applicable standard — not from this site.${example ? ' Or press “Load worked example”.' : ''}`;
 
 /**
  * Wire a "Load worked example" button: fills every named field, shows a note naming the

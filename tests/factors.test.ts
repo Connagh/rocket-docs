@@ -16,3 +16,8 @@ test('the awaiting message names every missing factor and never suggests a value
   assert.match(m, /proof factor and burst factor/);
   assert.doesNotMatch(m, /\d/);
 });
+
+test('the awaiting message mentions the example button only when there is one', () => {
+  assert.match(awaitingMessage(['proof factor']), /Load worked example/);
+  assert.doesNotMatch(awaitingMessage(['buckling factor of safety'], 'the margin', false), /Load worked example/);
+});

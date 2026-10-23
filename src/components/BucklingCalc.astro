@@ -1,0 +1,247 @@
+---
+// Unpressurised cylinder buckling check: axial compression, bending, external pressure.
+// Maths in src/lib/buckling.ts (unit-tested); this file is UI only.
+import data from '../data/materials.json';
+
+const FAM: Record<string, [string, number]> = { steel: ['Steels', 0.3], ss: ['Stainless steels', 0.3], ti: ['Titanium', 0.34], al: ['Aluminium', 0.33], ni: ['Nickel alloys', 0.31], mg: ['Magnesium', 0.35] };
+const metals = data.materials.filter((m) => m.family in FAM && m.E && m.yield);
+const groups = Object.entries(FAM).map(([fam, [label]]) => ({ label, items: metals.filter((m) => m.family === fam) }));
+const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.family][1], y: m.yield }]));
+---
+
+<div class="calc bkcalc" data-bkcalc>
+  <div class="calc-head"><span>Cylinder buckling — unpressurised</span><span>classical · NASA SP-8007 knockdowns</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Material</legend>
+        <label>Alloy
+          <select name="m">
+            {groups.map((g) => (
+              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
+            ))}
+          </select>
+        </label>
+        <div class="row2">
+          <label>E (GPa)<input name="E" type="number" min="1" step="any" /></label>
+          <label>Poisson's ratio<input name="nu" type="number" min="0" max="0.49" step="0.01" /></label>
+          <label>Yield (MPa)<input name="y" type="number" min="1" step="any" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Geometry</legend>
+        <div class="row2">
+          <label>Internal diameter (mm)<input name="id" type="number" min="1" step="any" value="300" /></label>
+          <label>Wall (mm)<input name="t" type="number" min="0.01" step="any" value="1.377" /></label>
+          <label>Unsupported length (mm)<input name="L" type="number" min="1" step="any" value="1000" /></label>
+        </div>
+        <p class="hint">Unsupported length: between the features that hold the shell round — domes, rings, skirt attachments.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Loads, case not pressurised</legend>
+        <div class="row2">
+          <label>Axial compression (kN)<input name="P" type="number" min="0" step="any" value="0" /></label>
+          <label>Bending moment (kN·m)<input name="M" type="number" min="0" step="any" value="0" /></label>
+          <label>External pressure (MPa)<input name="q" type="number" min="0" step="any" value="0.101" /></label>
+        </div>
+        <label class="inline"><input type="checkbox" name="ends" checked /> Pressure also acts on the end closures (a sealed case)</label>
+        <p class="hint">0.101 MPa is one atmosphere — a case evacuated inside, or sealed and cooled.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Knockdown and factor</legend>
+        <div class="row2">
+          <label>γ axial<input name="ga" type="number" min="0.05" max="1" step="0.01" placeholder="SP-8007" /></label>
+          <label>γ bending<input name="gb" type="number" min="0.05" max="1" step="0.01" placeholder="SP-8007" /></label>
+          <label>γ external pressure<input name="gp" type="number" min="0.05" max="1" step="0.01" value="0.56" /></label>
+          <label>Buckling factor of safety<input name="fs" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Knockdowns turn the perfect-shell answer into a lower bound on test data; leave the axial and bending ones blank to use SP-8007's. The factor of safety comes from your programme's requirements, not from this site.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="sum"><dt>Interaction R<sub>a</sub> + R<sub>b</sub> + R<sub>p</sub></dt><dd data-r="sum">—</dd></div>
+        <div class="readout"><dt>Loads × this to buckle</dt><dd data-r="res">—</dd></div>
+        <div class="readout" data-cls="ms"><dt>Margin of safety</dt><dd data-r="ms">—</dd></div>
+      </dl>
+      <p class="pv-sub">Capacity in each mode</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Axial</dt><dd data-r="ax">—</dd></div>
+        <div class="readout"><dt>Bending</dt><dd data-r="bd">—</dd></div>
+        <div class="readout"><dt>External pressure</dt><dd data-r="pr">—</dd></div>
+      </dl>
+      <p class="pv-sub">The shell</p>
+      <dl class="readouts">
+        <div class="readout"><dt>r / t</dt><dd data-r="rt">—</dd></div>
+        <div class="readout"><dt>Classical σ<sub>cr</sub></dt><dd data-r="scl">—</dd></div>
+        <div class="readout"><dt>γ axial · bending</dt><dd data-r="g">—</dd></div>
+      </dl>
+      <figure class="bk-fig">
+        <svg viewBox="0 0 480 230" data-kd role="img" aria-label="SP-8007 knockdown factor against radius-to-thickness ratio"></svg>
+        <figcaption>SP-8007 knockdowns against r/t. The thinner the shell, the further below the perfect-shell answer it buckles. Dots: this shell.</figcaption>
+      </figure>
+      <figure class="bk-fig">
+        <svg viewBox="0 0 480 250" data-int role="img" aria-label="Interaction diagram: axial plus bending ratio against external pressure ratio"></svg>
+        <figcaption>Linear interaction. Below the solid line the shell stands; the dashed line is the line divided by your factor of safety.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Unstiffened isotropic cylinder, ends held circular, unpressurised, elastic. Knockdowns are SP-8007's empirical lower
+    bounds; the lateral-pressure buckling pressure uses Batdorf's moderate-length solution with the long-tube limit.
+    Internal pressure (which stabilises), stiffeners, cones, composites and plasticity need their own treatment.
+  </div>
+  <script type="application/json" data-mats set:html={JSON.stringify(MATS)}></script>
+</div>
+
+<style is:global>
+  .bkcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .bkcalc .inline { display: flex; align-items: center; gap: 0.4rem; }
+  .bkcalc .inline input { width: auto; }
+  .bk-fig { margin: 0.9rem 0 0 !important; }
+  .bk-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .bk-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .bkcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { bucklingCheck, kdAxial, kdBending } from '../lib/buckling';
+  import { readFactor, awaitingMessage } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const big = (v: number) => (v >= 100 ? f(v, 0) : v >= 10 ? f(v, 1) : f(v, 2));
+
+  document.querySelectorAll<HTMLElement>('[data-bkcalc]').forEach((root) => {
+    const MATS: Record<string, { E: number; nu: number; y: number }> = JSON.parse(root.querySelector('[data-mats]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+    const num = (n: string) => +field(n).value;
+    const opt = (n: string) => (field(n).value.trim() === '' ? undefined : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => { const e = root.querySelector(`[data-cls="${k}"]`)!; e.className = `readout${k === 'sum' ? ' primary' : ''} ${c}`; };
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const applyMat = () => {
+      const m = MATS[field('m').value];
+      field('E').value = String(m.E); field('nu').value = String(m.nu); field('y').value = String(m.y);
+    };
+
+    function run() {
+      const t = num('t'), rMean = num('id') / 2 + t / 2;
+      const notes = root.querySelector('[data-notes]')!;
+      const i = {
+        E: num('E') * 1000, nu: num('nu'), yieldStrength: num('y'), r: rMean, t, L: num('L'),
+        P: num('P') * 1000, M: num('M') * 1e6, q: num('q'), endPressure: field('ends').checked,
+        gammaP: num('gp'), gammaA: opt('ga'), gammaB: opt('gb'),
+      };
+      if (!(i.E > 0 && i.t > 0 && i.r > i.t && i.L > 0 && i.yieldStrength > 0 && i.gammaP > 0 && i.nu >= 0 && i.nu < 0.5)) {
+        notes.innerHTML = '<li class="bad">Check the inputs: E, wall, diameter, length, yield and knockdown must be positive.</li>';
+        return;
+      }
+      const b = bucklingCheck(i);
+      const fs = readFactor(field('fs').value);
+      r('sum').textContent = f(b.sum, 3);
+      r('res').textContent = Number.isFinite(b.reserve) ? `${f(b.reserve, 2)}×` : 'no load';
+      cls('sum', b.sum >= 1 ? 'bad' : '');
+      if (fs === null) { r('ms').innerHTML = '<small>needs your factor</small>'; cls('ms', ''); }
+      else {
+        const ms = b.sum > 0 ? 1 / (fs * b.sum) - 1 : Infinity;
+        r('ms').textContent = Number.isFinite(ms) ? `${ms >= 0 ? '+' : ''}${f(ms, 2)}` : '—';
+        cls('ms', ms < 0 ? 'bad' : ms < 0.1 ? 'warn' : 'ok');
+      }
+      const mode = (g: string) => (g === 'shell' ? '' : ` · ${g} governs`);
+      r('ax').innerHTML = `${big(b.axial.capacity / 1000)} <small>kN${mode(b.axial.governs)}</small>`;
+      r('bd').innerHTML = `${big(b.bending.capacity / 1e6)} <small>kN·m${mode(b.bending.governs)}</small>`;
+      r('pr').innerHTML = `${f(b.pressure.allow, 3)} <small>MPa · ${b.pressure.long ? 'long tube' : 'moderate length'}${mode(b.pressure.governs)}</small>`;
+      r('rt').textContent = f(b.rt, 1);
+      r('scl').innerHTML = `${f(b.sClassical, 0)} <small>MPa</small>`;
+      r('g').textContent = `${f(b.gammaA, 3)} · ${f(b.gammaB, 3)}`;
+
+      const out: [string, string][] = [];
+      const parts = [['axial', b.axial.R], ['bending', b.bending.R], ['external pressure', b.pressure.R]] as const;
+      const top = [...parts].sort((a, c) => c[1] - a[1])[0];
+      if (b.sum > 0) out.push([b.sum >= 1 ? 'bad' : '', `${b.sum >= 1 ? 'Buckles: ' : ''}axial ${f(b.axial.R, 3)} + bending ${f(b.bending.R, 3)} + pressure ${f(b.pressure.R, 3)} = ${f(b.sum, 3)}. ${top[0][0].toUpperCase() + top[0].slice(1)} uses ${f((top[1] / b.sum) * 100, 0)}% of it.`]);
+      if (fs === null && b.sum > 0) out.push(['warn', awaitingMessage(['buckling factor of safety'], 'the margin', false) + ` Until then: the loads can rise ${f(b.reserve, 2)}× before buckling, so any factor below that passes.`]);
+      if (i.endPressure && i.q > 0) out.push(['', `The external pressure on the end closures adds ${f((i.q * Math.PI * i.r * i.r) / 1000, 1)} kN of axial compression.`]);
+      if (b.elasticToYield > 1) out.push(['', 'This wall is thick enough to yield before it buckles in axial compression — buckling is not the problem here.']);
+      else if (b.elasticToYield > 0.6) out.push(['warn', `The axial buckling stress is ${f(b.elasticToYield * 100, 0)}% of yield. Check the material's proportional limit: above it the elastic formula over-predicts, and a plasticity correction is needed.`]);
+      if (b.rt > 1500) out.push(['warn', 'r/t above 1500 is beyond most of the test data behind the SP-8007 curve.']);
+      if (b.axial.governs === 'column') out.push(['warn', `The whole tube buckles as a column (pinned ends over ${f(i.L, 0)} mm) before the wall wrinkles. Shorten the unsupported length or treat it as a column problem.`]);
+      if (b.pressure.Z < 100) out.push(['warn', 'Short between supports (Batdorf Z < 100): the moderate-length pressure formula over-predicts for short, plate-like panels.']);
+      if (b.pressure.R > 0.5) out.push(['', `External pressure is the weak spot. Buckling pressure grows as t^2.5 for this length — a 10% thicker wall gives ${f((1.1 ** 2.5 - 1) * 100, 0)}% more — and doubles if a ring halves the unsupported length.`]);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      kdChart(b.rt, b.gammaA, b.gammaB, i.gammaP);
+      intChart(b.axial.R + b.bending.R, b.pressure.R, fs);
+    }
+
+    function kdChart(rt: number, gA: number, gB: number, gP: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-kd]')!;
+      svg.replaceChildren();
+      const W = 480, H = 230, L = 44, R = 12, T = 12, B = 36, x1 = 1, x2 = Math.log10(3000);
+      const X = (v: number) => L + ((Math.log10(v) - x1) / (x2 - x1)) * (W - L - R);
+      const Y = (g: number) => H - B - g * (H - T - B);
+      for (let g = 0; g <= 1.001; g += 0.2) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(g), y2: Y(g), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(g) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, g.toFixed(1)));
+      }
+      for (const v of [10, 30, 100, 300, 1000, 3000]) {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'r / t'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'knockdown γ'));
+      const pts = Array.from({ length: 120 }, (_, k) => 10 ** (x1 + (k / 119) * (x2 - x1)));
+      const path = (fn: (v: number) => number) => pts.map((v, k) => `${k ? 'L' : 'M'}${X(v).toFixed(1)},${Y(fn(v)).toFixed(1)}`).join('');
+      svg.append(el('line', { x1: L, x2: W - R, y1: Y(gP), y2: Y(gP), stroke: 'var(--rd-warn)', 'stroke-dasharray': '6 4' }));
+      svg.append(el('text', { x: L + 6, y: Y(gP) + 14, 'font-size': 10, fill: 'var(--rd-warn)' }, `external pressure ${f(gP, 2)}`));
+      svg.append(el('path', { d: path((v) => kdBending(v, 1)), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      svg.append(el('path', { d: path((v) => kdAxial(v, 1)), fill: 'none', stroke: 'var(--rd-accent)', 'stroke-width': 2.5 }));
+      svg.append(el('text', { x: X(2400), y: Y(kdBending(2400, 1)) - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-blue)' }, 'bending'));
+      svg.append(el('text', { x: X(2400), y: Y(kdAxial(2400, 1)) + 14, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-accent)' }, 'axial compression'));
+      if (rt >= 10 && rt <= 3000) {
+        svg.append(el('line', { x1: X(rt), x2: X(rt), y1: T, y2: H - B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        for (const [g, c] of [[gA, 'var(--rd-accent)'], [gB, 'var(--rd-blue)']] as const)
+          svg.append(el('circle', { cx: X(rt), cy: Y(g), r: 5, fill: 'var(--rd-panel)', stroke: c, 'stroke-width': 2.5 }));
+      }
+    }
+
+    function intChart(xa: number, yp: number, fs: number | null) {
+      const svg = root.querySelector<SVGSVGElement>('[data-int]')!;
+      svg.replaceChildren();
+      const W = 480, H = 250, L = 50, R = 12, T = 12, B = 40;
+      const m = Math.max(1.2, xa * 1.1, yp * 1.1);
+      const X = (v: number) => L + (v / m) * (W - L - R);
+      const Y = (v: number) => H - B - (v / m) * (H - T - B);
+      const step = m > 3 ? 1 : m > 1.5 ? 0.5 : 0.2;
+      for (let v = 0; v <= m + 1e-9; v += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(1)));
+        svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(1)));
+      }
+      svg.append(el('polygon', { points: `${X(0)},${Y(0)} ${X(1)},${Y(0)} ${X(0)},${Y(1)}`, fill: 'var(--rd-ok)', 'fill-opacity': 0.1 }));
+      svg.append(el('line', { x1: X(1), y1: Y(0), x2: X(0), y2: Y(1), stroke: 'var(--rd-accent)', 'stroke-width': 2 }));
+      svg.append(el('text', { x: X(0.55) + 6, y: Y(0.45) - 4, 'font-size': 10, fill: 'var(--rd-accent)' }, 'buckles'));
+      if (fs !== null) {
+        const k = 1 / fs;
+        svg.append(el('line', { x1: X(k), y1: Y(0), x2: X(0), y2: Y(k), stroke: 'var(--rd-ink)', 'stroke-dasharray': '5 4' }));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'axial + bending ratio, Ra + Rb'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'pressure ratio Rp'));
+      svg.append(el('line', { x1: X(0), y1: Y(0), x2: X(xa), y2: Y(yp), stroke: 'var(--rd-muted)', 'stroke-dasharray': '2 3' }));
+      svg.append(el('circle', { cx: X(xa), cy: Y(yp), r: 6, fill: 'var(--rd-panel)', stroke: xa + yp >= 1 ? 'var(--rd-accent)' : 'var(--rd-ink)', 'stroke-width': 2.5 }));
+    }
+
+    field('m').addEventListener('change', () => { applyMat(); run(); });
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    applyMat();
+    run();
+  });
+</script>

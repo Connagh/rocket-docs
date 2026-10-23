@@ -1,0 +1,72 @@
+---
+// What the three buckling modes of a thin cylinder look like. Schematic, exaggerated deformation.
+const R = 66, TOP = 62, BOT = 236, D = 18; // cylinder half-width, rim heights, diamond half-width (degrees)
+const rad = (d: number) => (d * Math.PI) / 180;
+const X = (cx: number, th: number) => cx + R * Math.sin(rad(Math.max(-90, Math.min(90, th))));
+const diamonds = (cx: number, cols: number[], rows: number[], offset = true) =>
+  rows.flatMap((y, j) => cols.map((c) => c + (offset && j % 2 ? D : 0)).filter((c) => Math.abs(c) <= 80).map((c) => ({
+    d: `M${X(cx, c - D).toFixed(1)},${y} L${X(cx, c).toFixed(1)},${y - 15} L${X(cx, c + D).toFixed(1)},${y} L${X(cx, c).toFixed(1)},${y + 15} Z`,
+    o: (0.2 + 0.5 * Math.cos(rad(c))).toFixed(2),
+  })));
+const axial = diamonds(140, [-72, -36, 0, 36, 72], [86, 116, 146, 176, 206]);
+const bend = diamonds(420, [-72, -40], [116, 146, 176], true);
+// external pressure: lobed section r(θ) = 78 (1 − 0.1 cos 4θ)
+const lobes = Array.from({ length: 181 }, (_, k) => {
+  const a = (k / 180) * 2 * Math.PI, rr = 78 * (1 - 0.1 * Math.cos(4 * a));
+  return `${k ? 'L' : 'M'}${(700 + rr * Math.cos(a)).toFixed(1)},${(150 + rr * Math.sin(a)).toFixed(1)}`;
+}).join('') + 'Z';
+const press = Array.from({ length: 12 }, (_, k) => (k * 30 * Math.PI) / 180);
+const cyl = (cx: number) =>
+  `M${cx - R},${TOP} L${cx - R},${BOT} A${R},13 0 0 0 ${cx + R},${BOT} L${cx + R},${TOP}`;
+---
+
+<figure class="viz">
+  <p class="viz-title">Three ways a thin cylinder buckles — schematic, deformation exaggerated</p>
+  <svg viewBox="0 0 840 330" role="img" aria-labelledby="bm-desc" class="bm-svg">
+    <desc id="bm-desc">
+      Left: a cylinder under axial compression buckles into a diamond pattern over its whole length. Centre: under
+      bending, buckles form only on the compression side. Right: a cross-section under external pressure collapses into
+      circumferential lobes.
+    </desc>
+    <defs>
+      <marker id="bm-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- axial compression -->
+    <path d={cyl(140)} fill="var(--rd-steel)" fill-opacity="0.18" stroke="var(--rd-ink)" stroke-width="1.5"></path>
+    <ellipse cx="140" cy={TOP} rx={R} ry="13" fill="var(--rd-panel2)" stroke="var(--rd-ink)" stroke-width="1.5"></ellipse>
+    {axial.map((p) => <path d={p.d} fill="var(--rd-steel)" fill-opacity={p.o} stroke="var(--rd-ink)" stroke-opacity="0.35"></path>)}
+    {[95, 140, 185].map((x) => <line x1={x} y1="18" x2={x} y2="44" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></line>)}
+    {[95, 140, 185].map((x) => <line x1={x} y1="290" x2={x} y2="262" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></line>)}
+    <text x="140" y="314" text-anchor="middle" font-size="12" font-weight="600" fill="var(--rd-ink)">Axial compression</text>
+    <text x="140" y="328" text-anchor="middle" font-size="10" fill="var(--rd-muted)">diamonds, all over — most sensitive</text>
+
+    <!-- bending -->
+    <path d={cyl(420)} fill="var(--rd-steel)" fill-opacity="0.18" stroke="var(--rd-ink)" stroke-width="1.5"></path>
+    <ellipse cx="420" cy={TOP} rx={R} ry="13" fill="var(--rd-panel2)" stroke="var(--rd-ink)" stroke-width="1.5"></ellipse>
+    {bend.map((p) => <path d={p.d} fill="var(--rd-steel)" fill-opacity={p.o} stroke="var(--rd-ink)" stroke-opacity="0.35"></path>)}
+    <path d="M370,34 A60,26 0 0 1 470,34" fill="none" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></path>
+    <path d="M370,268 A60,26 0 0 0 470,268" fill="none" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></path>
+    <text x="344" y="150" text-anchor="end" font-size="10" fill="var(--rd-accent)">compression</text>
+    <text x="496" y="150" font-size="10" fill="var(--rd-blue)">tension</text>
+    <text x="420" y="314" text-anchor="middle" font-size="12" font-weight="600" fill="var(--rd-ink)">Bending</text>
+    <text x="420" y="328" text-anchor="middle" font-size="10" fill="var(--rd-muted)">buckles on the compression side</text>
+
+    <!-- external pressure -->
+    <circle cx="700" cy="150" r="78" fill="none" stroke="var(--rd-muted)" stroke-dasharray="4 4"></circle>
+    <path d={lobes} fill="var(--rd-steel)" fill-opacity="0.15" stroke="var(--rd-ink)" stroke-width="5" stroke-opacity="0.8"></path>
+    {press.map((a) => (
+      <line x1={(700 + 124 * Math.cos(a)).toFixed(1)} y1={(150 + 124 * Math.sin(a)).toFixed(1)} x2={(700 + 98 * Math.cos(a)).toFixed(1)} y2={(150 + 98 * Math.sin(a)).toFixed(1)}
+        stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></line>
+    ))}
+    <text x="700" y="154" text-anchor="middle" font-size="10" fill="var(--rd-muted)">section</text>
+    <text x="700" y="314" text-anchor="middle" font-size="12" font-weight="600" fill="var(--rd-ink)">External pressure</text>
+    <text x="700" y="328" text-anchor="middle" font-size="10" fill="var(--rd-muted)">lobes round the circumference</text>
+  </svg>
+  <figcaption>
+    Dashed circle: the original section. A long tube collapses into two lobes (it goes oval); a shorter one held round
+    at its ends needs more lobes, and more pressure.
+  </figcaption>
+</figure>
