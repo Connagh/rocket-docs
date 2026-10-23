@@ -1,0 +1,187 @@
+---
+// MEOP build-up: nominal pressure → hot day → manufacturing variation (amplified by 1/(1−n)) → MEOP.
+// Maths in src/lib/propellant.ts (unit-tested); this file is UI only.
+---
+
+<div class="calc meopcalc" data-meopcalc>
+  <div class="calc-head"><span>MEOP build-up</span><span>constant K<sub>n</sub> · exponential temperature sensitivity</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Ballistic properties</legend>
+        <div class="row2">
+          <label>Nominal peak pressure (MPa)<input name="p" type="number" min="0.1" step="any" value="8.8" /></label>
+          <label>at reference temp (°C)<input name="tr" type="number" step="any" value="20" /></label>
+          <label>Pressure exponent n<input name="n" type="number" min="0" max="0.95" step="0.01" value="0.35" /></label>
+          <label>σ<sub>p</sub> (% per K)<input name="sp" type="number" min="0" step="0.01" value="0.13" /></label>
+        </div>
+        <p class="hint">σ<sub>p</sub> is how much the burn rate rises per kelvin of grain temperature at constant pressure. Illustrative AP/HTPB-like values — use your ballistics team's.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Temperature range</legend>
+        <div class="row2">
+          <label>Hottest firing (°C)<input name="th" type="number" step="any" value="60" /></label>
+          <label>Coldest firing (°C)<input name="tc" type="number" step="any" value="-40" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Variation, ± %</legend>
+        <div class="row2">
+          <label>Burn-rate coefficient<input name="vr" type="number" min="0" max="50" step="0.1" value="3" /></label>
+          <label>Burning area<input name="va" type="number" min="0" max="50" step="0.1" value="1" /></label>
+          <label>Throat area<input name="vt" type="number" min="0" max="50" step="0.1" value="1" /></label>
+          <label>Other allowance (+%)<input name="vo" type="number" min="0" max="100" step="0.1" value="0" /></label>
+        </div>
+        <p class="hint">Enter each at the probability level your programme defines MEOP at. "Other" is for effects measured on firings — ignition spike, erosive burning. Variations are illustrative.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>MEOP — variations combined (RSS)</dt><dd data-r="meop">—</dd></div>
+        <div class="readout"><dt>MEOP — every variation at its limit</dt><dd data-r="worst">—</dd></div>
+        <div class="readout"><dt>Hot-day pressure</dt><dd data-r="hot">—</dd></div>
+        <div class="readout"><dt>Minimum (cold, low side)</dt><dd data-r="min">—</dd></div>
+        <div class="readout"><dt>π<sub>K</sub> = σ<sub>p</sub> / (1 − n)</dt><dd data-r="pik">—</dd></div>
+        <div class="readout"><dt>Amplification 1 / (1 − n)</dt><dd data-r="amp">—</dd></div>
+      </dl>
+      <figure class="mu-fig">
+        <svg viewBox="0 0 480 236" data-ladder role="img" aria-label="How each effect adds to the nominal pressure"></svg>
+        <figcaption>How MEOP builds up from the nominal pressure. Each variation is shown alone, then combined. The axis does not start at zero.</figcaption>
+      </figure>
+      <figure class="mu-fig">
+        <svg viewBox="0 0 480 200" data-traces role="img" aria-label="Idealised pressure traces at the coldest, reference and hottest firing temperatures"></svg>
+        <figcaption>Idealised neutral-grain traces at the coldest, reference and hottest temperatures. Hot motors push harder for less time; the areas — and the total impulse — barely change.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Constant K<sub>n</sub>, one burn-rate law over the whole pressure range, temperature sensitivity exponential in
+    temperature, and the three manufacturing variations independent of each other. Real MEOP derivations also cover
+    ignition transients, erosive burning, grain deformation under pressure and the programme's own statistical method.
+  </div>
+</div>
+
+<style is:global>
+  .mu-fig { margin: 0.9rem 0 0 !important; }
+  .mu-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .mu-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .meopcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { meopBuildUp } from '../lib/propellant';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const deg = (T: number) => `${f(T, 0).replace('-', '−')} °C`;
+  const pct = (v: number, d = 1) => `${v >= 0 ? '+' : ''}${f(v * 100, d)}%`;
+
+  document.querySelectorAll<HTMLElement>('[data-meopcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const num = (n: string) => +(form.elements.namedItem(n) as HTMLInputElement).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    function run() {
+      const i = {
+        pNom: num('p'), tRef: num('tr'), tHot: num('th'), tCold: num('tc'), n: num('n'), sigmaP: num('sp') / 100,
+        rateVar: num('vr') / 100, abVar: num('va') / 100, atVar: num('vt') / 100, other: num('vo') / 100,
+      };
+      const notes = root.querySelector('[data-notes]')!;
+      if (!(i.pNom > 0) || !(i.n >= 0 && i.n < 1) || !(i.sigmaP >= 0) || [i.rateVar, i.abVar, i.atVar].some((v) => !(v >= 0 && v < 0.9))) {
+        notes.innerHTML = `<li class="bad">${i.n >= 1 ? 'With n ≥ 1 there is no stable operating pressure: the gas made grows faster than the gas leaving. Propellants are chosen with n well below 1.' : 'Check the inputs: pressure positive, n between 0 and 1, variations between 0 and 90%.'}</li>`;
+        return;
+      }
+      const m = meopBuildUp(i);
+      r('meop').innerHTML = `${f(m.meop)} <small>MPa · ${pct(m.meop / i.pNom - 1, 0)}</small>`;
+      r('worst').innerHTML = `${f(m.meopWorst)} <small>MPa</small>`;
+      r('hot').innerHTML = `${f(m.pHot)} <small>MPa · ${pct(m.pHot / i.pNom - 1)}</small>`;
+      r('min').innerHTML = `${f(m.pMin)} <small>MPa</small>`;
+      r('pik').innerHTML = `${f(m.piK * 100, 3)} <small>% per K</small>`;
+      r('amp').textContent = `${f(m.amplification, 2)}×`;
+      ladder(i, m);
+      traces(i, m);
+
+      const out: [string, string][] = [];
+      const rise = m.meop - i.pNom, fromHot = m.pHot - i.pNom;
+      if (rise > 0) out.push(['', `MEOP sits ${f(rise)} MPa above nominal; the hot day is ${f((fromHot / rise) * 100, 0)}% of that. Each 1% of burn-rate scatter becomes ${f(m.amplification, 2)}% in pressure.`]);
+      out.push(['', `The hottest motor burns ${f((1 - m.burnTimeHot) * 100, 1)}% faster than at ${deg(i.tRef)} and the coldest ${f((m.burnTimeCold - 1) * 100, 1)}% slower. Size the case to the hot motor; check thrust, ignition and minimum pressure on the cold one.`]);
+      if (i.n > 0.6) out.push(['warn', `n = ${f(i.n, 2)} amplifies every variation ${f(m.amplification, 1)}×. High exponents make MEOP very sensitive to manufacturing spread.`]);
+      if (i.other === 0) out.push(['', 'No allowance entered for ignition spike or erosive burning. Those come from firing data, and on long, narrow bores erosive burning can add more than everything above.']);
+      notes.innerHTML = out.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+    }
+
+    function ladder(i: { pNom: number; other: number }, m: ReturnType<typeof meopBuildUp>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-ladder]')!;
+      svg.replaceChildren();
+      const hot = m.pHot, comb = hot * (1 + m.rssHi);
+      const rows: { label: string; a: number; b: number; color: string; tag: string; bold?: boolean }[] = [
+        { label: 'Minimum, cold', a: 0, b: m.pMin, color: 'var(--rd-blue)', tag: `${f(m.pMin)}` },
+        { label: 'Nominal', a: 0, b: i.pNom, color: 'var(--rd-muted)', tag: `${f(i.pNom)}` },
+        { label: 'Hot day', a: i.pNom, b: hot, color: 'var(--rd-hot)', tag: pct(hot / i.pNom - 1) },
+        { label: '  burn rate', a: hot, b: hot * (1 + m.hi.rate), color: 'var(--rd-steel)', tag: pct(m.hi.rate) },
+        { label: '  burning area', a: hot, b: hot * (1 + m.hi.ab), color: 'var(--rd-steel)', tag: pct(m.hi.ab) },
+        { label: '  throat area', a: hot, b: hot * (1 + m.hi.at), color: 'var(--rd-steel)', tag: pct(m.hi.at) },
+        { label: 'Combined (RSS)', a: hot, b: comb, color: 'var(--rd-warn)', tag: pct(m.rssHi) },
+        { label: 'Other allowance', a: comb, b: m.meop, color: 'var(--rd-warn)', tag: pct(i.other) },
+        { label: 'MEOP', a: 0, b: m.meop, color: 'var(--rd-accent)', tag: `${f(m.meop)} MPa`, bold: true },
+      ];
+      const L = 118, R = 64, T = 8, rowH = 24, W = 480;
+      const lo = Math.min(m.pMin, i.pNom) * 0.94, hi = Math.max(m.meopWorst, m.meop) * 1.01;
+      const X = (p: number) => L + ((Math.max(p, lo) - lo) / (hi - lo)) * (W - L - R);
+      rows.forEach((row, k) => {
+        const y = T + k * rowH;
+        svg.append(el('text', { x: L - 8, y: y + 14, 'text-anchor': 'end', 'font-size': 10.5, 'font-weight': row.bold ? 700 : 400, fill: 'var(--rd-ink)' }, row.label.trim()));
+        const x0 = X(row.a), x1 = X(row.b);
+        svg.append(el('rect', { x: x0, y: y + 3, width: Math.max(x1 - x0, 1.5), height: 15, rx: 2, fill: row.color, 'fill-opacity': row.label.startsWith('  ') ? 0.55 : 0.85 }));
+        svg.append(el('text', { x: x1 + 5, y: y + 14, 'font-size': 10, fill: 'var(--rd-muted)' }, row.tag));
+      });
+      const yEnd = T + rows.length * rowH;
+      svg.append(el('line', { x1: X(m.meopWorst), x2: X(m.meopWorst), y1: T, y2: yEnd, stroke: 'var(--rd-accent)', 'stroke-dasharray': '4 3' }));
+      svg.append(el('text', { x: X(m.meopWorst) - 4, y: yEnd + 12, 'text-anchor': 'end', 'font-size': 9.5, fill: 'var(--rd-accent)' }, `worst-case stack ${f(m.meopWorst)}`));
+      svg.append(el('text', { x: L, y: yEnd + 12, 'font-size': 9.5, fill: 'var(--rd-muted)' }, `axis from ${f(lo, 1)} MPa`));
+    }
+
+    function traces(i: { pNom: number; tHot: number; tCold: number; tRef: number }, m: ReturnType<typeof meopBuildUp>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-traces]')!;
+      svg.replaceChildren();
+      const W = 480, H = 200, L = 44, R = 12, T = 12, B = 32;
+      // Idealised neutral trace: fast rise, slightly progressive plateau, tail-off over the last ~12% of web.
+      const shape = (u: number) => (u < 0 ? 0 : u < 0.03 ? u / 0.03 : u <= 1 ? 0.96 + 0.06 * u : Math.max(0, 1.02 * Math.exp(-(u - 1) / 0.035)));
+      const set = [
+        { p: m.pCold, tb: m.burnTimeCold, c: 'var(--rd-blue)', label: deg(i.tCold), at: 0.25 },
+        { p: i.pNom, tb: 1, c: 'var(--rd-muted)', label: deg(i.tRef), at: 0.5 },
+        { p: m.pHot, tb: m.burnTimeHot, c: 'var(--rd-hot)', label: deg(i.tHot), at: 0.75 },
+      ];
+      const xMax = Math.max(...set.map((s) => s.tb)) * 1.18, yMax = m.pHot * 1.12;
+      const X = (t: number) => L + (t / xMax) * (W - L - R);
+      const Y = (p: number) => H - B - (p / yMax) * (H - T - B);
+      const step = yMax > 30 ? 10 : yMax > 12 ? 5 : 2;
+      for (let p = 0; p <= yMax; p += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(p), y2: Y(p), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(p) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(p)));
+      }
+      for (let t = 0; t <= xMax; t += 0.25) {
+        svg.append(el('text', { x: X(t), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, t.toFixed(2)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, `time ÷ burn time at ${deg(i.tRef)}`));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'MPa'));
+      for (const s of set) {
+        const pts = Array.from({ length: 160 }, (_, j) => (j / 159) * xMax);
+        svg.append(el('path', { d: pts.map((t, j) => `${j ? 'L' : 'M'}${X(t).toFixed(1)},${Y(s.p * shape(t / s.tb)).toFixed(1)}`).join(''), fill: 'none', stroke: s.c, 'stroke-width': 2.2 }));
+        // label beside the tail-off, where the traces separate; each at its own height
+        const u = 1 + 0.035 * Math.log(1.02 / s.at);
+        svg.append(el('text', { x: X(s.tb * u) + 5, y: Y(s.p * s.at) + 3, 'font-size': 10, fill: s.c }, s.label));
+      }
+    }
+
+    form.addEventListener('input', run);
+    run();
+  });
+</script>

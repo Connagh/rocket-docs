@@ -105,7 +105,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
         <div class="readout" data-ms="msb"><dt>MS burst</dt><dd data-r="msb">—</dd></div>
         <div class="readout" data-ms="msp"><dt>MS yield at proof</dt><dd data-r="msp">—</dd></div>
       </dl>
-      <svg class="pv-bar" viewBox="0 0 600 78" role="img" aria-label="Pressure scale showing MEOP, proof, design burst and predicted burst" data-bar></svg>
+      <svg class="pv-bar" viewBox="0 0 600 100" role="img" aria-label="Pressure scale showing MEOP, proof, design burst and predicted burst" data-bar></svg>
 
       <p class="pv-sub">Fracture — Irwin leak-before-break screen</p>
       <dl class="readouts">
@@ -296,15 +296,22 @@ const DEFAULT = 'D6AC (AMS 6431)';
       ].filter((m) => Number.isFinite(m.p));
       const max = Math.max(...marks.map((m) => m.p)) * 1.08 || 1;
       const X = (p: number) => 10 + (p / max) * 580;
-      svg.append(svgEl('rect', { x: 10, y: 34, width: 580, height: 10, rx: 5, fill: 'var(--rd-panel2)', stroke: 'var(--rd-line)' }));
-      svg.append(svgEl('rect', { x: 10, y: 34, width: X(meop) - 10, height: 10, rx: 5, fill: 'var(--rd-hot)', 'fill-opacity': 0.5 }));
-      marks.forEach((m, i) => {
-        const up = i % 2 === 0;
-        svg.append(svgEl('line', { x1: X(m.p), x2: X(m.p), y1: up ? 22 : 34, y2: up ? 44 : 56, stroke: m.c, 'stroke-width': 2 }));
-        const anchor = X(m.p) > 500 ? 'end' : X(m.p) < 90 ? 'start' : 'middle';
-        svg.append(svgEl('text', { x: X(m.p), y: up ? 16 : 70, 'text-anchor': anchor, 'font-size': 11, fill: m.c },
-          `${m.label} ${f(m.p / toMPa, u === 'psi' ? 0 : 1)}`));
-      });
+      svg.append(svgEl('rect', { x: 10, y: 45, width: 580, height: 10, rx: 5, fill: 'var(--rd-panel2)', stroke: 'var(--rd-line)' }));
+      svg.append(svgEl('rect', { x: 10, y: 45, width: X(meop) - 10, height: 10, rx: 5, fill: 'var(--rd-hot)', 'fill-opacity': 0.5 }));
+      // Labels go in the first of four rows (two above the bar, two below) where they don't overlap one already placed.
+      const rows = [{ y: 14, up: true }, { y: 94, up: false }, { y: 30, up: true }, { y: 78, up: false }];
+      const taken: [number, number][][] = rows.map(() => []);
+      for (const m of marks) {
+        const text = `${m.label} ${f(m.p / toMPa, u === 'psi' ? 0 : 1)}`, w = text.length * 6.6, x = X(m.p);
+        const anchor = x > 500 ? 'end' : x < 90 ? 'start' : 'middle';
+        const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2, x1 = x0 + w;
+        let k = rows.findIndex((_, j) => taken[j].every(([a, b]) => x1 + 6 < a || x0 - 6 > b));
+        if (k < 0) k = 0;
+        taken[k].push([x0, x1]);
+        const row = rows[k];
+        svg.append(svgEl('line', { x1: x, x2: x, y1: row.up ? row.y + 4 : 45, y2: row.up ? 55 : row.y - 11, stroke: m.c, 'stroke-width': 2 }));
+        svg.append(svgEl('text', { x, y: row.y, 'text-anchor': anchor, 'font-size': 11, fill: m.c }, text));
+      }
     }
 
     function drawRing(res: ReturnType<typeof sizeCase>) {

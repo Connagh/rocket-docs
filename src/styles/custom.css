@@ -152,7 +152,10 @@
   gap: 1.25rem;
   padding: 1rem;
 }
-@media (max-width: 64rem) {
+/* Two columns only when the calculator itself is wide enough — with both sidebars open it can be
+   narrow on a large screen, so the window width is the wrong test. */
+.calc { container-type: inline-size; }
+@container (max-width: 42rem) {
   .calc-body { grid-template-columns: minmax(0, 1fr); }
 }
 .calc .sl-markdown-content :is(label, input, select) { margin: 0; }
