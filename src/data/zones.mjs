@@ -58,6 +58,7 @@ export const REBUILT = {
   home: '',
   materials: 'materials/selection',
   xref: 'materials/designations',
+  rocket: 'motor/hardware',
   pv: 'motor/case-sizing',
   grain: 'motor/propellant-grain',
   ablative: 'motor/insulation',

@@ -171,12 +171,14 @@
   color: var(--rd-accent);
   margin-bottom: 0.4rem;
 }
+/* Block, not grid: a grid makes every <sub> in a label (I_sp, K_IC) its own row. */
 .calc label {
-  display: grid;
-  gap: 0.2rem;
+  display: block;
   font-size: var(--sl-text-sm);
   color: var(--rd-muted);
 }
+.calc label > input:not([type='checkbox']),
+.calc label > select { display: block; margin-top: 0.2rem !important; }
 .calc input,
 .calc select {
   width: 100%;
@@ -189,7 +191,7 @@
   padding: 0.35rem 0.5rem;
 }
 .calc input[type='range'] { padding: 0; accent-color: var(--rd-accent); background: none; border: 0; }
-.calc .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.calc .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; align-items: end; }
 .calc .hint { font-size: var(--sl-text-xs); color: var(--rd-muted); }
 
 .readouts {

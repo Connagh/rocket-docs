@@ -1,0 +1,73 @@
+---
+// Insensitive-munitions response scale (AOP-39 descriptors, summarised) and why case venting decides the outcome.
+// Descriptive only: required responses per threat come from STANAG 4439 / AOP-39, not from this figure.
+const TYPES = [
+  { t: 'I', name: 'Detonation', note: ['whole load', 'reacts at once'], c: '#c0392b' },
+  { t: 'II', name: 'Partial detonation', note: ['part of the load', 'detonates'], c: '#d35400' },
+  { t: 'III', name: 'Explosion', note: ['confined burning', 'bursts the case'], c: '#e67e22' },
+  { t: 'IV', name: 'Deflagration', note: ['case opens;', 'may be propulsive'], c: '#b8901c' },
+  { t: 'V', name: 'Burning', note: ['burns without', 'violent pressure'], c: '#3a9d5d' },
+  { t: 'VI', name: 'No reaction', note: ['no sustained', 'reaction'], c: '#2e7d4f' },
+];
+const W = 122, G = 6, X0 = 22;
+---
+
+<figure class="viz">
+  <p class="viz-title">Response types — read the direction: Type I is the worst</p>
+  <svg viewBox="0 0 800 300" role="img" aria-labelledby="im-desc" class="im-svg">
+    <desc id="im-desc">
+      Six response types from most to least violent: Type I detonation, Type II partial detonation, Type III explosion,
+      Type IV deflagration, Type V burning, Type VI no reaction. Below, two pressure-time sketches: if the case holds,
+      pressure climbs until the case bursts, an explosion; if the case vents early, pressure stays low and the propellant
+      burns.
+    </desc>
+    {TYPES.map((y, i) => {
+      const x = X0 + i * (W + G);
+      return (
+        <g>
+          <rect x={x} y="10" width={W} height="82" rx="5" fill={y.c} fill-opacity="0.9"></rect>
+          <text x={x + W / 2} y="30" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">TYPE {y.t}</text>
+          <text x={x + W / 2} y="48" text-anchor="middle" font-size={y.name.length > 14 ? 10.5 : 12} fill="#fff">{y.name}</text>
+          <text x={x + W / 2} y="68" text-anchor="middle" font-size="9.5" fill="#fff" fill-opacity="0.92">{y.note[0]}</text>
+          <text x={x + W / 2} y="81" text-anchor="middle" font-size="9.5" fill="#fff" fill-opacity="0.92">{y.note[1]}</text>
+        </g>
+      );
+    })}
+    <line x1="40" y1="106" x2="760" y2="106" stroke="var(--rd-muted)" marker-start="url(#im-ah)" marker-end="url(#im-ah)"></line>
+    <text x="40" y="121" font-size="10" fill="var(--rd-muted)">more violent</text>
+    <text x="760" y="121" text-anchor="end" font-size="10" fill="var(--rd-muted)">less violent</text>
+    <defs>
+      <marker id="im-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 Z" fill="var(--rd-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- case holds -->
+    <g transform="translate(40,138)">
+      <text x="0" y="0" font-size="12" font-weight="600" fill="var(--rd-ink)">Case holds pressure</text>
+      <line x1="0" y1="130" x2="320" y2="130" stroke="var(--rd-line)"></line>
+      <line x1="0" y1="20" x2="0" y2="130" stroke="var(--rd-line)"></line>
+      <line x1="0" y1="40" x2="320" y2="40" stroke="var(--rd-accent)" stroke-dasharray="5 4"></line>
+      <text x="6" y="35" font-size="10" fill="var(--rd-accent)">case burst pressure</text>
+      <path d="M0,128 C120,127 170,115 200,90 C215,76 222,58 228,40" fill="none" stroke="var(--rd-hot)" stroke-width="2.5"></path>
+      <path d="M228,40 l6,-10 l2,9 l9,-5 l-4,9 l10,2 l-10,4 l5,9 l-9,-4 l-3,10 l-3,-10 l-9,4 l5,-9 l-9,-5 l10,-2 z" fill="var(--rd-accent)"></path>
+      <text x="0" y="150" font-size="10" fill="var(--rd-muted)">time in the fire →   pressure ↑ until the case bursts: explosion</text>
+    </g>
+    <!-- case vents -->
+    <g transform="translate(430,138)">
+      <text x="0" y="0" font-size="12" font-weight="600" fill="var(--rd-ink)">Case vents early</text>
+      <line x1="0" y1="130" x2="320" y2="130" stroke="var(--rd-line)"></line>
+      <line x1="0" y1="20" x2="0" y2="130" stroke="var(--rd-line)"></line>
+      <line x1="0" y1="40" x2="320" y2="40" stroke="var(--rd-accent)" stroke-dasharray="5 4"></line>
+      <text x="6" y="35" font-size="10" fill="var(--rd-accent)">case burst pressure</text>
+      <path d="M0,128 C80,127 120,124 150,116 L160,112 C170,122 190,126 320,126" fill="none" stroke="var(--rd-ok)" stroke-width="2.5"></path>
+      <line x1="158" y1="70" x2="158" y2="108" stroke="var(--rd-ok)" marker-end="url(#im-ah)"></line>
+      <text x="164" y="70" font-size="10" fill="var(--rd-ok)">vent opens</text>
+      <text x="0" y="150" font-size="10" fill="var(--rd-muted)">time in the fire →   pressure stays low: burning</text>
+    </g>
+  </svg>
+  <figcaption>
+    Response descriptors summarised from NATO AOP-39. The required response for each threat is set by STANAG 4439 and
+    AOP-39 — take it from the current editions, not from this figure.
+  </figcaption>
+</figure>

@@ -1,0 +1,173 @@
+---
+// Motor mass budget → propellant mass fraction → ideal Δv, and what each inert kilogram costs.
+// Maths in src/lib/massfraction.ts (unit-tested); this file is UI only.
+const ITEMS = [
+  { key: 'case', label: 'Case', short: 'Case', value: 11.77, color: 'var(--rd-steel)' },
+  { key: 'ins', label: 'Insulation & liner', short: 'Insulation', value: 4.84, color: 'var(--rd-insul)' },
+  { key: 'noz', label: 'Nozzle', short: 'Nozzle', value: 6, color: '#4a3b33' },
+  { key: 'oth', label: 'Skirts, bosses, igniter hardware, seals', short: 'Other hardware', value: 4, color: '#7d858c' },
+];
+---
+
+<div class="calc mbcalc" data-mbcalc>
+  <div class="calc-head"><span>Motor mass budget</span><span>ideal rocket equation · single stage</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Propellant &amp; performance</legend>
+        <div class="row2">
+          <label>Propellant (kg)<input name="mp" type="number" min="0.1" step="any" value="111.2" /></label>
+          <label>Delivered I<sub>sp</sub> (s)<input name="isp" type="number" min="1" step="any" value="235.55" /></label>
+        </div>
+        <p class="hint">Delivered I<sub>sp</sub> = C<sub>F</sub> c*/g₀. With the grain page's illustrative C<sub>F</sub> = 1.5 and c* = 1540 m/s, that is 235.55 s.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Inert mass (kg)</legend>
+        <div class="row2">
+          {ITEMS.map((it) => <label>{it.label}<input name={it.key} type="number" min="0" step="any" value={it.value} /></label>)}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>What it pushes</legend>
+        <label>Payload and everything above the motor (kg)<input name="ml" type="number" min="0" step="any" value="50" /></label>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>Propellant mass fraction ζ</dt><dd data-r="z">—</dd></div>
+        <div class="readout"><dt>Ideal Δv</dt><dd data-r="dv">—</dd></div>
+        <div class="readout"><dt>Inert mass</dt><dd data-r="mi">—</dd></div>
+        <div class="readout"><dt>Mass ratio m₀ / m<sub>f</sub></dt><dd data-r="R">—</dd></div>
+      </dl>
+      <p class="pv-sub">What one inert kilogram costs</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Δv lost</dt><dd data-r="cost">—</dd></div>
+        <div class="readout"><dt>Or extra propellant to keep Δv</dt><dd data-r="ex">—</dd></div>
+      </dl>
+      <figure class="mb-fig">
+        <svg viewBox="0 0 480 92" data-bar role="img" aria-label="Mass budget at ignition"></svg>
+        <figcaption>Mass at ignition. Underneath: the Δv each inert item costs — what you would gain if it weighed nothing.</figcaption>
+      </figure>
+      <figure class="mb-fig">
+        <svg viewBox="0 0 480 230" data-chart role="img" aria-label="Ideal delta-v versus propellant mass fraction"></svg>
+        <figcaption>Δv against mass fraction for this propellant load and payload. The dot is your motor.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Ideal velocity change in vacuum with no gravity or drag losses, for one stage firing alone. Real vehicles lose a
+    share of this to gravity and drag, and multi-stage vehicles apply the equation stage by stage.
+  </div>
+  <script type="application/json" data-items set:html={JSON.stringify(ITEMS)}></script>
+</div>
+
+<style is:global>
+  .mbcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .mb-fig { margin: 0.9rem 0 0 !important; }
+  .mb-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .mb-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .mbcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { motorPerformance, inertForFraction } from '../lib/massfraction';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+
+  document.querySelectorAll<HTMLElement>('[data-mbcalc]').forEach((root) => {
+    const ITEMS: { key: string; label: string; short: string; color: string }[] = JSON.parse(root.querySelector('[data-items]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const num = (n: string) => Math.max(0, +(form.elements.namedItem(n) as HTMLInputElement).value || 0);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    function run() {
+      const mp = num('mp'), isp = num('isp'), ml = num('ml');
+      const parts = ITEMS.map((it) => ({ ...it, m: num(it.key) }));
+      const mi = parts.reduce((s, p) => s + p.m, 0);
+      const notes = root.querySelector('[data-notes]')!;
+      if (!(mp > 0 && isp > 0 && mi + ml > 0)) {
+        notes.innerHTML = '<li class="bad">Enter a propellant mass, a specific impulse, and some inert or payload mass.</li>';
+        return;
+      }
+      const p = motorPerformance({ propellant: mp, inert: mi, payload: ml, isp });
+      r('z').textContent = f(p.fraction, 3);
+      r('dv').innerHTML = `${f(p.dv, 0)} <small>m/s</small>`;
+      r('mi').innerHTML = `${f(mi, 2)} <small>kg</small>`;
+      r('R').textContent = f(p.massRatio, 3);
+      r('cost').innerHTML = `${f(p.dvPerKgInert, 1)} <small>m/s per kg</small>`;
+      r('ex').innerHTML = `${f(p.exchange, 2)} <small>kg per kg</small>`;
+
+      // Δv each item costs: the gain if that item alone weighed nothing.
+      const gains = parts.map((it) => ({ ...it, gain: motorPerformance({ propellant: mp, inert: mi - it.m, payload: ml, isp }).dv - p.dv }));
+      drawBar(mp, gains, ml);
+      chart(mp, ml, isp, p.fraction, p.dv);
+
+      const big = [...gains].sort((a, b) => b.gain - a.gain)[0];
+      const out: string[] = [];
+      out.push(`Every kilogram of hardware removed is worth ${f(p.dvPerKgInert, 1)} m/s — or lets you carry ${f(p.exchange, 2)} kg less propellant for the same Δv. That exchange ratio is just m₀/m<sub>f</sub> − 1.`);
+      if (big.m > 0) out.push(`The heaviest lever here is the ${big.short.toLowerCase()}: ${f(big.m, 1)} kg, costing ${f(big.gain, 0)} m/s.`);
+      if (ml > mp) out.push('The payload outweighs the propellant, so the motor’s own mass fraction matters less than usual — Δv is limited by the propellant load.');
+      if (p.fraction < 0.75) out.push('A mass fraction below about 0.75 is typical of small motors, where hardware that does not scale down — igniter, nozzle, bosses, seals — is a large share of the total.');
+      notes.innerHTML = out.map((t) => `<li>${t}</li>`).join('');
+    }
+
+    function drawBar(mp: number, gains: { label: string; short: string; color: string; m: number; gain: number }[], ml: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-bar]')!;
+      svg.replaceChildren();
+      const segs = [{ label: 'Propellant', color: 'var(--rd-propellant)', m: mp }, ...gains, { label: 'Payload', color: 'var(--rd-blue)', m: ml }];
+      const total = segs.reduce((s, x) => s + x.m, 0), W = 470;
+      let x = 5;
+      for (const s of segs) {
+        const w = (s.m / total) * W;
+        if (w <= 0) continue;
+        svg.append(el('rect', { x, y: 6, width: Math.max(w - 1, 0.5), height: 24, fill: s.color, 'fill-opacity': s.label === 'Propellant' ? 0.7 : 0.9 }));
+        if (w > 44) svg.append(el('text', { x: x + w / 2, y: 22, 'text-anchor': 'middle', 'font-size': 10, fill: s.label === 'Propellant' || s.label === 'Payload' ? 'var(--sl-color-black)' : '#e8ecef' }, `${Math.round((s.m / total) * 100)}%`));
+        x += w;
+      }
+      // Δv cost of each inert item, as a small labelled list under the bar
+      gains.forEach((g, i) => {
+        const cx = 5 + (i % 2) * 238, cy = 48 + Math.floor(i / 2) * 20;
+        svg.append(el('rect', { x: cx, y: cy - 9, width: 10, height: 10, fill: g.color }));
+        svg.append(el('text', { x: cx + 16, y: cy, 'font-size': 10, fill: 'var(--rd-ink)' }, `${g.short}  −${Math.round(g.gain)} m/s`));
+      });
+    }
+
+    function chart(mp: number, ml: number, isp: number, z0: number, dv0: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      const W = 480, H = 230, L = 50, R = 12, T = 12, B = 36, z1 = 0.5, z2 = 0.97;
+      const zs = Array.from({ length: 95 }, (_, i) => z1 + (i / 94) * (z2 - z1));
+      const dvs = zs.map((z) => motorPerformance({ propellant: mp, inert: inertForFraction(mp, z), payload: ml, isp }).dv);
+      const yMax = Math.max(...dvs, dv0) * 1.08;
+      const X = (z: number) => L + ((z - z1) / (z2 - z1)) * (W - L - R);
+      const Y = (v: number) => H - B - (v / yMax) * (H - T - B);
+      const step = [250, 500, 1000, 2000, 2500, 5000].find((s) => yMax / s <= 6)!;
+      for (let v = 0; v <= yMax; v += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      for (const z of [0.5, 0.6, 0.7, 0.8, 0.9]) {
+        svg.append(el('line', { x1: X(z), x2: X(z), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(z), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, z.toFixed(1)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'propellant mass fraction ζ'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'Δv, m/s'));
+      svg.append(el('path', { d: zs.map((z, i) => `${i ? 'L' : 'M'}${X(z).toFixed(1)},${Y(dvs[i]).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-ok)', 'stroke-width': 2.5 }));
+      if (z0 >= z1 && z0 <= z2) {
+        svg.append(el('line', { x1: X(z0), x2: X(z0), y1: Y(dv0), y2: H - B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('circle', { cx: X(z0), cy: Y(dv0), r: 5.5, fill: 'var(--rd-panel)', stroke: 'var(--rd-ink)', 'stroke-width': 2.5 }));
+      }
+    }
+
+    form.addEventListener('input', run);
+    run();
+  });
+</script>
