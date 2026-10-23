@@ -64,6 +64,7 @@ export const REBUILT = {
   grain: 'motor/propellant-grain',
   ablative: 'motor/insulation',
   buckling: 'verify/shell-buckling',
+  lbb: 'verify/leak-before-break',
   proof: 'verify/proof-testing',
   oring: 'seals/o-ring-design',
   matspec: 'materials/specification',

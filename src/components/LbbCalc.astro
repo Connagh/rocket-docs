@@ -1,0 +1,245 @@
+---
+// Leak before break: grow a surface flaw through the case wall, then test the through crack it becomes.
+// Maths in src/lib/lbb.ts (unit-tested); this file is UI only.
+import data from '../data/materials.json';
+import { PARIS_CLASSES } from '../lib/proof';
+
+const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
+const metals = data.materials.filter((m) => m.family in FAM && m.kic && m.yield > 100);
+const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
+const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yield, u: m.uts, fam: m.family, def: !!m.kicIsFamilyDefault }]));
+---
+
+<div class="calc lbbcalc" data-lbbcalc>
+  <div class="calc-head"><span>Leak before break — axial surface flaw</span><span>Newman–Raju · Paris growth · Folias bulging</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Material</legend>
+        <label>Alloy
+          <select name="m">
+            {groups.map((g) => (
+              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
+            ))}
+          </select>
+        </label>
+        <div class="row2">
+          <label>K<sub>IC</sub> (MPa√m)<input name="k" type="number" min="1" step="any" /></label>
+          <label>Yield (MPa)<input name="y" type="number" min="1" step="any" /></label>
+          <label>UTS (MPa)<input name="u" type="number" min="1" step="any" /></label>
+          <label>Growth law
+            <select name="paris">{PARIS_CLASSES.map((p) => <option value={p.key}>{p.name}</option>)}</select>
+          </label>
+        </div>
+        <p class="hint" data-mathint></p>
+      </fieldset>
+      <fieldset>
+        <legend>Case</legend>
+        <div class="row2">
+          <label>Internal diameter (mm)<input name="id" type="number" min="1" step="any" value="300" /></label>
+          <label>Wall (mm)<input name="t" type="number" min="0.1" step="any" value="1.377" /></label>
+          <label>MEOP (MPa)<input name="p" type="number" min="0.01" step="any" value="10" /></label>
+          <label>Range per cycle (× MEOP)<input name="rf" type="number" min="0.05" max="1" step="0.05" value="1" /></label>
+        </div>
+        <p class="hint">Defaults are the D6AC case from the case-sizing page.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Starting flaw, inner surface, axial</legend>
+        <div class="row2">
+          <label>Depth a (mm)<input name="a0" type="number" min="0.01" step="any" value="0.25" /></label>
+          <label>Shape a / c<input name="ac" type="number" min="0.1" max="1" step="0.05" value="0.5" /></label>
+        </div>
+        <p class="hint">a / c = 1 is a semicircle; 0.5 is twice as long as it is deep. Start from the largest flaw your NDT or proof test can rule out.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="v"><dt>Verdict</dt><dd data-r="v">—</dd></div>
+        <div class="readout" data-cls="ratio"><dt>Stable length ÷ breakthrough length</dt><dd data-r="ratio">—</dd></div>
+      </dl>
+      <p class="pv-sub">The through crack</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Length at breakthrough, 2c</dt><dd data-r="cb">—</dd></div>
+        <div class="readout"><dt>Longest stable, 2c<sub>crit</sub></dt><dd data-r="cc">—</dd></div>
+        <div class="readout"><dt>Bulging factor M at 2c<sub>crit</sub></dt><dd data-r="m">—</dd></div>
+      </dl>
+      <p class="pv-sub">Getting there</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Hoop stress at MEOP</dt><dd data-r="s">—</dd></div>
+        <div class="readout"><dt>How the ligament goes</dt><dd data-r="lig">—</dd></div>
+        <div class="readout"><dt>Cycles from the starting flaw</dt><dd data-r="n">—</dd></div>
+      </dl>
+      <figure class="lb-fig">
+        <svg viewBox="0 0 480 210" data-wall role="img" aria-label="Crack fronts growing through the wall"></svg>
+        <figcaption>Section through the wall along the crack. Crack fronts every few hundred cycles, from the starting flaw to breakthrough. Ticks on the outer surface: the longest through crack that would hold.</figcaption>
+      </figure>
+      <figure class="lb-fig">
+        <svg viewBox="0 0 480 240" data-fail role="img" aria-label="Hoop stress to fail a through crack against its length"></svg>
+        <figcaption>Hoop stress that fails an axial through crack, by fracture (with bulging) and by plastic collapse. The crack holds while its failure stress is above the operating hoop stress.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Linear-elastic screening with a plastic-collapse check on flow stress = (yield + UTS)/2. Newman–Raju surface-crack
+    solution (fitted to a/t ≤ 0.8 and a/c ≤ 1; extrapolated beyond), Paris growth at the deepest and surface points,
+    Folias bulging for the through crack. A released leak-before-break case uses tearing resistance, measured toughness
+    at temperature and orientation, and a demonstrated way of detecting the leak.
+  </div>
+  <script type="application/json" data-mats set:html={JSON.stringify(MATS)}></script>
+</div>
+
+<style is:global>
+  .lbbcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .lb-fig { margin: 0.9rem 0 0 !important; }
+  .lb-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .lb-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .lbbcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { growToBreakthrough, throughFailStress } from '../lib/lbb';
+  import { PARIS_CLASSES } from '../lib/proof';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const cyc = (n: number) => (!Number.isFinite(n) ? '∞' : n >= 1e6 ? `${f(n / 1e6, 1)} M` : n >= 1e4 ? `${f(n / 1e3, 0)} k` : f(n, 0));
+
+  document.querySelectorAll<HTMLElement>('[data-lbbcalc]').forEach((root) => {
+    const MATS: Record<string, { kic: number; y: number; u: number; fam: string; def: boolean }> = JSON.parse(root.querySelector('[data-mats]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'v' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const applyMat = () => {
+      const m = MATS[field('m').value];
+      field('k').value = String(m.kic); field('y').value = String(m.y); field('u').value = String(m.u);
+      field('paris').value = m.fam === 'steel' ? (m.u > 1100 ? 'mart' : 'fp') : m.fam === 'ss' ? (m.u > 900 ? 'mart' : 'aus') : m.fam === 'ni' ? 'aus' : m.fam;
+      root.querySelector('[data-mathint]')!.textContent =
+        `Database K_IC ${m.kic} MPa√m${m.def ? ' (family default)' : ''} — indicative. Use measured toughness for the orientation, thickness and lowest temperature that matter.`;
+    };
+
+    function run() {
+      const t = num('t'), R = num('id') / 2 + t / 2, kic = num('k'), flow = (num('y') + num('u')) / 2;
+      const p = PARIS_CLASSES.find((x) => x.key === field('paris').value)!;
+      const notes = root.querySelector('[data-notes]')!;
+      const i = { sigma: (num('p') * R) / t, rangeFraction: num('rf'), a0: num('a0'), ac0: num('ac'), t, R, kic, flow, C: p.C, m: p.m };
+      if (!(t > 0 && R > t && kic > 0 && flow > 0 && i.sigma > 0 && i.a0 > 0 && i.a0 < t && i.ac0 > 0 && i.ac0 <= 1)) {
+        notes.innerHTML = '<li class="bad">Check the inputs: the starting flaw must be shallower than the wall, and a/c between 0.1 and 1.</li>';
+        return;
+      }
+      const g = growToBreakthrough(i);
+      const leak = g.outcome === 'leak';
+      r('v').textContent = leak ? 'Leak before break' : 'Break before leak';
+      cls('v', leak ? 'ok' : 'bad');
+      const ratio = g.cCrit / g.c;
+      r('ratio').textContent = `${f(ratio, 2)}×`;
+      cls('ratio', ratio >= 1.5 ? 'ok' : ratio >= 1 ? 'warn' : 'bad');
+      r('cb').innerHTML = `${f(2 * g.c, 2)} <small>mm</small>`;
+      r('cc').innerHTML = `${f(2 * g.cCrit, 2)} <small>mm · ${g.critMode}</small>`;
+      r('m').textContent = f(g.foliasAtCrit, 3);
+      r('s').innerHTML = `${f(i.sigma, 0)} <small>MPa</small>`;
+      r('lig').innerHTML = g.outcome === 'runs' ? 'runs along the wall' : `${g.ligament === 'growth' ? 'grows through' : g.ligament === 'fracture' ? 'fractures' : 'collapses'} <small>at a/t ${f(g.a / t, 2)}</small>`;
+      r('n').textContent = cyc(g.N);
+
+      const out: [string, string][] = [];
+      if (g.outcome === 'runs')
+        out.push(['bad', `The crack reaches K<sub>IC</sub> where it meets the surface while still buried, at ${f(2 * g.c, 2)} mm long and ${f((g.a / t) * 100, 0)}% through the wall. It runs along the case instead of through it: a burst with no leak first.`]);
+      else if (!leak)
+        out.push(['bad', `The flaw breaks through ${f(2 * g.c, 2)} mm long, but the longest through crack that holds at this stress is ${f(2 * g.cCrit, 2)} mm. It runs the moment it breaks through: a burst with no warning.`]);
+      else
+        out.push(['', `The flaw breaks through ${f(2 * g.c, 2)} mm long, and a through crack holds up to ${f(2 * g.cCrit, 2)} mm. It would leak first — ${f(ratio, 2)}× margin on length.`]);
+      out.push(['', `Irwin's simple screen (a flat-plate through crack with c = t) gives c<sub>crit</sub>/t = ${f(g.irwin / t, 2)} — ${g.irwin >= t ? 'leak' : 'break'} — the check on the case-sizing page.`]);
+      if (g.a / t > 0.8) out.push(['', `Beyond a/t = 0.8 the Newman–Raju fit is extrapolated; the last ${f((1 - 0.8) * 100, 0)}% of the wall is approximate.`]);
+      if (g.critMode === 'collapse') out.push(['', 'The through crack is limited by plastic collapse, not fracture: this material is tough enough that the ligament yields before it tears.']);
+      if (leak) out.push(['warn', 'A leak only helps if it is harmless and noticed. In a burning motor, hot gas through the wall usually is the failure — leak-before-break earns its keep on the proof-test stand and in long-life pressure vessels.']);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      drawWall(g, t, leak);
+      drawFail(i, g, leak);
+    }
+
+    function drawWall(g: ReturnType<typeof growToBreakthrough>, t: number, leak: boolean) {
+      const svg = root.querySelector<SVGSVGElement>('[data-wall]')!;
+      svg.replaceChildren();
+      const W = 480, x0 = 20, x1 = W - 20, yTop = 40, yBot = 160;
+      const X = Math.max(g.cCrit, g.c) * 1.15;
+      const sx = (x1 - x0) / (2 * X), sy = (yBot - yTop) / t, cx = (x0 + x1) / 2;
+      svg.append(el('rect', { x: x0, y: yTop, width: x1 - x0, height: yBot - yTop, fill: 'var(--rd-steel)', 'fill-opacity': 0.35 }));
+      svg.append(el('text', { x: x0, y: yTop - 8, 'font-size': 10, fill: 'var(--rd-muted)' }, 'inner surface — pressure side'));
+      svg.append(el('text', { x: x0, y: yBot + 16, 'font-size': 10, fill: 'var(--rd-muted)' }, 'outer surface'));
+      const k = sy / sx;
+      svg.append(el('text', { x: x1, y: yBot + 16, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' },
+        k >= 1.05 ? `depth exaggerated ${f(k, 1)}×` : k <= 0.95 ? `depth compressed ${f(1 / k, 1)}×` : 'true scale'));
+      const front = (a: number, c: number) => Array.from({ length: 41 }, (_, k) => {
+        const th = (k / 40) * Math.PI;
+        return `${k ? 'L' : 'M'}${(cx + c * Math.cos(th) * sx).toFixed(1)},${(yTop + Math.min(a, t) * Math.sin(th) * sy).toFixed(1)}`;
+      }).join('');
+      const pts = g.path;
+      const every = Math.max(1, Math.round(pts.length / 8));
+      pts.forEach((p, k) => {
+        if (k % every !== 0 && k !== pts.length - 1) return;
+        const last = k === pts.length - 1;
+        svg.append(el('path', { d: front(p.a, p.c), fill: last ? (leak ? 'var(--rd-ok)' : 'var(--rd-accent)') : 'none', 'fill-opacity': last ? 0.25 : 0, stroke: last ? (leak ? 'var(--rd-ok)' : 'var(--rd-accent)') : 'var(--rd-ink)', 'stroke-width': last ? 2.2 : 1, 'stroke-opacity': last ? 1 : 0.5 }));
+      });
+      for (const s of [-1, 1]) {
+        const x = cx + s * g.cCrit * sx;
+        svg.append(el('line', { x1: x, x2: x, y1: yBot - 10, y2: yBot + 6, stroke: 'var(--rd-blue)', 'stroke-width': 2.5 }));
+      }
+      svg.append(el('text', { x: cx, y: yBot + 30, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-blue)' }, `longest stable through crack ${f(2 * g.cCrit, 2)} mm`));
+      svg.append(el('text', { x: cx, y: yTop + 14 + Math.min(g.a, t) * sy * 0.5, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-ink)' }, `${f(2 * g.c, 2)} mm`));
+    }
+
+    function drawFail(i: { sigma: number; R: number; t: number; kic: number; flow: number }, g: ReturnType<typeof growToBreakthrough>, leak: boolean) {
+      const svg = root.querySelector<SVGSVGElement>('[data-fail]')!;
+      svg.replaceChildren();
+      const W = 480, H = 240, L = 50, R = 12, T = 12, B = 36;
+      const cMax = Math.max(g.cCrit, g.c) * 2.2;
+      const yMax = Math.max(i.flow, i.sigma) * 1.1;
+      const X = (c: number) => L + (c / cMax) * (W - L - R);
+      const Y = (s: number) => H - B - (Math.min(s, yMax) / yMax) * (H - T - B);
+      const sy = yMax > 1500 ? 500 : yMax > 600 ? 200 : 100;
+      for (let s = 0; s <= yMax; s += sy) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(s), y2: Y(s), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(s) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(s)));
+      }
+      const nice = (m: number) => { const e = 10 ** Math.floor(Math.log10(m)); return [1, 2, 5, 10].map((k) => k * e).find((s) => m / s <= 6)!; };
+      const sx = nice(2 * cMax);
+      for (let L2 = 0; L2 <= 2 * cMax + 1e-9; L2 += sx) {
+        svg.append(el('line', { x1: X(L2 / 2), x2: X(L2 / 2), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(L2 / 2), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(+L2.toFixed(2))));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'through-crack length 2c, mm'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'hoop stress to fail, MPa'));
+      const cs = Array.from({ length: 120 }, (_, k) => (cMax * (k + 1)) / 120);
+      // curves leave the top of the plot rather than running along it
+      const clip = `lb-clip-${Math.random().toString(36).slice(2)}`;
+      const cp = el('clipPath', { id: clip });
+      cp.append(el('rect', { x: L, y: T, width: W - L - R, height: H - T - B }));
+      svg.append(cp);
+      const curve = (fn: (c: number) => number) => cs.map((c, k) => `${k ? 'L' : 'M'}${X(c).toFixed(1)},${(H - B - (fn(c) / yMax) * (H - T - B)).toFixed(1)}`).join('');
+      svg.append(el('path', { d: curve((c) => throughFailStress(c, i.R, i.t, i.kic, i.flow).collapse), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 1.6, 'stroke-dasharray': '5 4', 'clip-path': `url(#${clip})` }));
+      svg.append(el('path', { d: curve((c) => throughFailStress(c, i.R, i.t, i.kic, i.flow).lefm), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 1.6, 'stroke-dasharray': '5 4', 'clip-path': `url(#${clip})` }));
+      svg.append(el('path', { d: curve((c) => throughFailStress(c, i.R, i.t, i.kic, i.flow).fail), fill: 'none', stroke: 'var(--rd-ink)', 'stroke-width': 2.5, 'clip-path': `url(#${clip})` }));
+      svg.append(el('line', { x1: L, x2: W - R, y1: Y(i.sigma), y2: Y(i.sigma), stroke: 'var(--rd-accent)', 'stroke-width': 1.5 }));
+      svg.append(el('text', { x: W - R - 4, y: Y(i.sigma) - 5, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-accent)' }, `operating hoop ${f(i.sigma, 0)} MPa`));
+      svg.append(el('text', { x: X(cMax * 0.98), y: Y(throughFailStress(cMax * 0.98, i.R, i.t, i.kic, i.flow).lefm) - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-hot)' }, 'fracture'));
+      svg.append(el('text', { x: X(cMax * 0.02) + 4, y: Y(throughFailStress(cMax * 0.02, i.R, i.t, i.kic, i.flow).collapse) - 6, 'font-size': 10, fill: 'var(--rd-blue)' }, 'plastic collapse'));
+      svg.append(el('circle', { cx: X(g.cCrit), cy: Y(i.sigma), r: 4.5, fill: 'var(--rd-blue)' }));
+      svg.append(el('line', { x1: X(g.c), x2: X(g.c), y1: T, y2: H - B, stroke: leak ? 'var(--rd-ok)' : 'var(--rd-accent)', 'stroke-width': 2 }));
+      svg.append(el('text', { x: X(g.c) + 4, y: T + 12, 'font-size': 10, fill: leak ? 'var(--rd-ok)' : 'var(--rd-accent)' }, 'at breakthrough'));
+    }
+
+    field('m').addEventListener('change', () => { applyMat(); run(); });
+    form.addEventListener('input', run);
+    form.addEventListener('change', run);
+    applyMat();
+    run();
+  });
+</script>
