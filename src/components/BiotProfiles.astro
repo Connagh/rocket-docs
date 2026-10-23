@@ -1,0 +1,60 @@
+---
+// Temperature through a slab heated on one face, for three Biot numbers, each at the moment it has absorbed half of
+// its final heat. Computed at build time with the same solver the calculator uses.
+import { solve } from '../lib/thermal';
+
+const CASES = [
+  { bi: 0.1, col: 'var(--rd-ok)', label: 'Bi 0.1 · uniform' },
+  { bi: 1, col: 'var(--rd-blue)', label: 'Bi 1' },
+  { bi: 10, col: 'var(--rd-hot)', label: 'Bi 10 · steep' },
+];
+const mat = { k: 1, rho: 1, cp: 1 };
+const runTo = (bi: number, t: number) => solve({ geometry: 'slab', layers: [{ mat, thickness: 1 }], t0: 0, phases: [{ duration: t, h: bi, tEnv: 1 }], cellsPerLayer: 60, stepsPerPhase: 300 });
+const curves = CASES.map((c) => {
+  let lo = 1e-4, hi = 100 / c.bi + 10;
+  for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; const r = runTo(c.bi, mid); if (r.mean[r.mean.length - 1] < 0.5) lo = mid; else hi = mid; }
+  const r = runTo(c.bi, (lo + hi) / 2);
+  const p = r.profiles[0];
+  return { ...c, s: p.s, T: p.T, surf: r.surface[r.surface.length - 1] };
+});
+const W = 560, H = 260, L = 56, R = 200, T = 16, B = 40;
+const X = (s: number) => L + s * (W - L - R);
+const Y = (v: number) => H - B - v * (H - T - B);
+---
+
+<figure class="viz">
+  <p class="viz-title">The Biot number — same heat absorbed, different insides</p>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="bp-desc" class="bp-svg">
+    <desc id="bp-desc">
+      Temperature through a slab heated on its left face, plotted from the heated face to the insulated back, for Biot
+      numbers 0.1, 1 and 10, each at the moment it has absorbed half of its final heat. At Bi 0.1 the line is nearly
+      flat; at Bi 10 the surface is near the gas temperature while the back is barely warm.
+    </desc>
+    <rect x={L} y={T} width={W - L - R} height={H - T - B} fill="var(--rd-steel)" fill-opacity="0.1"></rect>
+    {[0, 0.25, 0.5, 0.75, 1].map((v) => (
+      <g>
+        <line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} stroke="var(--rd-line)"></line>
+        <text x={L - 8} y={Y(v) + 4} text-anchor="end" font-size="11" fill="var(--rd-muted)">{v.toFixed(2)}</text>
+      </g>
+    ))}
+    <text x={L} y={H - B + 18} font-size="11" fill="var(--rd-muted)">heated face</text>
+    <text x={W - R} y={H - B + 18} text-anchor="end" font-size="11" fill="var(--rd-muted)">insulated back</text>
+    <text x="16" y={(T + H - B) / 2} text-anchor="middle" font-size="11" fill="var(--rd-ink)" transform={`rotate(-90 16 ${(T + H - B) / 2})`}>(T − T₀)/(T_gas − T₀)</text>
+    <line x1={L} x2={W - R} y1={Y(0.5)} y2={Y(0.5)} stroke="var(--rd-muted)" stroke-dasharray="4 4"></line>
+    {curves.map((c) => (
+      <path d={c.s.map((s, i) => `${i ? 'L' : 'M'}${X(s).toFixed(1)},${Y(c.T[i]).toFixed(1)}`).join('')} fill="none" stroke={c.col} stroke-width="2.6"></path>
+    ))}
+    {curves.map((c, k) => (
+      <g>
+        <line x1={W - R + 18} x2={W - R + 40} y1={T + 22 + k * 24} y2={T + 22 + k * 24} stroke={c.col} stroke-width="2.6"></line>
+        <text x={W - R + 46} y={T + 26 + k * 24} font-size="11" fill={c.col}>{c.label}</text>
+      </g>
+    ))}
+    <text x={W - R + 18} y={T + 110} font-size="10.5" fill="var(--rd-muted)">dashed: the average —</text>
+    <text x={W - R + 18} y={T + 124} font-size="10.5" fill="var(--rd-muted)">all three are half-heated</text>
+  </svg>
+  <figcaption>
+    Bi = hL/k compares how fast heat arrives at the surface with how fast it spreads inside. Below about 0.1 the inside
+    keeps up and one temperature is enough; above it, the surface and the back can be hundreds of degrees apart.
+  </figcaption>
+</figure>

@@ -1,0 +1,290 @@
+---
+// Transient thermal workbench: lumped capacitance against 1-D conduction, heating then an after-phase (soak-back).
+// Maths in src/lib/thermal.ts (unit-tested); this file is UI only.
+const MATS = {
+  steel: { name: 'Steel', k: 45, rho: 7850, cp: 480 },
+  ss: { name: 'Stainless steel', k: 16, rho: 8000, cp: 500 },
+  al: { name: 'Aluminium alloy', k: 150, rho: 2700, cp: 900 },
+  ti: { name: 'Titanium (Ti-6Al-4V)', k: 7, rho: 4430, cp: 560 },
+  cfrp: { name: 'Carbon/epoxy, through-thickness', k: 0.8, rho: 1600, cp: 1000 },
+  epdm: { name: 'EPDM insulation', k: 0.25, rho: 1100, cp: 2000 },
+  cp: { name: 'Carbon phenolic', k: 0.85, rho: 1450, cp: 1600 },
+  sp: { name: 'Silica phenolic', k: 0.55, rho: 1750, cp: 1200 },
+  prop: { name: 'Propellant (HTPB-like)', k: 0.4, rho: 1770, cp: 1300 },
+};
+const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 86400]];
+const PRESETS = {
+  weather: { label: 'Thin case, weather', geo: 'slab', m1: 'steel', t1: 1.377, m2: '', t2: 0, t0: 20,
+    p1: { te: 40, h: 8, d: 1, u: 3600, hold: false }, p2: { te: 40, h: 8, d: 0, u: 60 }, lim: 39 },
+  grain: { label: 'Conditioning a grain', geo: 'cylinder', m1: 'prop', t1: 150, m2: '', t2: 0, t0: 20,
+    p1: { te: 60, h: 10, d: 3, u: 86400, hold: false }, p2: { te: 60, h: 10, d: 0, u: 3600 }, lim: 58 },
+  soak: { label: 'Soak-back into a boss', geo: 'slab', m1: 'epdm', t1: 6, m2: 'steel', t2: 20, t0: 20,
+    p1: { te: 1200, h: 1e7, d: 20, u: 1, hold: true }, p2: { te: 20, h: 10, d: 60, u: 60 }, lim: 150 },
+};
+---
+
+<div class="calc thcalc" data-thcalc>
+  <div class="calc-head"><span>Transient thermal — lumped against conduction</span><span>implicit 1-D · two phases</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <div class="th-presets">
+        {Object.entries(PRESETS).map(([k, p]) => <button type="button" class="chip" data-preset={k}>{p.label}</button>)}
+      </div>
+      <fieldset>
+        <legend>Part</legend>
+        <label>Shape
+          <select name="geo">
+            <option value="slab">Slab — heated on one face, back face insulated</option>
+            <option value="cylinder">Solid cylinder — heated all round</option>
+            <option value="sphere">Solid sphere — heated all round</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label>Material (heated side)<select name="m1">{Object.entries(MATS).map(([k, m]) => <option value={k}>{m.name}</option>)}</select></label>
+          <label><span data-r="t1label">Thickness (mm)</span><input name="t1" type="number" min="0.01" step="any" /></label>
+          <label>k (W/m·K)<input name="k1" type="number" min="0.001" step="any" /></label>
+          <label>ρ (kg/m³) · c<sub>p</sub> (J/kg·K)<span class="th-pair"><input name="r1" type="number" min="1" step="any" aria-label="density" /><input name="c1" type="number" min="1" step="any" aria-label="specific heat" /></span></label>
+        </div>
+        <div class="row2" data-layer2>
+          <label>Second layer behind it<select name="m2"><option value="">none</option>{Object.entries(MATS).map(([k, m]) => <option value={k}>{m.name}</option>)}</select></label>
+          <label>Thickness (mm)<input name="t2" type="number" min="0" step="any" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>1 · Heating</legend>
+        <div class="row2">
+          <label>Surroundings (°C)<input name="te1" type="number" step="any" /></label>
+          <label>Film coefficient h (W/m²K)<input name="h1" type="number" min="0.01" step="any" /></label>
+          <label>Lasting<span class="th-dur"><input name="d1" type="number" min="0" step="any" /><select name="u1">{UNITS.map(([u, s]) => <option value={s}>{u}</option>)}</select></span></label>
+          <label>Start temperature (°C)<input name="t0" type="number" step="any" /></label>
+        </div>
+        <label class="inline"><input type="checkbox" name="hold" /> Hold the surface at this temperature (very large h)</label>
+      </fieldset>
+      <fieldset>
+        <legend>2 · Afterwards</legend>
+        <div class="row2">
+          <label>Surroundings (°C)<input name="te2" type="number" step="any" /></label>
+          <label>Film coefficient h (W/m²K)<input name="h2" type="number" min="0" step="any" /></label>
+          <label>Lasting<span class="th-dur"><input name="d2" type="number" min="0" step="any" /><select name="u2">{UNITS.map(([u, s]) => <option value={s}>{u}</option>)}</select></span></label>
+          <label>Threshold at the back / centre (°C)<input name="lim" type="number" step="any" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="peak"><dt><span data-r="backName">Back face</span> peak</dt><dd data-r="peak">—</dd></div>
+        <div class="readout" data-cls="bi"><dt>Biot number</dt><dd data-r="bi">—</dd></div>
+        <div class="readout"><dt>Lumped time constant τ</dt><dd data-r="tau">—</dd></div>
+      </dl>
+      <p class="pv-sub">Reaching the threshold</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Conduction model</dt><dd data-r="tlim">—</dd></div>
+        <div class="readout"><dt>Lumped model</dt><dd data-r="tlimL">—</dd></div>
+        <div class="readout"><dt>Rise after heating ends</dt><dd data-r="soak">—</dd></div>
+      </dl>
+      <figure class="th-fig">
+        <svg viewBox="0 0 480 250" data-hist role="img" aria-label="Temperature history at the surface, back face or centre, and on average"></svg>
+        <figcaption>Temperatures against time (square-root scale, so seconds and days both show). Dashed: the lumped model's single temperature.</figcaption>
+      </figure>
+      <figure class="th-fig">
+        <svg viewBox="0 0 480 220" data-prof role="img" aria-label="Temperature profiles through the part"></svg>
+        <figcaption>Through the part, from the heated surface. Heating only: three moments as it warms through. With an after-phase: the end of heating, the back face or centre at its peak, and the end.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Constant properties, perfect contact between layers, convection only (add radiation as an extra film coefficient),
+    no decomposition, char or erosion — for insulation that ablates, use the insulation page. Slab back faces are
+    insulated, which is conservative for anything that can lose heat from behind.
+  </div>
+  <script type="application/json" data-data set:html={JSON.stringify({ MATS, PRESETS })}></script>
+</div>
+
+<style is:global>
+  .thcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .thcalc .th-presets { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem !important; }
+  .thcalc .th-presets > * { margin: 0 !important; }
+  .thcalc .th-pair, .thcalc .th-dur { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin-top: 0.2rem; }
+  .thcalc .th-dur { grid-template-columns: 1fr auto; }
+  .thcalc .th-pair > *, .thcalc .th-dur > * { margin: 0 !important; }
+  .thcalc .inline { display: flex; align-items: center; gap: 0.4rem; }
+  .thcalc .inline input { width: auto; }
+  .th-fig { margin: 0.9rem 0 0 !important; }
+  .th-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .th-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .thcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { solve, lumpedTimeTo, type Geometry } from '../lib/thermal';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const deg = (c: number, d = 0) => `${f(c, d).replace('-', '−')} °C`;
+  const dur = (s: number) => (s < 120 ? `${f(s, s < 10 ? 1 : 0)} s` : s < 7200 ? `${f(s / 60, 1)} min` : s < 3 * 86400 ? `${f(s / 3600, 1)} h` : `${f(s / 86400, 1)} days`);
+
+  document.querySelectorAll<HTMLElement>('[data-thcalc]').forEach((root) => {
+    const { MATS, PRESETS } = JSON.parse(root.querySelector('[data-data]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'peak' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const applyMat = () => { const m = MATS[field('m1').value]; field('k1').value = m.k; field('r1').value = m.rho; field('c1').value = m.cp; };
+    const applyPreset = (key: string) => {
+      const p = PRESETS[key];
+      field('geo').value = p.geo; field('m1').value = p.m1; applyMat(); field('t1').value = p.t1;
+      field('m2').value = p.m2; field('t2').value = p.t2; field('t0').value = p.t0;
+      field('te1').value = p.p1.te; field('h1').value = p.p1.h; field('d1').value = p.p1.d; field('u1').value = String(p.p1.u);
+      (field('hold') as HTMLInputElement).checked = p.p1.hold;
+      field('te2').value = p.p2.te; field('h2').value = p.p2.h; field('d2').value = p.p2.d; field('u2').value = String(p.p2.u);
+      field('lim').value = p.lim;
+    };
+
+    function run() {
+      const notes = root.querySelector('[data-notes]')!;
+      const geo = field('geo').value as Geometry, slab = geo === 'slab';
+      (root.querySelector('[data-layer2]') as HTMLElement).hidden = !slab;
+      r('t1label').textContent = slab ? 'Thickness (mm)' : 'Radius (mm)';
+      r('backName').textContent = slab ? 'Back face' : 'Centre';
+      const hold = (field('hold') as HTMLInputElement).checked;
+      field('h1').disabled = hold;
+      const m1 = { k: num('k1'), rho: num('r1'), cp: num('c1') };
+      const layers = [{ mat: m1, thickness: num('t1') / 1000 }];
+      if (slab && field('m2').value && num('t2') > 0) layers.push({ mat: MATS[field('m2').value], thickness: num('t2') / 1000 });
+      const h1 = hold ? 1e7 : num('h1'), d1 = num('d1') * num('u1'), d2 = num('d2') * num('u2');
+      const lim = field('lim').value.trim() === '' ? undefined : num('lim');
+      if (!(m1.k > 0 && m1.rho > 0 && m1.cp > 0 && layers[0].thickness > 0 && h1 > 0 && d1 > 0)) {
+        notes.innerHTML = '<li class="bad">Check the inputs: properties, size, film coefficient and heating time must be positive.</li>';
+        return;
+      }
+      const phases = [{ duration: d1, h: h1, tEnv: num('te1') }];
+      if (d2 > 0) phases.push({ duration: d2, h: Math.max(num('h2'), 1e-9), tEnv: num('te2') });
+      const res = solve({ geometry: geo, layers, t0: num('t0'), phases, limit: lim, stepsPerPhase: 600, snapshotTimes: [d1 / 16, d1 / 4] });
+
+      const bi = res.biot, lumpedOk = bi < 0.1;
+      r('peak').innerHTML = `${deg(res.peakBack, 1)} <small>at ${dur(res.tPeakBack)}</small>`;
+      cls('peak', '');
+      if (hold) { r('bi').innerHTML = '— <small>surface held</small>'; cls('bi', ''); }
+      else {
+        r('bi').innerHTML = `${bi < 0.01 ? bi.toExponential(1) : f(bi, bi < 10 ? 2 : 0)} <small>${lumpedOk ? 'lumped is fair' : 'gradients matter'}</small>`;
+        cls('bi', lumpedOk ? 'ok' : 'warn');
+      }
+      r('tau').textContent = hold ? '— (surface held)' : dur(res.tau);
+      r('tlim').textContent = lim === undefined ? '—' : res.tLimit === null ? 'not reached' : dur(res.tLimit);
+      const tl = lim === undefined || hold ? null : lumpedTimeTo(res.tau, num('t0'), num('te1'), lim);
+      r('tlimL').textContent = lim === undefined || hold ? '—' : tl === null || tl > d1 ? 'not in heating' : dur(tl);
+      const rise = res.peakBack - res.endHeat.back;
+      r('soak').innerHTML = d2 > 0 && res.tPeakBack > d1 * 1.0001 ? `+${f(rise, 1)} K <small>peak ${dur(res.tPeakBack - d1)} after</small>` : 'none';
+
+      const out: [string, string][] = [];
+      if (hold) out.push(['', 'The heated surface is held at a fixed temperature, so there is no surface resistance and no lumped model — only conduction.']);
+      else if (lumpedOk) out.push(['', `Bi = ${bi < 0.01 ? bi.toExponential(1) : f(bi, 2)}: heat spreads through the part far faster than it arrives, so one temperature describes it. The lumped curve and the conduction curves lie on top of each other.`]);
+      else out.push(['warn', `Bi = ${f(bi, 2)}: the inside cannot keep up with the surface. The lumped model ${res.tLimit !== null && tl !== null ? `says the limit is reached in ${dur(tl)}; conduction says ${dur(res.tLimit)}` : 'is not a fair description here'}. Use the conduction curves.`]);
+      if (d2 > 0 && res.tPeakBack > d1 * 1.0001 && rise > 1)
+        out.push(['', `Soak-back: when heating stops, the heat stored near the surface keeps flowing inward. The ${slab ? 'back face' : 'centre'} rises another ${f(rise, 1)} K and peaks ${dur(res.tPeakBack - d1)} after heating ends.`]);
+      if (lim !== undefined) out.push(['', res.peakBack >= lim
+        ? `The ${slab ? 'back face' : 'centre'} reaches ${deg(lim)}${res.tLimit !== null ? ` at ${dur(res.tLimit)}` : ''}.`
+        : `The ${slab ? 'back face' : 'centre'} stays below ${deg(lim)}: it peaks at ${deg(res.peakBack, 1)}.`]);
+      if (!hold && !lumpedOk && res.tau > 0) out.push(['', `Characteristic length V/A = ${f(res.lc * 1000, 1)} mm. The lumped τ = ρc·(V/A)/h = ${dur(res.tau)} is a fair first guess only when Bi < 0.1.`]);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      hist(res, d1, lim, hold);
+      prof(res, slab, d2 > 0);
+    }
+
+    function hist(res: ReturnType<typeof solve>, d1: number, lim: number | undefined, hold: boolean) {
+      const svg = root.querySelector<SVGSVGElement>('[data-hist]')!;
+      svg.replaceChildren();
+      const W = 480, H = 250, L = 46, R = 12, T = 26, B = 34;
+      const tMax = res.t[res.t.length - 1];
+      const all = [...res.surface, ...res.back, ...(hold ? [] : res.lumped), ...(lim !== undefined ? [lim] : [])];
+      const lo = Math.min(...all);
+      // When the surface runs far hotter than everything else, scale to the back face and let the surface go off the top.
+      const focus = Math.max(...res.back, ...res.mean, lim ?? -Infinity), surfMax = Math.max(...res.surface);
+      const offScale = surfMax - lo > 3 * (focus - lo) && focus > lo;
+      const hi = offScale ? focus + 0.3 * (focus - lo) : Math.max(...all), pad = (hi - lo) * 0.06 || 1;
+      const clip = `th-clip-${Math.random().toString(36).slice(2)}`;
+      const cp = el('clipPath', { id: clip });
+      cp.append(el('rect', { x: L, y: T, width: W - L - R, height: H - T - B }));
+      svg.append(cp);
+      const X = (t: number) => L + Math.sqrt(t / tMax) * (W - L - R);
+      const Y = (v: number) => H - B - ((v - (lo - pad)) / (hi - lo + 2 * pad)) * (H - T - B);
+      const span = hi - lo, step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((s) => span / s <= 6) ?? 1000;
+      for (let v = Math.ceil((lo - pad) / step) * step; v <= hi + pad; v += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      const ticks = [0.04, 0.16, 0.36, 0.64, 1].map((q) => q * tMax);
+      for (const t of ticks) {
+        svg.append(el('line', { x1: X(t), x2: X(t), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(t), y: H - B + 14, 'text-anchor': t === tMax ? 'end' : 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, dur(t)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'time (square-root scale)'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, '°C'));
+      if (d1 < tMax) {
+        svg.append(el('line', { x1: X(d1), x2: X(d1), y1: T, y2: H - B, stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: X(d1) + 4, y: T + 12, 'font-size': 10, fill: 'var(--rd-muted)' }, 'heating ends'));
+      }
+      if (lim !== undefined) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(lim), y2: Y(lim), stroke: 'var(--rd-accent)', 'stroke-dasharray': '6 4' }));
+        svg.append(el('text', { x: W - R - 4, y: Y(lim) - 5, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-accent)' }, `limit ${deg(lim)}`));
+      }
+      const path = (ys: number[]) => res.t.map((t, i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join('');
+      const series: [number[], string, string, string?][] = [
+        [res.surface, 'var(--rd-hot)', offScale ? `surface (to ${f(surfMax, 0)})` : 'surface'], [res.mean, 'var(--rd-ok)', 'average'], [res.back, 'var(--rd-blue)', root.querySelector('[data-r="backName"]')!.textContent!.toLowerCase()],
+        ...(hold ? [] : [[res.lumped, 'var(--rd-ink)', 'lumped', '5 4'] as [number[], string, string, string]]),
+      ];
+      let lx = L; // legend above the plot, spaced by label length
+      series.forEach(([ys, col, lab, dash]) => {
+        svg.append(el('path', { d: path(ys), fill: 'none', stroke: col, 'stroke-width': dash ? 1.6 : 2.2, 'clip-path': `url(#${clip})`, ...(dash ? { 'stroke-dasharray': dash } : {}) }));
+        svg.append(el('line', { x1: lx, x2: lx + 16, y1: 10, y2: 10, stroke: col, 'stroke-width': 2.2, ...(dash ? { 'stroke-dasharray': '4 3' } : {}) }));
+        svg.append(el('text', { x: lx + 21, y: 14, 'font-size': 10, fill: col }, lab));
+        lx += 21 + lab.length * 6.2 + 14;
+      });
+    }
+
+    function prof(res: ReturnType<typeof solve>, slab: boolean, after: boolean) {
+      // with an after-phase: end of heating, back-face peak, end; heating only: the profile developing
+      const shown = after ? res.profiles : [...res.snapshots, res.profiles[0]].map((p) => ({ ...p, label: 'at' }));
+      const svg = root.querySelector<SVGSVGElement>('[data-prof]')!;
+      svg.replaceChildren();
+      const W = 480, H = 220, L = 46, R = 12, T = 12, B = 34;
+      const all = shown.flatMap((p) => p.T);
+      const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.06 || 1;
+      const X = (s: number) => L + (s / res.total) * (W - L - R);
+      const Y = (v: number) => H - B - ((v - (lo - pad)) / (hi - lo + 2 * pad)) * (H - T - B);
+      const span = hi - lo, step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((s) => span / s <= 5) ?? 1000;
+      for (let v = Math.ceil((lo - pad) / step) * step; v <= hi + pad; v += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      const mm = res.total * 1000, sx = [0.25, 0.5, 0.75, 1].map((q) => q * mm);
+      for (const v of [0, ...sx]) svg.append(el('text', { x: X(v / 1000), y: H - B + 14, 'text-anchor': v === 0 ? 'start' : v === mm ? 'end' : 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, f(v, v < 10 ? 1 : 0)));
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, slab ? 'depth from heated face, mm' : 'depth from surface to centre, mm'));
+      for (const s of res.interfaces) {
+        svg.append(el('line', { x1: X(s), x2: X(s), y1: T, y2: H - B, stroke: 'var(--rd-steel)', 'stroke-width': 2 }));
+        svg.append(el('text', { x: X(s) + 4, y: T + 12, 'font-size': 10, fill: 'var(--rd-steel)' }, 'interface'));
+      }
+      const cols = ['var(--rd-hot)', 'var(--rd-blue)', 'var(--rd-muted)'];
+      shown.forEach((p, k) => {
+        svg.append(el('path', { d: p.s.map((s, i) => `${i ? 'L' : 'M'}${X(s).toFixed(1)},${Y(p.T[i]).toFixed(1)}`).join(''), fill: 'none', stroke: cols[k], 'stroke-width': 2.2 }));
+        svg.append(el('text', { x: W - R - 4, y: T + 12 + k * 14, 'text-anchor': 'end', 'font-size': 10, fill: cols[k] }, `${p.label} ${dur(p.t)}`));
+      });
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => { applyPreset(b.dataset.preset!); run(); }));
+    field('m1').addEventListener('change', () => { applyMat(); run(); });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    applyPreset('grain');
+    run();
+  });
+</script>

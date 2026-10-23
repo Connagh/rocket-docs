@@ -1,0 +1,199 @@
+---
+title: Transient thermal
+description: How fast hardware heats and cools — lumped capacitance and when it stops being honest (the Biot number), 1-D conduction through slabs, cylinders and spheres, and soak-back after burnout, with worked examples on case response, conditioning a grain and a seal behind a boss.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import BiotProfiles from '../../../components/BiotProfiles.astro';
+import ThermalCalc from '../../../components/ThermalCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Two resistances decide everything: getting heat into the surface, and spreading it inside. Their ratio — the Biot number — says whether one temperature is enough.</div>
+  <div><b>Before this</b><a href="../insulation/">Insulation</a> — soak-back through ablating liners</div>
+  <div><b>Related</b><a href="../propellant/#temperature-why-the-hot-day-sets-meop">Propellant properties</a> — MEOP depends on grain temperature</div>
+</div>
+
+## Why this matters
+
+Seals, bondlines, adhesives, electronics and heat-treated alloys all have temperature limits, and most hardware
+never reaches steady state — it heats and cools in transients. Three things go wrong again and again:
+
+- **The structure is often hottest after the motor stops.** When the gas stops flowing, the heat stored in the hot
+  parts keeps moving inward, because that is the only direction left. That **soak-back** peaks minutes after burnout
+  and cooks the seals, bonds and electronics that survived the burn itself.
+- **The outside is not the inside.** A thin steel case follows the weather within half an hour. The propellant inside
+  takes days, so a thermocouple on the case says very little about the grain — and MEOP depends on the grain.
+- **Fast heating makes gradients.** When heat arrives faster than it can spread, the surface and the core can be
+  hundreds of degrees apart, with the thermal stresses and strains that go with it.
+
+## Lumped capacitance — one temperature
+
+If the whole part is at one temperature, an energy balance gives
+
+$$
+\rho c\,V\,\frac{dT}{dt} = h A\,(T_\infty - T)
+\quad\Longrightarrow\quad
+\frac{T - T_\infty}{T_0 - T_\infty} = e^{-t/\tau},
+\qquad
+\tau = \frac{\rho c\,V}{h A} = \frac{\rho c\,L_c}{h}
+$$
+
+with $L_c = V/A$ the **characteristic length** — the thickness of a plate heated on one face, $R/2$ for a long
+cylinder, $R/3$ for a sphere.
+
+- **It never quite arrives.** 63% of the gap closes in one $\tau$, 95% in three, 99.3% in five. Ask instead how long
+  it takes to reach a stated limit: $t = \tau \ln\!\left[(T_\infty - T_0)/(T_\infty - T_\text{lim})\right]$.
+- **Conductivity does not appear.** In the lumped regime the inside already keeps up; the bottleneck is entirely at the
+  surface.
+- **$h$ is usually the weakest input.** Typical film coefficients run from 2–25 W/m²K for free convection in air,
+  25–250 for forced air, and up to tens of thousands for liquids and boiling. Combustion gas inside a motor reaches
+  thousands, highest at the nozzle throat (Bartz's correlation is the usual estimate). Radiation adds an equivalent
+  $h_r = \varepsilon\sigma\,(T_s^2 + T_\infty^2)(T_s + T_\infty)$.
+
+## When one temperature is not enough — the Biot number
+
+$$
+Bi = \frac{h\,L_c}{k}
+$$
+
+compares the resistance to heat spreading inside ($L_c/k$) with the resistance to heat getting in ($1/h$). Below about
+0.1 the inside keeps up and the lumped model is fair. Above it the part has a real gradient — and every lumped number
+becomes a fiction.
+
+<BiotProfiles />
+
+<Analogy title="A pea and a potato">
+  Drop a pea into boiling water and it is hot all the way through in seconds — one temperature describes it. A large
+  potato is soft on the outside and hard in the middle for many minutes: the water delivers heat faster than the potato
+  can carry it inward. The pea has a small Biot number; the potato a large one.
+</Analogy>
+
+## Conduction through slabs, cylinders and spheres
+
+When the Biot number is not small, solve the heat equation inside the part:
+
+$$
+\frac{\partial T}{\partial t} = \alpha\,\frac{1}{r^m}\frac{\partial}{\partial r}\!\left(r^m\,\frac{\partial T}{\partial r}\right),
+\qquad
+\alpha = \frac{k}{\rho c}
+$$
+
+with $m = 0$ for a slab, 1 for a cylinder and 2 for a sphere. The **thermal diffusivity** $\alpha$ sets the time
+scale: heat penetrates about $\sqrt{\alpha t}$ in time $t$, so a part of thickness $L$ takes of the order of
+$L^2/\alpha$ to heat through.
+
+| Part | $\alpha$, m²/s | $L^2/\alpha$ |
+| --- | --- | --- |
+| Aluminium, 10 mm | $6.2 \times 10^{-5}$ | 1.6 s |
+| Steel, 10 mm | $1.2 \times 10^{-5}$ | 8 s |
+| Titanium alloy, 10 mm | $2.8 \times 10^{-6}$ | 35 s |
+| Carbon phenolic, 10 mm | $3.7 \times 10^{-7}$ | 5 min |
+| EPDM insulation, 6 mm | $1.1 \times 10^{-7}$ | 5 min |
+| Propellant, 150 mm | $1.7 \times 10^{-7}$ | 36 h |
+
+The calculator solves this equation numerically — an implicit finite-volume scheme, stable at any time step — for one
+or two layers. Its automated tests check it against the exact series solutions for all three shapes, to within 0.2%.
+
+## Soak-back
+
+During a firing, the insulation and liners take the heat and store it. At burnout the source disappears, but the
+stored heat does not: it flows down the temperature gradient — inward, into the structure. The back face keeps
+heating long after the gas has gone, and peaks minutes later.
+
+<Analogy title="A pan handle off the hob">
+  Take a cast-iron pan off the hob and the handle keeps getting hotter for a few minutes. The flame has gone, but the
+  heat already stored in the pan is still spreading out along it. Motor hardware does the same after burnout.
+</Analogy>
+
+What decides the peak:
+
+- **How much heat is stored near the surface** — the thicker and hotter the heated layer, the more there is to release.
+- **What is behind it** — a thick metal part soaks the heat up and peaks lower and later; a thin wall peaks high and
+  sooner.
+- **What happens at the hot face after burnout** — if it can radiate or convect heat away, less goes inward. An
+  insulated hot face is the upper bound; the [insulation page](../insulation/) brackets the two.
+
+## Calculator
+
+<ThermalCalc />
+
+## Worked examples
+
+### 1 — A thin case follows the weather
+
+The 1.377 mm steel case from [case sizing](../case-sizing/#worked-example), on its own, in still air
+($h \approx 8$ W/m²K) when the air warms from 20 °C to 40 °C. The **Thin case, weather** preset.
+
+- $Bi = 8 \times 0.001377 / 45 = 2.5 \times 10^{-4}$ — about as lumped as anything gets.
+- $\tau = 7850 \times 480 \times 0.001377 / 8 = 649$ s, about **11 minutes**.
+- Within 1 K of the air (95% of the step): $3\tau \approx$ **33 minutes**.
+
+### 2 — Conditioning a grain
+
+Before a test firing, a motor is held at its hot-limit temperature, say 60 °C, so the firing represents the hot-day
+MEOP. Take the 300 mm grain as a solid cylinder of propellant ($k = 0.4$ W/m·K, $\rho = 1770$ kg/m³,
+$c = 1300$ J/kg·K — illustrative), starting at 20 °C in a conditioning chamber with forced air at 60 °C
+($h \approx 10$ W/m²K). The **Conditioning a grain** preset.
+
+- $Bi = 10 \times 0.075 / 0.4 = 1.9$ — far from lumped.
+- **The lumped model** says $\tau = 1770 \times 1300 \times 0.075 / 10 = 4.8$ h, and that the grain reaches 58 °C
+  in **14 hours**.
+- **Conduction** says the centre reaches 58 °C after **34 hours**. Six hours in, the surface is at 50 °C, the
+  average at 40 °C and the centre still at 29 °C — while the lumped model claims 49 °C.
+
+Conditioning is specified in days, not hours, for this reason. A motor fired before it has soaked through is fired at
+an unknown temperature — and with the thermal strains of a grain that is hot outside and cold inside.
+
+### 3 — Soak-back into a seal behind a boss
+
+A seal sits behind a 20 mm steel polar boss, protected by 6 mm of EPDM. During a 20 s burn the insulation's hot face
+is held at 1200 °C (an effective surface temperature, as on the insulation page). Afterwards it cools to 20 °C air at
+$h = 10$ W/m²K. The **Soak-back into a boss** preset.
+
+- **At burnout** the back face of the boss has barely moved: 20.1 °C. Nothing has arrived yet.
+- **The peak** comes about **8 minutes after burnout**, at **62 °C**.
+- **Behind a thin wall instead.** The same insulation over the 1.4 mm case wall peaks at **225 °C**, less than four
+  minutes after burnout. The boss's heat capacity soaks the heat up; the thin wall has none to spare.
+
+This model has no charring, pyrolysis or erosion, so it says nothing about the liner itself — use the
+[insulation calculator](../insulation/#calculator) for that. What it shows is how much the part *behind* the liner
+matters.
+
+## Where this stops
+
+- **Constant properties.** Conductivity and specific heat change with temperature, and polymers decompose.
+- **Perfect contact.** Real joints between layers have a contact resistance, which can dominate at bolted and pressed
+  interfaces.
+- **One dimension.** Corners, bosses, fins and fasteners spread heat in two or three dimensions; a finite-element model
+  handles that.
+- **Film coefficients** are rarely known better than a factor of two without test data, and radiation must be added
+  where it matters.
+- **No internal heat generation** — no reaction, no electrical heating.
+
+## On the drawing and in the specifications
+
+- **State every temperature limit with its duration** — a seal compound's maximum for minutes is different from its
+  maximum for years.
+- **Specify conditioning properly:** temperature, tolerance, minimum soak time, and where the temperature is measured
+  — on the grain or in a representative dummy, not on the case.
+- **Place thermocouples where the peaks are** — behind the liners, at the seals and bondlines — and keep recording
+  after burnout. The peak you care about may be ten minutes later.
+
+## References and further reading
+
+- T. L. Bergman, A. S. Lavine, F. P. Incropera & D. P. DeWitt, *Fundamentals of Heat and Mass Transfer*, 8th ed.,
+  Wiley (2017) — lumped capacitance, transient conduction and typical film coefficients.
+- H. S. Carslaw & J. C. Jaeger, *Conduction of Heat in Solids*, 2nd ed., Oxford University Press (1959).
+- D. R. Bartz, "A simple equation for rapid estimation of rocket nozzle convective heat transfer coefficients", *Jet
+  Propulsion* 27 (1957) 49–51.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — heat transfer in rocket motors.
+- NASA SP-8093, *Solid Rocket Motor Internal Insulation* (1976).
+
+<Aside type="note">
+  Screening. Real transient analysis uses temperature-dependent properties, contact resistance, radiation, measured
+  film coefficients and, for anything but simple shapes, a finite-element model. This page tells you when that model is
+  needed and roughly what it will say.
+</Aside>
