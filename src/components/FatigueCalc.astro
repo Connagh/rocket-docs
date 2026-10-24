@@ -1,0 +1,329 @@
+---
+// Stress-life fatigue workbench: Marin-corrected endurance, notch, mean stress, Miner's rule over a spectrum.
+// Maths in src/lib/fatigue.ts (unit-tested); this file is UI only.
+import data from '../data/materials.json';
+import { SURFACES, LOADS, RELIABILITY } from '../lib/fatigue';
+
+const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
+const metals = data.materials.filter((m) => m.family in FAM && m.uts > 150 && m.yield > 100);
+const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
+const MATS = Object.fromEntries(metals.map((m) => [m.name, { uts: m.uts, y: m.yield, fam: m.family }]));
+const ROWS = [
+  { label: 'Transport vibration', sa: 90, sm: 50, n: 5e6 },
+  { label: 'Handling', sa: 250, sm: 250, n: 2000 },
+  { label: 'Firings', sa: 180, sm: 60, n: 20000 },
+  { label: '', sa: '', sm: '', n: '' },
+  { label: '', sa: '', sm: '', n: '' },
+];
+---
+
+<div class="calc ftcalc" data-ftcalc>
+  <div class="calc-head"><span>Fatigue — stress-life and Miner's rule</span><span>Marin · Peterson · Basquin</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Material</legend>
+        <label>Alloy
+          <select name="m">
+            {groups.map((g) => (
+              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === '4340 / EN24T'}>{m.name}</option>)}</optgroup>
+            ))}
+          </select>
+        </label>
+        <div class="row2">
+          <label>UTS (MPa)<input name="u" type="number" min="1" step="any" /></label>
+          <label>Yield (MPa)<input name="y" type="number" min="1" step="any" /></label>
+          <label>Polished coupon S′<sub>e</sub> (MPa)<input name="se" type="number" min="1" step="any" /></label>
+          <label>Mean-stress rule
+            <select name="crit">
+              <option value="goodman">Goodman</option><option value="gerber">Gerber</option>
+              <option value="soderberg">Soderberg</option><option value="swt">Smith–Watson–Topper</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" data-sehint></p>
+      </fieldset>
+      <fieldset>
+        <legend>The part</legend>
+        <div class="row2">
+          <label>Surface<select name="surf">{SURFACES.map((s) => <option value={s.key} selected={s.key === 'machined'}>{s.name}</option>)}</select></label>
+          <label>Loading<select name="load">{LOADS.map((l) => <option value={l.key}>{l.name}</option>)}</select></label>
+          <label>Section size d (mm)<input name="d" type="number" min="1" step="any" value="25" /></label>
+          <label>Reliability<select name="rel">{RELIABILITY.map((r) => <option value={r.key} selected={r.key === '99'}>{r.name}</option>)}</select></label>
+          <label>Temperature factor k<sub>d</sub><input name="kd" type="number" min="0.1" max="1.2" step="0.01" value="1" /></label>
+          <label>Notch K<sub>t</sub><input name="kt" type="number" min="1" step="0.05" value="1.8" /></label>
+          <label>Notch radius (mm)<input name="r" type="number" min="0.01" step="any" value="2" /></label>
+        </div>
+        <p class="hint">For combined loading, enter von Mises equivalent stresses and choose bending. Stresses below are nominal; the notch factor is applied to both amplitude and mean.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Load spectrum, per service life</legend>
+        <div class="ft-rows">
+          <span class="ft-h">Block</span><span class="ft-h">σ<sub>a</sub> (MPa)</span><span class="ft-h">σ<sub>m</sub> (MPa)</span><span class="ft-h">Cycles</span>
+          {ROWS.map((r, k) => (
+            <>
+              <input name={`b${k}`} type="text" value={r.label} aria-label={`Block ${k + 1} name`} />
+              <input name={`a${k}`} type="number" min="0" step="any" value={r.sa} aria-label={`Block ${k + 1} amplitude`} />
+              <input name={`s${k}`} type="number" step="any" value={r.sm} aria-label={`Block ${k + 1} mean`} />
+              <input name={`n${k}`} type="number" min="0" step="any" value={r.n} aria-label={`Block ${k + 1} cycles`} />
+            </>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Your programme's factors</legend>
+        <div class="row2">
+          <label>Factor on stress<input name="fs" type="number" min="1" step="0.05" placeholder="your value" autocomplete="off" /></label>
+          <label>Factor on life (scatter)<input name="fl" type="number" min="1" step="0.5" placeholder="your value" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Fatigue factors come from your governing requirement, not from this site.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="d"><dt>Miner damage per service life</dt><dd data-r="d">—</dd></div>
+        <div class="readout"><dt>Service lives to failure (1/D)</dt><dd data-r="lives">—</dd></div>
+        <div class="readout" data-cls="ms"><dt>Margins with your factors</dt><dd data-r="ms">—</dd></div>
+      </dl>
+      <p class="pv-sub">From coupon to part</p>
+      <dl class="readouts">
+        <div class="readout"><dt>Corrected endurance S<sub>e</sub></dt><dd data-r="se">—</dd></div>
+        <div class="readout"><dt>Notch: q · K<sub>f</sub></dt><dd data-r="kf">—</dd></div>
+        <div class="readout"><dt>Worst block vs S<sub>e</sub></dt><dd data-r="worst">—</dd></div>
+      </dl>
+      <div class="ft-table" data-table></div>
+      <figure class="ft-fig">
+        <svg viewBox="0 0 480 200" data-marin role="img" aria-label="Fatigue strength from polished coupon to the part, factor by factor"></svg>
+        <figcaption>What survives the journey from a polished laboratory coupon to your part, one correction factor at a time.</figcaption>
+      </figure>
+      <figure class="ft-fig">
+        <svg viewBox="0 0 480 250" data-sn role="img" aria-label="S-N curves with the load spectrum"></svg>
+        <figcaption>S-N curves, log scales. Dashed: the polished coupon. Solid: your part. Dots: each block's equivalent fully reversed stress at its life; arrows: below the endurance limit.</figcaption>
+      </figure>
+      <figure class="ft-fig">
+        <svg viewBox="0 0 480 250" data-haigh role="img" aria-label="Haigh diagram of alternating against mean stress"></svg>
+        <figcaption>Haigh diagram for infinite life: alternating against mean stress, at the notch. Below a line is safe by that criterion; the dotted line is first-cycle yield.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Stress-life screening: Marin factors and Peterson notch sensitivity are correlations; the S-N curve is a Basquin
+    estimate between 0.9·S<sub>ut</sub> at 10³ cycles and S<sub>e</sub>; Miner's rule ignores load sequence. Fatigue
+    scatter is a factor of ten in life — a fatigue-critical part is qualified by test.
+  </div>
+  <script type="application/json" data-mats set:html={JSON.stringify(MATS)}></script>
+</div>
+
+<style is:global>
+  .ftcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .ftcalc .ft-rows { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 0.35rem 0.4rem; }
+  .ftcalc .ft-rows > * { margin: 0 !important; }
+  .ftcalc .ft-h { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  /* narrow calculator: block name on its own row, the three numbers beneath */
+  @container (max-width: 30rem) {
+    .ftcalc .ft-rows { grid-template-columns: 1fr 1fr 1fr; }
+    .ftcalc .ft-rows .ft-h:first-child { display: none; }
+    .ftcalc .ft-rows input[name^='b'] { grid-column: 1 / -1; margin-top: 0.35rem !important; }
+  }
+  .ftcalc .ft-table { margin-top: 0.75rem !important; overflow-x: auto; }
+  .ftcalc .ft-table table { width: 100%; font-size: var(--sl-text-xs); font-family: var(--sl-font-mono); border-collapse: collapse; display: table; }
+  .ftcalc .ft-table th, .ftcalc .ft-table td { padding: 0.25rem 0.4rem; border-bottom: 1px solid var(--rd-line); text-align: right; white-space: nowrap; }
+  .ftcalc .ft-table th:first-child, .ftcalc .ft-table td:first-child { text-align: left; }
+  .ft-fig { margin: 0.9rem 0 0 !important; }
+  .ft-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ft-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .ftcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { baseFatigueStrength, marin, notchSensitivity, fatigueNotchFactor, snCurve, miner, type Criterion } from '../lib/fatigue';
+  import { readFactor, awaitingMessage } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const cyc = (n: number) => (!Number.isFinite(n) ? '∞' : n >= 1e6 ? `${f(n / 1e6, 1)} M` : n >= 1e4 ? `${f(n / 1e3, 0)} k` : f(n, 0));
+  const sup = (e: number) => `10${String(e).replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+d])}`;
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+  document.querySelectorAll<HTMLElement>('[data-ftcalc]').forEach((root) => {
+    const MATS: Record<string, { uts: number; y: number; fam: string }> = JSON.parse(root.querySelector('[data-mats]')!.textContent!);
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'd' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const fam = () => MATS[field('m').value]?.fam ?? 'steel';
+    const applyMat = () => {
+      const m = MATS[field('m').value];
+      field('u').value = String(m.uts); field('y').value = String(m.y);
+      const b = baseFatigueStrength(m.fam, m.uts);
+      field('se').value = String(Math.round(b.se));
+    };
+
+    function run() {
+      const notes = root.querySelector('[data-notes]')!;
+      const uts = num('u'), sy = num('y'), sePrime = num('se');
+      const base = baseFatigueStrength(fam(), uts);
+      root.querySelector('[data-sehint]')!.textContent = base.limit
+        ? `Estimate from UTS for this family, with an endurance limit at about ${sup(Math.log10(base.nE))} cycles. Replace with test data where you have it.`
+        : `Estimate from UTS. This family has no true endurance limit — the value is the strength at ${base.nE === 5e8 ? '5×10⁸' : sup(Math.log10(base.nE))} cycles and the curve keeps falling.`;
+      if (!(uts > 0 && sy > 0 && sePrime > 0 && sePrime < uts)) {
+        notes.innerHTML = '<li class="bad">Check the material values: S′e must be positive and below the UTS.</li>';
+        return;
+      }
+      const m = marin({ uts, sePrime, surface: field('surf').value, load: field('load').value, dMm: num('d'), kd: num('kd'), reliability: field('rel').value });
+      const ns = notchSensitivity(num('r'), uts, fam());
+      const kf = fatigueNotchFactor(Math.max(1, num('kt')), ns.q);
+      const curve = snCurve(uts, m.se, base.nE, base.limit);
+      const coupon = snCurve(uts, sePrime, base.nE, base.limit);
+      const crit = field('crit').value as Criterion;
+      const blocks = [0, 1, 2, 3, 4].map((k) => ({ label: field(`b${k}`).value.trim() || `Block ${k + 1}`, sa: num(`a${k}`), sm: num(`s${k}`), n: num(`n${k}`), raw: field(`a${k}`).value.trim() }))
+        .filter((b) => b.raw !== '' && b.sa > 0 && b.n > 0);
+      const res = miner(blocks, kf, uts, sy, crit, curve);
+      const rows = res.rows.map((x, k) => ({ ...x, label: blocks[k].label }));
+
+      r('d').innerHTML = `${f(res.D, 3)}`;
+      cls('d', res.D >= 1 ? 'bad' : '');
+      r('lives').textContent = Number.isFinite(res.lives) ? `${f(res.lives, res.lives < 10 ? 2 : 1)}` : '∞';
+      r('se').innerHTML = `${f(m.se, 0)} <small>MPa · ${f((m.se / sePrime) * 100, 0)}% of S′e</small>`;
+      r('kf').innerHTML = `${f(ns.q, 2)} · ${f(kf, 2)} <small>K<sub>t</sub> ${f(num('kt'), 2)}</small>`;
+      const worst = Math.max(0, ...rows.map((x) => x.sar));
+      const achieved = worst > 0 ? m.se / worst : Infinity;
+      r('worst').innerHTML = worst > 0 ? `${f(worst, 0)} <small>MPa · S<sub>e</sub>/σ = ${f(achieved, 2)}</small>` : '—';
+      const fs = readFactor(field('fs').value), fl = readFactor(field('fl').value);
+      const parts: string[] = [];
+      if (fs !== null && Number.isFinite(achieved)) parts.push(`stress, infinite life ${achieved / fs - 1 >= 0 ? '+' : ''}${f(achieved / fs - 1, 2)}`);
+      if (fl !== null) parts.push(`life ${res.lives / fl - 1 >= 0 ? '+' : ''}${Number.isFinite(res.lives) ? f(res.lives / fl - 1, 2) : '∞'}`);
+      r('ms').innerHTML = parts.length ? parts.join('<br>') : '<small>needs your factors</small>';
+      const bad = (fs !== null && achieved < fs) || (fl !== null && res.lives < fl);
+      cls('ms', parts.length ? (bad ? 'bad' : 'ok') : '');
+
+      root.querySelector('[data-table]')!.innerHTML = rows.length
+        ? `<table><thead><tr><th>Block</th><th>σa local</th><th>σm local</th><th>σ equiv.</th><th>N</th><th>Damage</th></tr></thead><tbody>${rows.map((x) =>
+          `<tr><td>${esc(x.label)}</td><td>${f(x.la, 0)}</td><td>${f(x.lm, 0)}</td><td>${f(x.sar, 0)}</td><td>${x.static ? 'static' : Number.isFinite(x.N) && x.N < 1e3 ? '&lt;10³' : cyc(x.N)}</td><td>${x.d > 0 ? `${f(x.d, x.d >= 1 ? 2 : 4)} · ${f(res.D > 0 ? (x.d / res.D) * 100 : 0, 0)}%` : '0'}</td></tr>`).join('')}</tbody></table>`
+        : '';
+
+      const out: [string, string][] = [];
+      if (rows.length) {
+        const top = [...rows].sort((a, b) => b.d - a.d)[0];
+        if (res.D > 0) out.push(['', `${esc(top.label)} does ${f((top.d / res.D) * 100, 0)}% of the damage in ${cyc(top.n)} cycles. ${rows.some((x) => x.d === 0) ? 'Blocks below the endurance limit do none at all — ' : ''}${base.limit ? 'a few large cycles matter far more than many small ones.' : ''}`]);
+        if (!base.limit) out.push(['warn', 'No true endurance limit: every block does some damage, however small. Long vibration exposures add up.']);
+        if (rows.some((x) => x.static)) out.push(['bad', 'At least one block puts the notch above the tensile strength — that is a static failure, not fatigue. Scale the stresses to suit this material.']);
+        else if (rows.some((x) => Number.isFinite(x.N) && x.N < 1e3)) out.push(['warn', 'At least one block lasts under 10³ cycles — low-cycle fatigue, outside the stress-life method. Use strain-life.']);
+        if (rows.some((x) => x.yields)) out.push(['warn', 'At least one block yields the notch on its first cycle (local σa + σm above yield). Local yielding redistributes the mean stress; a strain-life analysis is the right tool there.']);
+      }
+      out.push(['', `The part keeps ${f((m.se / sePrime) * 100, 0)}% of the coupon's fatigue strength: surface ${f(m.ka, 2)}, size ${f(m.kb, 2)}, loading ${f(m.kc, 2)}, temperature ${f(m.kd, 2)}, reliability ${f(m.ke, 2)}. The notch then multiplies the stress by ${f(kf, 2)}.`]);
+      if (fs !== null) out.push(['', 'The stress margin checks the worst block against the endurance limit — the right test only for a part that must never accumulate damage. For a finite-life design, the life margin is the one that counts.']);
+      if (fs === null || fl === null) out.push(['warn', awaitingMessage([fs === null ? 'factor on stress' : '', fl === null ? 'factor on life' : ''].filter(Boolean), 'the margins', false)]);
+      out.push(['', 'Miner\'s rule ignores sequence: high loads early can shorten life further. Test results scatter by about ten times in life, which is why programmes apply a factor on life.']);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+
+      marinChart(sePrime, m);
+      snChart(uts, coupon, curve, rows, base.nE);
+      haigh(uts, sy, m.se, rows, crit);
+    }
+
+    function marinChart(sePrime: number, m: ReturnType<typeof marin>) {
+      const svg = root.querySelector<SVGSVGElement>('[data-marin]')!;
+      svg.replaceChildren();
+      const steps: [string, number][] = [['coupon S′e', sePrime], ['× surface', m.ka], ['× size', m.kb], ['× loading', m.kc], ['× temperature', m.kd], ['× reliability', m.ke]];
+      let v = 1;
+      const W = 480, L = 110, R = 60, rowH = 26, T = 8;
+      steps.forEach(([lab, k], i) => {
+        if (i > 0) v *= k;
+        const val = sePrime * v, w = (val / sePrime) * (W - L - R), y = T + i * rowH;
+        svg.append(el('text', { x: L - 8, y: y + 15, 'text-anchor': 'end', 'font-size': 10.5, fill: 'var(--rd-ink)' }, lab));
+        svg.append(el('rect', { x: L, y: y + 3, width: Math.max(w, 1), height: 16, rx: 2, fill: i === 0 ? 'var(--rd-muted)' : i === steps.length - 1 ? 'var(--rd-accent)' : 'var(--rd-blue)', 'fill-opacity': i === 0 ? 0.5 : 0.75 }));
+        svg.append(el('text', { x: L + w + 5, y: y + 15, 'font-size': 10, fill: 'var(--rd-muted)' }, `${f(val, 0)}${i > 0 ? ` (${f(k, 2)})` : ''}`));
+      });
+      svg.append(el('text', { x: L, y: T + steps.length * rowH + 14, 'font-size': 10, fill: 'var(--rd-muted)' }, 'MPa — the bottom bar is S_e for your part'));
+    }
+
+    function snChart(uts: number, coupon: ReturnType<typeof snCurve>, curve: ReturnType<typeof snCurve>, rows: { sar: number; N: number; label: string }[], nE: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-sn]')!;
+      svg.replaceChildren();
+      const W = 480, H = 250, L = 50, R = 14, T = 12, B = 34, x1 = 3, x2 = Math.max(9, Math.ceil(Math.log10(nE)) + 1);
+      const sMax = Math.max(uts, ...rows.map((x) => x.sar)), sMin = Math.min(curve.S(10 ** x2), ...rows.filter((x) => x.sar > 0).map((x) => x.sar)) * 0.7;
+      const y1 = Math.log10(sMin), y2 = Math.log10(sMax * 1.1);
+      const X = (lx: number) => L + ((lx - x1) / (x2 - x1)) * (W - L - R);
+      const Y = (s: number) => H - B - ((Math.log10(s) - y1) / (y2 - y1)) * (H - T - B);
+      for (let e = x1; e <= x2; e++) {
+        svg.append(el('line', { x1: X(e), x2: X(e), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(e), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, sup(e)));
+      }
+      for (const s of [50, 100, 200, 500, 1000, 2000]) {
+        if (s < sMin || s > sMax * 1.1) continue;
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(s), y2: Y(s), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(s) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(s)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'cycles to failure N'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'σ, MPa'));
+      const lxs = Array.from({ length: 121 }, (_, k) => x1 + (k / 120) * (x2 - x1));
+      const path = (c: ReturnType<typeof snCurve>) => lxs.map((l, k) => `${k ? 'L' : 'M'}${X(l).toFixed(1)},${Y(c.S(10 ** l)).toFixed(1)}`).join('');
+      svg.append(el('path', { d: path(coupon), fill: 'none', stroke: 'var(--rd-muted)', 'stroke-width': 1.8, 'stroke-dasharray': '6 4' }));
+      svg.append(el('path', { d: path(curve), fill: 'none', stroke: 'var(--rd-accent)', 'stroke-width': 2.5 }));
+      svg.append(el('text', { x: X(x2) - 4, y: Y(coupon.S(10 ** x2)) - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'polished coupon'));
+      svg.append(el('text', { x: X(x2) - 4, y: Y(curve.S(10 ** x2)) + 14, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-accent)' }, 'your part'));
+      rows.forEach((x, k) => {
+        if (!(x.sar > 0)) return;
+        const fin = Number.isFinite(x.N);
+        const lx = fin ? Math.min(x2, Math.max(x1, Math.log10(x.N))) : x2 - 0.15;
+        svg.append(el('circle', { cx: X(lx), cy: Y(x.sar), r: 5, fill: fin ? 'var(--rd-panel)' : 'var(--rd-ok)', stroke: fin ? 'var(--rd-ink)' : 'var(--rd-ok)', 'stroke-width': 2 }));
+        svg.append(el('text', { x: X(lx) - 8, y: Y(x.sar) - 7, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-ink)' }, `${k + 1}${fin ? '' : ' →'}`));
+      });
+    }
+
+    function haigh(uts: number, sy: number, se: number, rows: { la: number; lm: number; label: string }[], crit: string) {
+      const svg = root.querySelector<SVGSVGElement>('[data-haigh]')!;
+      svg.replaceChildren();
+      const W = 480, H = 250, L = 50, R = 14, T = 12, B = 34;
+      const xMax = uts * 1.05, yMax = Math.max(se * 1.4, sy * 0.6, ...rows.map((x) => x.la * 1.15));
+      const X = (v: number) => L + (v / xMax) * (W - L - R);
+      const Y = (v: number) => H - B - (v / yMax) * (H - T - B);
+      const step = xMax > 1500 ? 500 : xMax > 600 ? 200 : 100;
+      for (let v = 0; v <= xMax; v += step) {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      const ys = yMax > 1000 ? 500 : yMax > 400 ? 200 : 100;
+      for (let v = 0; v <= yMax; v += ys) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'mean stress σm, MPa'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'alternating σa, MPa'));
+      const gerber = Array.from({ length: 41 }, (_, k) => (k / 40) * uts).map((m, k) => `${k ? 'L' : 'M'}${X(m).toFixed(1)},${Y(se * (1 - (m / uts) ** 2)).toFixed(1)}`).join('');
+      const lines: [string, string, string][] = [
+        ['goodman', `M${X(0)},${Y(se)} L${X(uts)},${Y(0)}`, 'Goodman'],
+        ['gerber', gerber, 'Gerber'],
+        ['soderberg', `M${X(0)},${Y(se)} L${X(sy)},${Y(0)}`, 'Soderberg'],
+      ];
+      for (const [k, d, lab] of lines) {
+        const on = k === crit;
+        svg.append(el('path', { d, fill: 'none', stroke: on ? 'var(--rd-accent)' : 'var(--rd-muted)', 'stroke-width': on ? 2.5 : 1.3 }));
+      }
+      svg.append(el('path', { d: `M${X(0)},${Y(sy)} L${X(sy)},${Y(0)}`, fill: 'none', stroke: 'var(--rd-blue)', 'stroke-dasharray': '2 3' }));
+      svg.append(el('text', { x: X(sy * 0.15), y: Y(sy * 0.85) - 4, 'font-size': 10, fill: 'var(--rd-blue)' }, 'first-cycle yield'));
+      svg.append(el('text', { x: X(uts) - 4, y: Y(0) - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'S_ut'));
+      svg.append(el('text', { x: L - 6, y: Y(se) + 3, 'text-anchor': 'end', 'font-size': 10, 'font-weight': 700, fill: 'var(--rd-accent)' }, 'Se'));
+      rows.forEach((x, k) => {
+        svg.append(el('circle', { cx: X(Math.max(0, x.lm)), cy: Y(x.la), r: 5, fill: 'var(--rd-panel)', stroke: 'var(--rd-ink)', 'stroke-width': 2 }));
+        svg.append(el('text', { x: X(Math.max(0, x.lm)) + 7, y: Y(x.la) + 4, 'font-size': 10, fill: 'var(--rd-ink)' }, String(k + 1)));
+      });
+    }
+
+    field('m').addEventListener('change', () => { applyMat(); run(); });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 100); });
+    form.addEventListener('change', run);
+    applyMat();
+    run();
+  });
+</script>

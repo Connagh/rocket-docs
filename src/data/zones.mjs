@@ -56,6 +56,7 @@ export const ZONE_PLAN = [
 /** Zones rebuilt as v2 pages: zone key → page slug ('' is the home page). */
 export const REBUILT = {
   home: '',
+  fatigue: 'fundamentals/fatigue',
   visco: 'fundamentals/viscoelasticity',
   materials: 'materials/selection',
   xref: 'materials/designations',
