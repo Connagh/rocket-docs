@@ -1,0 +1,56 @@
+---
+// Where the tightening torque goes: the same 60 N·m on an M10, lubricated and dry. Numbers from src/lib/bolts.ts.
+import { THREADS, torquePreload } from '../lib/bolts';
+
+const M10 = THREADS.find((t) => t.name === 'M10')!;
+const cases = [
+  { label: 'Lubricated, μ = 0.12', r: torquePreload(60000, M10, 0.12, 0.12, 15, 11) },
+  { label: 'Dry, μ = 0.18', r: torquePreload(60000, M10, 0.18, 0.18, 15, 11) },
+];
+const parts = [
+  { k: 'pitch', name: 'bolt stretch', color: 'var(--rd-accent)', lx: 4 },
+  { k: 'thread', name: 'thread friction', color: 'var(--rd-blue)', lx: 118 },
+  { k: 'head', name: 'head friction', color: 'var(--rd-muted)', lx: 254 },
+] as const;
+const X0 = 4, BW = 392, H = 84;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+---
+
+<figure class="viz">
+  <p class="viz-title">Where the torque goes — 60 N·m on an M10</p>
+  <svg viewBox={`0 0 400 ${cases.length * H + 40}`} role="img" aria-labelledby="ts-desc" style="max-width: 460px; margin: 0 auto;">
+    <desc id="ts-desc">
+      Two bars dividing the same 60 newton-metre tightening torque on an M10 bolt. Lubricated, with friction 0.12, about
+      15 percent stretches the bolt, 38 percent is thread friction and 47 percent friction under the head, giving 36.5
+      kilonewtons of preload. Dry, with friction 0.18, only about 10 percent stretches the bolt, giving 25.6 kilonewtons.
+    </desc>
+    {cases.map((c, i) => {
+      const y = i * H;
+      let x = X0;
+      return (
+        <g>
+          <text x={X0} y={y + 16} font-size="14" font-weight="600" fill="var(--rd-ink)">{c.label}<tspan dx="8" font-weight="400" fill="var(--rd-muted)">→ preload {(c.r.F / 1000).toFixed(1)} kN</tspan></text>
+          {parts.map((p) => {
+            const w = c.r.split[p.k] * BW, x0 = x; x += w;
+            return (
+              <g>
+                <rect x={x0} y={y + 26} width={w - 1} height="34" fill={p.color} fill-opacity={p.k === 'pitch' ? 0.95 : 0.55} rx="2"></rect>
+                {w > 34 && <text x={x0 + w / 2} y={y + 48} text-anchor="middle" font-size="14" font-weight="600" fill={p.k === 'pitch' ? '#05080f' : 'var(--rd-ink)'}>{pct(c.r.split[p.k])}</text>}
+              </g>
+            );
+          })}
+        </g>
+      );
+    })}
+    {parts.map((p) => (
+      <g>
+        <rect x={p.lx} y={cases.length * H + 14} width="12" height="12" fill={p.color} fill-opacity={p.k === 'pitch' ? 0.95 : 0.55} rx="2"></rect>
+        <text x={p.lx + 17} y={cases.length * H + 25} font-size="12" fill="var(--rd-ink)">{p.name}</text>
+      </g>
+    ))}
+  </svg>
+  <figcaption>
+    Most of the torque only overcomes friction. The same wrench setting gives 30% less preload on a dry thread than on a
+    lubricated one — which is why torque is a poor measure of preload, and why the lubricant belongs on the drawing.
+  </figcaption>
+</figure>

@@ -1,0 +1,235 @@
+---
+// Bolted joint: torque → preload with its scatter, stiffness and load factor, separation, yield and ultimate margins,
+// tightening stress, temperature change, and the joint diagram. Maths in src/lib/bolts.ts (unit-tested); UI only here.
+import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
+---
+
+<div class="calc btcalc" data-btcalc>
+  <div class="calc-head"><span>Bolted joint — one bolt</span><span class="head-btns"><span>preload · separation · margins</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Bolt</legend>
+        <div class="row2">
+          <label>Thread<select name="th">{THREADS.map((t) => <option value={t.name} selected={t.name === 'M10'}>{t.name} × {t.P}</option>)}</select></label>
+          <label>Grade<select name="gr">{GRADES.map((g) => <option value={g.key} selected={g.key === '12.9'}>{g.name}</option>)}</select></label>
+          <label>Yield, R<sub>p0.2</sub> (MPa)<input name="rp" type="number" min="1" step="any" value="1100" /></label>
+          <label>Tensile, R<sub>m</sub> (MPa)<input name="rm" type="number" min="1" step="any" value="1220" /></label>
+        </div>
+        <label>Bolt material<select name="bm">{MATERIALS.filter((m) => m.key !== 'al').map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+      </fieldset>
+      <fieldset>
+        <legend>Joint</legend>
+        <div class="row2">
+          <label>Grip length (mm)<input name="lg" type="number" min="1" step="any" value="24" /></label>
+          <label>Plain shank in grip (mm)<input name="ls" type="number" min="0" step="any" value="16" /></label>
+          <label>Bearing face ⌀ (mm)<input name="dw" type="number" min="1" step="any" value="15" /></label>
+          <label>Hole ⌀ (mm)<input name="dh" type="number" min="1" step="any" value="11" /></label>
+        </div>
+        <label>Clamped material<select name="mm">{MATERIALS.map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+      </fieldset>
+      <fieldset>
+        <legend>Tightening</legend>
+        <div class="row2">
+          <label>Torque (N·m)<input name="tq" type="number" min="0" step="any" value="60" /></label>
+          <label>Preload scatter ± (%)<input name="gam" type="number" min="0" max="80" step="any" placeholder="your value" autocomplete="off" /></label>
+          <label>Thread friction μ<sub>t</sub><input name="mut" type="number" min="0.02" max="0.5" step="0.01" value="0.12" /></label>
+          <label>Head friction μ<sub>b</sub><input name="muh" type="number" min="0.02" max="0.5" step="0.01" value="0.12" /></label>
+          <label>Preload loss (%)<input name="loss" type="number" min="0" max="50" step="any" value="0" /></label>
+        </div>
+        <p class="hint">Friction: about 0.10–0.14 lubricated, 0.14–0.20 dry steel — measure it for your lubricant. The scatter of preload for your tightening method comes from your programme's standard. Loss covers embedding and relaxation.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Load and temperature</legend>
+        <div class="row2">
+          <label>Pressure (MPa)<input name="pr" type="number" min="0" step="any" value="10" /></label>
+          <label>Seal ⌀ (mm)<input name="sd" type="number" min="0" step="any" value="260" /></label>
+          <label>Number of bolts<input name="nb" type="number" min="1" step="1" value="30" /></label>
+          <label>Extra load per bolt (kN)<input name="px" type="number" step="any" value="0" /></label>
+          <label>Coldest, from assembly (°C)<input name="tmin" type="number" step="any" value="-60" /></label>
+          <label>Hottest, from assembly (°C)<input name="tmax" type="number" step="any" value="40" /></label>
+        </div>
+        <p class="hint">The pressure acts over the seal diameter and is shared equally; use the extra load for bending, prying or side loads per bolt.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Your programme's factors</legend>
+        <div class="row2">
+          <label>Separation<input name="fsep" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Yield<input name="fy" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Ultimate<input name="fu" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Fitting / special<input name="fsp" type="number" min="1" step="0.01" placeholder="none" autocomplete="off" /></label>
+        </div>
+        <p class="hint example-note" data-example-note hidden></p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary"><dt>Preload</dt><dd data-r="pre">—</dd></div>
+        <div class="readout"><dt>Load factor Φ</dt><dd data-r="phi">—</dd></div>
+        <div class="readout"><dt>Load per bolt</dt><dd data-r="load">—</dd></div>
+        <div class="readout" data-cls="sep"><dt>Separation margin</dt><dd data-r="sep">—</dd></div>
+        <div class="readout" data-cls="yld"><dt>Yield margin</dt><dd data-r="yld">—</dd></div>
+        <div class="readout" data-cls="ult"><dt>Ultimate margin</dt><dd data-r="ult">—</dd></div>
+        <div class="readout" data-cls="tight"><dt>Tightening stress</dt><dd data-r="tight">—</dd></div>
+        <div class="readout"><dt>Alternating stress</dt><dd data-r="fat">—</dd></div>
+        <div class="readout" data-cls="therm"><dt>Temperature</dt><dd data-r="therm">—</dd></div>
+      </dl>
+      <figure class="bt-fig">
+        <svg viewBox="0 0 420 280" data-chart role="img" aria-label="Joint diagram: bolt and clamped-member force against deflection"></svg>
+        <figcaption>Joint diagram. The bolt stretches and the members compress under the same preload; an external load P raises the bolt force by only ΦP and takes the rest out of the clamp force. When the clamp force reaches zero the joint opens.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    One bolt, concentric axial load, one clamped material. Torque–preload long form and VDI 2230 bolt compliance; 30° pressure
+    cones for the members. After separation the bolt carries the whole load. Thread stripping and locking are separate checks.
+  </div>
+</div>
+
+<style is:global>
+  .btcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .bt-fig { margin: 0.9rem 0 0 !important; }
+  .bt-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .bt-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .btcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { THREADS, GRADES, MATERIALS, torquePreload, boltStiffness, memberStiffness, loadFactor, jointState, thermalPreload, tighteningStress, boltMargins } from '../lib/bolts';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const kN = (v: number) => f(v / 1000, v < 10000 ? 2 : 1);
+  const sgn = (v: number) => `${v >= 0 ? '+' : ''}${f(v, 2)}`;
+
+  document.querySelectorAll<HTMLElement>('[data-btcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let last: Parameters<typeof chart> | null = null;
+
+    // presets fill their fields; any field can then be edited
+    field('th').addEventListener('change', () => { const t = THREADS.find((x) => x.name === field('th').value)!; field('dw').value = String(Math.round(1.5 * t.d)); field('dh').value = String(t.d + 1); });
+    field('gr').addEventListener('change', () => { const g = GRADES.find((x) => x.key === field('gr').value)!; field('rp').value = String(g.Rp); field('rm').value = String(g.Rm); });
+
+    function run() {
+      const notes: [string, string][] = [];
+      const t = THREADS.find((x) => x.name === field('th').value)!;
+      const bm = MATERIALS.find((m) => m.key === field('bm').value)!, mm = MATERIALS.find((m) => m.key === field('mm').value)!;
+      const Rp = num('rp'), Rm = num('rm'), lg = num('lg'), dw = num('dw'), dh = num('dh');
+      const ok = [Rp, Rm, lg, dw, dh, num('tq'), num('mut'), num('muh')].every((v) => v > 0) && dw > t.d;
+      if (!ok) { root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Fill in the bolt, joint and tightening values; the bearing face must be larger than the thread.</li>'; return; }
+
+      // preload and its range
+      const tp = torquePreload(num('tq') * 1000, t, num('mut'), num('muh'), dw, dh);
+      const gamRaw = field('gam').value.trim(), gam = gamRaw === '' ? null : Math.min(0.8, Math.max(0, +gamRaw / 100));
+      const loss = Math.max(0, num('loss') || 0) / 100;
+      const kb = boltStiffness(t, bm.E, lg, num('ls') || 0), km = memberStiffness(t.d, dw, lg, mm.E), phi = loadFactor(kb, km);
+      const dCold = thermalPreload(num('tmin') || 0, mm.alpha, bm.alpha, lg, kb, km), dHot = thermalPreload(num('tmax') || 0, mm.alpha, bm.alpha, lg, kb, km);
+      const g = gam ?? 0;
+      const Fmin = tp.F * (1 - g) * (1 - loss) + Math.min(0, dCold, dHot), Fmax = tp.F * (1 + g) + Math.max(0, dCold, dHot);
+      r('pre').innerHTML = `${kN(tp.F)} kN <small>nominal · K = ${f(tp.K, 3)}${gam !== null ? ` · ${kN(Fmin)}–${kN(Fmax)} kN with scatter and temperature` : ''}</small>`;
+      r('phi').innerHTML = `${f(phi, 3)} <small>k<sub>b</sub> ${f(kb / 1000, 0)} · k<sub>m</sub> ${f(km / 1000, 0)} kN/mm</small>`;
+
+      // load per bolt
+      const closure = num('pr') * Math.PI * (num('sd') / 2) ** 2, nb = Math.max(1, Math.round(num('nb') || 1));
+      const P = (Number.isFinite(closure) ? closure / nb : 0) + (num('px') || 0) * 1000;
+      r('load').innerHTML = `${kN(P)} kN <small>${Number.isFinite(closure) && closure > 0 ? `${f(closure / 1000, 0)} kN over ${nb} bolts` : 'extra load only'}</small>`;
+
+      // margins
+      const fsSep = readFactor(field('fsep').value), fy = readFactor(field('fy').value), fu = readFactor(field('fu').value), sp = readFactor(field('fsp').value) ?? 1;
+      const m = gam === null ? { sep: null, yield: null, ult: null } : boltMargins({ Fmin, Fmax, P, phi, As: t.As, Rp, Rm, fsSep, fsYield: fy, fsUlt: fu, special: sp });
+      const show = (k: string, v: number | null, small: string) => {
+        if (v === null) { r(k).innerHTML = '<small>needs your factor</small>'; cls(k, ''); return; }
+        r(k).innerHTML = `${sgn(v)} <small>${small}</small>`; cls(k, v < 0 ? 'bad' : 'ok');
+      };
+      show('sep', m.sep, `opens at ${kN(Fmin / (1 - phi))} kN, minimum preload`);
+      show('yld', m.yield && m.yield.ms, m.yield ? `bolt ${kN(m.yield.load)} kN vs ${kN(Rp * t.As)} kN` : '');
+      show('ult', m.ult && m.ult.ms, m.ult ? `bolt ${kN(m.ult.load)} kN vs ${kN(Rm * t.As)} kN` : '');
+      const missing = [gam === null && 'preload scatter', fsSep === null && 'separation factor', fy === null && 'yield factor', fu === null && 'ultimate factor'].filter(Boolean) as string[];
+      if (missing.length) notes.push(['warn', awaitingMessage(missing, 'the margins')]);
+      if (m.sep !== null && m.sep < 0) notes.push(['bad', `The joint opens below the factored load (separation MS ${sgn(m.sep)}). On a pressure closure that is a leak path — the seal gland opens; see <a href="../../seals/o-ring-design/">O-ring design</a>.`]);
+      for (const [name, x] of [['yield', m.yield], ['ultimate', m.ult]] as const) {
+        if (x && x.separated) notes.push(['warn', `At the factored ${name} load the joint has opened: the bolt carries the whole load, not ΦP.`]);
+        if (x && x.ms < 0) notes.push(['bad', `The bolt fails the ${name} check (MS ${sgn(x.ms)}).`]);
+      }
+      if (Fmin <= 0 && gam !== null) notes.push(['bad', 'The minimum preload is zero or less: the joint is loose at the cold or low-scatter corner.']);
+
+      // tightening, fatigue, temperature
+      const Ft = tp.F * (1 + g), ts = tighteningStress(Ft, tp.threadTorque * (1 + g), t), nu = ts.vm / Rp;
+      r('tight').innerHTML = `${f(100 * nu, 0)}% <small>of yield, von Mises at ${gam === null ? 'nominal' : 'maximum'} preload</small>`;
+      cls('tight', nu > 1 ? 'bad' : nu > 0.9 ? 'warn' : 'ok');
+      if (nu > 1) notes.push(['bad', `The bolt yields while tightening${gam === null ? '' : ' at the top of the scatter'} (tension plus thread torsion ${f(ts.vm, 0)} MPa). Lower the torque, control the friction, or use a stronger bolt.`]);
+      else if (nu > 0.9) notes.push(['warn', `Tightening uses ${f(100 * nu, 0)}% of yield — little room for friction lower than assumed.`]);
+      const sa = (phi * P) / (2 * t.As);
+      r('fat').innerHTML = `${f(sa, 1)} MPa <small>for each 0 → load cycle, ΦP/2A<sub>s</sub> — see <a href="../../fundamentals/fatigue/">Fatigue</a></small>`;
+      const dWorst = Math.abs(dCold) > Math.abs(dHot) ? dCold : dHot;
+      r('therm').innerHTML = mm.alpha === bm.alpha ? '0 kN <small>same expansion: no change</small>' : `${dWorst >= 0 ? '+' : ''}${kN(dWorst)} kN <small>cold ${kN(dCold)} · hot ${kN(dHot)} kN</small>`;
+      cls('therm', dWorst < -0.1 * tp.F ? 'warn' : '');
+      if (dWorst < -0.1 * tp.F) notes.push(['warn', `The ${mm.name.toLowerCase()} members shrink more than the ${bm.name.toLowerCase()} bolt when cold: ${kN(-dCold)} kN of preload is lost at the coldest case.`]);
+      if (phi > 0.35) notes.push(['', `A soft joint: the bolt sees ${f(100 * phi, 0)}% of every load change, so fatigue and separation both suffer. Stiffer clamped parts, or a longer, slimmer bolt, bring Φ down.`]);
+
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      chart(tp.F, gam === null ? null : [Fmin, Fmax], kb, km, P);
+    }
+
+    function chart(F: number, range: [number, number] | null, kb: number, km: number, P: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      last = [F, range, kb, km, P];
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 280, L = 52, R = 14, T = 16, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const db = F / kb, dm = F / km, s = jointState(F, P, kb / (kb + km));
+      const xmax = (db + dm) * 1.12, fmax = Math.max(F, s.bolt, range ? range[1] : 0) * 1.25;
+      const X = (x: number) => L + (x / xmax) * (W - L - R), Y = (y: number) => H - B - (y / fmax) * (H - T - B);
+      const raw = fmax / 4000, mag = 10 ** Math.floor(Math.log10(raw)), step = ([1, 2, 5, 10].find((k) => k * mag >= raw) ?? 10) * mag * 1000;
+      for (let v = 0; v <= fmax; v += step) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(v / 1000, 0)));
+      }
+      const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, 'bolt stretch → ← member squeeze'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'force (kN)'));
+      if (range) svg.append(el('rect', { x: L, y: Y(range[1]), width: W - L - R, height: Y(range[0]) - Y(range[1]), fill: 'var(--rd-warn)', 'fill-opacity': 0.08 }));
+      // bolt line, extended past the preload point; member line from the preload point to zero
+      const xb = Math.min(xmax, (fmax * 0.95) / kb);
+      svg.append(el('line', { x1: X(0), y1: Y(0), x2: X(xb), y2: Y(kb * xb), stroke: 'var(--rd-accent)', 'stroke-width': 2.2 }));
+      svg.append(el('line', { x1: X(db - (fmax * 0.95 - F) / km), y1: Y(fmax * 0.95), x2: X(db + dm), y2: Y(0), stroke: 'var(--rd-blue)', 'stroke-width': 2.2 }));
+      svg.append(el('circle', { cx: X(db), cy: Y(F), r: 4, fill: 'var(--rd-ink)' }));
+      svg.append(el('text', { x: X(db) - 8, y: Y(F) - 8, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, `preload ${f(F / 1000, 1)} kN`));
+      svg.append(el('text', { x: X(db * 0.45), y: Y(kb * db * 0.45) - 10, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-accent)', ...halo, transform: `rotate(${(-Math.atan2(Y(0) - Y(kb * db), X(db) - X(0)) * 180) / Math.PI} ${X(db * 0.45)} ${Y(kb * db * 0.45) - 10})` }, 'bolt'));
+      svg.append(el('text', { x: X(db + dm) - 8, y: Y(fmax * 0.1), 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-blue)', ...halo }, 'members'));
+      // the external load: a vertical between the two lines
+      if (P > 0) {
+        const xs = s.separated ? db + dm : db + P / (kb + km), top = s.separated ? P : s.bolt, bot = s.separated ? 0 : s.clamp;
+        svg.append(el('line', { x1: X(xs), x2: X(xs), y1: Y(top), y2: Y(bot), stroke: 'var(--rd-ok)', 'stroke-width': 3 }));
+        const label = `P ${f(P / 1000, 1)} kN${s.separated ? ' — open' : ''}`, fits = X(xs) + 6 + label.length * 7.3 < W - R;
+        svg.append(el('text', { x: X(xs) + (fits ? 6 : -6), y: (Y(top) + Y(bot)) / 2 + 4, 'text-anchor': fits ? 'start' : 'end', 'font-size': 12, fill: 'var(--rd-ok)', ...halo }, label));
+      }
+    }
+
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (last && Math.abs(nw - w) > 8) { w = nw; chart(...last); } }).observe(root.querySelector('[data-chart]')!);
+    }
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['fsep', 'fy', 'fu', 'fsp', 'gam'],
+      note: 'Worked-example values loaded: preload scatter ±25%, separation 1.2, yield 1.1, ultimate 1.25, fitting 1.15',
+      values: { gam: '25', fsep: '1.2', fy: '1.1', fu: '1.25', fsp: '1.15' },
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
