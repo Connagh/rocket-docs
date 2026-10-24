@@ -1,0 +1,64 @@
+---
+// Strain-life curve: elastic (Basquin) and plastic (Coffin–Manson) parts, their sum, and the transition life
+// that divides strain-based (low-cycle) from stress-based (high-cycle) checks. Schematic constants, not a material.
+import { strainAmplitude, transitionReversals } from '../lib/fatigue';
+
+const [SFE, B, EF, C] = [0.005, -0.09, 0.5, -0.6];
+const W = 360, H = 262, L = 52, R = 10, T = 40, BOT = 42;
+const X = (e: number) => L + (e / 8) * (W - L - R); // e = log10(2N)
+const Y = (v: number) => T + (-Math.log10(v) / 4) * (H - T - BOT); // strain 1 (top) to 1e-4 (bottom)
+const es = Array.from({ length: 161 }, (_, i) => i * 0.05);
+const line = (fn: (n: number) => number) =>
+  es.filter((e) => fn(10 ** e) >= 1e-4).map((e, i) => `${i ? 'L' : 'M'}${X(e).toFixed(1)},${Y(fn(10 ** e)).toFixed(1)}`).join('');
+const total = line((n) => strainAmplitude(n, SFE, B, EF, C));
+const elastic = line((n) => SFE * n ** B);
+const plastic = line((n) => EF * n ** C);
+const xt = X(Math.log10(transitionReversals(SFE, B, EF, C)));
+const at = (e: number, fn: (n: number) => number) => Y(fn(10 ** e));
+---
+
+<figure class="viz">
+  <p class="viz-title">Strain-life — strain amplitude against reversals, schematic</p>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="sl-desc" style="max-width: 440px; margin: 0 auto;">
+    <desc id="sl-desc">
+      Log-log plot of strain amplitude against reversals to failure. The total curve is the sum of a shallow elastic
+      line and a steep plastic line, which cross at the transition life. Left of it, at few large cycles, plasticity
+      dominates and checks are strain-based; right of it, at many small cycles, the elastic part dominates and checks are
+      stress-based.
+    </desc>
+    <rect x={L} y={T} width={xt - L} height={H - T - BOT} fill="var(--rd-warn)" fill-opacity="0.08"></rect>
+    <rect x={xt} y={T} width={W - R - xt} height={H - T - BOT} fill="var(--rd-blue)" fill-opacity="0.08"></rect>
+    {[0, 2, 4, 6, 8].map((e) => (
+      <g>
+        <line x1={X(e)} x2={X(e)} y1={T} y2={H - BOT} stroke="var(--rd-line)"></line>
+        <text x={X(e)} y={H - BOT + 16} text-anchor={e === 0 ? 'start' : 'middle'} font-size="12" fill="var(--rd-muted)">10<tspan dy="-5" font-size="9">{e}</tspan></text>
+      </g>
+    ))}
+    {[0, -1, -2, -3, -4].map((p) => (
+      <g>
+        <line x1={L} x2={W - R} y1={Y(10 ** p)} y2={Y(10 ** p)} stroke="var(--rd-line)"></line>
+        <text x={L - 6} y={Y(10 ** p) + 4} text-anchor="end" font-size="12" fill="var(--rd-muted)">{['100%', '10%', '1%', '0.1%', '0.01%'][-p]}</text>
+      </g>
+    ))}
+    <text x={(L + W - R) / 2} y={H - 6} text-anchor="middle" font-size="12" fill="var(--rd-ink)">reversals to failure, 2N</text>
+    <text x={(L + xt) / 2} y="16" text-anchor="middle" font-size="13" font-weight="600" fill="var(--rd-warn)">strain-based</text>
+    <text x={(L + xt) / 2} y="32" text-anchor="middle" font-size="12" fill="var(--rd-muted)">low-cycle (LCF)</text>
+    <text x={(xt + W - R) / 2} y="16" text-anchor="middle" font-size="13" font-weight="600" fill="var(--rd-blue)">stress-based</text>
+    <text x={(xt + W - R) / 2} y="32" text-anchor="middle" font-size="12" fill="var(--rd-muted)">high-cycle (HCF)</text>
+    <path d={elastic} fill="none" stroke="var(--rd-blue)" stroke-width="1.6" stroke-dasharray="5 4"></path>
+    <path d={plastic} fill="none" stroke="var(--rd-warn)" stroke-width="1.6" stroke-dasharray="5 4"></path>
+    <path d={total} fill="none" stroke="var(--rd-accent)" stroke-width="2.4"></path>
+    <line x1={xt} x2={xt} y1={T} y2={H - BOT} stroke="var(--rd-muted)" stroke-dasharray="3 3"></line>
+    <text x={xt - 5} y={H - BOT - 7} text-anchor="end" font-size="12" fill="var(--rd-muted)">transition</text>
+    <text x={X(1.2) + 8} y={at(1.2, (n) => strainAmplitude(n, SFE, B, EF, C)) - 4} font-size="13" fill="var(--rd-accent)">total</text>
+    <text x={L + 6} y={at(0.2, (n) => SFE * n ** B) - 7} font-size="13" fill="var(--rd-blue)">elastic</text>
+    <text x={X(4.4) - 6} y={at(4.4, (n) => EF * n ** C) + 14} text-anchor="end" font-size="13" fill="var(--rd-warn)">plastic</text>
+  </svg>
+  <figcaption>
+    Strain amplitude is the sum of an elastic part, (σ′<sub>f</sub>/E)(2N)<sup>b</sup>, and a plastic part,
+    ε′<sub>f</sub>(2N)<sup>c</sup>.
+    The plastic part falls much faster, so below the transition life plasticity governs and the check must be on
+    strain; above it the strain is almost all elastic, stress and strain are proportional, and the familiar S-N
+    approach applies. Random vibration of metal hardware sits far to the right.
+  </figcaption>
+</figure>

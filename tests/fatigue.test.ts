@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { baseFatigueStrength, surfaceFactor, sizeFactor, marin, notchSensitivity, fatigueNotchFactor, snCurve, equivalentReversed, miner } from '../src/lib/fatigue.ts';
+import { baseFatigueStrength, surfaceFactor, sizeFactor, marin, notchSensitivity, fatigueNotchFactor, snCurve, equivalentReversed, miner, strainAmplitude, transitionReversals, neuberProduct } from '../src/lib/fatigue.ts';
 
 const close = (a: number, b: number, tol: number, msg?: string) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} vs ${b}`);
 
@@ -64,4 +64,19 @@ test('worked example: 4340 bracket, machined then ground', () => {
   close(grnd.m.se, 393.7, 0.2);
   close(grnd.r.D, 0.0674, 0.0005);
   assert.ok(grnd.r.lives / mach.r.lives > 2.3);
+});
+
+test('strain-life: elastic and plastic parts meet at the transition life', () => {
+  const [sfE, b, ef, c] = [0.005, -0.09, 0.5, -0.6]; // schematic steel-like constants
+  const t = transitionReversals(sfE, b, ef, c);
+  assert.ok(Math.abs(sfE * t ** b - ef * t ** c) < 1e-12);
+  assert.ok(Math.abs(t - 100 ** (1 / 0.51)) < 1e-6);
+  // well past the transition the elastic (Basquin) term is almost all of it
+  const long = strainAmplitude(1e8, sfE, b, ef, c);
+  assert.ok((sfE * 1e8 ** b) / long > 0.99);
+});
+
+test("Neuber's rule: local σ·ε from the elastic notch stress", () => {
+  // K_t 3 on 150 MPa nominal in steel: elastic notch stress 450 MPa, σε = 450²/200 000
+  assert.ok(Math.abs(neuberProduct(3, 150, 200000) - 1.0125) < 1e-12);
 });

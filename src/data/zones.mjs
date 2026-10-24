@@ -67,6 +67,7 @@ export const REBUILT = {
   ablative: 'motor/insulation',
   thermal: 'motor/transient-thermal',
   margins: 'verify/margin-policy',
+  vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',
   lbb: 'verify/leak-before-break',
   proof: 'verify/proof-testing',

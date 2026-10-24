@@ -1,0 +1,111 @@
+---
+// A narrow-band random response (many sinusoids near one frequency with random phases — Gaussian by the
+// central limit theorem), drawn with its ±1σ, ±2σ, ±3σ bands beside the Gaussian that sets the time in each.
+// Deterministic: a seeded generator, and the first seed whose trace has exactly two peaks beyond 3σ.
+const rng = (seed: number) => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const K = 48, CYCLES = 30, NPTS = 900;
+function build(seed: number) {
+  const r = rng(seed);
+  const comps = Array.from({ length: K }, () => ({ f: CYCLES * (0.85 + 0.3 * r()), p: 2 * Math.PI * r() }));
+  const amp = Math.sqrt(2 / K); // unit rms
+  const x = Array.from({ length: NPTS }, (_, i) => comps.reduce((s, c) => s + amp * Math.cos(2 * Math.PI * c.f * (i / (NPTS - 1)) + c.p), 0));
+  const peaks: number[] = [];
+  for (let i = 1; i < NPTS - 1; i++) {
+    const a = Math.abs(x[i]);
+    if (a > 3 && a >= Math.abs(x[i - 1]) && a >= Math.abs(x[i + 1])) peaks.push(i);
+  }
+  return { x, peaks };
+}
+let sig = build(1);
+for (let s = 1; s < 400; s++) {
+  const b = build(s);
+  if (b.peaks.length === 2 && Math.max(...b.x.map(Math.abs)) < 3.7) { sig = b; break; }
+}
+
+const H = 244, CY = 118, SIG = 28;
+const Y = (v: number) => CY - v * SIG;
+// trace panel
+const L = 40, R = 336;
+const X = (i: number) => L + (i / (NPTS - 1)) * (R - L);
+const trace = sig.x.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+const bands = [
+  { lo: 0, hi: 1, color: 'var(--rd-ok)', op: 0.16, share: '68.3%' },
+  { lo: 1, hi: 2, color: 'var(--rd-blue)', op: 0.14, share: '27.1%' },
+  { lo: 2, hi: 3, color: 'var(--rd-warn)', op: 0.16, share: '4.3%' },
+];
+// Gaussian panel: pdf drawn sideways, same vertical scale
+const BX = 6, BW = 70;
+const pdf = (z: number) => Math.exp((-z * z) / 2);
+const curve = (lo: number, hi: number) => {
+  const zs = Array.from({ length: 41 }, (_, i) => lo + ((hi - lo) * i) / 40);
+  return `M${BX},${Y(lo)} ` + zs.map((z) => `L${(BX + pdf(z) * BW).toFixed(1)},${Y(z).toFixed(1)}`).join(' ') + ` L${BX},${Y(hi)} Z`;
+};
+---
+
+<figure class="viz rs">
+  <p class="viz-title">What Grms means — a random response and its Gaussian</p>
+  <div class="rs-grid">
+    <svg viewBox={`0 0 340 ${H}`} role="img" aria-labelledby="rs-desc">
+      <desc id="rs-desc">
+        A narrow-band random signal plotted against time, with shaded bands at plus and minus one, two and three
+        standard deviations. The signal stays mostly inside one sigma, and two peaks reach beyond three sigma, marked
+        with dots.
+      </desc>
+      {bands.map((b) => (
+        <g>
+          <rect x={L} y={Y(b.hi)} width={R - L} height={(b.hi - b.lo) * SIG} fill={b.color} fill-opacity={b.op}></rect>
+          <rect x={L} y={Y(-b.lo)} width={R - L} height={(b.hi - b.lo) * SIG} fill={b.color} fill-opacity={b.op}></rect>
+        </g>
+      ))}
+      {[3, -3].map((v) => <line x1={L} x2={R} y1={Y(v)} y2={Y(v)} stroke="var(--rd-accent)" stroke-dasharray="4 3"></line>)}
+      <line x1={L} x2={R} y1={CY} y2={CY} stroke="var(--rd-line)"></line>
+      {[3, 2, 1, 0, -1, -2, -3].map((v) => (
+        <text x={L - 6} y={Y(v) + 5} text-anchor="end" font-size="14" fill={Math.abs(v) === 3 ? 'var(--rd-accent)' : 'var(--rd-muted)'}>{v === 0 ? '0' : `${v > 0 ? '+' : '−'}${Math.abs(v)}σ`}</text>
+      ))}
+      <path d={trace} fill="none" stroke="var(--rd-ink)" stroke-width="1.3" stroke-linejoin="round"></path>
+      {sig.peaks.map((i) => <circle cx={X(i)} cy={Y(sig.x[i])} r="4.5" fill="var(--rd-accent)"></circle>)}
+      <text x={R} y={H - 4} text-anchor="end" font-size="13" fill="var(--rd-muted)">time →</text>
+    </svg>
+    <svg class="rs-bell" viewBox={`0 0 160 ${H}`} role="img" aria-labelledby="rs-bell-desc">
+      <desc id="rs-bell-desc">
+        The Gaussian distribution of the signal, drawn sideways on the same scale: 68.3 percent of the time within one
+        sigma, 27.1 percent between one and two sigma, 4.3 percent between two and three sigma, and 0.27 percent beyond.
+      </desc>
+      {bands.map((b) => (
+        <g>
+          <path d={curve(b.lo, b.hi)} fill={b.color} fill-opacity={b.op * 2.2}></path>
+          <path d={curve(-b.hi, -b.lo)} fill={b.color} fill-opacity={b.op * 2.2}></path>
+        </g>
+      ))}
+      <path d={`M${BX},${Y(3.7)} ` + Array.from({ length: 149 }, (_, i) => -3.7 + i * 0.05).map((z) => `L${(BX + pdf(z) * BW).toFixed(1)},${Y(-z).toFixed(1)}`).join(' ')}
+        fill="none" stroke="var(--rd-ink)" stroke-width="1.4"></path>
+      {[3, -3].map((v) => <line x1={BX} x2={BX + BW + 6} y1={Y(v)} y2={Y(v)} stroke="var(--rd-accent)" stroke-dasharray="4 3"></line>)}
+      <text x={BX} y="14" font-size="12" fill="var(--rd-muted)">time in band</text>
+      <text x="84" y={Y(0) + 5} font-size="14" font-weight="600" fill="var(--rd-ink)">68.3%</text>
+      <text x="84" y={Y(1.5) + 5} font-size="14" fill="var(--rd-ink)">27.1%</text>
+      <text x="84" y={Y(2.5) + 5} font-size="14" fill="var(--rd-ink)">4.3%</text>
+      <text x="84" y={Y(-3.4) + 5} font-size="14" fill="var(--rd-accent)">0.27%</text>
+    </svg>
+  </div>
+  <figcaption>
+    For a zero-mean signal the rms is the standard deviation, so Grms is 1σ. A Gaussian signal spends 68.3% of the
+    time within ±1σ, 27.1% between 1σ and 2σ, 4.3% between 2σ and 3σ (both sides counted), and 0.27% beyond. Peaks
+    beyond 3σ (dots) still happen: in a narrow-band response about one peak in 90 exceeds 3σ. 3σ is a design
+    convention, not a maximum.
+  </figcaption>
+</figure>
+
+<style>
+  .rs { container-type: inline-size; }
+  .rs-grid { display: grid; grid-template-columns: minmax(0, 2.125fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .rs-grid > * { margin: 0 !important; }
+  @container (max-width: 30rem) {
+    .rs-grid { grid-template-columns: minmax(0, 1fr); }
+    .rs-bell { max-width: 200px; margin: 0 auto !important; }
+  }
+</style>

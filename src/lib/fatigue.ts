@@ -108,3 +108,16 @@ export function miner(blocks: Block[], kf: number, uts: number, sy: number, c: C
   const D = rows.reduce((s, r) => s + r.d, 0);
   return { rows, D, lives: D > 0 ? 1 / D : Infinity };
 }
+
+/**
+ * Strain-life (Coffin–Manson–Basquin): strain amplitude at 2N reversals, the sum of an elastic part
+ * (σ'f/E)(2N)^b and a plastic part ε'f(2N)^c.
+ */
+export const strainAmplitude = (twoN: number, sfOverE: number, b: number, ef: number, c: number) =>
+  sfOverE * Math.pow(twoN, b) + ef * Math.pow(twoN, c);
+
+/** Transition life 2N_t, where the elastic and plastic strains are equal: shorter lives are plasticity-driven. */
+export const transitionReversals = (sfOverE: number, b: number, ef: number, c: number) => Math.pow(ef / sfOverE, 1 / (b - c));
+
+/** Neuber's rule at a notch: local σ·ε equals that of the elastic notch stress, (K_t·S)²/E. */
+export const neuberProduct = (kt: number, s: number, e: number) => (kt * s) ** 2 / e;

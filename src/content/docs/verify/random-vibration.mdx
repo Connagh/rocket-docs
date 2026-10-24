@@ -1,0 +1,271 @@
+---
+title: Random vibration
+description: Random vibration for hardware designers — PSDs and Grms, Miles' equation and the exact single-mode response, 3σ loads and displacements, Steinberg's three-band fatigue, stress- and strain-based failure, Miner's rule, and what it means for a solid rocket motor and the parts mounted on it.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import RandomSignal from '../../../components/RandomSignal.astro';
+import StrainLife from '../../../components/StrainLife.astro';
+import VibCalc from '../../../components/VibCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>A random environment is power spread over frequency; each part responds mostly to the band around its own natural frequency, and is designed for three times its rms response.</div>
+  <div><b>Before this</b><a href="../../fundamentals/fatigue/">Fatigue</a> · <a href="../margin-policy/">Margin policy</a></div>
+  <div><b>Used by</b><a href="../../motor/hardware/">Rocket motor hardware</a> · <a href="../storage-ageing/">Storage &amp; ageing</a></div>
+</div>
+
+## Why this matters
+
+Vibration finds what the static analysis missed: the bracket sized for 10 g that sees 30 g at resonance, the
+connector that frets, the nut that backs off, the harness that chafes through. A solid motor is shaken in transport
+and handling, on the vehicle, and by its own burn. Unlike a static load, a random environment has no single value —
+it is a spectrum, and every part picks out the piece of it near its own natural frequency.
+
+## The PSD — power spread over frequency
+
+A random environment is specified as an **acceleration spectral density** (ASD, often loosely called the PSD) in
+g²/Hz: how much of the mean-square acceleration sits in each 1 Hz band.
+
+- **The area under the ASD is the mean square**, in g². Its square root is the overall level, **Grms**.
+- **Specifications give breakpoints** joined by straight lines on log-log axes, with slopes in dB per octave. A
+  decibel here is $10\log_{10}$ of an ASD ratio; an octave is a doubling of frequency.
+- **+3 dB doubles the ASD** and raises Grms by $\sqrt{2}$, or 41%. **+6 dB doubles Grms.**
+
+The area of one segment with slope $s$ dB/oct, where $n = s/3.01$, is
+
+$$
+\int_{f_1}^{f_2} \text{ASD}\,df = \frac{a_1 f_1}{n+1}\left[\left(\frac{f_2}{f_1}\right)^{n+1} - 1\right],
+\qquad n = -1:\; a_1 f_1 \ln\frac{f_2}{f_1}
+$$
+
+The profile used on this page — **illustrative, not from any standard** — rises at +3 dB/oct from 20 to 80 Hz, holds
+0.04 g²/Hz to 500 Hz, and falls at −3 dB/oct to 2000 Hz. Its areas are $1.50 + 16.80 + 27.79 = 46.09$ g², so
+**6.79 Grms**.
+
+<Analogy title="A graphic equaliser">
+  The PSD is the equaliser display of the shaking: how loud each frequency band is. Grms is the overall volume. Two
+  environments with the same Grms can sound completely different — and break different parts, because each part only
+  listens to its own band.
+</Analogy>
+
+## What Grms means
+
+<RandomSignal />
+
+- **The rms of a zero-mean signal is its standard deviation**, so a response of 10 Grms has σ = 10 g.
+- **Design to 3σ.** A Gaussian response is within ±3σ 99.73% of the time, so 3 × Grms is the conventional peak.
+- **Peaks still go beyond.** For a narrow-band response the peaks follow a Rayleigh distribution: a fraction
+  $e^{-k^2/2}$ of them exceed $k\sigma$. That is 1.1% above 3σ and 0.03% above 4σ. A two-minute test at 150 Hz has
+  18,000 cycles, so about 200 peaks pass 3σ and 6 pass 4σ. If a single overload breaks the part — a brittle material,
+  a bond, a ceramic — 3σ is not enough.
+
+## Miles' equation — a part picks its own band
+
+Mount a part on a base and shake the base. A single mode amplifies input near its natural frequency $f_n$ by up to
+$Q$ (the transmissibility peak), passes it through unchanged at $\sqrt{2}\,f_n$, and isolates it above. With the input
+roughly flat across the resonance, the rms response is **Miles' equation**:
+
+$$
+G_\text{rms} = \sqrt{\frac{\pi}{2}\, f_n\, Q\; \text{ASD}(f_n)}
+\qquad
+Q = \frac{1}{2\zeta}
+$$
+
+It reads as a peak response ASD of $Q^2 \times \text{ASD}$ over an effective bandwidth of $\tfrac{\pi}{2}\,f_n/Q$. Only
+the input near $f_n$ matters, which is why a part's frequency decides its environment.
+
+<Analogy title="A child on a swing, pushed at random">
+  Random shoves come at all moments. Only the ones that happen to arrive in rhythm with the swing build it up; the
+  rest mostly cancel. A swing with good bearings — high Q — goes higher, but only responds to a narrower range of
+  rhythms.
+</Analogy>
+
+**Assumptions:** one mode; light damping; input roughly flat across the half-power bandwidth $f_n/Q$; a rigid base
+whose motion the part does not change; a Gaussian, steady input. The calculator checks Miles against the full
+integral of input × transmissibility², which needs none of the flatness assumption.
+
+**The octave rule:** keep a part's natural frequency at least an octave away from that of the structure it is
+mounted on — twice as high is the usual aim. Otherwise the two resonances multiply, and the part sees a far stronger
+input than the one at the base.
+
+## From response to design load
+
+- **The 3σ acceleration** is $3\,G_\text{rms}$ of the response, and the **equivalent static load** is
+  $F = m \cdot 3G_\text{rms} \cdot g$, applied at the centre of mass in the axis being shaken, one axis at a time.
+- **The margin** uses your programme's factor on that load, against the allowable at the mount, as in
+  [Margin policy](../margin-policy/). How random loads combine with steady loads — added or root-sum-squared — is a
+  programme rule.
+- **Displacement:** the motion relative to the base is $z_\text{rms} \approx G_\text{rms}\,g/(2\pi f_n)^2$. Through
+  Miles it scales as $f_n^{-3/2}$, so a softer mount sees fewer g but moves much further. Check the 3σ displacement
+  against every clearance.
+
+## Fatigue — Steinberg's three bands
+
+A narrow-band response cycles at about $f_n$, so an exposure of $T$ seconds is about $f_n T$ cycles. **Steinberg's
+method** puts 68.3% of them at 1σ stress, 27.1% at 2σ and 4.33% at 3σ, then sums the damage with
+[Miner's rule](../../fundamentals/fatigue/) on the part's S-N curve.
+
+Because the S-N line is steep — life varies with stress to a power of roughly 6 to 12 — **the rare 3σ cycles do most
+of the damage**. A +3 dB increase in input multiplies stress by 1.41 and damage by $1.41^m$, which is 8 times for
+$m = 6$ and about 70 times for $m = 12$; doubling the duration only doubles it. Test levels are controlled in dB for
+this reason.
+
+## Stress-based and strain-based failure
+
+Every strength or life check compares one quantity with its capability. Which quantity is right depends on what
+controls the load and whether the material stays elastic.
+
+- **Stress-based checks** compare a stress with a stress allowable: static strength against $F_{ty}$ and $F_{tu}$, and
+  high-cycle fatigue on an S-N curve. They hold while the material stays elastic, so stress follows load. Most
+  vibration of metal hardware is here — $10^5$ to $10^9$ cycles at stresses well below yield.
+- **Strain-based checks** compare a strain with a strain capability. They are needed when stress stops being a good
+  measure:
+  - **the material yields each cycle** — a notch root at proof, or a part cycled through large thermal or pressure
+    loads — so the stress saturates while the strain keeps growing;
+  - **the deformation is imposed** — thermal mismatch, cure shrinkage, an enforced deflection — so geometry fixes the
+    strain whatever the stiffness;
+  - **the stress relaxes** — propellant, liners and elastomers are viscoelastic, so the stress fades but the strain
+    stays (see [Propellant grain](../../motor/propellant-grain/));
+  - **the plies share a strain, not a stress** — composite laminates are commonly designed to strain allowables.
+
+<StrainLife />
+
+The strain-life equation adds Basquin's elastic line to the Coffin–Manson plastic line; the transition life $2N_t$ is
+where they are equal:
+
+$$
+\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f}{E}\,(2N_f)^{b} + \varepsilon'_f\,(2N_f)^{c},
+\qquad
+2N_t = \left(\frac{\varepsilon'_f\,E}{\sigma'_f}\right)^{1/(b-c)}
+$$
+
+At a notch that yields, the local strain comes from **Neuber's rule**: the local $\sigma\varepsilon$ equals that of the
+elastic notch stress, $\sigma\varepsilon = (K_t S)^2/E$, solved together with the cyclic stress-strain curve. Mean
+stress is usually handled with Smith–Watson–Topper.
+
+| | Stress-based | Strain-based |
+| --- | --- | --- |
+| Compares | Stress with a stress allowable | Strain with a strain capability |
+| Right when | The material stays elastic and the load is a force | It yields each cycle, the deformation is imposed, or the stress relaxes |
+| Fatigue curve | S-N (Basquin); Goodman for mean stress | ε-N (Coffin–Manson + Basquin); Neuber at notches; SWT for mean stress |
+| Lives | Beyond the transition life | Below it — and the transition comes earlier in stronger, less ductile metals |
+| On a motor | Brackets and fittings under vibration; the case at MEOP | Notch roots that yield at proof; grain and liner on cool-down and ignition; seals; composite laminates |
+
+## Miner's rule — adding up the damage
+
+$$
+D = \sum_i \frac{n_i}{N_i} \qquad \text{failure predicted at } D = 1
+$$
+
+Each block of $n_i$ cycles at one amplitude uses up $n_i/N_i$ of the life at that amplitude, with $N_i$ from the S-N or
+the strain-life curve — whichever suits the cycle. The [Fatigue](../../fundamentals/fatigue/#variable-loads-miners-rule)
+page has the details and a calculator.
+
+- **Count the cycles first.** Steinberg's three bands for a narrow-band random response; rainflow counting for a
+  wide-band or measured history; a table of blocks for a spectrum of discrete events.
+- **Add every environment the part sees in its life.** A flight motor's bracket accumulates damage from transport,
+  each acceptance test (and any retest), and flight: $D = D_\text{transport} + D_\text{acceptance} + D_\text{flight}$.
+  Qualification tests are set higher and longer than acceptance so that one unit demonstrates margin on that total;
+  the levels and durations come from the test standard.
+- **It is linear and ignores order.** Real damage depends on sequence — large cycles early tend to shorten the life
+  left at small amplitudes — and the measured D at failure scatters widely around 1. Programmes therefore cap the
+  damage sum below 1 or apply a factor on life; both are programme rules.
+- **Cycles below the endurance limit** do no damage in the rule, but occasional large cycles can lower the limit;
+  Haibach's extension continues the line below it.
+- **Propellant grains** use cumulative-damage models in the same spirit: damage accrues from cool-downs, thermal cycles,
+  transport and ageing, at rates that depend on strain or stress, temperature and time. The bookkeeping is like Miner's;
+  the material model is not — see [Storage & ageing](../storage-ageing/).
+
+## What it means for a solid rocket motor
+
+| Item | What vibration does | What to check |
+| --- | --- | --- |
+| Nozzle and exit cone | A heavy mass cantilevered from the aft closure, often with a low first mode | 3σ load at the nozzle-to-closure joint, displacement against the skirt and actuators, joint preload |
+| Mounted units — brackets, electronics, actuators, sensors | Amplified at their own frequency; connectors fret, fasteners loosen | Miles and the 3σ load at the mount, the octave rule against the skirt, locking features |
+| Harnesses and raceways | Bundles whip and chafe across unsupported spans | Tie-down spacing, clearance to edges, strain relief at connectors |
+| Igniter housing and closure fittings | Mass on a boss; thread and seal loads | 3σ load on the thread and boss; seal compression held at peak load |
+| Propellant grain and bondlines | A heavy, well-damped [viscoelastic](../../fundamentals/viscoelasticity/) mass, much stiffer at vibration frequencies than in storage | Bondline stress at the grain's modes; cumulative damage over long transport |
+| Case, skirts and attach rings | The load path to the vehicle and fixtures; thin skirts and panels can be driven by sound | Skirt and ring loads; acoustic environment for thin panels; local modes near mounted units |
+
+The environment comes from four places:
+
+- **Transport and handling** — low levels for long durations by road, rail, air or sea, over the motor's life. Hours
+  of cycles add up; see [Storage & ageing](../storage-ageing/) for the surveillance that catches the damage.
+- **Launch or carriage** — the vehicle's environment at the motor interface, from the programme's environment
+  specification.
+- **The motor's own burn** — combustion and flow shake the case broadband, and pressure oscillations can build at the
+  bore's acoustic modes. Predicting them is a ballistics and test topic; once the environment is defined, the method on
+  this page still applies to the hardware it shakes.
+- **Test** — qualification and acceptance on a shaker, with levels, tolerances and durations from the governing test
+  standard.
+
+## Calculator
+
+<VibCalc />
+
+## Worked example — a 4 kg unit on an aft-skirt bracket
+
+An electronics unit of 4 kg sits on a bracket on the aft skirt. The bracket gives $f_n = 150$ Hz with $Q = 10$. The
+input at the skirt is the illustrative 6.79 Grms profile above, for 120 s per axis. The mount allowable is 2000 N
+(illustrative), and the factor of safety is **1.25 for this example only** — press **Load worked example**.
+
+1. **Miles:** $\text{ASD}(150) = 0.04$, so $G_\text{rms} = \sqrt{\pi/2 \times 150 \times 10 \times 0.04} = 9.71$ g. The
+   exact integral gives **9.66 g** — Miles is 0.5% high, because the input falls away below 80 Hz and above 500 Hz.
+2. **3σ load:** $3 \times 9.66 = 29.0$ g, so $F = 4 \times 29.0 \times 9.81 = $ **1137 N**.
+3. **Margin:** design load $1.25 \times 1137 = 1421$ N; $MS = 2000/1421 - 1 = $ **+0.41**.
+4. **Displacement:** 0.106 mm rms, **0.32 mm at 3σ** — well inside a 2 mm clearance to the neighbouring harness.
+5. **Peaks:** $150 \times 120 = 18{,}000$ cycles, so about 200 peaks above 3σ and 6 above 4σ.
+6. **Fatigue:** with 4 MPa per g at the bracket root (notch included), the 1σ stress is 38.6 MPa. Machined 6061-T6
+   has $S_e = 96$ MPa at $5\times10^8$ cycles after surface, size and 99% reliability factors (from the
+   [Fatigue](../../fundamentals/fatigue/) page). Steinberg gives $D = 1.6\times10^{-5}$ per axis, **96% of it from the
+   779 cycles at 3σ** (116 MPa).
+
+The bracket is limited by strength, not fatigue, in this test. Two changes show the trade-offs:
+
+- **Raise the input by 3 dB** (0.08 g²/Hz on the plateau): the damage rises about 70 times, to $1.2\times10^{-3}$.
+  Doubling the duration instead only doubles it.
+- **Soften the bracket** to $f_n = 75$ Hz: the response drops to 6.5 g rms, but the motion grows 2.7 times, to 0.85 mm
+  at 3σ — and a mode near the skirt's own would break the octave rule.
+
+## Where this stops
+
+- **One mode on a rigid base.** Real parts have several modes; use the modal effective masses and a finite-element
+  random response. On a shaker, the rigid fixture over-tests heavy items compared with a flexible flight mount — force
+  limiting and notching (NASA-HDBK-7004) are agreed with the programme.
+- **Gaussian, steady input.** Transport has shocks and non-Gaussian peaks; pyroshock and other transients are judged
+  with a shock response spectrum; sine vibration is a separate test.
+- **Linear.** Gaps, friction and preload loss change Q with level.
+- **Steinberg is an approximation** for narrow-band responses. For wide-band responses use rainflow counting on a time
+  history, or a spectral method such as Dirlik's.
+- **The grain is viscoelastic:** its stiffness and damping depend on frequency and temperature — see
+  [Viscoelasticity](../../fundamentals/viscoelasticity/).
+
+## On the drawing
+
+- **The drawing carries what the analysis assumed:** fastener torque and locking features, staking or bonding of
+  components, harness tie-down spacing, and minimum clearances.
+- **The test specification carries the environment:** levels, tolerances, axes and durations. The drawing or the
+  qualification plan references it, rather than repeating it.
+
+## References and further reading
+
+- J. W. Miles, "On structural fatigue under random loading", *Journal of the Aeronautical Sciences* 21(11), 1954.
+- M. A. Miner, "Cumulative damage in fatigue", *Journal of Applied Mechanics* 12 (1945) A159–A164.
+- N. E. Dowling, *Mechanical Behavior of Materials*, Pearson — strain-life, Neuber's rule and cumulative damage.
+- D. S. Steinberg, *Vibration Analysis for Electronic Equipment*, 3rd ed., Wiley (2000) — three-band fatigue and the
+  octave rule.
+- S. H. Crandall and W. D. Mark, *Random Vibration in Mechanical Systems*, Academic Press (1963).
+- P. H. Wirsching, T. L. Paez and K. Ortiz, *Random Vibrations: Theory and Practice*, Wiley (1995).
+- NASA-HDBK-7005, *Dynamic Environmental Criteria*.
+- NASA-HDBK-7004, *Force Limited Vibration Testing*.
+- GSFC-STD-7000, *General Environmental Verification Standard (GEVS)*.
+- MIL-STD-810H, Method 514.8, *Vibration* — including transport environments.
+- SMC-S-016, *Test Requirements for Launch, Upper-Stage and Space Vehicles*.
+
+<Aside type="note">
+  Guidance on method from general practice. Environments, test levels, factors and load-combination rules come from
+  your programme's requirements and the governing test standard.
+</Aside>
