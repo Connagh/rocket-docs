@@ -407,3 +407,43 @@ mobile-starlight-toc .display-current { color: var(--pc, var(--sl-color-accent))
 .calc .example-note { color: var(--rd-warn) !important; font-weight: 600; }
 .calc .factor-await { color: var(--rd-warn) !important; }
 .calc input::placeholder { color: var(--sl-color-gray-4); font-style: italic; }
+
+/* =====================================================================
+   Depth and glow (dark theme): the plate floats in the field, cards lift toward the pointer.
+   Decoration only — no colour or contrast change to anything with text on it.
+   ===================================================================== */
+:root[data-theme='dark'] .main-pane .content-panel > .sl-container {
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9),
+    0 0 70px -30px color-mix(in srgb, var(--pc, var(--sl-color-accent)) 45%, transparent),
+    inset 1px 0 0 rgba(140, 200, 230, 0.05), inset -1px 0 0 rgba(140, 200, 230, 0.05);
+}
+:root[data-theme='dark'] .main-pane .content-panel:first-of-type > .sl-container { position: relative; }
+:root[data-theme='dark'] .main-pane .content-panel:first-of-type > .sl-container::before {
+  /* a lit top edge, like light catching a glass panel */
+  content: ''; position: absolute; top: -1px; left: 6%; right: 6%; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--pc, var(--sl-color-accent)) 35%, var(--rd-blue) 65%, transparent);
+  box-shadow: 0 0 14px 1px color-mix(in srgb, var(--pc, var(--sl-color-accent)) 60%, transparent);
+}
+:root[data-theme='dark'] .hero-title {
+  text-shadow: 0 0 24px color-mix(in srgb, var(--sl-color-accent) 45%, transparent),
+    0 0 70px color-mix(in srgb, var(--rd-blue) 30%, transparent);
+}
+:root[data-theme='dark'] .hero-title .stamp { text-shadow: 0 0 18px var(--sl-color-accent), 0 0 42px var(--sl-color-accent); }
+:root[data-theme='dark'] .sl-markdown-content h2::before { text-shadow: 0 0 10px var(--pc, var(--sl-color-accent)); }
+:root[data-theme='dark'] :is(.calc, .viz) {
+  box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(140, 200, 230, 0.03),
+    0 0 40px -26px color-mix(in srgb, var(--pc, var(--sl-color-accent)) 40%, transparent);
+}
+
+/* 3D tilt cards (the class is added by script on fine pointers only) */
+.tilt { position: relative; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s; will-change: transform; }
+.tilt::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.25s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--pc, var(--sl-color-accent)) 20%, transparent), transparent 60%);
+}
+:root[data-theme='dark'] .tilt:hover::after { opacity: 1; }
+:root[data-theme='dark'] .tilt:hover {
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.85), 0 0 30px -8px color-mix(in srgb, var(--pc, var(--sl-color-accent)) 55%, transparent);
+}
+html.motion-off .tilt { transform: none !important; }

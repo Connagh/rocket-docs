@@ -1,0 +1,281 @@
+---
+// Ray-traced Schwarzschild black hole (WebGL). Each pixel's light ray is integrated backwards through the exact
+// null-geodesic equation in Cartesian form, x'' = −(3/2)·h²·x/r⁵ (lengths in Schwarzschild radii, h = |x × v|),
+// so the shadow, the photon ring, the far side of the disk lensed over the top, the Einstein ring of background stars
+// and the Doppler-bright approaching side all come from the physics, not from drawing.
+// Same governance as the sky: dark theme only; a still frame under PAUSE MOTION, reduced motion or a hidden tab;
+// ≤30 fps at reduced resolution that drops further if the GPU struggles; any failure removes it and the 2D sky
+// paints its own black hole instead.
+---
+
+<canvas id="cxHole" aria-hidden="true"></canvas>
+
+<script is:inline>
+/* eslint-disable */
+(function(){
+  "use strict";
+  const doc = document.documentElement;
+  const cv = document.getElementById("cxHole");
+  if(!cv) return;
+  let gl = null;
+  try{ gl = cv.getContext("webgl", {alpha:true, premultipliedAlpha:true, antialias:false, depth:false, stencil:false, powerPreference:"low-power"}); }catch(e){}
+  if(!gl){ cv.remove(); return; }
+
+  const VS = "attribute vec2 p; varying vec2 vUv; void main(){ vUv = p; gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uIncl, uAzim, uRoll, uBmax, uPix;
+
+const float RIN = 3.0;      // innermost stable circular orbit, 3 r_s
+const float ROUT = 12.0;
+const float RCAM = 60.0;
+
+float hash13(vec3 p){ p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+float noise3(vec3 p){
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash13(i), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash13(i + vec3(0,0,1)), hash13(i + vec3(1,0,1)), f.x), mix(hash13(i + vec3(0,1,1)), hash13(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p){ float s = 0.0, a = 0.5; for(int i = 0; i < 4; i++){ s += a * noise3(p); p *= 2.07; a *= 0.5; } return s; }
+
+// blackbody colour (linear RGB) for a temperature in kelvin
+vec3 blackbody(float k){
+  float t = k / 100.0;
+  float r = t <= 66.0 ? 1.0 : 1.2929 * pow(t - 60.0, -0.1332);
+  float g = t <= 66.0 ? 0.3901 * log(t) - 0.6318 : 1.1299 * pow(t - 60.0, -0.0755);
+  float b = t >= 66.0 ? 1.0 : (t <= 19.0 ? 0.0 : 0.5432 * log(t - 10.0) - 1.1963);
+  return pow(clamp(vec3(r, g, b), 0.0, 1.0), vec3(2.2));
+}
+
+vec3 starLayer(vec3 d, float scale, float keep, float gain){
+  vec3 cell = floor(d * scale);
+  vec3 h = hash33(cell);
+  if(h.x < keep) return vec3(0.0);
+  vec3 s = normalize(cell + 0.15 + 0.7 * hash33(cell + 17.0));
+  float a2 = 2.0 * (1.0 - dot(d, s));                  // ≈ angle²
+  float w = max(uPix * 1.4, 0.18 / scale);
+  float b = exp(-a2 / (w * w)) * gain * (0.35 + 4.0 * pow(h.y, 14.0));
+  return mix(vec3(0.62, 0.74, 1.0), vec3(1.0, 0.80, 0.58), h.z) * b;
+}
+
+vec3 sky(vec3 d){
+  vec3 c = vec3(0.0018, 0.0035, 0.009) + starLayer(d, 150.0, 0.982, 1.3) + starLayer(d, 330.0, 0.995, 0.8);
+  float n = fbm(d * 2.6 + 4.0);
+  float band = exp(-pow(dot(d, normalize(vec3(0.35, 0.9, 0.25))), 2.0) * 14.0);
+  c += vec3(0.32, 0.22, 0.58) * pow(n, 2.6) * 0.09 + vec3(0.55, 0.48, 0.72) * band * pow(n, 1.6) * 0.10;
+  return c;
+}
+
+// thin disk: emission (premultiplied by its opacity) and opacity at a crossing point
+vec4 disk(vec3 p, float r, vec3 rayDir){
+  float phi = atan(p.z, p.x);
+  float omega = sqrt(0.5 / (r * r * r));                 // Keplerian, M = r_s / 2
+  // two phase-shifted samples so differential rotation never winds the pattern up
+  float T = 60.0, t1 = mod(uTime, T), t2 = mod(uTime + 0.5 * T, T);
+  float w1 = 1.0 - abs(2.0 * t1 / T - 1.0);
+  float a1 = phi - omega * t1 * 2.4, a2 = phi - omega * t2 * 2.4;
+  vec3 q1 = vec3(r * 2.2, cos(a1) * 2.0, sin(a1) * 2.0), q2 = vec3(r * 2.2, cos(a2) * 2.0, sin(a2) * 2.0);
+  float n = mix(fbm(q2 + 11.0), fbm(q1), w1);
+  float streak = 0.5 + 0.5 * sin(r * 11.0 + n * 7.0);
+  float dens = clamp(pow(n, 2.0) * 2.4 * (0.55 + 0.45 * streak), 0.0, 1.0);
+  // Novikov–Thorne temperature profile, normalised to 1 at its peak (r ≈ 4.08 r_s)
+  float tp = pow(max(1e-5, (1.0 - sqrt(RIN / r)) / (r * r * r)), 0.25) / 0.2141;
+  // Doppler and gravitational shift of the orbiting gas, seen along the ray
+  float beta = sqrt(0.5 / (r - 1.0));
+  vec3 vdir = normalize(vec3(-p.z, 0.0, p.x));
+  float g = sqrt(1.0 - 1.0 / r) / ((1.0 - beta * dot(vdir, -rayDir)) / sqrt(1.0 - beta * beta));
+  float edge = smoothstep(RIN * 0.97, RIN * 1.25, r) * (1.0 - smoothstep(ROUT * 0.55, ROUT, r));
+  vec3 emit = blackbody(4400.0 * g * tp) * pow(g, 2.6) * tp * tp * tp * (0.45 + 1.4 * dens) * 4.2;
+  float a = edge * clamp(0.55 + 0.7 * dens, 0.0, 1.0) * (0.7 + 0.3 * tp);
+  return vec4(emit * a, a);
+}
+
+void main(){
+  float rho = length(vUv);
+  if(rho >= 1.0){ gl_FragColor = vec4(0.0); return; }
+  float cr = cos(uRoll), sr = sin(uRoll);
+  vec2 uv = vec2(cr * vUv.x - sr * vUv.y, sr * vUv.x + cr * vUv.y);
+  vec3 cam = RCAM * vec3(sin(uIncl) * sin(uAzim), cos(uIncl), sin(uIncl) * cos(uAzim));
+  vec3 fwd = normalize(-cam);
+  vec3 right = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(right, fwd);
+  vec3 dir = normalize(fwd + (uv.x * right + uv.y * up) * (uBmax / RCAM));
+
+  vec3 x = cam, v = dir;
+  vec3 hv = cross(x, v); float h2 = dot(hv, hv);
+  vec3 col = vec3(0.0), glow = vec3(0.0);
+  float alpha = 0.0;
+  float fate = 0.0;                                       // 1 escaped, -1 captured
+  for(int i = 0; i < 320; i++){
+    float r = length(x);
+    float dt = clamp(0.07 * r, 0.02, 3.0);
+    v += -1.5 * h2 * x / pow(r, 5.0) * (0.5 * dt);
+    vec3 xn = x + v * dt;
+    float rn = length(xn);
+    v += -1.5 * h2 * xn / pow(rn, 5.0) * (0.5 * dt);
+    if(x.y * xn.y < 0.0){
+      vec3 pc = mix(x, xn, x.y / (x.y - xn.y));
+      float rp = length(pc.xz);
+      if(rp > RIN * 0.95 && rp < ROUT){
+        vec4 e = disk(pc, rp, normalize(v));
+        col += (1.0 - alpha) * e.rgb;
+        alpha += (1.0 - alpha) * e.a;
+      }
+    }
+    // faint hot corona above and below the disk
+    float rr = length(xn.xz);
+    if(rr > RIN * 0.8 && rr < ROUT * 1.3){
+      float tp = pow(max(1e-5, (1.0 - sqrt(min(1.0, RIN / rr))) / (rr * rr * rr)), 0.25) / 0.2141;
+      float hz = xn.y / (0.07 * rr);                        // a thin, flared hot layer: glow along the disk, not a veil over the shadow
+      glow += (1.0 - alpha) * vec3(1.0, 0.55, 0.24) * tp * tp * exp(-hz * hz) * dt * 0.08 * smoothstep(RIN, RIN * 1.6, rr);
+    }
+    x = xn;
+    if(rn < 1.0){ fate = -1.0; break; }
+    if(rn > RCAM * 1.15 && dot(x, v) > 0.0){ fate = 1.0; break; }
+    if(alpha > 0.995) break;
+  }
+
+  vec3 bg = vec3(0.0); float abg = 0.0;
+  if(fate > 0.5){
+    vec3 d = normalize(v);
+    abg = 1.0 - smoothstep(0.40, 0.86, rho);              // the lensed sky near the hole, fading into the real one
+    bg = sky(d);
+  } else if(alpha < 0.995) {
+    abg = 1.0;                                            // the shadow: rays that never come back
+  }
+  vec3 c = col + (1.0 - alpha) * bg * abg + glow;
+  float a = alpha + (1.0 - alpha) * abg;
+  c = 1.0 - exp(-c * 1.15);                               // filmic roll-off keeps the hot side from clipping
+  c = pow(c, vec3(1.0 / 2.2));
+  float m = 1.0 - smoothstep(0.80, 1.0, rho);
+  gl_FragColor = vec4(c * m, min(1.0, max(a, max(c.r, max(c.g, c.b)) * 0.9)) * m);
+}`;
+
+  function shader(type, src){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || "shader");
+    return s;
+  }
+  let prog, U = {};
+  try{
+    prog = gl.createProgram();
+    gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) || "link");
+    gl.useProgram(prog);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ["uTime","uIncl","uAzim","uRoll","uBmax","uPix"].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+  }catch(e){ try{ console.warn("Black hole disabled:", e && e.message); }catch(_){} cv.remove(); return; }
+
+  /* from here on the 2D sky leaves the black hole to us */
+  window.REFDB_HOLE_GL = true;
+  let dead = false;
+  const kill = err => { dead = true; window.REFDB_HOLE_GL = false; cv.remove();
+    try{ console.warn("Black hole disabled:", err && err.message); }catch(e){}
+    try{ window.REFDB_SKY && window.REFDB_SKY.still(); }catch(e){} };
+  cv.addEventListener("webglcontextlost", e => { e.preventDefault(); kill(new Error("context lost")); });
+
+  const reduce = () => { try{ return matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } };
+  const paused = () => doc.classList.contains("motion-off") || reduce();
+  const dark = () => doc.getAttribute("data-theme") !== "light";
+  const labOpen = () => { const o = document.getElementById("labOverlay"); return o && !o.hidden; };
+
+  /* ---------- placement: the black hole lives in the widest gutter beside the text plate ---------- */
+  const BSH = 2.598;                  /* apparent shadow radius, 3√3/2 r_s */
+  const K = 7.0;                      /* canvas half-size in shadow radii */
+  let S = 0, R = 0, cx = 0, cy = 0, q = 0.7, on = false;
+  const rect = sel => { const el = document.querySelector(sel); if(!el) return null;
+    const r = el.getBoundingClientRect(); if(!(r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth)) return null;
+    return {left: Math.max(0, r.left), right: Math.min(innerWidth, r.right)}; };   /* only the part on screen */
+  function place(){
+    const W = innerWidth, H = innerHeight;
+    on = W >= 900;
+    if(!on){ cv.style.display = "none"; return; }
+    cv.style.display = "block";
+    const plate = rect(".main-pane .content-panel > .sl-container");
+    const toc = W >= 1152 ? rect(".right-sidebar") : null;
+    const side = rect(".sidebar-pane");
+    let gx0 = W * 0.82, gx1 = W, fallback = true;
+    if(plate){
+      const right = [plate.right, toc ? toc.left : W], left = [side ? side.right : 0, plate.left];
+      const best = (right[1] - right[0]) >= (left[1] - left[0]) ? right : left;
+      if(best[1] - best[0] >= 120){ gx0 = best[0]; gx1 = best[1]; fallback = false; }
+      else if(toc){ gx0 = toc.left; gx1 = toc.right; }
+    }
+    const w = gx1 - gx0;
+    R = Math.max(30, Math.min(fallback ? 60 : 90, w * 0.2));
+    cx = (gx0 + gx1) / 2;
+    cy = fallback ? H * 0.68 : Math.max(220, Math.min(H - 200, H * 0.36));
+    S = Math.round(2 * K * R);
+    const dpr = Math.min(1.25, window.devicePixelRatio || 1);
+    const px = Math.max(160, Math.min(Math.round(720 * q / 0.7), Math.round(S * dpr * q)));
+    cv.width = px; cv.height = px;
+    cv.style.width = S + "px"; cv.style.height = S + "px";
+    cv.style.left = Math.round(cx - S / 2) + "px"; cv.style.top = Math.round(cy - S / 2) + "px";
+    gl.viewport(0, 0, px, px);
+  }
+
+  /* ---------- camera: pointer and scroll tilt the view a little — real parallax in the lensing ---------- */
+  const view = {x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, s: 0};
+  addEventListener("pointermove", e => { view.tx = e.clientX / innerWidth; view.ty = e.clientY / innerHeight; }, {passive: true});
+  addEventListener("scroll", () => {
+    const max = Math.max(1, doc.scrollHeight - innerHeight); view.s = scrollY / max - 0.5;
+    if(paused()) still();
+  }, {passive: true});
+
+  let t = 37.0;
+  function render(){
+    const incl = 1.495 + (view.y - 0.5) * 0.05 + view.s * 0.03;
+    gl.uniform1f(U.uTime, t);
+    gl.uniform1f(U.uIncl, incl);
+    gl.uniform1f(U.uAzim, (view.x - 0.5) * 0.35);
+    gl.uniform1f(U.uRoll, -0.16);
+    gl.uniform1f(U.uBmax, BSH * K);
+    gl.uniform1f(U.uPix, (BSH * K / 60) / (cv.width / 2));
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    /* depth parallax: the hole is far, so it drifts against the pointer less than the near sky */
+    cv.style.transform = `translate3d(${((0.5 - view.x) * 14).toFixed(1)}px, ${((0.5 - view.y) * 10 - view.s * 30).toFixed(1)}px, 0)`;
+  }
+  function still(){ if(dead || !on || !dark()) return; try{ view.x = view.tx; view.y = view.ty; render(); }catch(e){ kill(e); } }
+
+  /* ---------- loop: 30 fps; drop resolution if frames run long ---------- */
+  const STEP = 1000 / 30;
+  let prev = 0, acc = 0, lastDraw = 0, slow = 0;
+  function loop(now){
+    if(dead) return;
+    requestAnimationFrame(loop);
+    if(!on || document.hidden || !dark() || labOpen() || paused()){ prev = now; lastDraw = 0; return; }
+    acc += now - (prev || now); prev = now;
+    if(acc < STEP) return;
+    const dt = Math.min(0.1, acc / 1000); acc = 0;
+    t += dt;
+    view.x += (view.tx - view.x) * Math.min(1, dt * 2.5);
+    view.y += (view.ty - view.y) * Math.min(1, dt * 2.5);
+    if(lastDraw){ const gap = now - lastDraw; slow = gap > 55 ? slow + 1 : Math.max(0, slow - 1);
+      if(slow > 45 && q > 0.36){ q *= 0.8; slow = 0; place(); } }
+    lastDraw = now;
+    try{ render(); }catch(e){ kill(e); }
+  }
+
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if(dead) return; place(); still(); }, 150); });
+  new MutationObserver(() => { if(paused()) still(); }).observe(doc, {attributes: true, attributeFilter: ["class", "data-theme"]});
+  try{ place(); still(); }catch(e){ kill(e); return; }
+  setTimeout(() => { if(!dead){ place(); still(); } }, 600);   /* after fonts settle the plate edges */
+  try{ window.REFDB_SKY && window.REFDB_SKY.still(); }catch(e){}
+  window.REFDB_HOLE = {still, place, quality: v => { q = v; place(); still(); }};
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<style is:global>
+  #cxHole { position: fixed; left: 0; top: 0; z-index: -1; pointer-events: none; display: block;
+    opacity: 0; transition: opacity 0.8s ease; will-change: transform; image-rendering: auto; }
+  :root[data-theme='dark'] #cxHole { opacity: 1; }
+  @media print { #cxHole { display: none !important; } }
+</style>
