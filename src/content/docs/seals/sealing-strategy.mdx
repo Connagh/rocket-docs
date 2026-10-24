@@ -1,0 +1,164 @@
+---
+title: Sealing strategy
+description: How to seal a solid motor's joints — bore and face O-rings, back-up rings, metal seals, port seals, sealants and thermal barriers — with redundancy and leak-check ports, and the joint design that keeps the gland from opening under pressure.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import SealArrangements from '../../../components/SealArrangements.astro';
+import SealCalc from '../../../components/SealCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Design the joint so the seal never has to chase a moving gap, keep hot gas off it, and give every primary seal an independent back-up and a way to prove both.</div>
+  <div><b>Before this</b><a href="../o-ring-design/">O-ring design</a> · <a href="../../joints/bolted-joints/">Bolted joints</a></div>
+</div>
+
+## Why this matters
+
+Every joint in a motor is a potential leak path for gas at MEOP and around 3000 K: case-to-closure and segment joints,
+nozzle-to-case, the igniter boss, and pressure-transducer and test ports. A leak is rarely a slow loss of pressure — hot
+gas cuts a channel through metal in moments. The Challenger accident began at a booster field joint whose O-rings could
+not follow the joint as it opened on a cold morning.
+
+The O-ring page sizes a single seal. This page is about the **strategy**: which seal, where, how many, how they are
+checked, and how the joint keeps them working.
+
+## Seal types
+
+| Seal | How it seals | Good for | Watch |
+| --- | --- | --- | --- |
+| O-ring, bore (radial) | Squeezed between bore and spigot; pressure pushes it onto the far groove wall | Closures, nozzle-to-case, igniters | Radial growth of the bore, extrusion gap, cold resilience |
+| O-ring, face (axial) | Squeezed in a flange-face groove | Flanged closures, port covers | Flange lift and rotation; depends on bolt preload |
+| Back-up rings | Stiff rings beside the O-ring that bridge the clearance | High pressure or larger clearances | Fit on the low-pressure side — both sides if pressure can reverse |
+| Metal seals — C, E, metal O-rings, crush gaskets | Elastic or plastic metal contact under a high seating load | High temperature, long storage, aggressive fluids | High bolt load, very fine finish, little springback, usually single-use |
+| Port seals — O-ring bosses, bonded washers | An O-ring under a fitting's shoulder | Transducer and test ports, plugs | The plug is part of the seal count |
+| Thermal barriers and fillers — putty, RTV, fibre rope | Fill the joint gap ahead of the seal | Keeping hot gas and particles off the elastomer | Not pressure seals on their own; can trap or channel gas |
+| Thread sealants — tapered pipe threads, anaerobics | Fill the thread clearance | Low-pressure fittings | Not as the only seal in a critical pressure path |
+
+<SealArrangements />
+
+**Bore or face?** A bore seal sits on a spigot, so it does not care if the flange lifts — but it sees every bit of the
+bore's radial growth. A face seal is clamped by the bolts, so it is immune to radial growth but opens as soon as the
+flange lifts or rotates. Each is the better choice where the other is weak.
+
+<Analogy title="A doorstop under a door that swells">
+  A rubber wedge holds a door shut only while the gap stays the size it was fitted for. If the frame warps open, the
+  wedge has to spring out to fill it — and a cold rubber wedge does not spring. Make the frame stiff and the wedge never
+  has to move.
+</Analogy>
+
+## Redundancy that is real
+
+Critical motor joints carry two seals in series — a primary and a secondary — so one can fail without a leak. That only
+works if they do not fail together:
+
+- **Avoid common causes.** Two identical O-rings in the same gland region see the same cold, the same gap opening and the
+  same contamination. They are two copies of one seal.
+- **Add diversity where you can** — a bore primary with a face secondary, or seals at different stiffness and
+  temperature.
+- **Verify both.** A secondary that has never been tested is a hope. Leak-check each seal, or the space between them,
+  after assembly.
+- **Count everything in the path** — port plugs, transducer bosses and the threads of the igniter all need their own
+  seal and back-up.
+
+After Challenger, the redesigned Shuttle booster field joint added:
+- a capture feature that limits joint rotation;
+- a third O-ring;
+- an insulation flap that pressure closes against the joint;
+- heaters to keep the seals warm.
+
+Nozzle joints later gained a carbon-fibre rope thermal barrier ahead of the O-rings.
+
+## Keeping the gland closed
+
+The best seal is one whose gap never moves. Under pressure:
+
+- **The bore grows.** A thin-walled case grows radially by
+
+$$
+\Delta r = \frac{p\,r^2}{E\,t}\left(1 - \frac{\nu}{2}\right)
+$$
+
+  — inversely with the wall at the seal seat. Seat bore seals in a thick, stiff joint ring, not in the membrane.
+- **The flange lifts or rotates.** Keep the bolted joint well below separation ([Bolted joints](../../joints/bolted-joints/)),
+  make flanges stiff, and put face seals inboard of the bolts.
+- **The spigot can help** — if the mating part grows with the case, the gap stays shut.
+- **Temperature changes everything.** Cold elastomer recovers slowly and shrinks; keep seals in their qualified range,
+  with heaters or insulation if needed ([Transient thermal](../../motor/transient-thermal/)).
+- **Keep hot gas off the seal.** Insulation, joint fillers and thermal barriers stop gas and particles before they
+  reach the O-ring, which then only has to hold pressure.
+
+## Leak-check ports
+
+A port drilled into the space between two seals lets you pressurise and watch the pressure fall:
+
+$$
+Q = \frac{V\,\Delta p}{t} \quad\text{(in standard cm}^3\text{/s with } \Delta p \text{ in atmospheres)}
+$$
+
+- **Temperature mimics leaks.** The trapped gas changes pressure by $p_{abs}\,\Delta T/T$; a tenth of a degree can
+  outweigh the gauge. Stabilise and record temperature, or use a helium mass-spectrometer test for tighter limits.
+- **Direction matters.** Pressurising between two seals loads the primary from its back, seating it on the wrong groove
+  wall; at ignition it must shuttle across before it seals. Test in the working direction where you can. The Rogers
+  Commission also noted that raising the leak-check pressure on the Shuttle field joint could blow holes in its
+  insulating putty.
+- **Plug and verify the port.** After the test the port is part of the pressure boundary: a sealed plug, its own
+  torque, and its own check.
+
+## Calculator
+
+<SealCalc />
+
+## Worked example — the aft closure seal
+
+The aft closure of the 300 mm case seals on a radial O-ring: 5.33 mm section, with **10.8% minimum squeeze** at the cold
+corner after compression set ([O-ring design](../o-ring-design/#worked-example--a-nozzle-to-case-radial-seal)). MEOP is
+10 MPa; the closure spigot grows about 0.02 mm.
+
+1. **Seated in the plain cylinder** (1.37 mm wall from [Case sizing](../../motor/case-sizing/)): the case grows
+   0.68 mm in radius — its full hoop strain of 0.45%. The gland opens 0.66 mm, but the ring is only compressed 0.58 mm:
+   **the seal unloads and leaks**. A bore seal never belongs in the membrane.
+2. **In a 10 mm joint ring:** growth 0.093 mm, gland opening 0.073 mm — squeeze 9.4%, below a 10% floor.
+3. **The seat wall for 10%** is 14.9 mm: the joint ring is a 15 mm forging, a few hundred grams that make the seal
+   work.
+4. **Redundancy:** two rings with a port between them. With 2 cm³ between the seals, 700 kPa, a 0.1 kPa gauge and
+   10 minutes, the smallest visible leak is $3.3\times10^{-6}$ std cm³/s. But 0.1 °C of drift moves the pressure
+   0.27 kPa — larger than the gauge — so temperature control decides the result. For an allowed leak of
+   $1\times10^{-5}$ std cm³/s (an example), a 200 s hold would do with stable temperature.
+5. **Diversity:** the bolted closure flange from [Bolted joints](../../joints/bolted-joints/) does not separate at
+   MEOP (17.7 kN against 32.1 kN), so a **face seal** there would stay shut. A bore primary with a face secondary
+   cannot be opened by the same mechanism.
+
+## Where this stops
+
+- **Thin-wall growth only.** At the joint ring, the junction with the dome or the next segment bends and rotates; the
+  real gap opening needs a joint analysis or a finite-element model.
+- **Static.** At ignition the gap opens in milliseconds; whether a cold ring follows is a
+  [viscoelastic](../../fundamentals/viscoelasticity/) question.
+- **Pressure-decay physics simplified** — ideal gas, constant volume. Helium permeation through elastomers limits very
+  tight helium tests.
+- **Erosion and hot-gas flow** through a gap are not modelled; keep gas off the seals instead.
+
+## On the drawing
+
+- **Seals and back-up rings by specification** — size, compound, hardness, and lot traceability.
+- **Gland dimensions and surface finish**, and the lubricant.
+- **Seal seat wall and joint stiffness** — the dimensions the gap analysis relied on.
+- **Leak-test procedure** — pressure, medium, direction, hold time, temperature record and acceptance.
+- **Port plugs** — seal, torque and verification. Seals are replaced whenever the joint is opened.
+
+## References and further reading
+
+- *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (Rogers Commission), 1986.
+- Parker Hannifin, *O-Ring Handbook* (ORD 5700).
+- ISO 3601 — fluid power O-rings: dimensions, quality, housing design.
+- SAE AS5202 — internal straight-thread port ends (O-ring boss ports).
+- ASTM E499 — leak testing with a mass-spectrometer leak detector.
+- R. C. Juvinall and K. M. Marshek, *Fundamentals of Machine Component Design*, Wiley — seals and gaskets.
+
+<Aside type="note">
+  Guidance on method from general practice. Seal selection, redundancy, leak-rate requirements and test procedures for
+  your motor come from your programme's requirements and your organisation's procedures.
+</Aside>

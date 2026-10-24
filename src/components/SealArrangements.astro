@@ -1,0 +1,81 @@
+---
+// Three ways a motor joint is sealed, in schematic cross-section: a bore-seal pair with a leak-check port, a face seal in
+// a bolted flange, and a thermal barrier that keeps hot gas off the O-rings. Clearances exaggerated.
+const steel = 'var(--rd-blue)', ring = 'var(--rd-accent)', ink = 'var(--rd-ink)', muted = 'var(--rd-muted)';
+---
+
+<figure class="viz sa">
+  <p class="viz-title">Three seal arrangements — schematic</p>
+  <div class="sa-grid">
+    <svg viewBox="0 0 220 190" role="img" aria-label="Bore seal pair: two O-rings in grooves on a closure spigot inside the case bore, with a test port drilled through the case between them.">
+      <text x="6" y="16" font-size="13" font-weight="600" fill={ink}>Bore seals and a test port</text>
+      <rect x="6" y="40" width="208" height="30" fill={steel} fill-opacity="0.3"></rect>
+      <text x="200" y="60" text-anchor="end" font-size="12" fill={ink}>case</text>
+      <rect x="6" y="76" width="208" height="70" fill={steel} fill-opacity="0.18"></rect>
+      <text x="200" y="138" text-anchor="end" font-size="12" fill={ink}>closure spigot</text>
+      {[64, 148].map((x) => (
+        <g>
+          <rect x={x - 11} y="76" width="22" height="16" fill="var(--rd-panel)"></rect>
+          <circle cx={x} cy="83" r="8.5" fill={ring} fill-opacity="0.85"></circle>
+        </g>
+      ))}
+      <text x="64" y="110" text-anchor="middle" font-size="12" fill={muted}>primary</text>
+      <text x="148" y="110" text-anchor="middle" font-size="12" fill={muted}>secondary</text>
+      <rect x="102" y="24" width="8" height="48" fill="var(--rd-panel)"></rect>
+      <rect x="99" y="24" width="14" height="7" fill={ink} fill-opacity="0.6"></rect>
+      <text x="118" y="34" font-size="12" fill={ink}>test port</text>
+      <line x1="8" y1="73" x2="40" y2="73" stroke="var(--rd-warn)" stroke-width="2.4"></line>
+      <path d="M40,73 l-6,-4 l0,8 z" fill="var(--rd-warn)"></path>
+      <text x="8" y="166" font-size="12" fill="var(--rd-warn)">← chamber gas</text>
+      <text x="8" y="182" font-size="12" fill={muted}>gap opens as the case dilates</text>
+    </svg>
+    <svg viewBox="0 0 220 190" role="img" aria-label="Face seal: an O-ring in a groove in a flange face, clamped by a bolt; it opens if the flange lifts or rotates.">
+      <text x="6" y="16" font-size="13" font-weight="600" fill={ink}>Face seal in a flange</text>
+      <rect x="6" y="40" width="208" height="46" fill={steel} fill-opacity="0.18"></rect>
+      <text x="10" y="58" font-size="12" fill={ink}>closure flange</text>
+      <rect x="6" y="88" width="208" height="54" fill={steel} fill-opacity="0.3"></rect>
+      <text x="10" y="136" font-size="12" fill={ink}>case flange</text>
+      <rect x="66" y="88" width="24" height="15" fill="var(--rd-panel)"></rect>
+      <circle cx="78" cy="94" r="8" fill={ring} fill-opacity="0.85"></circle>
+      <rect x="160" y="30" width="16" height="122" fill={ink} fill-opacity="0.35"></rect>
+      <rect x="150" y="24" width="36" height="10" fill={ink} fill-opacity="0.55"></rect>
+      <text x="168" y="166" text-anchor="middle" font-size="12" fill={muted}>bolt</text>
+      <line x1="8" y1="87" x2="52" y2="87" stroke="var(--rd-warn)" stroke-width="2.4"></line>
+      <path d="M52,87 l-6,-4 l0,8 z" fill="var(--rd-warn)"></path>
+      <text x="8" y="166" font-size="12" fill="var(--rd-warn)">← chamber gas</text>
+      <text x="8" y="182" font-size="12" fill={muted}>opens if the flange lifts</text>
+    </svg>
+    <svg viewBox="0 0 220 190" role="img" aria-label="Thermal barrier: insulation and a barrier in the joint gap stop hot gas before it reaches the O-ring.">
+      <text x="6" y="16" font-size="13" font-weight="600" fill={ink}>Thermal barrier first</text>
+      <rect x="6" y="40" width="208" height="44" fill={steel} fill-opacity="0.3"></rect>
+      <rect x="6" y="92" width="208" height="54" fill={steel} fill-opacity="0.18"></rect>
+      <rect x="6" y="84" width="58" height="8" fill="#6b4a2e"></rect>
+      <text x="10" y="112" font-size="12" fill={ink}>insulation</text>
+      <rect x="86" y="84" width="22" height="8" fill="url(#saHatch)" stroke={ink} stroke-opacity="0.6"></rect>
+      <defs>
+        <pattern id="saHatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="4" stroke="var(--rd-warn)" stroke-width="2"></line>
+        </pattern>
+      </defs>
+      <text x="97" y="128" text-anchor="middle" font-size="12" fill="var(--rd-warn)">barrier</text>
+      <rect x="148" y="92" width="22" height="16" fill="var(--rd-panel)"></rect>
+      <circle cx="159" cy="91" r="8" fill={ring} fill-opacity="0.85"></circle>
+      <text x="159" y="128" text-anchor="middle" font-size="12" fill={muted}>O-ring</text>
+      <line x1="8" y1="88" x2="34" y2="88" stroke="var(--rd-warn)" stroke-width="2.4"></line>
+      <path d="M34,88 l-6,-4 l0,8 z" fill="var(--rd-warn)"></path>
+      <text x="8" y="166" font-size="12" fill="var(--rd-warn)">← hot gas</text>
+      <text x="8" y="182" font-size="12" fill={muted}>keeps gas off the seal</text>
+    </svg>
+  </div>
+  <figcaption>
+    A bore seal sits on a spigot, so flange lift does not open it — but the case's radial growth does. A face seal is
+    clamped by the bolts, so it stays shut until the flange lifts or rotates. Either way, a thermal barrier ahead of the
+    elastomer keeps the hot gas off it; the O-ring then only has to seal against pressure.
+  </figcaption>
+</figure>
+
+<style>
+  .sa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: 0.75rem 1rem; }
+  .sa-grid > * { margin: 0 !important; }
+  .sa-grid svg { max-width: 270px; margin: 0 auto !important; }
+</style>

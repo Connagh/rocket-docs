@@ -73,6 +73,7 @@ export const REBUILT = {
   proof: 'verify/proof-testing',
   ageing: 'verify/storage-ageing',
   oring: 'seals/o-ring-design',
+  sealstrat: 'seals/sealing-strategy',
   threads: 'joints/threads',
   bolts: 'joints/bolted-joints',
   locking: 'joints/locking-and-retention',

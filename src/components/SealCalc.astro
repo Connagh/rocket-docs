@@ -1,0 +1,167 @@
+---
+// Seal check for a motor joint: does a bore seal's gland stay closed when the case dilates under pressure, what seat
+// wall keeps it closed, and how sensitive is a pressure-decay leak check between two seals. Maths in src/lib/sealing.ts.
+import { MATERIALS } from '../lib/bolts';
+---
+
+<div class="calc slcalc" data-slcalc>
+  <div class="calc-head"><span>Seal at pressure and leak check</span><span class="head-btns"><span>gap · squeeze · port</span></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Bore seal under pressure</legend>
+        <div class="row2">
+          <label>Pressure (MPa)<input name="p" type="number" min="0" step="any" value="10" /></label>
+          <label>Bore radius (mm)<input name="r" type="number" min="1" step="any" value="150" /></label>
+          <label>Wall at the seal seat (mm)<input name="t" type="number" min="0.1" step="any" value="10" /></label>
+          <label>Material<select name="mat">{MATERIALS.map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+          <label>Mating part's growth (mm)<input name="mate" type="number" step="any" value="0.02" /></label>
+          <label>Ring section (mm)<input name="cs" type="number" min="0.5" step="any" value="5.33" /></label>
+          <label>Minimum squeeze (%)<input name="smin" type="number" min="0" max="50" step="any" value="10.8" /></label>
+          <label>Squeeze floor (%)<input name="floor" type="number" min="0" max="50" step="any" value="10" /></label>
+        </div>
+        <p class="hint">Minimum squeeze at the worst corner — smallest ring, cold, after compression set — from the <a href="../o-ring-design/">O-ring design</a> calculator. The mating part's growth comes from your analysis; zero is conservative. Closed-end cylinder, thin wall.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Leak check through a port between the seals</legend>
+        <div class="row2">
+          <label>Volume between seals (cm³)<input name="vol" type="number" min="0.01" step="any" value="2" /></label>
+          <label>Test pressure (kPa gauge)<input name="pt" type="number" min="0" step="any" value="700" /></label>
+          <label>Hold time (s)<input name="hold" type="number" min="1" step="any" value="600" /></label>
+          <label>Gauge resolution (kPa)<input name="res" type="number" min="0.0001" step="any" value="0.1" /></label>
+          <label>Temperature drift (°C)<input name="dT" type="number" min="0" step="any" value="0.1" /></label>
+          <label>Allowed leak (std cm³/s)<input name="spec" type="number" min="0" step="any" placeholder="from your spec" /></label>
+        </div>
+        <p class="hint">Include the port and drillings in the volume. The allowed leak rate comes from your requirement.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout"><dt>Case growth</dt><dd data-r="grow">—</dd></div>
+        <div class="readout"><dt>Gland opens by</dt><dd data-r="gap">—</dd></div>
+        <div class="readout primary" data-cls="sq"><dt>Squeeze at pressure</dt><dd data-r="sq">—</dd></div>
+        <div class="readout"><dt>Seat wall for the floor</dt><dd data-r="tw">—</dd></div>
+        <div class="readout"><dt>Smallest leak seen</dt><dd data-r="det">—</dd></div>
+        <div class="readout" data-cls="drift"><dt>Temperature drift</dt><dd data-r="drift">—</dd></div>
+      </dl>
+      <figure class="sl-fig">
+        <svg viewBox="0 0 420 210" data-chart role="img" aria-label="Bars comparing the seal's compression with the gland opening, and the leak-check pressure signal with the gauge resolution and temperature drift"></svg>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Radial growth of a closed-end thin cylinder, p·r²(1 − ν/2)/(E·t). Pressure-decay sensitivity V·Δp/t in standard cm³/s
+    (atm·cm³/s); temperature shift p<sub>abs</sub>·ΔT/T at 20 °C. Flange rotation and face-seal lift are not modelled — see
+    <a href="../../joints/bolted-joints/">Bolted joints</a> for separation.
+  </div>
+</div>
+
+<style is:global>
+  .slcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .sl-fig { margin: 0.9rem 0 0 !important; }
+  .sl-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .slcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { MATERIALS } from '../lib/bolts';
+  import { radialGrowth, squeezeAtPressure, seatWallFor, detectableLeak, holdTimeFor, thermalPressureShift } from '../lib/sealing';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const sci = (v: number) => {
+    if (!Number.isFinite(v)) return '—';
+    const [m, e] = v.toExponential(1).split('e');
+    return `${m} × 10${String(+e).replace(/[-0-9]/g, (c) => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)])}`;
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-slcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'sq' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let last: Parameters<typeof chart> | null = null;
+
+    function run() {
+      const notes: [string, string][] = [];
+      const mat = MATERIALS.find((m) => m.key === field('mat').value)!;
+      const p = num('p'), rad = num('r'), t = num('t'), mate = num('mate') || 0, cs = num('cs');
+      const sMin = num('smin') / 100, floor = num('floor') / 100;
+      const okSeal = [p, rad, t, cs].every((v) => v > 0) && sMin >= 0;
+      let comp = NaN, gap = NaN, left = NaN;
+      if (okSeal) {
+        const grow = radialGrowth(p, rad, t, mat.E);
+        gap = grow - mate; comp = cs * sMin;
+        const sq = squeezeAtPressure(cs, sMin, Math.max(0, gap)); left = sq * cs;
+        r('grow').innerHTML = `${f(grow, 3)} mm <small>hoop strain ${f((grow / rad) * 100, 3)}%</small>`;
+        r('gap').innerHTML = `${f(Math.max(0, gap), 3)} mm <small>case growth less the mating part's</small>`;
+        r('sq').innerHTML = `${f(sq * 100, 1)}% <small>of ${f(sMin * 100, 1)}% at assembly · ${f(left, 2)} mm compression left</small>`;
+        cls('sq', sq <= 0 ? 'bad' : Number.isFinite(floor) && sq < floor ? 'warn' : 'ok');
+        const tw = Number.isFinite(floor) ? seatWallFor(p, rad, mat.E, 0.3, cs, sMin, floor, mate) : NaN;
+        r('tw').innerHTML = Number.isFinite(tw) ? `${f(tw, 1)} mm <small>for ${f(floor * 100, 0)}% squeeze at pressure</small>` : '<small>the floor is above the minimum squeeze</small>';
+        if (sq <= 0) notes.push(['bad', `The gland opens ${f(gap, 2)} mm — more than the ${f(comp, 2)} mm the ring is compressed. The seal unloads at pressure and leaks. Seat it in a thicker, stiffer ring (${Number.isFinite(tw) ? `at least ${f(tw, 1)} mm` : 'much thicker'}), or on a part that grows with the case.`]);
+        else if (Number.isFinite(floor) && sq < floor) notes.push(['warn', `Squeeze at pressure, ${f(sq * 100, 1)}%, is below your ${f(floor * 100, 0)}% floor. A ${f(tw, 1)} mm seat would hold it.`]);
+        if (gap > 0) notes.push(['', 'A cold, set ring follows a widening gap slowly — the Challenger lesson. Keep the gap from opening rather than relying on the ring to chase it.']);
+      } else { notes.push(['bad', 'Fill in the pressure, radius, seat wall, ring section and minimum squeeze.']); }
+
+      // leak check
+      const V = num('vol'), pt = num('pt'), hold = num('hold'), res = num('res'), dT = num('dT') || 0, spec = num('spec');
+      let drift = NaN, specSignal = NaN;
+      if ([V, hold, res].every((v) => v > 0) && pt >= 0) {
+        const det = detectableLeak(V, res, hold);
+        drift = thermalPressureShift(pt + 101.325, dT);
+        r('det').innerHTML = `${sci(det)} <small>std cm³/s in ${f(hold / 60, 0)} min at ${f(res, 2)} kPa resolution</small>`;
+        r('drift').innerHTML = `${f(drift, 3)} kPa <small>looks like ${sci(detectableLeak(V, drift, hold))} std cm³/s</small>`;
+        cls('drift', drift > res ? 'warn' : 'ok');
+        if (drift > res) notes.push(['warn', `A ${f(dT, 2)} °C drift moves the pressure ${f(drift, 2)} kPa — more than the gauge can resolve. Stabilise and record temperature and correct for it, use a reference volume, or use a helium leak test.`]);
+        if (spec > 0) {
+          const need = holdTimeFor(V, res, spec);
+          specSignal = (spec * hold * 101.325) / V;
+          notes.push([need > 3600 ? 'warn' : '', `To see the allowed ${sci(spec)} std cm³/s needs a hold of ${need < 120 ? `${f(need, 0)} s` : `${f(need / 60, 0)} min`} at this resolution${need > 3600 ? ' — too long for a pressure-decay check; use a helium mass-spectrometer test' : ''}.`]);
+        }
+        notes.push(['', 'Pressurising the space between two seals loads the primary from its back: it seats on the wrong groove wall and has to shuttle across when the motor lights. Where you can, test each seal in its working direction, and include the port plug in the seal count.']);
+      }
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      chart(comp, Math.max(0, gap), left, res, drift, specSignal);
+    }
+
+    function chart(comp: number, gap: number, left: number, res: number, drift: number, signal: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      last = [comp, gap, left, res, drift, signal];
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 210, L = 8, R = 12;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+      const group = (y: number, title: string, bars: [string, number, string][], unit: string, d: number) => {
+        const vals = bars.map((b) => b[1]).filter((v) => Number.isFinite(v) && v > 0);
+        const max = (vals.length ? Math.max(...vals) : 1) * 1.05;
+        svg.append(el('text', { x: L, y, 'font-size': 13, 'font-weight': 600, fill: 'var(--rd-ink)' }, title));
+        bars.forEach(([name, v, color], i) => {
+          if (!Number.isFinite(v)) return;
+          const yy = y + 10 + i * 22, w = (Math.max(0, v) / max) * (W - L - R);
+          svg.append(el('rect', { x: L, y: yy, width: Math.max(2, w), height: 16, rx: 2, fill: color, 'fill-opacity': 0.75 }));
+          svg.append(el('text', { x: L + 6, y: yy + 12, 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, `${name} ${f(v, d)} ${unit}`));
+        });
+      };
+      group(18, 'Radial: compression against gap', [['compressed at assembly', comp, 'var(--rd-ok)'], ['gland opening', gap, 'var(--rd-accent)'], ['left at pressure', left, 'var(--rd-blue)']], 'mm', 2);
+      group(118, 'Leak check: pressure signals', [['gauge resolution', res, 'var(--rd-muted)'], ['temperature drift', drift, 'var(--rd-warn)'], ['allowed leak over the hold', signal, 'var(--rd-blue)']], 'kPa', 2);
+    }
+
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (last && Math.abs(nw - w) > 8) { w = nw; chart(...last); } }).observe(root.querySelector('[data-chart]')!);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
