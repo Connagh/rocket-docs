@@ -1,0 +1,189 @@
+---
+// Thread engagement: which fails first — the bolt, its threads, or the internal threads (tapped hole, helical-coil
+// insert) — and the engagement length at which the bolt is the weaker. Maths in src/lib/threads.ts (unit-tested).
+import { THREADS, GRADES } from '../lib/bolts';
+---
+
+<div class="calc thcalc" data-thcalc>
+  <div class="calc-head"><span>Thread engagement — one bolt</span><span class="head-btns"><span>bolt breaks first?</span></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Bolt</legend>
+        <div class="row2">
+          <label>Thread<select name="th">{THREADS.map((t) => <option value={t.name} selected={t.name === 'M6'}>{t.name} × {t.P}</option>)}</select></label>
+          <label>Grade<select name="gr">{GRADES.map((g) => <option value={g.key} selected={g.key === '10.9'}>{g.name}</option>)}</select></label>
+          <label>Tensile, R<sub>m</sub> (MPa)<input name="rm" type="number" min="1" step="any" value="1040" /></label>
+          <label>Thread shear ultimate (MPa)<input name="tb" type="number" min="1" step="any" value="624" /></label>
+        </div>
+        <p class="hint">Shear ultimate of steel bolts is about 0.6 × R<sub>m</sub>; use your allowable where you have one.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Internal thread</legend>
+        <label>Into<select name="kind">
+          <option value="tapped">A tapped hole in the part</option>
+          <option value="insert">A helical-coil insert in the part</option>
+          <option value="nut">A procured nut or insert (rated)</option>
+        </select></label>
+        <div class="row2">
+          <label>Engagement length (mm)<input name="le" type="number" min="0.5" step="any" value="9" /></label>
+          <label>Part shear ultimate (MPa)<input name="tp" type="number" min="1" step="any" value="186" /></label>
+          <label>Rated strength (kN)<input name="rate" type="number" min="0" step="any" placeholder="from its spec" /></label>
+          <label>Plating thickness (μm)<input name="pl" type="number" min="0" step="any" value="0" /></label>
+        </div>
+        <p class="hint">Part shear ultimate is the parent material's (6061-T6 is about 186 MPa) — use your allowable. A rated part (nut, insert) uses its specified strength, not a stripping analysis.</p>
+      </fieldset>
+      <details class="th-lim">
+        <summary>Minimum-material diameters (optional)</summary>
+        <div class="row2">
+          <label>Bolt major, min (mm)<input name="dmin" type="number" step="any" placeholder="basic" /></label>
+          <label>Bolt pitch ⌀, min (mm)<input name="d2min" type="number" step="any" placeholder="basic" /></label>
+          <label>Nut minor, max (mm)<input name="D1max" type="number" step="any" placeholder="basic" /></label>
+          <label>Nut pitch ⌀, max (mm)<input name="D2max" type="number" step="any" placeholder="basic" /></label>
+        </div>
+        <p class="hint">From the thread's tolerance class (ISO 965, FED-STD-H28). Blank uses basic size, which overstates the shear areas.</p>
+      </details>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="first"><dt>Fails first</dt><dd data-r="first">—</dd></div>
+        <div class="readout" data-cls="ratio"><dt>Threads ÷ bolt</dt><dd data-r="ratio">—</dd></div>
+        <div class="readout"><dt>Equal strength at</dt><dd data-r="bal">—</dd></div>
+        <div class="readout"><dt>Bolt breaks at</dt><dd data-r="bolt">—</dd></div>
+        <div class="readout"><dt>Bolt threads strip at</dt><dd data-r="ext">—</dd></div>
+        <div class="readout"><dt>Internal threads strip at</dt><dd data-r="int">—</dd></div>
+      </dl>
+      <figure class="th-fig">
+        <svg viewBox="0 0 420 260" data-chart role="img" aria-label="Strength of the bolt, the bolt threads and the internal threads against engagement length"></svg>
+        <figcaption>Thread strength grows with engagement; the bolt's does not. Beyond the crossing, the bolt breaks first — the failure you want: visible, ductile, and easy to repair.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Shear areas from the FED-STD-H28 / VDI 2230 form, A = π·L<sub>e</sub>·D·[P/2 + tan30°·Δ]/P — 7/8 of π·d·L<sub>e</sub> for the
+    internal threads and 3/4 of π·D<sub>1</sub>·L<sub>e</sub> for the bolt threads at basic size. Helical-coil insert: the part is
+    tapped to about d + 1.3P. Nut dilation and thread bending are not included.
+  </div>
+</div>
+
+<style is:global>
+  .thcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .thcalc .th-lim { margin: 0 0 0.75rem !important; }
+  .thcalc .th-lim summary { cursor: pointer; font-size: var(--sl-text-sm); color: var(--rd-muted); }
+  .thcalc .th-lim .row2 { margin-top: 0.5rem; }
+  .th-fig { margin: 0.9rem 0 0 !important; }
+  .th-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .th-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .thcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { THREADS, GRADES } from '../lib/bolts';
+  import { stripping, balancedEngagement, helicalTapMajor, platingPitchGrowth, type Limits } from '../lib/threads';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const kN = (v: number) => f(v / 1000, v < 10000 ? 2 : 1);
+
+  document.querySelectorAll<HTMLElement>('[data-thcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'first' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let last: Parameters<typeof chart> | null = null;
+
+    field('gr').addEventListener('change', () => {
+      const g = GRADES.find((x) => x.key === field('gr').value)!;
+      field('rm').value = String(g.Rm); field('tb').value = String(Math.round(0.6 * g.Rm));
+    });
+
+    function run() {
+      const notes: [string, string][] = [];
+      const t = THREADS.find((x) => x.name === field('th').value)!;
+      const Rm = num('rm'), tb = num('tb'), tp = num('tp'), Le = num('le'), kind = field('kind').value;
+      if (![Rm, tb, Le].every((v) => v > 0) || (kind !== 'nut' && !(tp > 0))) {
+        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Fill in the bolt strength, thread shear strength, engagement and part shear strength.</li>'; return;
+      }
+      const lim: Limits = {};
+      for (const [k, n] of [['dMin', 'dmin'], ['d2Min', 'd2min'], ['D1Max', 'D1max'], ['D2Max', 'D2max']] as const) if (num(n) > 0) lim[k] = num(n);
+      const base = { t, Rm, tauBolt: tb, tauInt: kind === 'nut' ? Infinity : tp, insert: kind === 'insert', lim };
+      const s = stripping({ ...base, Le });
+      const rate = num('rate') * 1000;
+      const intLoad = kind === 'nut' ? (rate > 0 ? rate : NaN) : s.int;
+      const loads = { bolt: s.bolt, external: s.ext, internal: intLoad };
+      const first = (Object.entries(loads).filter(([, v]) => Number.isFinite(v)) as [keyof typeof loads, number][]).reduce((a, b) => (b[1] < a[1] ? b : a))[0];
+      const ratio = Math.min(s.ext, Number.isFinite(intLoad) ? intLoad : Infinity) / s.bolt;
+      const names = { bolt: 'the bolt breaks', external: 'the bolt threads strip', internal: kind === 'insert' ? 'the insert pulls out' : kind === 'nut' ? 'the nut fails' : 'the tapped threads strip' };
+      r('first').innerHTML = `${names[first]} <small>${first === 'bolt' ? 'the failure you want' : 'before the bolt — engage more'}</small>`;
+      cls('first', first === 'bolt' ? 'ok' : 'bad');
+      r('ratio').innerHTML = `${f(ratio, 2)} <small>weaker threads ÷ bolt; above 1, the bolt goes first</small>`;
+      cls('ratio', ratio >= 1 ? 'ok' : 'bad');
+      r('bolt').innerHTML = `${kN(s.bolt)} kN <small>R<sub>m</sub> × A<sub>s</sub> = ${f(Rm, 0)} × ${f(t.As, 1)} mm²</small>`;
+      r('ext').innerHTML = `${kN(s.ext)} kN <small>at ${f(Le, 1)} mm, ${f(Le / t.P, 1)} threads</small>`;
+      r('int').innerHTML = kind === 'nut' ? (rate > 0 ? `${kN(rate)} kN <small>rated</small>` : '<small>enter the rated strength</small>') : `${kN(s.int)} kN <small>${kind === 'insert' ? `part sheared at ⌀${f(helicalTapMajor(t), 1)}` : `part sheared at ⌀${f(lim.dMin ?? t.d, 2)}`}</small>`;
+      const bal = kind === 'nut' ? (s.bolt * Le) / s.ext : balancedEngagement(base); // with a rated nut only the bolt threads can strip
+      r('bal').innerHTML = `${f(bal, 1)} mm <small>${f(bal / t.d, 2)} d · ${f(bal / t.P, 1)} threads, ${Object.keys(lim).length ? 'minimum material' : 'basic size'}</small>`;
+
+      if (first !== 'bolt') notes.push(['bad', `${names[first][0].toUpperCase() + names[first].slice(1)} before the bolt breaks. NASA-STD-5020B §4.7.4 asks for enough complete threads that the bolt fails in tension first: engage more thread, fit an insert, or use a bolt no stronger than the threads need.`]);
+      if (!Object.keys(lim).length && kind !== 'nut') notes.push(['', 'Basic-size shear areas are an upper bound: real threads at their tolerance limits have less, nuts dilate and threads bend. That is why practice engages about 1.5–2 d in aluminium alloys; enter minimum-material diameters, or use VDI 2230\'s full method, for a design value.']);
+      if (kind === 'insert') notes.push(['', 'Rate a procured insert by its specification: the lower of its internal-thread strength and its pull-out from the part (NASA-STD-5020B §4.4.1). Pull-out from non-metallic or sandwich parts needs test. A stainless insert in aluminium needs primer against galvanic corrosion.']);
+      if (kind === 'nut') notes.push(['', 'Procured nuts and inserts are rated by their specified strength, not by a stripping analysis — they dilate under load (NASA-STD-5020B §4.4.1). The bolt should extend at least two pitches past the nut (§4.7.4).']);
+      const pl = num('pl');
+      if (pl > 0) notes.push(['', `A ${f(pl, 0)} μm coating on the flanks raises the pitch diameter by ${f(platingPitchGrowth(pl), 0)} μm — it must fit inside the allowance of the tolerance position (6g rather than 6h) or the plated thread will not assemble.`]);
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      chart(t.d, Le, s.bolt, (L: number) => stripping({ ...base, Le: L }).ext, kind === 'nut' ? null : (L: number) => stripping({ ...base, Le: L }).int, kind === 'nut' && rate > 0 ? rate : null);
+    }
+
+    function chart(d: number, Le: number, bolt: number, ext: (L: number) => number, int: ((L: number) => number) | null, rated: number | null) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      last = [d, Le, bolt, ext, int, rated];
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 260, L = 50, R = 14, T = 16, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const xmax = Math.max(2.5 * d, Le * 1.2), ymax = bolt * 2.2;
+      const X = (x: number) => L + (x / xmax) * (W - L - R), Y = (y: number) => H - B - (Math.min(y, ymax) / ymax) * (H - T - B);
+      const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+      for (let k = 0; k <= 2.5 + 1e-9; k += 0.5) {
+        svg.append(el('line', { x1: X(k * d), x2: X(k * d), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(k * d), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, `${k}d`));
+      }
+      const step = ymax > 40000 ? 20000 : ymax > 20000 ? 10000 : ymax > 8000 ? 4000 : 2000;
+      for (let v = 0; v <= ymax; v += step) svg.append(el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(v / 1000, 0)));
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, 'engagement length'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'load (kN)'));
+      const curve = (fn: (x: number) => number, color: string, label: string) => {
+        // thread strength is linear in length: draw it up to where it leaves the plot, and label it there
+        const xl = Math.min(xmax, (ymax / fn(xmax)) * xmax), top = fn(xl) >= ymax * 0.999;
+        svg.append(el('line', { x1: X(0), y1: Y(0), x2: X(xl), y2: Y(fn(xl)), stroke: color, 'stroke-width': 2.2 }));
+        svg.append(el('text', { x: X(xl) - 6, y: Y(fn(xl)) + (top ? 14 : -6), 'text-anchor': 'end', 'font-size': 12, fill: color, ...halo }, label));
+      };
+      svg.append(el('line', { x1: L, x2: W - R, y1: Y(bolt), y2: Y(bolt), stroke: 'var(--rd-ink)', 'stroke-width': 2.2 }));
+      svg.append(el('text', { x: L + 6, y: Y(bolt) - 6, 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, `bolt breaks ${f(bolt / 1000, 1)} kN`));
+      curve(ext, 'var(--rd-accent)', 'bolt threads');
+      if (int) curve(int, 'var(--rd-blue)', 'internal threads');
+      if (rated) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(rated), y2: Y(rated), stroke: 'var(--rd-blue)', 'stroke-width': 2, 'stroke-dasharray': '6 4' }));
+        svg.append(el('text', { x: W - R - 4, y: Y(rated) - 6, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-blue)', ...halo }, 'rated nut'));
+      }
+      svg.append(el('line', { x1: X(Le), x2: X(Le), y1: T, y2: H - B, stroke: 'var(--rd-ok)', 'stroke-width': 2, 'stroke-dasharray': '4 3' }));
+      svg.append(el('text', { x: X(Le) + 4, y: H - B - 6, 'font-size': 12, fill: 'var(--rd-ok)', ...halo }, `${f(Le, 1)} mm`));
+    }
+
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (last && Math.abs(nw - w) > 8) { w = nw; chart(...last); } }).observe(root.querySelector('[data-chart]')!);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>

@@ -1,0 +1,53 @@
+---
+// The ISO basic thread profile, bolt and nut meshed, with the two cylinders on which the threads shear when they strip.
+// True 60° geometry: crest flat P/8 on the bolt, P/4 on the nut, working depth 5H/8 with H = 0.866·P.
+const P = 64, H = 0.866025 * P, depth = (5 * H) / 8, run = depth * Math.tan(Math.PI / 6);
+const W = 340, X0 = 10, X1 = 330, yMaj = 112, yMin = yMaj + depth, top = 34, bot = 196;
+// bolt profile: crest flats centred on X0 + k·P, root flats between them
+const pts: [number, number][] = [];
+for (let k = -1; k <= 6; k++) {
+  const c = X0 + k * P;
+  pts.push([c - P / 16, yMaj], [c + P / 16, yMaj], [c + P / 16 + run, yMin], [c + P - P / 16 - run, yMin]);
+}
+const clip = (x: number) => Math.min(X1, Math.max(X0, x));
+const prof = pts.filter(([x]) => x > X0 - P && x < X1 + P);
+const line = prof.map(([x, y]) => `${clip(x).toFixed(1)},${y.toFixed(1)}`).join(' ');
+const bolt = `${X0},${bot} ${line} ${X1},${bot}`;
+const nut = `${X0},${top} ${line} ${X1},${top}`;
+---
+
+<figure class="viz">
+  <p class="viz-title">Where threads strip — ISO basic profile</p>
+  <svg viewBox={`0 0 ${W} 214`} role="img" aria-labelledby="tp-desc" style="max-width: 420px; margin: 0 auto;">
+    <desc id="tp-desc">
+      A bolt thread meshed with a nut thread in the 60 degree ISO basic profile. Nut threads strip on a cylinder at the
+      bolt's major diameter, where seven eighths of every pitch is nut material. Bolt threads strip on a cylinder at the
+      nut's minor diameter, where three quarters of every pitch is bolt material.
+    </desc>
+    <polygon points={nut} fill="var(--rd-blue)" fill-opacity="0.28" stroke="none"></polygon>
+    <polygon points={bolt} fill="var(--rd-accent)" fill-opacity="0.32" stroke="none"></polygon>
+    <polyline points={line} fill="none" stroke="var(--rd-ink)" stroke-opacity="0.5" stroke-width="1.2"></polyline>
+    <line x1={X0} x2={X1} y1={yMaj} y2={yMaj} stroke="var(--rd-warn)" stroke-width="2" stroke-dasharray="6 4"></line>
+    <line x1={X0} x2={X1} y1={yMin} y2={yMin} stroke="var(--rd-warn)" stroke-width="2" stroke-dasharray="6 4"></line>
+    <text x={X0 + 4} y={top + 16} font-size="13" font-weight="600" fill="var(--rd-ink)">NUT or tapped hole</text>
+    <text x={X0 + 4} y={bot - 6} font-size="13" font-weight="600" fill="var(--rd-ink)">BOLT</text>
+    <g font-size="12" fill="var(--rd-warn)" stroke="var(--rd-panel)" stroke-width="4" paint-order="stroke">
+      <text x={X0 + 4} y={yMaj - 8}>nut threads shear here: 7/8 of each pitch</text>
+      <text x={X0 + 4} y={yMin + 18}>bolt threads shear here: 3/4 of each pitch</text>
+    </g>
+    {/* pitch dimension, crest to crest */}
+    <g stroke="var(--rd-muted)" fill="var(--rd-muted)" font-size="12">
+      <line x1={X0 + 2 * P} x2={X0 + 3 * P} y1={top + 36} y2={top + 36}></line>
+      <line x1={X0 + 2 * P} x2={X0 + 2 * P} y1={top + 30} y2={yMaj - 2} stroke-dasharray="2 3"></line>
+      <line x1={X0 + 3 * P} x2={X0 + 3 * P} y1={top + 30} y2={yMaj - 2} stroke-dasharray="2 3"></line>
+      <text x={X0 + 2.5 * P} y={top + 31} text-anchor="middle" stroke="none">P</text>
+    </g>
+    <text x={X1 - 4} y={top + 16} text-anchor="end" font-size="12" fill="var(--rd-muted)">60° flanks</text>
+    <text x={X1 - 4} y={bot - 6} text-anchor="end" font-size="12" fill="var(--rd-muted)">depth 5H/8, H = 0.866 P</text>
+  </svg>
+  <figcaption>
+    When threads strip, they shear along a cylinder. The nut's threads go at the bolt's major diameter, where 7/8 of each
+    pitch is nut material; the bolt's threads go at the nut's minor diameter, where 3/4 is bolt material. The shear area is
+    that fraction of π × diameter × engaged length — at basic size; real threads, made to tolerance, have less.
+  </figcaption>
+</figure>
