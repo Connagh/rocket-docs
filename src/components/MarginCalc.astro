@@ -1,0 +1,275 @@
+---
+// Margin report builder: one row per failure mode per load case, plus a combined-loading interaction check.
+// Maths in src/lib/margins.ts (unit-tested); this file is UI only.
+const ROWS = [
+  { item: 'Case cylinder', lc: 'MEOP', fail: 'Hoop yield at proof', mode: 'yield', app: 1094, all: 1305, basis: 'A-basis yield × weld 0.9, 20 °C', extra: '', ref: 'Case sizing' },
+  { item: 'Case cylinder', lc: 'MEOP', fail: 'Hoop burst', mode: 'ultimate', app: 1094, all: 1368, basis: 'A-basis ultimate × weld 0.9, 20 °C', extra: '', ref: 'Case sizing' },
+  { item: 'Case cylinder (empty)', lc: 'Vacuum check', fail: 'Buckling, external pressure', mode: 'other', app: 0.101, all: 0.1268, basis: 'SP-8007 knocked-down buckling pressure', extra: '', ref: 'Shell buckling' },
+  { item: '', lc: '', fail: '', mode: 'ultimate', app: '', all: '', basis: '', extra: '', ref: '' },
+];
+---
+
+<div class="calc mgcalc" data-mgcalc>
+  <div class="calc-head"><span>Margin report builder</span><span class="head-btns"><span>one row per failure mode per load case</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Your programme's factors</legend>
+        <div class="row2">
+          <label>Yield factor<input name="fy" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Ultimate factor<input name="fu" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+          <label>Other (e.g. buckling)<input name="fo" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Factors come from your governing requirement, not from this site. Special factors (fitting, bearing, casting, weld, model uncertainty) go on the row they apply to and multiply the basic factor.</p>
+        <p class="hint example-note" data-example-note hidden></p>
+      </fieldset>
+      <fieldset>
+        <legend>Report rows</legend>
+        <p class="hint">Open a row to edit it; the report below lists them all. Leave applied or allowable blank to drop a row.</p>
+      {ROWS.map((r, k) => (
+        <details class="mg-row">
+          <summary><b>Row {k + 1}</b> <span data-sum={k}>{r.item ? `${r.item} · ${r.fail}` : 'empty — add your own'}</span></summary>
+          <div class="mg-fields">
+          <div class="row2">
+            <label>Item<input name={`it${k}`} type="text" value={r.item} /></label>
+            <label>Load case<input name={`lc${k}`} type="text" value={r.lc} /></label>
+            <label>Failure mode<input name={`fm${k}`} type="text" value={r.fail} /></label>
+            <label>Factor
+              <select name={`md${k}`}>
+                <option value="yield" selected={r.mode === 'yield'}>Yield</option>
+                <option value="ultimate" selected={r.mode === 'ultimate'}>Ultimate</option>
+                <option value="other" selected={r.mode === 'other'}>Other</option>
+              </select>
+            </label>
+            <label>Applied, at limit<input name={`ap${k}`} type="number" min="0" step="any" value={r.app} /></label>
+            <label>Allowable<input name={`al${k}`} type="number" min="0" step="any" value={r.all} /></label>
+          </div>
+          <label>Allowable basis and condition<input name={`ba${k}`} type="text" value={r.basis} placeholder="e.g. A-basis yield, 100 °C, LT" /></label>
+          <div class="row2">
+            <label>Special factor(s)<input name={`ex${k}`} type="number" min="1" step="0.01" value={r.extra} placeholder="none" autocomplete="off" /></label>
+            <label>Reference<input name={`rf${k}`} type="text" value={r.ref} /></label>
+          </div>
+          </div>
+        </details>
+      ))}
+      </fieldset>
+      <fieldset>
+        <legend>Combined loading</legend>
+        <div class="row2">
+          <label>Item<input name="ci" type="text" value="Aft-closure bolt" /></label>
+          <label>Load case<input name="cl" type="text" value="MEOP + side load" /></label>
+          <label>Load 1<input name="n1" type="text" value="Tension (kN)" /></label>
+          <label>Applied · allowable<span class="mg-pair"><input name="a1" type="number" min="0" step="any" value="18" aria-label="load 1 applied" /><input name="u1" type="number" min="0" step="any" value="60" aria-label="load 1 allowable" /></span></label>
+          <label>Load 2<input name="n2" type="text" value="Shear (kN)" /></label>
+          <label>Applied · allowable<span class="mg-pair"><input name="a2" type="number" min="0" step="any" value="4" aria-label="load 2 applied" /><input name="u2" type="number" min="0" step="any" value="40" aria-label="load 2 allowable" /></span></label>
+          <label>Interaction
+            <select name="ix">
+              <option value="2,2">Elliptical — R₁² + R₂² ≤ 1</option>
+              <option value="1,1">Linear — R₁ + R₂ ≤ 1</option>
+              <option value="custom">Other exponents</option>
+            </select>
+          </label>
+          <label>Exponents a · b<span class="mg-pair"><input name="e1" type="number" min="0.5" step="0.1" value="2" aria-label="exponent a" /><input name="e2" type="number" min="0.5" step="0.1" value="2" aria-label="exponent b" /></span></label>
+          <label>Special factor(s)<input name="cx" type="number" min="1" step="0.01" value="1.15" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Uses the ultimate factor × the special factor. The interaction form and exponents come from your governing standard (for spaceflight fasteners, NASA-STD-5020).</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="low"><dt>Lowest margin</dt><dd data-r="low">—</dd></div>
+        <div class="readout"><dt>Rows checked</dt><dd data-r="count">—</dd></div>
+        <div class="readout" data-cls="find"><dt>Findings</dt><dd data-r="find">—</dd></div>
+      </dl>
+      <div class="mg-table" data-table></div>
+      <div class="mg-copy">
+        <button type="button" class="chip" data-copy="tsv">Copy for a spreadsheet</button>
+        <button type="button" class="chip" data-copy="md">Copy as Markdown</button>
+      </div>
+      <textarea class="mg-copytext" data-copy-text readonly hidden rows="6" aria-label="Report text to copy"></textarea>
+      <figure class="mg-fig">
+        <svg viewBox="0 0 480 260" data-int role="img" aria-label="Interaction diagram for the combined loading"></svg>
+        <figcaption>Interaction diagram. The dot is the factored load; the ray shows how far all loads can grow together before reaching the curve — that distance is the margin.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    MS = allowable ÷ (factor × applied) − 1 with stresses or loads that respond linearly. For buckling, contact,
+    preloaded joints and other non-linear responses, apply the factor to the load and analyse at the factored load.
+  </div>
+</div>
+
+<style is:global>
+  .mgcalc .mg-row { border: 1px solid var(--rd-line); border-radius: 6px; margin: 0 !important; }
+  .mgcalc .mg-row > summary { cursor: pointer; padding: 0.45rem 0.6rem; font-size: var(--sl-text-sm); color: var(--rd-muted); }
+  .mgcalc .mg-row > summary b { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-accent); margin-right: 0.4rem; }
+  .mgcalc .mg-row[open] > summary { border-bottom: 1px solid var(--rd-line); }
+  .mgcalc .mg-fields { display: grid; gap: 0.6rem; padding: 0.6rem; }
+  .mgcalc .mg-fields > * { margin: 0 !important; }
+  .mgcalc .mg-pair { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin-top: 0.2rem; }
+  .mgcalc .mg-pair > * { margin: 0 !important; }
+  .mgcalc .mg-table { overflow-x: auto; margin-top: 0.75rem !important; }
+  .mgcalc .mg-table table { width: 100%; font-size: var(--sl-text-xs); font-family: var(--sl-font-mono); border-collapse: collapse; display: table; }
+  .mgcalc .mg-table th, .mgcalc .mg-table td { padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--rd-line); text-align: left; vertical-align: top; }
+  .mgcalc .mg-table td.num { text-align: right; white-space: nowrap; }
+  .mgcalc .mg-table .nw { white-space: nowrap; }
+  /* narrow: each report row becomes a card, so the MS column never scrolls out of view */
+  .mgcalc .mg-table { container-type: inline-size; }
+  @container (max-width: 26rem) {
+    .mgcalc .mg-table thead { display: none; }
+    .mgcalc .mg-table table, .mgcalc .mg-table tbody { display: block; }
+    .mgcalc .mg-table tr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.25rem 0.7rem; padding: 0.45rem 0; border-bottom: 1px solid var(--rd-line); }
+    .mgcalc .mg-table td { border: 0; padding: 0; }
+    .mgcalc .mg-table td:first-child { grid-column: 1 / -1; }
+  }
+  .mgcalc .mg-table small { color: var(--rd-muted); }
+  .mgcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .mgcalc .mg-table .bad { color: var(--rd-accent); font-weight: 700; }
+  .mgcalc .mg-table .ok { color: var(--rd-ok); font-weight: 700; }
+  .mgcalc .mg-table .flag { color: var(--rd-warn); }
+  .mgcalc .mg-copy { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem !important; }
+  .mgcalc .mg-copy > * { margin: 0 !important; }
+  .mgcalc .mg-copytext { width: 100%; margin-top: 0.5rem !important; font: var(--sl-text-xs)/1.4 var(--sl-font-mono); color: var(--rd-ink); background: var(--rd-panel2); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; white-space: pre; }
+  .mg-fig { margin: 0.9rem 0 0 !important; }
+  .mg-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .mg-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .mgcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { evaluateRow, interaction, reportTsv, type MarginRow, type Mode } from '../lib/margins';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const msTxt = (v: number) => (Number.isFinite(v) ? `${v >= 0 ? '+' : ''}${f(v, 2)}` : '—');
+  const esc = (s: string) => s.replace(/[&<>"|]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '|': '&#124;' }[c]!));
+
+  document.querySelectorAll<HTMLElement>('[data-mgcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => +field(n).value;
+    const txt = (n: string) => field(n).value.trim();
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const r2 = (k: number) => root.querySelector<HTMLElement>(`[data-sum="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'low' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let lastRows: MarginRow[] = [], lastRes: ReturnType<typeof evaluateRow>[] = [];
+
+    function run() {
+      [0, 1, 2, 3].forEach((k) => {
+        const it = txt(`it${k}`), fm = txt(`fm${k}`);
+        r2(k).textContent = it || fm ? [it, fm].filter(Boolean).join(' · ') : 'empty — add your own';
+      });
+      const factors = { yield: readFactor(field('fy').value), ultimate: readFactor(field('fu').value), other: readFactor(field('fo').value) };
+      const rows: MarginRow[] = [0, 1, 2, 3].map((k) => ({
+        item: txt(`it${k}`), loadCase: txt(`lc${k}`), failure: txt(`fm${k}`), mode: field(`md${k}`).value as Mode,
+        applied: num(`ap${k}`), allowable: num(`al${k}`), allowableBasis: txt(`ba${k}`),
+        extra: readFactor(field(`ex${k}`).value), ref: txt(`rf${k}`),
+      })).filter((x) => x.applied > 0 && x.allowable > 0);
+
+      // the combined-loading check becomes a report row of its own
+      const custom = field('ix').value === 'custom';
+      if (!custom) { const [a, b] = field('ix').value.split(','); field('e1').value = a; field('e2').value = b; }
+      (field('e1') as HTMLInputElement).disabled = !custom; (field('e2') as HTMLInputElement).disabled = !custom;
+      const cx = readFactor(field('cx').value) ?? 1;
+      const kU = factors.ultimate;
+      const comb = kU !== null && num('u1') > 0 && num('u2') > 0
+        ? interaction([(kU * cx * num('a1')) / num('u1'), (kU * cx * num('a2')) / num('u2')], [num('e1'), num('e2')]) : null;
+      const results = rows.map((x) => evaluateRow(x, factors));
+      const combRow: MarginRow = { item: txt('ci'), loadCase: txt('cl'), failure: `${txt('n1')} + ${txt('n2')} interaction (${num('e1')}, ${num('e2')})`, mode: 'ultimate',
+        applied: NaN, allowable: NaN, allowableBasis: `${num('a1')} of ${num('u1')} and ${num('a2')} of ${num('u2')}, ultimate allowables`, extra: cx === 1 ? null : cx, ref: 'Combined loading' };
+      const combRes = { factor: kU === null ? null : kU * cx, ms: comb ? comb.ms : NaN, rf: comb ? comb.lambda : NaN, mismatch: null };
+      lastRows = [...rows, combRow]; lastRes = [...results, combRes];
+
+      const all = lastRes.map((x, i) => ({ x, row: lastRows[i] }));
+      const evald = all.filter((a) => Number.isFinite(a.x.ms));
+      const low = evald.sort((a, b) => a.x.ms - b.x.ms)[0];
+      r('low').innerHTML = low ? `${msTxt(low.x.ms)} <small>${esc(low.row.item)} — ${esc(low.row.failure)}</small>` : '<small>needs your factors</small>';
+      cls('low', low ? (low.x.ms < 0 ? 'bad' : 'ok') : '');
+      r('count').textContent = `${evald.length} of ${all.length}`;
+      const flags = all.filter((a) => a.x.mismatch).length, heavy = evald.filter((a) => a.x.ms > 0.5).length;
+      r('find').innerHTML = `${flags + heavy} <small>${flags} pairing · ${heavy} heavy</small>`;
+      cls('find', flags ? 'warn' : '');
+
+      root.querySelector('[data-table]')!.innerHTML = `<table><thead><tr><th>Item · failure mode</th><th>Factor</th><th>Applied vs allowable</th><th class="num">MS</th></tr></thead><tbody>${all.map(({ x, row }) => {
+        const ms = x.ms, c = !Number.isFinite(ms) ? '' : ms < 0 ? 'bad' : 'ok';
+        const fac = `${row.mode}<br>${x.factor === null ? '<span class="flag">needed</span>' : f(x.factor, 3)}`;
+        const isComb = !Number.isFinite(row.applied);
+        const pair = isComb ? 'interaction' : `${f(row.applied, row.applied < 10 ? 3 : 0)} vs ${f(row.allowable, row.allowable < 10 ? 4 : 0)}`;
+        return `<tr><td><b>${esc(row.item)}</b> <small>${esc(row.loadCase)}</small><br>${esc(row.failure)}${x.mismatch ? `<br><span class="flag">⚠ ${x.mismatch}</span>` : ''}</td><td>${fac}</td>`
+          + `<td><span class="nw">${pair}</span><br><small>${esc(row.allowableBasis)}</small></td><td class="num ${c}">${msTxt(ms)}</td></tr>`;
+      }).join('')}</tbody></table>`;
+
+      const missing = (['yield', 'ultimate', 'other'] as const).filter((m) => factors[m] === null && lastRows.some((x) => x.mode === m));
+      const out: [string, string][] = [];
+      if (missing.length) out.push(['warn', awaitingMessage(missing.map((m) => `${m} factor`), 'the margins')]);
+      for (const a of all) if (a.x.mismatch) out.push(['warn', `${esc(a.row.item)}, ${esc(a.row.failure)}: ${a.x.mismatch}. Pair yield with yield and ultimate with ultimate.`]);
+      for (const a of evald) if (a.x.ms > 0.5) out.push(['', `${esc(a.row.item)}, ${esc(a.row.failure)}: MS ${msTxt(a.x.ms)}. On a mass-driven part a large margin is a finding, not a success — either the part is heavy or another failure mode governs.`]);
+      if (low && low.x.ms < 0) out.push(['bad', `${esc(low.row.item)}, ${esc(low.row.failure)} fails with MS ${msTxt(low.x.ms)}.`]);
+      root.querySelector('[data-notes]')!.innerHTML = out.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
+      intChart(comb, kU === null ? null : kU * cx);
+    }
+
+    function intChart(comb: ReturnType<typeof interaction> | null, k: number | null) {
+      const svg = root.querySelector<SVGSVGElement>('[data-int]')!;
+      svg.replaceChildren();
+      const W = 480, H = 260, L = 50, R = 14, T = 12, B = 40;
+      const e1 = num('e1'), e2 = num('e2');
+      const r1 = k === null ? (num('a1') / num('u1')) : (k * num('a1')) / num('u1');
+      const r2 = k === null ? (num('a2') / num('u2')) : (k * num('a2')) / num('u2');
+      const m = Math.max(1.15, r1 * 1.1, r2 * 1.1);
+      const X = (v: number) => L + (v / m) * (W - L - R), Y = (v: number) => H - B - (v / m) * (H - T - B);
+      for (let v = 0; v <= m + 1e-9; v += 0.25) {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(2)));
+        svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(2)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, `R₁ — ${txt('n1')}`));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, `R₂ — ${txt('n2')}`));
+      const pts = Array.from({ length: 101 }, (_, i) => i / 100).map((a) => [a, Math.pow(Math.max(0, 1 - Math.pow(a, e1)), 1 / e2)]);
+      svg.append(el('path', { d: pts.map(([a, b], i) => `${i ? 'L' : 'M'}${X(a).toFixed(1)},${Y(b).toFixed(1)}`).join('') + ` L${X(0)},${Y(0)} Z`, fill: 'var(--rd-ok)', 'fill-opacity': 0.1, stroke: 'var(--rd-accent)', 'stroke-width': 2.2 }));
+      if (comb && Number.isFinite(comb.lambda)) {
+        svg.append(el('line', { x1: X(0), y1: Y(0), x2: X(r1 * comb.lambda), y2: Y(r2 * comb.lambda), stroke: 'var(--rd-muted)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('circle', { cx: X(r1 * comb.lambda), cy: Y(r2 * comb.lambda), r: 3.5, fill: 'var(--rd-accent)' }));
+        const right = X(r1 * comb.lambda) > W * 0.55;
+        svg.append(el('text', { x: X(r1 * comb.lambda) + (right ? -8 : 8), y: Y(r2 * comb.lambda) - 8, 'text-anchor': right ? 'end' : 'start', 'font-size': 10, fill: 'var(--rd-accent)' }, `× ${f(comb.lambda, 2)} reaches the curve`));
+      }
+      svg.append(el('circle', { cx: X(r1), cy: Y(r2), r: 6, fill: 'var(--rd-panel)', stroke: 'var(--rd-ink)', 'stroke-width': 2.5 }));
+      svg.append(el('text', { x: X(r1) + 9, y: Y(r2) + 14, 'font-size': 10, fill: 'var(--rd-ink)' }, k === null ? 'unfactored' : 'factored loads'));
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => btn.addEventListener('click', async () => {
+      const tsv = reportTsv(lastRows, lastRes);
+      const text = btn.dataset.copy === 'md'
+        ? tsv.split('\n').map((l, i) => `| ${l.split('\t').map((c) => c.replace(/\|/g, '/')).join(' | ')} |${i === 0 ? `\n|${' --- |'.repeat(l.split('\t').length)}` : ''}`).join('\n')
+        : tsv;
+      const label = btn.textContent;
+      const box = root.querySelector<HTMLTextAreaElement>('[data-copy-text]')!;
+      try { await navigator.clipboard.writeText(text); box.hidden = true; btn.textContent = 'Copied'; } catch {
+        // clipboard blocked (embedded browser, policy): show the text selected, and try the older copy command
+        box.value = text; box.hidden = false; box.focus(); box.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch { ok = false; }
+        btn.textContent = ok ? 'Copied' : 'Select the text below and copy';
+      }
+      setTimeout(() => (btn.textContent = label), 2500);
+    }));
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['fy', 'fu', 'fo'],
+      note: 'Worked-example factors loaded: yield 1.10, ultimate 1.25, other 1.25',
+      values: { fy: '1.10', fu: '1.25', fo: '1.25' },
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
