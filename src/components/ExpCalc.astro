@@ -1,0 +1,208 @@
+---
+// Differential expansion across a temperature range: an interference or clearance fit between dissimilar parts, a bonded
+// overlap, and slip across a bolt pattern. Maths in src/lib/expansion.ts (unit-tested); UI only here.
+import { EXP_MATERIALS } from '../lib/expansion';
+---
+
+<div class="calc excalc" data-excalc>
+  <div class="calc-head"><span>Differential expansion</span><span class="head-btns"><span>fit · bond · bolt pattern</span></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Temperature range</legend>
+        <div class="row2">
+          <label>Assembly (°C)<input name="ta" type="number" step="any" value="20" /></label>
+          <label>Coldest (°C)<input name="tc" type="number" step="any" value="-40" /></label>
+          <label>Hottest (°C)<input name="th" type="number" step="any" value="60" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Fit between two parts</legend>
+        <div class="row2">
+          <label>Inner part<select name="mi">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
+          <label>Outer part<select name="mo">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'al'}>{m.name}</option>)}</select></label>
+          <label>Interface ⌀ (mm)<input name="d" type="number" min="1" step="any" value="310" /></label>
+          <label>Outer part OD (mm)<input name="D" type="number" min="1" step="any" value="330" /></label>
+          <label>Inner part bore (mm)<input name="di" type="number" min="0" step="any" value="290" /></label>
+          <label>Interference at assembly (mm)<input name="del" type="number" step="any" value="0.10" /></label>
+          <label>Fit length (mm)<input name="L" type="number" min="0" step="any" value="30" /></label>
+          <label>Friction μ<input name="mu" type="number" min="0" step="0.01" value="0.15" /></label>
+          <label>Outer part yield (MPa)<input name="fy" type="number" min="1" step="any" value="500" /></label>
+        </div>
+        <p class="hint">Negative interference is a clearance. Yield is a typical value — use your allowable at temperature.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Bonded overlap</legend>
+        <div class="row2">
+          <label>Part 1<select name="m1">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
+          <label>Thickness (mm)<input name="t1" type="number" min="0.01" step="any" value="1.37" /></label>
+          <label>Part 2<select name="m2">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'cfrp'}>{m.name}</option>)}</select></label>
+          <label>Thickness (mm)<input name="t2" type="number" min="0.01" step="any" value="3" /></label>
+          <label>Adhesive shear modulus (MPa)<input name="G" type="number" min="1" step="any" value="800" /></label>
+          <label>Bondline (mm)<input name="ta2" type="number" min="0.01" step="any" value="0.2" /></label>
+          <label>Overlap (mm)<input name="Lb" type="number" min="0.1" step="any" value="50" /></label>
+          <label>Adhesive shear strength (MPa)<input name="tau" type="number" min="0" step="any" placeholder="your allowable" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Bolt pattern</legend>
+        <div class="row2">
+          <label>Plate 1<select name="p1">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'al'}>{m.name}</option>)}</select></label>
+          <label>Plate 2<select name="p2">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
+          <label>Distance from fixed point (mm)<input name="R" type="number" min="0" step="any" value="140" /></label>
+          <label>Hole clearance, radial (mm)<input name="c" type="number" min="0" step="any" value="0.5" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout" data-cls="cold"><dt>Fit when coldest</dt><dd data-r="cold">—</dd></div>
+        <div class="readout" data-cls="hot"><dt>Fit when hottest</dt><dd data-r="hot">—</dd></div>
+        <div class="readout" data-cls="vm"><dt>Outer part stress</dt><dd data-r="vm">—</dd></div>
+        <div class="readout primary" data-cls="bond"><dt>Adhesive edge shear</dt><dd data-r="bond">—</dd></div>
+        <div class="readout"><dt>Stress in the parts</dt><dd data-r="parts">—</dd></div>
+        <div class="readout" data-cls="slip"><dt>Bolt pattern slip</dt><dd data-r="slip">—</dd></div>
+      </dl>
+      <figure class="ex-fig">
+        <svg viewBox="0 0 420 240" data-chart role="img" aria-label="Interference or clearance of the fit against temperature"></svg>
+        <figcaption>The fit across the temperature range: above the line the parts are pressed together, below it they are loose.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Uniform temperature, linear elastic, room-temperature properties. Fit: Lamé thick cylinders. Bond: one-dimensional shear
+    lag — no peel, no edge singularity, no adhesive relaxation. Bolt pattern: slip relative to a common fixed point.
+  </div>
+</div>
+
+<style is:global>
+  .excalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .ex-fig { margin: 0.9rem 0 0 !important; }
+  .ex-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ex-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .excalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { EXP_MATERIALS, fitChange, fitPressure, fitStresses, fitHolding, bondedOverlap, patternSlip } from '../lib/expansion';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const M = (k: string) => EXP_MATERIALS.find((m) => m.key === k)!;
+
+  document.querySelectorAll<HTMLElement>('[data-excalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'bond' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let last: Parameters<typeof chart> | null = null;
+
+    field('mo').addEventListener('change', () => { const m = M(field('mo').value); if (Number.isFinite(m.Fy)) field('fy').value = String(m.Fy); });
+
+    function run() {
+      const notes: [string, string][] = [];
+      const ta = num('ta'), tc = num('tc'), th = num('th');
+      const dTc = tc - ta, dTh = th - ta;
+
+      // fit
+      const mi = M(field('mi').value), mo = M(field('mo').value);
+      const fp = { d: num('d'), D: num('D'), di: num('di') || 0, Eo: mo.E, nuo: mo.nu, Ei: mi.E, nui: mi.nu };
+      const del0 = num('del'), L = num('L') || 0, mu = num('mu') || 0, fy = num('fy');
+      let fitAt: ((T: number) => number) | null = null;
+      if (fp.d > 0 && fp.D > fp.d && fp.di < fp.d && Number.isFinite(del0)) {
+        fitAt = (T: number) => del0 + fitChange(fp.d, mi.alpha, mo.alpha, T - ta);
+        const show = (k: string, T: number) => {
+          const del = fitAt!(T), p = fitPressure(del, fp), s = fitStresses(p, fp), hold = fitHolding(p, fp.d, L, mu);
+          r(k).innerHTML = del > 0
+            ? `${f(del, 3)} mm <small>interference · p ${f(p, 2)} MPa · holds ${f(hold.force / 1000, 1)} kN</small>`
+            : `${f(-del, 3)} mm <small>clearance — loose at ${f(T, 0)} °C</small>`;
+          cls(k, del > 0 ? 'ok' : 'bad');
+          return { del, p, s };
+        };
+        const c = show('cold', tc), h = show('hot', th), a = { del: del0, p: fitPressure(del0, fp) };
+        const worst = [c, h, { ...a, s: fitStresses(a.p, fp) }].reduce((x, y) => (y.s.vmOuter > x.s.vmOuter ? y : x));
+        const ratio = worst.s.vmOuter / fy;
+        r('vm').innerHTML = `${f(worst.s.vmOuter, 0)} MPa <small>von Mises at the bore${Number.isFinite(ratio) ? ` · ${f(100 * ratio, 0)}% of yield` : ''}</small>`;
+        cls('vm', ratio > 1 ? 'bad' : ratio > 0.67 ? 'warn' : 'ok');
+        for (const [x, T] of [[c, tc], [h, th]] as const) if (x.del <= 0) notes.push(['bad', `The fit is loose at ${f(T, 0)} °C (${f(-x.del, 3)} mm clearance): it cannot locate or hold the part there. Pin, key or bolt it, or choose materials with matched expansion.`]);
+        if (ratio > 1) notes.push(['bad', `The outer part yields at the tightest extreme (${f(worst.s.vmOuter, 0)} MPa): less interference, a thicker outer part, or a matched material.`]);
+        if (mi.alpha === mo.alpha) notes.push(['', 'Same expansion: the fit does not change with a uniform temperature. Transients — one part heating before the other — still do.']);
+      } else { notes.push(['bad', 'Check the fit geometry: outer OD larger than the interface, inner bore smaller.']); }
+
+      // bond — the larger temperature excursion governs
+      const m1 = M(field('m1').value), m2 = M(field('m2').value), dT = Math.abs(dTc) >= Math.abs(dTh) ? dTc : dTh;
+      const b = bondedOverlap(m1.E, num('t1'), m2.E, num('t2'), num('G'), num('ta2'), num('Lb'), m1.alpha - m2.alpha, dT);
+      if (Number.isFinite(b.tauMax)) {
+        const tau = Math.abs(b.tauMax), str = num('tau');
+        r('bond').innerHTML = `${f(tau, 1)} MPa <small>at the ends, at ${f(ta + dT, 0)} °C${str > 0 ? ` · ${f((100 * tau) / str, 0)}% of strength` : ''}</small>`;
+        cls('bond', str > 0 ? (tau >= str ? 'bad' : tau > 0.5 * str ? 'warn' : 'ok') : '');
+        r('parts').innerHTML = `${f(b.sigma1, 0)} / ${f(b.sigma2, 0)} MPa <small>part 1 / part 2, mid-overlap · decay length ${f(b.decay, 1)} mm</small>`;
+        if (num('Lb') > 3 * b.decay) notes.push(['', `The adhesive shear is concentrated within about ${f(3 * b.decay, 0)} mm of each end; overlap beyond that does not lower the peak. A thicker or softer bondline, tapered ends, or closer-matched parts do.`]);
+        if (str > 0 && tau >= str) notes.push(['bad', `The bond's edge shear (${f(tau, 1)} MPa) reaches its strength: the ends will start to debond on the first ${dT < 0 ? 'cold soak' : 'hot soak'}.`]);
+      }
+
+      // bolt pattern
+      const p1 = M(field('p1').value), p2 = M(field('p2').value), R = num('R'), cl = num('c');
+      const slip = Math.max(patternSlip(p1.alpha, p2.alpha, dTc, R), patternSlip(p1.alpha, p2.alpha, dTh, R));
+      r('slip').innerHTML = `${f(slip, 3)} mm <small>against ${f(cl, 2)} mm hole clearance</small>`;
+      cls('slip', slip >= cl ? 'bad' : slip > 0.5 * cl ? 'warn' : 'ok');
+      if (slip >= cl) notes.push(['bad', `The plates move ${f(slip, 3)} mm relative to each other — more than the hole clearance, so the outer bolts bear and are sheared on every thermal cycle. Use one fixed hole with radial slots, flexures, or matched materials.`]);
+      else if (slip > 0) notes.push(['', `Relative slip of ${f(slip, 3)} mm at the outer bolts: within the clearance, but friction under preload resists it, so the joint stores the mismatch as shear until it slips — a source of preload loss and fretting.`]);
+
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      chart(fitAt, ta, tc, th);
+    }
+
+    function chart(fitAt: ((T: number) => number) | null, ta: number, tc: number, th: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      last = [fitAt, ta, tc, th];
+      if (!fitAt || !(th > tc)) return;
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 240, L = 56, R = 14, T = 16, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const t0 = Math.min(tc, ta) - 10, t1 = Math.max(th, ta) + 10;
+      const ys = [fitAt(t0), fitAt(t1), 0];
+      const y0 = Math.min(...ys), y1 = Math.max(...ys), pad = (y1 - y0) * 0.15 || 0.05;
+      const lo = y0 - pad, hi = y1 + pad;
+      const X = (t: number) => L + ((t - t0) / (t1 - t0)) * (W - L - R), Y = (v: number) => T + ((hi - v) / (hi - lo)) * (H - T - B);
+      const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+      svg.append(el('rect', { x: L, y: T, width: W - L - R, height: Math.max(0, Y(0) - T), fill: 'var(--rd-ok)', 'fill-opacity': 0.07 }));
+      svg.append(el('rect', { x: L, y: Y(0), width: W - L - R, height: Math.max(0, H - B - Y(0)), fill: 'var(--rd-accent)', 'fill-opacity': 0.07 }));
+      const step = (t1 - t0) > 120 ? 40 : 20;
+      for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) {
+        svg.append(el('line', { x1: X(t), x2: X(t), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(t), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, `${t}`));
+      }
+      const vstep = (hi - lo) > 0.4 ? 0.1 : (hi - lo) > 0.15 ? 0.05 : 0.02;
+      for (let v = Math.ceil(lo / vstep) * vstep; v <= hi; v += vstep) svg.append(el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(v, 2)));
+      svg.append(el('line', { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.6 }));
+      svg.append(el('text', { x: L + 6, y: T + 14, 'font-size': 12, fill: 'var(--rd-ok)', ...halo }, 'interference'));
+      svg.append(el('text', { x: L + 6, y: H - B - 6, 'font-size': 12, fill: 'var(--rd-accent)', ...halo }, 'clearance'));
+      svg.append(el('line', { x1: X(t0), y1: Y(fitAt(t0)), x2: X(t1), y2: Y(fitAt(t1)), stroke: 'var(--rd-blue)', 'stroke-width': 2.4 }));
+      for (const [t, name] of [[tc, 'coldest'], [ta, 'assembly'], [th, 'hottest']] as const) {
+        svg.append(el('circle', { cx: X(t), cy: Y(fitAt(t)), r: 4.5, fill: t === ta ? 'var(--rd-ink)' : fitAt(t) > 0 ? 'var(--rd-ok)' : 'var(--rd-accent)' }));
+        const above = fitAt(t) < (hi + lo) / 2;
+        svg.append(el('text', { x: X(t), y: Y(fitAt(t)) + (above ? -10 : 18), 'text-anchor': t === tc ? 'start' : t === th ? 'end' : 'middle', 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, name));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, 'temperature (°C)'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'fit (mm)'));
+    }
+
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (last && Math.abs(nw - w) > 8) { w = nw; chart(...last); } }).observe(root.querySelector('[data-chart]')!);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>

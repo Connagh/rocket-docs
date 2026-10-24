@@ -1,0 +1,40 @@
+---
+// How far a 300 mm diameter grows over 100 °C, by material — typical expansion coefficients from src/lib/expansion.ts,
+// plus composite propellant at 100 × 10⁻⁶/K (the value used on the propellant-grain page).
+import { EXP_MATERIALS } from '../lib/expansion';
+
+const rows = [
+  { name: 'Composite propellant', alpha: 100e-6, color: 'var(--rd-accent)' },
+  ...EXP_MATERIALS.map((m) => ({ name: m.name.replace(/ \(.*\)/, '').replace(', quasi-isotropic', ''), alpha: m.alpha, color: m.key === 'cfrp' ? 'var(--rd-ok)' : 'var(--rd-blue)' })),
+].sort((a, b) => b.alpha - a.alpha);
+const growth = (a: number) => 300 * a * 100; // mm
+const W = 320, L = 6, BW = 308, ROW = 30, MAX = 0.8; // bars to 0.8 mm; propellant runs off the scale
+---
+
+<figure class="viz">
+  <p class="viz-title">Growth of a 300 mm diameter over 100 °C</p>
+  <svg viewBox={`0 0 ${W} ${rows.length * ROW + 30}`} role="img" aria-labelledby="eb-desc" style="max-width: 400px; margin: 0 auto;">
+    <desc id="eb-desc">
+      Bar chart of how much a 300 millimetre diameter grows over 100 degrees: composite propellant 3.0 mm, off the scale;
+      aluminium 0.70 mm; austenitic stainless 0.52; nickel alloy 0.39; alloy steel 0.36; titanium 0.26; carbon-fibre
+      composite 0.06 mm.
+    </desc>
+    {rows.map((r, i) => {
+      const y = 8 + i * ROW, g = growth(r.alpha), off = g > MAX, w = (Math.min(g, MAX) / MAX) * BW;
+      return (
+        <g>
+          <text x={L} y={y + 11} font-size="12" fill="var(--rd-ink)">{r.name}</text>
+          <rect x={L} y={y + 15} width={Math.max(2, w)} height="10" rx="2" fill={r.color} fill-opacity="0.8"></rect>
+          {off && <path d={`M${L + w - 12},${y + 13} l6,14 M${L + w - 6},${y + 13} l6,14`} stroke="var(--rd-panel)" stroke-width="3"></path>}
+          <text x={W - 4} y={y + 11} text-anchor="end" font-size="12" font-weight="600" fill={r.color}>{g.toFixed(2)} mm{off ? ' →' : ''}</text>
+        </g>
+      );
+    })}
+    <text x={L} y={rows.length * ROW + 24} font-size="12" fill="var(--rd-muted)">α × diameter × ΔT · typical values</text>
+  </svg>
+  <figcaption>
+    Metals differ by a factor of about three; propellant grows eight times as much as the steel case it is bonded to, and
+    carbon-fibre composite hardly at all. Every joint between two of these materials is loaded, opened or shifted by the
+    temperature range the motor sees.
+  </figcaption>
+</figure>
