@@ -1,0 +1,68 @@
+---
+// The thread as a ramp: a tightened nut held by friction, and the same nut walking down the ramp once the joint
+// slips sideways and the friction is used up in the slip direction (Junker's mechanism). Schematic.
+const ang = (-14 * Math.PI) / 180; // ramp angle, exaggerated
+const panels = [
+  { title: 'Clamped, nothing slipping', lines: ['friction holds the nut', 'against the ramp'], slip: false },
+  { title: 'Joint slipping sideways', lines: ['friction is busy with the slip:', 'the ramp walks the nut off'], slip: true },
+];
+const W = 260, H = 210, X0 = 20, Y0 = 170, LEN = 220;
+const rx = (s: number) => X0 + s * Math.cos(ang), ry = (s: number) => Y0 + s * Math.sin(ang);
+const bs = 95, bw = 56, bh = 34; // block position along the ramp and size
+const cos = Math.cos(ang), sin = Math.sin(ang);
+const corner = (u: number, v: number) => [rx(bs) + u * cos - v * sin, ry(bs) + u * sin + v * cos].map((n) => n.toFixed(1)).join(',');
+const block = [corner(0, 0), corner(bw, 0), corner(bw, -bh), corner(0, -bh)].join(' ');
+const mid = { x: rx(bs + bw / 2) + (bh / 2) * sin, y: ry(bs + bw / 2) - (bh / 2) * cos };
+---
+
+<figure class="viz tr">
+  <p class="viz-title">Why a tight nut stays put — and why it walks off</p>
+  <div class="tr-grid">
+    {panels.map((p) => (
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.title}: ${p.lines.join(' ')}`}>
+        <defs>
+          <marker id={`trA${p.slip ? 1 : 0}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <text x="8" y="18" font-size="14" font-weight="600" fill="var(--rd-ink)">{p.title}</text>
+        <polygon points={`${rx(0)},${ry(0)} ${rx(LEN)},${ry(LEN)} ${rx(LEN)},${Y0 + 22} ${rx(0)},${Y0 + 22}`} fill="var(--rd-blue)" fill-opacity="0.18" stroke="var(--rd-blue)"></polygon>
+        <text x={rx(LEN) - 4} y={Y0 + 16} text-anchor="end" font-size="12" fill="var(--rd-blue)">thread flank</text>
+        <polygon points={block} fill="var(--rd-accent)" fill-opacity={p.slip ? 0.55 : 0.85} stroke="var(--rd-accent)"></polygon>
+        <text x={mid.x} y={mid.y + 4} text-anchor="middle" font-size="12" font-weight="600" fill="#05080f">nut</text>
+        {/* the ramp's push to unscrew: down the slope */}
+        <g style="color: var(--rd-warn)">
+          <line x1={rx(bs - 4)} y1={ry(bs - 4) - 6} x2={rx(bs - 44)} y2={ry(bs - 44) - 6} stroke="currentColor" stroke-width="2.5" marker-end={`url(#trA${p.slip ? 1 : 0})`}></line>
+        </g>
+        {p.slip ? (
+          <g style="color: var(--rd-ok)">
+            {/* friction now points along the sideways slip (shown as a to-and-fro arrow) */}
+            <line x1={mid.x - 22} y1={mid.y - 34} x2={mid.x + 22} y2={mid.y - 34} stroke="currentColor" stroke-width="2.5" marker-start={`url(#trA1)`} marker-end={`url(#trA1)`}></line>
+            <text x={mid.x} y={mid.y - 42} text-anchor="middle" font-size="12" fill="var(--rd-ok)">slip</text>
+          </g>
+        ) : (
+          <g style="color: var(--rd-ok)">
+            <line x1={rx(bs + bw + 4)} y1={ry(bs + bw + 4) - 6} x2={rx(bs + bw + 50)} y2={ry(bs + bw + 50) - 6} stroke="currentColor" stroke-width="2.5" marker-end={`url(#trA0)`}></line>
+            <text x={rx(bs + bw + 30)} y={ry(bs + bw + 30) - 14} text-anchor="middle" font-size="12" fill="var(--rd-ok)">friction</text>
+          </g>
+        )}
+        <text x={rx(bs - 30)} y={ry(bs - 30) - 14} text-anchor="middle" font-size="12" fill="var(--rd-warn)">ramp</text>
+        <text x="8" y="40" font-size="12" fill="var(--rd-muted)">{p.lines[0]}</text>
+        <text x="8" y="56" font-size="12" fill="var(--rd-muted)">{p.lines[1]}</text>
+      </svg>
+    ))}
+  </div>
+  <figcaption>
+    Unrolled, a thread is a ramp. Preload pushes the nut down it; friction on the thread and under the nut holds it,
+    several times harder than the ramp pushes. When the joint slips sideways, that friction is spent resisting the slip
+    instead — and with nothing left to oppose it, the ramp turns the nut a little on every cycle. That is Junker's
+    mechanism of self-loosening.
+  </figcaption>
+</figure>
+
+<style>
+  .tr { container-type: inline-size; }
+  .tr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .tr-grid > * { margin: 0 !important; }
+  @container (max-width: 30rem) { .tr-grid { grid-template-columns: minmax(0, 1fr); } .tr-grid svg { max-width: 340px; margin: 0 auto !important; } }
+</style>

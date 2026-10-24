@@ -74,6 +74,7 @@ export const REBUILT = {
   ageing: 'verify/storage-ageing',
   oring: 'seals/o-ring-design',
   bolts: 'joints/bolted-joints',
+  locking: 'joints/locking-and-retention',
   matspec: 'materials/specification',
   allow: 'materials/allowables',
 };
