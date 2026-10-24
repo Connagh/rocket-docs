@@ -72,6 +72,7 @@ export const REBUILT = {
   ageing: 'verify/storage-ageing',
   oring: 'seals/o-ring-design',
   matspec: 'materials/specification',
+  allow: 'materials/allowables',
 };
 
 /** Primers: v2-only learning pages that sit in a phase without taking a zone number. */

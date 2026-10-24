@@ -1,0 +1,258 @@
+---
+// Design allowables from test data: A- and B-basis (normal, one-sided tolerance limits), knockdowns, and margins.
+// Maths in src/lib/allowables.ts (unit-tested); this file is UI only.
+const DATA = [471, 458, 463, 449, 467, 455, 476, 452, 461, 444, 468, 459, 457, 472, 450, 464, 446, 462, 456, 469];
+const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium alloy'], ['steel', 'Low-alloy steel'], ['ss', 'Stainless steel'], ['ni', 'Nickel alloy']];
+---
+
+<div class="calc alcalc" data-alcalc>
+  <div class="calc-head"><span>Design allowables from test data</span><span>normal one-sided tolerance limits · 95% confidence</span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Test results (MPa)</legend>
+        <label>One per line, or separated by commas
+          <textarea name="data" rows="6">{DATA.join(', ')}</textarea>
+        </label>
+        <div class="row2">
+          <label>Specification minimum, if any (MPa)<input name="smin" type="number" min="0" step="any" placeholder="none" /></label>
+          <label>Load path
+            <select name="path">
+              <option value="A">Single — failure is not contained (A-basis)</option>
+              <option value="B">Redundant — load redistributes (B-basis)</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint">Illustrative data: 20 yield-strength tests of one aluminium plate lot, longitudinal, room temperature. Real allowables need several material lots.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Knockdowns to the design condition</legend>
+        <div class="row2">
+          <label>Material family (temperature curve)<select name="fam">{FAMS.map(([k, n]) => <option value={k}>{n}</option>)}</select></label>
+          <label>Design temperature (°C)<input name="temp" type="number" step="any" value="100" /></label>
+          <label>Temperature factor<input name="kt" type="number" min="0" max="1.2" step="0.01" placeholder="from curve" /></label>
+          <label>Direction (L / LT / ST)<input name="kdir" type="number" min="0" max="1.2" step="0.01" value="0.88" /></label>
+          <label>Thickness / product form<input name="kth" type="number" min="0" max="1.2" step="0.01" value="1" /></label>
+          <label>Environment<input name="kenv" type="number" min="0" max="1.2" step="0.01" value="1" /></label>
+          <label>Joint / weld efficiency<input name="kj" type="number" min="0" max="1.2" step="0.01" value="1" /></label>
+        </div>
+        <p class="hint">Knockdown factors are property ratios from your own or handbook data — not safety factors. The temperature curve is a family screening estimate; override it with data.</p>
+      </fieldset>
+      <fieldset>
+        <legend>The check</legend>
+        <div class="row2">
+          <label>Applied stress at limit load (MPa)<input name="sapp" type="number" min="0" step="any" value="300" /></label>
+          <label>Your programme's factor of safety<input name="fs" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+        </div>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="allow"><dt data-r="allowLabel">Design allowable</dt><dd data-r="allow">—</dd></div>
+        <div class="readout"><dt>Reserve, allowable ÷ applied</dt><dd data-r="res">—</dd></div>
+        <div class="readout" data-cls="ms"><dt>Margin of safety</dt><dd data-r="ms">—</dd></div>
+      </dl>
+      <p class="pv-sub">The data</p>
+      <dl class="readouts">
+        <div class="readout"><dt>n · mean · s</dt><dd data-r="stats">—</dd></div>
+        <div class="readout"><dt>B-basis (k)</dt><dd data-r="b">—</dd></div>
+        <div class="readout"><dt>A-basis (k)</dt><dd data-r="a">—</dd></div>
+      </dl>
+      <div class="al-table" data-table></div>
+      <figure class="al-fig">
+        <svg viewBox="0 0 480 220" data-dist role="img" aria-label="Test results with the fitted normal distribution and basis values"></svg>
+        <figcaption>Each dot is a test. The curve is the normal distribution fitted to them. A- and B-basis sit well below the lowest result: they bound the population, not this sample.</figcaption>
+      </figure>
+      <figure class="al-fig">
+        <svg viewBox="0 0 480 220" data-k role="img" aria-label="Tolerance factor k against number of tests"></svg>
+        <figcaption>The factor k against the number of tests. Few tests mean a big k — uncertainty about the population is paid for in allowable.</figcaption>
+      </figure>
+      <figure class="al-fig">
+        <svg viewBox="0 0 480 220" data-chain role="img" aria-label="From basis value to design allowable"></svg>
+        <figcaption>From the basis value to the design allowable, one knockdown at a time, against the applied stress (and the applied stress times your factor, once entered).</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Assumes a normal population and one homogeneous sample. Handbook practice (MMPDS, CMH-17) tests several material lots,
+    checks the distribution (normal, Weibull or lognormal, or a non-parametric method) and pools data only where
+    statistics allow. Knockdowns multiply; their values come from data, not from this page.
+  </div>
+</div>
+
+<style is:global>
+  .alcalc .pv-sub { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rd-muted); margin: 1rem 0 0.4rem !important; }
+  .alcalc textarea { width: 100%; display: block; margin-top: 0.2rem; font-family: var(--sl-font-mono); background: var(--rd-panel2); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; }
+  .alcalc .al-table { margin-top: 0.75rem !important; overflow-x: auto; }
+  .alcalc .al-table table { width: 100%; font-size: var(--sl-text-xs); font-family: var(--sl-font-mono); border-collapse: collapse; display: table; }
+  .alcalc .al-table th, .alcalc .al-table td { padding: 0.25rem 0.4rem; border-bottom: 1px solid var(--rd-line); text-align: right; white-space: nowrap; }
+  .alcalc .al-table th:first-child, .alcalc .al-table td:first-child { text-align: left; }
+  .alcalc .al-table tr.on td { color: var(--pc, var(--sl-color-accent)); font-weight: 700; }
+  .al-fig { margin: 0.9rem 0 0 !important; }
+  .al-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .al-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .alcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { basisValues, toleranceFactor, retention } from '../lib/allowables';
+  import { readFactor, awaitingMessage } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const kCache = new Map<string, number>();
+  const kOf = (n: number, p: number) => { const key = `${n}:${p}`; if (!kCache.has(key)) kCache.set(key, toleranceFactor(n, p)); return kCache.get(key)!; };
+
+  document.querySelectorAll<HTMLElement>('[data-alcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    const num = (n: string) => +field(n).value;
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'allow' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    function run() {
+      const notes = root.querySelector('[data-notes]')!;
+      const xs = field('data').value.split(/[\s,;]+/).filter(Boolean).map(Number).filter((v) => Number.isFinite(v) && v > 0);
+      if (xs.length < 3) { notes.innerHTML = '<li class="bad">Enter at least three test results (A- and B-basis need many more to be credible).</li>'; return; }
+      const b = basisValues(xs);
+      const smin = field('smin').value.trim() === '' ? null : num('smin');
+      const tempCurve = retention(field('fam').value, num('temp'));
+      const ktIn = field('kt').value.trim();
+      const kT = ktIn !== '' ? num('kt') : tempCurve;
+      const kn = [['temperature', kT], ['direction', num('kdir')], ['thickness', num('kth')], ['environment', num('kenv')], ['joint', num('kj')]] as [string, number][];
+      const kProd = kn.reduce((p, [, k]) => p * k, 1);
+      const path = field('path').value as 'A' | 'B';
+      const sapp = num('sapp');
+      const fs = readFactor(field('fs').value);
+
+      const rows = [
+        { key: 'typ', label: 'Typical (mean)', v: b.mean },
+        { key: 'B', label: 'B-basis', v: b.B },
+        { key: 'A', label: 'A-basis', v: b.A },
+        ...(smin !== null ? [{ key: 'S', label: 'S-basis (spec min)', v: smin }] : []),
+      ];
+      const chosen = rows.find((x) => x.key === path)!;
+      const allow = chosen.v * kProd;
+      r('allowLabel').textContent = `Design allowable — ${path}-basis`;
+      r('allow').innerHTML = Number.isFinite(allow) ? `${f(allow, 1)} <small>MPa</small>` : '<small>no temperature estimate — enter a factor</small>';
+      r('res').textContent = sapp > 0 && Number.isFinite(allow) ? `${f(allow / sapp, 3)}×` : '—';
+      if (fs === null) { r('ms').innerHTML = '<small>needs your factor</small>'; cls('ms', ''); }
+      else { const ms = allow / (fs * sapp) - 1; r('ms').textContent = `${ms >= 0 ? '+' : ''}${f(ms, 2)}`; cls('ms', ms < 0 ? 'bad' : ms < 0.05 ? 'warn' : 'ok'); }
+      cls('allow', '');
+      r('stats').innerHTML = `${b.n} · ${f(b.mean, 1)} · ${f(b.sd, 1)} <small>CV ${f(b.cv * 100, 1)}%</small>`;
+      r('b').innerHTML = `${f(b.B, 1)} <small>k ${f(b.kB, 3)}</small>`;
+      r('a').innerHTML = `${f(b.A, 1)} <small>k ${f(b.kA, 3)}</small>`;
+      root.querySelector('[data-table]')!.innerHTML = `<table><thead><tr><th>Basis</th><th>Value</th><th>× knockdowns</th><th>÷ applied</th>${fs !== null ? '<th>MS</th>' : ''}</tr></thead><tbody>${rows.map((x) => {
+        const a = x.v * kProd, ms = fs !== null ? a / (fs * sapp) - 1 : NaN;
+        return `<tr class="${x.key === path ? 'on' : ''}"><td>${x.label}</td><td>${f(x.v, 1)}</td><td>${f(a, 1)}</td><td>${sapp > 0 ? f(a / sapp, 3) : '—'}</td>${fs !== null ? `<td>${ms >= 0 ? '+' : ''}${f(ms, 2)}</td>` : ''}</tr>`;
+      }).join('')}</tbody></table>`;
+
+      const out: [string, string][] = [];
+      out.push(['', `The ${path}-basis value is ${f(chosen.v, 1)} MPa — ${f(((b.mean - chosen.v) / b.mean) * 100, 1)}% below the mean and ${f(b.min - chosen.v, 1)} MPa below the lowest test. It bounds ${path === 'A' ? '99%' : '90%'} of the population with 95% confidence, not this sample.`]);
+      const typA = (b.mean * kProd) / sapp, chA = allow / sapp;
+      if (sapp > 0 && Number.isFinite(chA)) out.push(['', `Against ${f(sapp, 0)} MPa: the typical value gives a reserve of ${f(typA, 2)}, the ${path}-basis value ${f(chA, 2)}. Any factor of safety between the two would pass on the typical value and fail on the real allowable — the error a typical value hides.`]);
+      if (!Number.isFinite(tempCurve) && ktIn === '') out.push(['warn', 'The design temperature is beyond the family curve. Enter a temperature factor from data.']);
+      if (b.n < 10) out.push(['warn', `With ${b.n} tests, k is large (A-basis ${f(b.kA, 2)}). Handbook A- and B-basis values come from many tests across several material lots.`]);
+      if (b.cv > 0.08) out.push(['warn', `Scatter is high (CV ${f(b.cv * 100, 1)}%). Check for mixed lots, orientations or test problems before computing an allowable.`]);
+      if (smin !== null && smin > b.A) out.push(['warn', `The specification minimum (${f(smin, 0)} MPa) is above the A-basis value from these tests: this material may not reliably meet its specification.`]);
+      if (fs === null) out.push(['warn', awaitingMessage(['factor of safety'], 'the margin', false)]);
+      notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+
+      dist(xs, b, smin);
+      kChart(b.n);
+      chain(chosen.v, path, kn, sapp, fs);
+    }
+
+    function dist(xs: number[], b: ReturnType<typeof basisValues>, smin: number | null) {
+      const svg = root.querySelector<SVGSVGElement>('[data-dist]')!;
+      svg.replaceChildren();
+      const W = 480, H = 220, L = 20, R = 20, T = 14, B = 34;
+      const lo = Math.min(b.A, smin ?? Infinity, b.mean - 4.2 * b.sd), hi = b.mean + 3.5 * b.sd;
+      const X = (v: number) => L + ((v - lo) / (hi - lo)) * (W - L - R);
+      const pdf = (v: number) => Math.exp(-0.5 * ((v - b.mean) / b.sd) ** 2);
+      const yBase = H - B - 30, Y = (d: number) => yBase - d * (yBase - T - 20);
+      const pts = Array.from({ length: 161 }, (_, k) => lo + (k / 160) * (hi - lo));
+      svg.append(el('path', { d: `M${X(lo)},${yBase} ` + pts.map((v) => `L${X(v).toFixed(1)},${Y(pdf(v)).toFixed(1)}`).join('') + ` L${X(hi)},${yBase} Z`, fill: 'var(--rd-blue)', 'fill-opacity': 0.12, stroke: 'var(--rd-blue)', 'stroke-width': 1.5 }));
+      svg.append(el('line', { x1: L, x2: W - R, y1: yBase, y2: yBase, stroke: 'var(--rd-line)' }));
+      const sorted = [...xs].sort((a, c) => a - c);
+      sorted.forEach((v, i) => svg.append(el('circle', { cx: X(v), cy: yBase + 12 + (i % 3) * 7, r: 3.5, fill: 'var(--rd-ink)', 'fill-opacity': 0.75 })));
+      const marks: [number, string, string][] = [[b.mean, 'mean', 'var(--rd-muted)'], [b.B, 'B', 'var(--rd-blue)'], [b.A, 'A', 'var(--rd-accent)']];
+      if (smin !== null) marks.push([smin, 'S', 'var(--rd-warn)']);
+      marks.forEach(([v, lab, col], k) => {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T + 10, y2: yBase + 30, stroke: col, 'stroke-width': lab === 'mean' ? 1.2 : 2, 'stroke-dasharray': lab === 'mean' ? '4 3' : '' }));
+        svg.append(el('text', { x: X(v), y: T + 6 + (k % 2) * 0, 'text-anchor': 'middle', 'font-size': 10.5, 'font-weight': 700, fill: col }, lab));
+      });
+      for (const v of [Math.ceil(lo / 10) * 10, Math.round(b.mean / 10) * 10, Math.floor(hi / 10) * 10])
+        svg.append(el('text', { x: X(v), y: H - 6, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      svg.append(el('text', { x: W - R, y: H - 6, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, 'MPa'));
+    }
+
+    function kChart(n: number) {
+      const svg = root.querySelector<SVGSVGElement>('[data-k]')!;
+      svg.replaceChildren();
+      const W = 480, H = 220, L = 44, R = 14, T = 12, B = 34, n1 = 3, n2 = 100, kMax = 8;
+      const X = (v: number) => L + (Math.log10(v / n1) / Math.log10(n2 / n1)) * (W - L - R);
+      const Y = (k: number) => H - B - (Math.min(k, kMax) / kMax) * (H - T - B);
+      for (let k = 0; k <= kMax; k += 2) {
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(k), y2: Y(k), stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: L - 6, y: Y(k) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, String(k)));
+      }
+      for (const v of [3, 5, 10, 20, 30, 50, 100]) {
+        svg.append(el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, String(v)));
+      }
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'number of tests n'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'k'));
+      const ns = [3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 40, 50, 70, 100];
+      for (const [p, col, lab, zp] of [[0.99, 'var(--rd-accent)', 'A-basis', 2.326], [0.9, 'var(--rd-blue)', 'B-basis', 1.282]] as const) {
+        svg.append(el('path', { d: ns.map((v, i) => `${i ? 'L' : 'M'}${X(v).toFixed(1)},${Y(kOf(v, p)).toFixed(1)}`).join(''), fill: 'none', stroke: col, 'stroke-width': 2.4 }));
+        svg.append(el('line', { x1: L, x2: W - R, y1: Y(zp), y2: Y(zp), stroke: col, 'stroke-dasharray': '3 4', 'stroke-opacity': 0.6 }));
+        svg.append(el('text', { x: X(6) + 6, y: p === 0.99 ? Y(kOf(6, p)) - 8 : Y(kOf(6, p)) + 16, 'font-size': 10.5, 'font-weight': 700, fill: col }, lab));
+        svg.append(el('text', { x: W - R - 4, y: Y(zp) + (p === 0.99 ? -5 : 13), 'text-anchor': 'end', 'font-size': 9.5, fill: col }, `${zp} with unlimited tests`));
+      }
+      if (n >= n1 && n <= n2) {
+        svg.append(el('line', { x1: X(n), x2: X(n), y1: T, y2: H - B, stroke: 'var(--rd-ink)', 'stroke-dasharray': '3 3' }));
+        svg.append(el('text', { x: X(n) + 4, y: T + 12, 'font-size': 10, fill: 'var(--rd-ink)' }, `your n = ${n}`));
+      }
+    }
+
+    function chain(v0: number, path: string, kn: [string, number][], sapp: number, fs: number | null) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chain]')!;
+      svg.replaceChildren();
+      const steps: [string, number][] = [[`${path}-basis`, v0]];
+      let v = v0;
+      for (const [lab, k] of kn) { v *= Number.isFinite(k) ? k : NaN; steps.push([`× ${lab} ${Number.isFinite(k) ? f(k, 2) : '?'}`, v]); }
+      const W = 480, L = 132, R = 56, rowH = 26, T = 8;
+      const max = Math.max(v0, sapp * (fs ?? 1)) * 1.05;
+      const X = (val: number) => L + (val / max) * (W - L - R);
+      steps.forEach(([lab, val], i) => {
+        const y = T + i * rowH;
+        svg.append(el('text', { x: L - 8, y: y + 15, 'text-anchor': 'end', 'font-size': 10.5, fill: 'var(--rd-ink)' }, lab));
+        if (!Number.isFinite(val)) return;
+        svg.append(el('rect', { x: L, y: y + 3, width: Math.max(1, X(val) - L), height: 16, rx: 2, fill: i === steps.length - 1 ? 'var(--rd-accent)' : i === 0 ? 'var(--rd-muted)' : 'var(--rd-blue)', 'fill-opacity': i === 0 ? 0.55 : 0.75 }));
+        svg.append(el('text', { x: X(val) + 5, y: y + 15, 'font-size': 10, fill: 'var(--rd-muted)' }, f(val, 0)));
+      });
+      const yEnd = T + steps.length * rowH;
+      if (sapp > 0) {
+        svg.append(el('line', { x1: X(sapp), x2: X(sapp), y1: T, y2: yEnd, stroke: 'var(--rd-ink)', 'stroke-dasharray': '4 3' }));
+        svg.append(el('text', { x: X(sapp), y: yEnd + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-ink)' }, 'applied'));
+        if (fs !== null) {
+          svg.append(el('line', { x1: X(sapp * fs), x2: X(sapp * fs), y1: T, y2: yEnd, stroke: 'var(--rd-warn)', 'stroke-width': 2 }));
+          svg.append(el('text', { x: X(sapp * fs), y: yEnd + 28, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-warn)' }, `× ${fs}`));
+        }
+      }
+    }
+
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 150); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
