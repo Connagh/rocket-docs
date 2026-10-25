@@ -284,7 +284,7 @@ const TABS = [
       if (!pt) { tableBox.hidden = true; notes.push(['bad', 'Needs F<sub>tu</sub> above F<sub>ty</sub>, and a uniform elongation that leaves more than 0.2% plastic strain at the ultimate.']); return null; }
       const last = pt.table[pt.table.length - 1];
       rows.push(
-        { dt: 'Hardening exponent n', dd: `${f(pt.n, 1)} <small>Ramberg–Osgood, through ${g3(Fty)} MPa at 0.2% and ${g3(Ftu)} MPa at ${f(100 * eu, 1)}%</small>`, primary: true },
+        { dt: 'Hardening exponent <span class="nc">n</span>', dd: `${f(pt.n, 1)} <small>Ramberg–Osgood, through ${g3(Fty)} MPa at 0.2% and ${g3(Ftu)} MPa at ${f(100 * eu, 1)}%</small>`, primary: true },
         { dt: 'True stress at necking', dd: `${g3(last.trueStress)} MPa <small>${f(100 * (last.trueStress / Ftu - 1), 1)}% above the engineering ultimate</small>` },
         { dt: 'True plastic strain at necking', dd: `${f(100 * last.truePlastic, 2)}% <small>the last row; beyond it many solvers hold the stress flat</small>` },
         { dt: 'First row', dd: `${g3(pt.table[0].trueStress)} MPa <small>at zero plastic strain — the proportional limit, where the fitted plastic strain is 0.01%</small>` },
