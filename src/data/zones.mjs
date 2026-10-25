@@ -72,6 +72,7 @@ export const REBUILT = {
   residual: 'materials/residual-stress',
   feamat: 'verify/fea-cards',
   fea: 'verify/fea-and-test',
+  correl: 'verify/test-correlation',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',

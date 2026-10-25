@@ -1,0 +1,194 @@
+---
+title: Test correlation
+description: Comparing a model with test data — strain gauges at proof test, modal surveys against modal analysis by frequency and MAC, correlation criteria and measurement uncertainty, reading the pattern of differences to find the cause, and updating the model honestly.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import CorrelationFigure from '../../../components/CorrelationFigure.astro';
+import CorrelCalc from '../../../components/CorrelCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Correlation asks whether the model's errors are small, and small for the right reason — because that is what lets you trust it where there were no gauges.</div>
+  <div><b>Before this</b><a href="../fea-and-test/">FEA & test</a> · <a href="../proof-testing/">Proof testing</a></div>
+  <div><b>Used by</b><a href="../margin-policy/">Margin policy</a> · <a href="../random-vibration/">Random vibration</a></div>
+</div>
+
+## Why this matters
+
+A test measures a part at a few dozen points under one or two load cases. The model is what predicts everything else —
+the stresses where there were no gauges, the flight loads the test could not apply, the next design. Correlation is how
+the test earns the model that right: it checks the model where the two can be compared, and if they agree for the right
+reasons, the model can be used where they cannot.
+
+It can also go badly wrong. A model adjusted until it matches the test, by whatever parameter moves the numbers, can
+match perfectly and predict nothing. The difference between correlating a model and tuning it is the subject of this
+page.
+
+<Analogy title="The bathroom scale">
+  You can check a bathroom scale by standing on it with a known weight and seeing what it reads — or you can turn the
+  adjusting wheel until it reads the number you hoped for. Both end with the "right" reading. Only one tells you
+  anything about the next thing you weigh.
+</Analogy>
+
+## What to compare
+
+- **Like with like.** A strain gauge averages over its grid length on one surface in one direction; take the model's
+  strain the same way. An accelerometer measures one direction at one point and adds its own mass; read the model
+  there, with that mass.
+- **The test article as tested.** Its fixture, instrumentation, cabling, measured dimensions and inert or real fill —
+  not the flight configuration.
+- **Slopes, not points.** Strain against load through the test, not a single reading at peak: the slope removes zero
+  offsets, and the shape of the line shows non-linearity, seating of joints, and yielding (a reading that does not
+  return to zero).
+- **Every gauge,** including the inconvenient ones. Dropping a gauge needs evidence that the gauge failed, recorded
+  before the comparison.
+
+## Static correlation: strain gauges
+
+Compare each gauge as a ratio, $\varepsilon_{test}/\varepsilon_{model}$, and look at the set:
+
+- **The mean ratio** shows a global bias — load calibration, modulus, wall thickness everywhere.
+- **The scatter** shows how well the model captures the distribution of strain.
+- **The pattern** — which gauges are off, in which directions — points to the cause (see below).
+
+The acceptance criterion comes from your programme. It must be wider than the gauges can resolve: a reading carries
+errors from gauge-factor tolerance, transverse sensitivity, misalignment, position in a gradient and the instrumentation.
+Two of them need care:
+
+- **Transverse sensitivity** matters where the strain across the gauge is large — an axial gauge on a pressurised case
+  sees four times its own strain across it. The error is systematic and can be corrected using the rosette's other
+  readings.
+- **Misalignment** barely matters along a principal direction (the error is second order) and matters a great deal at
+  45° to one (first order). Hoop and axial gauges on a cylinder are forgiving; shear gauges are not.
+
+## Modal correlation: frequencies and shapes
+
+A modal survey measures natural frequencies and mode shapes at the accelerometer points. Compare:
+
+- **Frequencies** — the model's against the test's, mode by mode, as a percentage.
+- **Shapes,** with the modal assurance criterion (Allemang and Brown):
+
+$$
+\text{MAC}(\phi_a, \phi_t) = \frac{\left|\phi_a^{\mathsf T}\phi_t\right|^2}{\left(\phi_a^{\mathsf T}\phi_a\right)\left(\phi_t^{\mathsf T}\phi_t\right)}
+$$
+
+MAC is 1 for the same shape at any scale and 0 for unrelated ones. Pair each test mode with the model mode of highest
+MAC — not the one of nearest frequency, since modes can swap order.
+
+- **Check the instrumentation with the AutoMAC** — the test modes against each other. With too few points, different
+  shapes look alike and every MAC is inflated.
+- **MAC ignores mass.** Where the model's mass matrix can be reduced to the test points, cross-orthogonality
+  $\Phi_a^{\mathsf T} M \Phi_t$ is the stronger check.
+- **Criteria** come from standards such as NASA-STD-5002 and ECSS-E-ST-32-11 — typically a few per cent on the
+  frequencies of the main modes and cross-orthogonality of about 0.9 on the diagonal, with off-diagonal terms held to
+  about 0.1. Use your governing document's numbers.
+
+## Finding why they differ
+
+The pattern of the differences usually names the cause:
+
+| Pattern | Likely cause |
+| --- | --- |
+| Every gauge off by the same ratio | Load or pressure calibration, modulus, wall thickness everywhere |
+| One station off by the same ratio in every direction | Local thickness or material — measure the as-built part |
+| One direction off at a station | The gauge: orientation, bonding, wiring; or local bending the model lacks |
+| Gauges near a joint or weld off | Joint stiffness, weld mismatch or peaking, local geometry |
+| Lowest mode furthest off, higher ones close | Support or joint stiffness — fixture, bolted interface |
+| All modes off by about the same ratio | Mass or modulus: weigh the article; check the fill and the instrumentation mass |
+| A test mode with no model partner | Missing component, joint freedom or local mode; or too few measurement points |
+| Readings that change with amplitude | Non-linearity: joint slip, gaps, seating — the model is linear |
+
+## Updating the model honestly
+
+- **Measure before adjusting.** As-built thickness, mass, fixture stiffness, material certificates: a measured value
+  replaces an assumption, and needs no further justification.
+- **Change physical parameters, within what is known about them.** A bolted joint's stiffness might be uncertain by
+  ±50%; a steel's modulus by a few per cent. If closing the gap needs a change far outside the plausible range, the
+  error is elsewhere — the model is missing something.
+- **One change at a time, with its reason.** Record every change, its justification and its effect.
+- **Keep data back.** Check the updated model against gauges, modes or tests that were not used to update it. A change
+  that fits the data it was fitted to proves little; one that also predicts the rest is a correlation.
+- **When it will not correlate, say so.** Carry the remaining difference as model uncertainty — programmes often apply
+  an additional factor to uncorrelated models — rather than forcing a fit.
+
+The sensitivity of a frequency to a parameter makes the plausibility check quantitative. With
+$S = \partial\ln f/\partial\ln p$ — 0.5 for a stiffness that carries the whole mode, −0.5 for a mass — the change that
+would close a gap on its own is
+
+$$
+\frac{\Delta p}{p} = \left(\frac{f_{test}}{f_{model}}\right)^{1/S} - 1
+$$
+
+<CorrelationFigure />
+
+## Calculator
+
+<CorrelCalc />
+
+## Worked example — correlating the proof test and a modal survey
+
+The readings, mode shapes and frequencies here are illustrative; the criteria — ±5% on gauges, ±5% on frequencies,
+MAC at least 0.9 — are **for this example only**. Press **Load worked example** to apply them.
+
+1. **Proof-test gauges.** The 300 mm D6AC case is proof tested at 11 MPa with eight gauges. The model predicts
+   membrane strains of 5021 µε hoop and 1233 µε axial on the cylinder, and 4169 µε on the hemispherical aft dome, from
+   the nominal 1.377 mm wall. Six gauges agree within 2.2%. **G5 and G6**, hoop and axial at one station 250 mm from
+   the forward dome, read 6.8% and 6.7% low. Mean ratio 0.985, scatter 3.5%, two gauges outside ±5%.
+2. **The pattern.** Both directions at one station are low by the same ratio. A gauge fault would affect one direction;
+   a global error would affect every gauge. Same ratio, both directions, one place: the wall there is thicker. An
+   ultrasonic thickness measurement at the station reads **1.47 mm**. With the measured wall, the model gives 4703 and
+   1155 µε — G5 and G6 now agree within 0.5%, every gauge is inside the band, and the scatter falls to 1.3%.
+3. **The tempting alternative.** Raising the modulus by 7% would also have fixed G5 and G6 — and moved the other six
+   gauges 5–9% out of the band. One measurement fixed what a tuned parameter would have broken.
+4. **Can the gauges resolve ±5%?** For the axial gauge G4 (1260 µε, with 4950 µε across it): gauge factor ±1%,
+   transverse sensitivity 0.5%, 2° misalignment and ±5 µε of instrumentation give **±30 µε, 2.4%** — most of it
+   transverse sensitivity, which can be corrected. A ±5% band is resolvable; ±2% would not be.
+5. **Modal survey.** A bracket carrying an electronics unit on the aft skirt (the
+   [random-vibration](../random-vibration/) example's 150 Hz unit) is surveyed with six accelerometers. Test against
+   model: 138 against 150 Hz, 905 against 940 Hz, 2590 against 2632 Hz — the model is 8.7%, 3.9% and 1.6% high.
+   The MAC pairs every mode with its partner at 0.998 or better. The test's own AutoMAC reaches 0.11 off the diagonal:
+   six points cannot separate these shapes more finely, but well enough. Mode 1 fails the ±5% criterion.
+6. **What could explain mode 1?** The lowest mode furthest off points to the root joint. Closing the 8% gap alone would
+   need the modulus 15% lower or the density 18% higher — impossible for a metal bracket — or the thickness 8%
+   thinner, outside its ±4%. The root joint's stiffness, uncertain by ±50% and with a sensitivity of 0.35 from the
+   model, needs to be **21% softer**: plausible. Softening it changes mode 2 to 914 Hz and mode 3 to 2601 Hz — both now
+   within 1% of test, though they were not used to choose the change. That is the check that makes it a correlation.
+
+## Where this stops
+
+- **Linear, deterministic comparison.** Statistical correlation, Bayesian updating and formal model-updating methods
+  go further — see Friswell and Mottershead.
+- **Single-parameter plausibility.** Real updates may involve several parameters at once, and then need more data than
+  unknowns.
+- **MAC is not cross-orthogonality.** It does not use mass, and cannot show whether the model's modes are orthogonal
+  through the test points.
+- **Criteria** — gauge bands, frequency and orthogonality limits — come from your programme and governing standards.
+
+## On the drawing and in the test documents
+
+- **The gauge and accelerometer map** — locations, directions, surfaces and grid lengths, matching the model's read-out
+  points.
+- **As-built measurements** the correlation relies on: wall thickness at gauge stations, mass, centre of gravity.
+- **The test configuration** — fixture, fill, instrumentation mass and cable routing — recorded so the model can
+  reproduce it.
+- **Calibration** records for transducers and the data system.
+
+## References and further reading
+
+- R. J. Allemang and D. L. Brown, "A correlation coefficient for modal vector analysis", *Proceedings of the 1st
+  International Modal Analysis Conference* (1982).
+- D. J. Ewins, *Modal Testing: Theory, Practice and Application*, 2nd ed., Research Studies Press (2000).
+- M. I. Friswell and J. E. Mottershead, *Finite Element Model Updating in Structural Dynamics*, Kluwer (1995).
+- NASA-STD-5002, *Load Analyses of Spacecraft and Payloads*.
+- ECSS-E-ST-32-11, *Modal survey assessment*.
+- ASME V&V 10, *Standard for Verification and Validation in Computational Solid Mechanics*.
+- Vishay Micro-Measurements, Tech Notes TN-509 (*Errors due to transverse sensitivity in strain gages*) and TN-511
+  (*Errors due to misalignment of strain gages*).
+
+<Aside type="note">
+  Guidance on method from general practice, with illustrative data. Correlation criteria, acceptance of an updated
+  model and any model-uncertainty factors come from your programme's requirements and governing standards.
+</Aside>

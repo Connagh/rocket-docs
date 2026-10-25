@@ -1,0 +1,56 @@
+---
+// Measured or tuned: the page's eight proof-test gauges as test/model − 1. Left, the two gauges at one station are fixed
+// by the wall thickness measured there; right, a modulus tuned to fix them throws six others out. Values from
+// src/lib/correlation.ts with the worked example's readings.
+import { gaugeStats } from '../lib/correlation';
+
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', cold = 'var(--rd-blue)', ok = 'var(--rd-ok)';
+const X0 = 26, X1 = 190, TOP = 30, BOT = 108, BAND = 0.05;
+const E = 205000, nu = 0.29, sh = (11 * 150.69) / 1.377, sa = sh / 2;
+const eh = ((sh - nu * sa) / E) * 1e6, ea = ((sa - nu * sh) / E) * 1e6, ed = ((sh * (1 - nu)) / E) * 1e6;
+const rows = [[4990, eh], [1245, ea], [4950, eh], [1260, ea], [4680, eh], [1150, ea], [4230, ed], [4120, ed]].map(([t, m], i) => ({ name: `G${i + 1}`, test: t, model: m }));
+const k = 1.377 / 1.47;
+const before = gaugeStats(rows).each, measured = gaugeStats(rows.map((g, i) => (i === 4 || i === 5 ? { ...g, model: g.model * k } : g))).each;
+const tuned = gaugeStats(rows.map((g) => ({ ...g, model: g.model * k }))).each;
+const X = (i: number) => X0 + 8 + (i / 7) * (X1 - X0 - 16), Y = (d: number) => TOP + ((0.1 - d) / 0.2) * (BOT - TOP);
+---
+
+<figure class="viz cfg">
+  <p class="viz-title">Measured or tuned?</p>
+  <div class="cfg-grid">
+    {[
+      { title: 'Measure the wall', a: before, b: measured, note: ['G5–G6: wall measured', 'at 1.47 mm, not 1.377'], aria: 'Eight gauges as test over model minus one. Six sit within 2 per cent; G5 and G6 sit near minus 7 per cent. Using the wall thickness measured at their station moves both to within 1 per cent.' },
+      { title: 'Tune the modulus', a: before, b: tuned, note: ['E raised 7% to fix G5–G6', 'six others leave the band'], aria: 'The same gauges with Young\'s modulus raised to fix G5 and G6: those two move inside the band, and the six that agreed move to between plus 5 and plus 9 per cent.' },
+    ].map((p) => (
+      <svg viewBox="0 0 200 150" role="img" aria-label={p.aria}>
+        <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>{p.title}</text>
+        <rect x={X0} y={Y(BAND)} width={X1 - X0} height={Y(-BAND) - Y(BAND)} fill={ok} fill-opacity="0.1"></rect>
+        <line x1={X0} x2={X1} y1={Y(0)} y2={Y(0)} stroke={ink} stroke-opacity="0.5"></line>
+        {[0.1, 0.05, 0, -0.05, -0.1].map((d) => <text x={X0 - 3} y={Y(d) + 3.5} text-anchor="end" font-size="9" fill={muted}>{`${d > 0 ? '+' : ''}${Math.round(d * 100)}`}</text>)}
+        {p.a.map((g, i) => {
+          const y0 = Y(g.ratio - 1), y1 = Y(p.b[i].ratio - 1), moved = Math.abs(y1 - y0) > 2;
+          return (
+            <g>
+              {moved && <path d={`M${X(i)},${y0} L${X(i)},${y1 + (y1 < y0 ? 5 : -5)}`} stroke={muted} stroke-width="1.2"></path>}
+              {moved && <circle cx={X(i)} cy={y0} r="3" fill="none" stroke={muted}></circle>}
+              <circle cx={X(i)} cy={y1} r="3.4" fill={Math.abs(p.b[i].ratio - 1) > BAND ? hot : cold}></circle>
+            </g>
+          );
+        })}
+        <text x="8" y="127" font-size="11" fill={ink}>{p.note[0]}</text>
+        <text x="8" y="143" font-size="10" fill={muted}>{p.note[1]}</text>
+      </svg>
+    ))}
+  </div>
+  <figcaption>
+    The worked example's eight proof-test gauges, as test ÷ model − 1 in per cent, with a ±5% band for this example.
+    Hollow circles are before the change. Fixing the cause at the place it acts brings everything into the band;
+    changing a global parameter to hit two gauges throws out the six that agreed.
+  </figcaption>
+</figure>
+
+<style>
+  .cfg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: 0.75rem 1rem; }
+  .cfg-grid > * { margin: 0 !important; }
+  .cfg-grid svg { max-width: 245px; margin: 0 auto !important; }
+</style>
