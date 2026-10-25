@@ -1,0 +1,67 @@
+---
+// The loop diagram for the nozzle seal's squeeze: a section through the bore with the plug pushed across onto the far
+// wall, and the chain of vectors from the open-side gland round through the axes and the contact point. Clearances
+// and offsets exaggerated; the middle of the plug broken out.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)', warn = 'var(--rd-warn)', steel = 'var(--rd-steel)';
+const TOP = 18, BOT = 118, G0 = 32, G1 = 102; // section and groove extents
+const BL = 30, BR = 330, PL = 40, RL = 74, RR = 289, AP = 185, AG = 199; // bore walls, pilot, roots, axes
+const zig = (x: number, dir: 1 | -1) => {
+  const pts: string[] = [];
+  for (let y = TOP, k = 0; y <= BOT; y += 10, k++) pts.push(`${x + (k % 2 ? 4 : -4) * dir},${y}`);
+  return pts;
+};
+const left = [`${PL},${BOT}`, `${PL},${G1}`, `${RL},${G1}`, `${RL},${G0}`, `${PL},${G0}`, `${PL},${TOP}`, ...zig(104, 1)].join(' ');
+const right = [...zig(120, -1).reverse(), `${BR},${TOP}`, `${BR},${G0}`, `${RR},${G0}`, `${RR},${G1}`, `${BR},${G1}`, `${BR},${BOT}`].join(' ');
+const arrow = (x1: number, x2: number, y: number) => {
+  const d = Math.sign(x2 - x1), h = 7;
+  return { line: `M${x1},${y} L${x2 - d * h},${y}`, head: `${x2},${y} ${x2 - d * h},${y - 3.5} ${x2 - d * h},${y + 3.5}` };
+};
+const rows = [
+  { ...arrow(BL, RL, 140), c: hot, w: 2.6 },
+  { ...arrow(RL, AG, 162), c: ink, w: 1.8 },
+  { ...arrow(AG, AP, 184), c: warn, w: 2.2 },
+  { ...arrow(AP, BR, 206), c: ink, w: 1.8 },
+  { ...arrow(BR, BL, 228), c: blue, w: 1.8 },
+];
+---
+
+<figure class="viz slp">
+  <p class="viz-title">The loop for the seal's least squeeze</p>
+  <svg viewBox="0 0 360 250" role="img" aria-labelledby="slp-desc" style="max-width: 430px; margin: 0 auto;">
+    <desc id="slp-desc">
+      A section through the case bore with the nozzle plug pushed across until its pilot touches the far wall. The O-ring
+      on the open side sits in the deepest gland. Below, a chain of arrows: the gland, from the bore wall to the groove
+      root; half the root diameter, to the groove axis; half the runout, from the groove axis to the pilot axis; half the
+      pilot diameter, to the contact point on the far wall; and the full bore diameter back to the start. The gland is
+      what closes the loop.
+    </desc>
+    <rect x="14" y={TOP} width="16" height={BOT - TOP} fill={steel} fill-opacity="0.55" stroke={steel}></rect>
+    <rect x={BR} y={TOP} width="16" height={BOT - TOP} fill={steel} fill-opacity="0.55" stroke={steel}></rect>
+    <polygon points={left} fill={steel} fill-opacity="0.22" stroke={steel} stroke-linejoin="round"></polygon>
+    <polygon points={right} fill={steel} fill-opacity="0.22" stroke={steel} stroke-linejoin="round"></polygon>
+    <ellipse cx={(BL + RL) / 2} cy={(G0 + G1) / 2} rx={(RL - BL) / 2} ry="32" fill={ink} fill-opacity="0.5" stroke={ink}></ellipse>
+    <ellipse cx={(RR + BR) / 2} cy={(G0 + G1) / 2} rx={(BR - RR) / 2} ry="34" fill={ink} fill-opacity="0.5" stroke={ink}></ellipse>
+    {[AP, AG].map((x) => <line x1={x} x2={x} y1="16" y2="214" stroke={x === AP ? ink : warn} stroke-opacity="0.75" stroke-dasharray="10 3 2 3"></line>)}
+    {[[BL, 232], [RL, 166], [BR, 232]].map(([x, y2]) => <line x1={x} x2={x} y1={BOT} y2={y2} stroke={muted} stroke-dasharray="2 3"></line>)}
+    {rows.map((r) => (
+      <g>
+        <path d={r.line} stroke={r.c} stroke-width={r.w} fill="none"></path>
+        <polygon points={r.head} fill={r.c}></polygon>
+      </g>
+    ))}
+    <text x="14" y="12" font-size="13" fill={muted}>open side</text>
+    <text x={AP - 2} y="12" text-anchor="end" font-size="13" fill={ink}>℄ pilot</text>
+    <text x={AG + 2} y="12" font-size="13" fill={warn}>℄ groove</text>
+    <text x="346" y="12" text-anchor="end" font-size="13" fill={muted}>contact</text>
+    <text x="80" y="144" font-size="13" font-weight="600" fill={hot}>gland</text>
+    <text x="206" y="166" font-size="13" fill={ink}>⌀root ÷ 2</text>
+    <text x="206" y="188" font-size="13" fill={warn}>runout ÷ 2</text>
+    <text x="178" y="210" text-anchor="end" font-size="13" fill={ink}>⌀pilot ÷ 2</text>
+    <text x="110" y="245" text-anchor="middle" font-size="13" fill={blue}>⌀bore</text>
+  </svg>
+  <figcaption>
+    Start at the unknown — the gland on the open side — and walk to the groove axis, across to the pilot axis, out to the
+    point where the pilot touches the bore, and back across the bore. Each arrow is one tolerance; the squeeze is the
+    ring's section less the gland. Clearances and offsets exaggerated; the middle of the plug broken out.
+  </figcaption>
+</figure>

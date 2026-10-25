@@ -166,6 +166,8 @@
   display: grid;
   gap: 0.6rem;
 }
+/* the display above would otherwise show a tabbed calculator's inactive panels */
+.calc [hidden] { display: none !important; }
 .calc legend {
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-xs);

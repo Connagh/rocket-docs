@@ -1,0 +1,61 @@
+---
+// Radial offsets add as vectors: the nozzle-alignment contributors from the worked example (offsets of the thrust line
+// at the CG, mm) chained tip to tail — all in line, in random directions for one assembly, and with both clearances
+// taken up downwards. Zone offsets drawn at 70% of their zone, a typical value; clearance shifts at their full value.
+const muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)', warn = 'var(--rd-warn)';
+const S = 100, O = { x: 100, y: 80 }; // px per mm, origin
+const offs = [
+  { r: 0.05, k: 'zone', a: 45 }, { r: 0.1167, k: 'zone', a: 160 }, { r: 0.125, k: 'shift', a: 300 }, { r: 0.05, k: 'zone', a: 220 },
+  { r: 0.1167, k: 'zone', a: 20 }, { r: 0.1015, k: 'shift', a: 350 }, { r: 0.05, k: 'zone', a: 120 },
+];
+const wc = offs.reduce((s, o) => s + o.r, 0), rss = Math.sqrt(offs.reduce((s, o) => s + o.r * o.r, 0));
+function chain(mode: 'line' | 'random' | 'down') {
+  let x = O.x, y = O.y;
+  const segs = offs.map((o) => {
+    const rho = mode === 'line' ? o.r : o.k === 'zone' ? 0.7 * o.r : o.r;
+    const a = ((mode === 'line' ? 0 : mode === 'down' && o.k === 'shift' ? 90 : o.a) * Math.PI) / 180;
+    const s = { x1: x, y1: y, x2: x + S * rho * Math.cos(a), y2: y + S * rho * Math.sin(a), c: o.k === 'zone' ? blue : warn };
+    x = s.x2; y = s.y2;
+    return s;
+  });
+  const R = Math.hypot(x - O.x, y - O.y) / S, ang = Math.atan2(y - O.y, x - O.x), h = 7;
+  const tip = { x, y }, back = { x: x - h * Math.cos(ang), y: y - h * Math.sin(ang) };
+  const head = `${tip.x},${tip.y} ${back.x - 3.5 * Math.sin(ang)},${back.y + 3.5 * Math.cos(ang)} ${back.x + 3.5 * Math.sin(ang)},${back.y - 3.5 * Math.cos(ang)}`;
+  return { segs, R, back, head };
+}
+const panels = [
+  { t: 'worst case: in line', c: chain('line'), d: 'All seven offsets in one direction: the thrust line moves the full sum.' },
+  { t: 'one assembly, random', c: chain('random'), d: 'The same offsets in random directions for one assembly: they partly cancel.' },
+  { t: 'clearances both down', c: chain('down'), d: 'The same, but with both clearances taken up downwards, as on a horizontal assembly stand: those two add.' },
+];
+---
+
+<figure class="viz srd">
+  <p class="viz-title">Radial offsets add as vectors</p>
+  <div class="srd-grid">
+    {panels.map((p) => (
+      <svg viewBox="0 0 200 152" role="img" aria-label={`${p.d} Resultant ${p.c.R.toFixed(2)} mm, against a worst case of ${wc.toFixed(2)} mm and an RSS of the radii of ${rss.toFixed(2)} mm.`}>
+        <circle cx={O.x} cy={O.y} r={S * wc} fill="none" stroke={muted} stroke-dasharray="4 4"></circle>
+        <circle cx={O.x} cy={O.y} r={S * rss} fill="none" stroke={blue} stroke-opacity="0.8" stroke-dasharray="1.5 3"></circle>
+        <path d={`M${O.x - 5},${O.y} L${O.x + 5},${O.y} M${O.x},${O.y - 5} L${O.x},${O.y + 5}`} stroke={muted}></path>
+        <path d={`M${O.x},${O.y} L${p.c.back.x},${p.c.back.y}`} stroke={hot} stroke-width="2.4"></path>
+        <polygon points={p.c.head} fill={hot}></polygon>
+        {p.c.segs.map((s) => <line x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.c} stroke-width="2.4" stroke-linecap="round"></line>)}
+        {p.c.segs.map((s) => <circle cx={s.x2} cy={s.y2} r="1.6" fill="var(--rd-panel)" stroke={s.c}></circle>)}
+        <text x="4" y="12" font-size="12" fill="var(--rd-ink)">{p.t}</text>
+        <text x="196" y="148" text-anchor="end" font-size="12" font-weight="600" fill={hot}>{p.c.R.toFixed(2)} mm</text>
+      </svg>
+    ))}
+  </div>
+  <figcaption>
+    The nozzle-alignment offsets from the worked example, tip to tail: tolerance zones in blue, clearance shifts in
+    amber, the resultant in red. Dashed circle: the worst case, every offset in line. Dotted: the RSS of the radii — which
+    a quarter of random assemblies exceed. Gravity on a horizontal stand lines the clearances up and the resultant grows.
+  </figcaption>
+</figure>
+
+<style>
+  .srd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: 0.75rem 1rem; }
+  .srd-grid > * { margin: 0 !important; }
+  .srd-grid svg { max-width: 245px; margin: 0 auto !important; }
+</style>
