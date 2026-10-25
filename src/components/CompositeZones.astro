@@ -1,0 +1,38 @@
+---
+// Composite position, exaggerated: large pattern-locating zones fixed to the datums, and small feature-relating zones
+// that may translate and rotate together as a group; each hole's axis must lie in both.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)';
+const C = { x: 160, y: 112 }, R = 70, n = 6, big = 21, small = 7.5;
+const shift = { x: 8, y: -5 }, rot = (4 * Math.PI) / 180;
+const jitter = [[1.5, -2], [-2, 1], [2, 2], [-1.5, -2.5], [0.5, 2.5], [-2.5, 0.5]];
+const pts = Array.from({ length: n }, (_, i) => {
+  const a = (2 * Math.PI * i) / n - Math.PI / 2;
+  const t = { x: C.x + R * Math.cos(a), y: C.y + R * Math.sin(a) };
+  const f = { x: C.x + shift.x + R * Math.cos(a + rot), y: C.y + shift.y + R * Math.sin(a + rot) };
+  return { t, f, h: { x: f.x + jitter[i][0], y: f.y + jitter[i][1] } };
+});
+---
+
+<figure class="viz czn">
+  <p class="viz-title">Composite position — exaggerated</p>
+  <svg viewBox="0 0 320 236" role="img" aria-labelledby="czn-desc" style="max-width: 400px; margin: 0 auto;">
+    <desc id="czn-desc">
+      Six holes on a bolt circle. Large circles at the true positions, fixed to the datums, are the pattern-locating zones.
+      Small circles, shifted and rotated together as a group, are the feature-relating zones. Each hole's axis lies inside
+      both its large and its small circle.
+    </desc>
+    <path d={`M${C.x - 8},${C.y} L${C.x + 8},${C.y} M${C.x},${C.y - 8} L${C.x},${C.y + 8}`} stroke={muted}></path>
+    <circle cx={C.x} cy={C.y} r={R} fill="none" stroke={muted} stroke-dasharray="3 4"></circle>
+    {pts.map((p) => <circle cx={p.t.x} cy={p.t.y} r={big} fill={blue} fill-opacity="0.1" stroke={blue}></circle>)}
+    <circle cx={C.x + shift.x} cy={C.y + shift.y} r={R} fill="none" stroke={hot} stroke-opacity="0.5" stroke-dasharray="2 3"></circle>
+    {pts.map((p) => <circle cx={p.f.x} cy={p.f.y} r={small} fill={hot} fill-opacity="0.15" stroke={hot}></circle>)}
+    {pts.map((p) => <circle cx={p.h.x} cy={p.h.y} r="2.4" fill={ink}></circle>)}
+    <text x="8" y="14" font-size="12" fill={blue}>large: pattern to datums A, B, C</text>
+    <text x="8" y="226" font-size="12" fill={hot}>small: hole to hole, moving together</text>
+  </svg>
+  <figcaption>
+    The upper segment's large zones hold the pattern where the datums say. The lower segment's small zones — related only
+    in orientation to the datums it lists — hold the holes to each other, but may shift and turn as a group inside the
+    large ones. Each hole's axis (black) must be in both.
+  </figcaption>
+</figure>

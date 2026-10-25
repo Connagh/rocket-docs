@@ -1,0 +1,249 @@
+---
+// Datums and position in two tabs: a measured hole pattern checked in a fixed datum frame, with the datum shift a pilot at
+// MMB allows, and against a composite lower segment; and the sizes of a functional gauge. The gauge-tolerance policy is the
+// programme's and starts blank. Maths in src/lib/datums.ts (unit-tested); UI only here.
+const TABS = [{ key: 'pattern', name: 'Measured pattern' }, { key: 'gauge', name: 'Functional gauge' }];
+const HOLES = `H1, 0.048, -0.008, 11.07
+H2, 0.131, -0.009, 11.08
+H3, 0.032, 0.043, 11.04
+H4, 0.074, -0.001, 11.02
+H5, -0.126, 0.109, 11.05
+H6, -0.054, -0.114, 11.06
+H7, 0.025, 0.033, 11.04
+H8, 0.261, 0.042, 11.02
+H9, 0.047, -0.081, 11.06
+H10, 0.262, 0.017, 11.01
+H11, 0.201, 0.116, 11.02
+H12, -0.048, -0.028, 11.03
+H13, 0.141, -0.119, 11.02
+H14, 0.108, -0.089, 11.03
+H15, 0.079, 0.166, 11.04
+H16, 0.125, 0.134, 11.04
+H17, -0.065, 0.071, 11.01
+H18, 0.125, -0.090, 11.08
+H19, -0.103, -0.176, 11.02
+H20, -0.023, -0.047, 11.09
+H21, 0.216, -0.052, 11.05
+H22, 0.118, 0.077, 11.07
+H23, -0.153, 0.096, 11.08
+H24, 0.160, 0.150, 11.03
+H25, -0.075, -0.060, 11.04
+H26, -0.056, 0.089, 11.07
+H27, 0.143, -0.218, 11.02
+H28, -0.124, 0.112, 11.04
+H29, 0.006, -0.219, 11.05
+H30, 0.126, -0.091, 11.02`;
+---
+
+<div class="calc dmcalc" data-dmcalc>
+  <div class="calc-head"><span>Datums &amp; position</span><span class="head-btns"><span>pattern · shift · gauge</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="hc-tabs" role="tablist" aria-label="Datums and position check">
+    {TABS.map((t, i) => <button type="button" role="tab" class="chip" data-tab={t.key} aria-selected={i === 0 ? 'true' : 'false'}>{t.name}</button>)}
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset data-panel="pattern">
+        <legend>Hole pattern, as measured</legend>
+        <label>Holes: name, Δx, Δy, actual size (mm)<textarea name="p_rows" rows="8" spellcheck="false">{HOLES}</textarea></label>
+        <div class="row2">
+          <label>Hole MMC ⌀ (mm)<input name="p_mmc" type="number" step="any" value="11.0" /></label>
+          <label>Position tolerance ⌀ (mm)<input name="p_tol" type="number" min="0" step="any" value="0.5" /></label>
+          <label class="check"><input name="p_bonus" type="checkbox" checked /> Holes at MMC (bonus)</label>
+          <label class="check"><input name="p_mmb" type="checkbox" checked /> Pilot datum at MMB</label>
+          <label>Pilot MMC ⌀ (mm)<input name="p_pmmc" type="number" step="any" value="255.90" /></label>
+          <label>Pilot's own tolerance at MMC (mm)<input name="p_ptol" type="number" min="0" step="any" value="0.02" /></label>
+          <label>Pilot actual ⌀ (mm)<input name="p_pact" type="number" step="any" value="255.83" /></label>
+          <label>Composite lower ⌀ (mm)<input name="p_low" type="number" min="0" step="any" placeholder="none" /></label>
+          <label>Bolt circle radius (mm)<input name="p_R" type="number" min="0" step="any" value="142.5" /></label>
+        </div>
+        <p class="hint">Δx, Δy: each hole's measured axis from its true position, in the frame of A and C with the pilot's actual axis as origin. Holes are taken as equally spaced from the +x axis.</p>
+      </fieldset>
+
+      <fieldset data-panel="gauge" hidden>
+        <legend>Gauge for a hole pattern on a pilot</legend>
+        <div class="row2">
+          <label>Hole MMC ⌀ (mm)<input name="g_hmmc" type="number" step="any" value="11.0" /></label>
+          <label>Hole LMC ⌀ (mm)<input name="g_hlmc" type="number" step="any" value="11.2" /></label>
+          <label>Hole position ⌀ at MMC (mm)<input name="g_htol" type="number" min="0" step="any" value="0.5" /></label>
+          <label>Number of holes<input name="g_n" type="number" min="1" max="60" step="1" value="30" /></label>
+          <label>Bolt circle ⌀ (mm)<input name="g_bc" type="number" min="0" step="any" value="285" /></label>
+          <label>Pilot MMC ⌀ (mm)<input name="g_pmmc" type="number" step="any" value="255.90" /></label>
+          <label>Pilot LMC ⌀ (mm)<input name="g_plmc" type="number" step="any" value="255.80" /></label>
+          <label>Pilot's tolerance at MMC (mm)<input name="g_ptol" type="number" min="0" step="any" value="0.02" /></label>
+          <label>Gauge tolerance (% of feature tolerance)<input name="g_gt" type="number" min="0" max="50" step="any" placeholder="your policy" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Feature tolerance here is size plus geometric. The gauge-tolerance and wear policy comes from your programme or ASME Y14.43.</p>
+      </fieldset>
+      <p class="hint example-note" data-example-note hidden></p>
+    </form>
+    <div>
+      <dl class="readouts" data-out></dl>
+      <figure class="hc-fig">
+        <svg viewBox="0 0 420 300" data-chart role="img" aria-label="Chart for the selected datum check"></svg>
+        <figcaption data-cap></figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    ASME Y14.5 conventions. Fixed frame: each hole against its tolerance plus bonus. Datum shift: the whole pattern moved by
+    the best translation within half the shift available. Composite lower segment: free translation and rotation. Minimax
+    fits by a restarted Nelder–Mead search.
+  </div>
+</div>
+
+<style is:global>
+  .hc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.75rem 1rem 0; }
+  .hc-tabs > * { margin: 0 !important; }
+  .calc .hc-tabs button.chip[aria-selected='true'] { border-color: var(--rd-accent); color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 12%, transparent); }
+  .dmcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .dmcalc label.check { display: flex; align-items: center; gap: 0.4rem; }
+  .dmcalc textarea { width: 100%; font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); background: var(--rd-panel2, var(--rd-panel)); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; resize: vertical; }
+  .hc-fig { margin: 0.9rem 0 0 !important; }
+  .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .hc-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .dmcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { patternCheck, datumShift, gaugeSizes, type Hole } from '../lib/datums';
+  import { wireWorkedExample } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 3) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+  type Row = { dt: string; dd: string; cls?: string; primary?: boolean };
+
+  document.querySelectorAll<HTMLElement>('[data-dmcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLTextAreaElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      svg.append(e);
+      return e;
+    };
+    const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+    const size = () => Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420)));
+    let mode = 'pattern';
+    let draw: (() => void) | null = null;
+
+    // ---- measured pattern ----
+    function runPattern(rows: Row[], notes: [string, string][]) {
+      const lines = field('p_rows').value.split(/\r?\n/).map((l) => l.split(/[,;\t]/).map((s) => s.trim())).filter((p) => p.length >= 4 && p.slice(-3).every((v) => v !== '' && Number.isFinite(+v)));
+      const names = lines.map((p) => p.slice(0, -3).join(', ') || '?');
+      const holes: Hole[] = lines.map((p) => ({ dx: +p.at(-3)!, dy: +p.at(-2)!, size: +p.at(-1)! }));
+      const mmc = num('p_mmc'), tol = num('p_tol'), bonus = (field('p_bonus') as HTMLInputElement).checked, mmb = (field('p_mmb') as HTMLInputElement).checked;
+      const shift = mmb ? datumShift(num('p_pmmc'), num('p_ptol') || 0, num('p_pact')) : 0;
+      const low = num('p_low'), R = num('p_R') || 0;
+      if (holes.length < 1 || !(tol > 0) || !Number.isFinite(mmc)) { notes.push(['bad', 'Enter at least one hole as "name, Δx, Δy, size", the hole MMC and the position tolerance.']); return null; }
+      const r = patternCheck({ holes, mmc, tol, bonus, shift: Number.isFinite(shift) ? shift : 0, lowerTol: low > 0 ? low : undefined, R, n: holes.length });
+      const badNames = r.fixed.map((h, i) => (h.pos > h.allowed + 1e-12 ? esc(names[i]) : '')).filter(Boolean);
+      rows.push({ dt: 'Fixed frame', dd: `${r.failsFixed ? `${r.failsFixed} of ${holes.length} outside` : 'all inside'} <small>worst ${f(r.worstFixed, 3)} of allowed${badNames.length ? ` · ${badNames.join(', ')}` : ''} — holes held to the pilot's actual axis</small>`, cls: r.failsFixed ? 'bad' : 'ok' });
+      if (mmb) {
+        rows.push({ dt: 'Datum shift available', dd: `⌀${f(shift)} <small>MMB ⌀${f(num('p_pmmc') + (num('p_ptol') || 0))} minus the actual pilot — up to ${f(shift / 2)} mm in any direction</small>` });
+        const ok = r.shifted.worst <= 1 + 1e-9;
+        rows.push({ dt: 'With the datum shift', dd: `${ok ? 'all inside' : 'still outside'} <small>worst ${f(r.shifted.worst, 3)} of allowed · pattern moved (${f(r.shifted.s[0])}, ${f(r.shifted.s[1])}) mm</small>`, primary: true, cls: ok ? 'ok' : 'bad' });
+        if (r.failsFixed && ok) notes.push(['ok', 'The part conforms: the drawing lets the pattern move with the pilot\'s departure from MMB, and a functional gauge would accept it. A CMM program that holds the pattern to the pilot\'s actual axis rejects it wrongly.']);
+        if (!ok) notes.push(['bad', 'No move within the datum shift brings every hole into its zone: the part does not conform.']);
+      } else {
+        rows.push({ dt: 'Datum shift', dd: 'none <small>pilot referenced regardless of material boundary — the pattern is held to its actual axis</small>', primary: true, cls: r.failsFixed ? 'bad' : 'ok' });
+      }
+      if (r.lower) rows.push({ dt: 'Composite lower segment', dd: `${r.lower.worst <= 1 + 1e-9 ? 'inside' : 'outside'} <small>worst ${f(r.lower.worst, 3)} of allowed · holes to each other, free to shift and turn (${f(r.lower.theta * 1000, 3)} mrad)</small>`, cls: r.lower.worst <= 1 + 1e-9 ? 'ok' : 'bad' });
+      notes.push(['', 'The shift is free tolerance only if the assembly has the same freedom — the pilot\'s clearance in its mating bore at least as large as the shift. Otherwise reference the pilot regardless of material boundary.']);
+      return () => {
+        svg.replaceChildren();
+        const W = size(), H = 300; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const cx = W / 2, cy = 160, ext = Math.max(tol / 2 + Math.max(0, ...holes.map((h) => h.size - mmc)) * (bonus ? 0.5 : 0), ...holes.map((h) => Math.hypot(h.dx, h.dy))) * 1.15;
+        const sc = Math.min(W / 2 - 16, 120) / ext, X = (v: number) => cx + v * sc, Y = (v: number) => cy - v * sc;
+        const minAllow = Math.min(...r.fixed.map((h) => h.allowed));
+        el('line', { x1: X(-ext), x2: X(ext), y1: cy, y2: cy, stroke: 'var(--rd-line)' });
+        el('line', { x1: cx, x2: cx, y1: Y(-ext), y2: Y(ext), stroke: 'var(--rd-line)' });
+        if (shift > 0) el('circle', { cx, cy, r: (shift / 2) * sc, fill: 'var(--rd-warn)', 'fill-opacity': 0.25 });
+        el('circle', { cx, cy, r: (minAllow / 2) * sc, fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 1.6 });
+        if (mmb && shift > 0) el('circle', { cx: X(r.shifted.s[0]), cy: Y(r.shifted.s[1]), r: (minAllow / 2) * sc, fill: 'none', stroke: 'var(--rd-ok)', 'stroke-width': 1.6, 'stroke-dasharray': '5 3' });
+        holes.forEach((h, i) => el('circle', { cx: X(h.dx), cy: Y(h.dy), r: 3.2, fill: r.fixed[i].pos > r.fixed[i].allowed + 1e-12 ? 'var(--rd-accent)' : 'var(--rd-ink)', 'fill-opacity': 0.85 }));
+        el('text', { x: 8, y: 17, 'font-size': 12, fill: 'var(--rd-blue)' }, `zone ⌀${f(minAllow, 2)} at the axis`);
+        if (mmb && shift > 0) el('text', { x: 8, y: 33, 'font-size': 12, fill: 'var(--rd-ok)' }, 'the same zone, shifted');
+        el('text', { x: W - 8, y: H - 8, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, `${f(ext * 2, 2)} mm across`);
+        el('text', { x: 8, y: H - 8, 'font-size': 12, fill: 'var(--rd-warn)' }, shift > 0 ? 'shaded: shift allowed' : '');
+      };
+    }
+
+    // ---- functional gauge ----
+    function runGauge(rows: Row[], notes: [string, string][]) {
+      const hole = { mmc: num('g_hmmc'), lmc: num('g_hlmc'), tol: num('g_htol') }, pilot = { mmc: num('g_pmmc'), lmc: num('g_plmc'), tol: num('g_ptol') || 0 };
+      const n = Math.round(num('g_n')) || 1, bc = num('g_bc'), gt = num('g_gt');
+      if (!(hole.lmc > hole.mmc && hole.tol >= 0 && pilot.mmc > pilot.lmc)) { notes.push(['bad', 'Check the limits: hole LMC above its MMC, pilot MMC above its LMC.']); return null; }
+      const g = gaugeSizes(hole, pilot, gt > 0 ? gt / 100 : 0);
+      rows.push(
+        { dt: 'Pins', dd: `${n} × ⌀${f(g.pin)}${gt > 0 ? `–${f(g.pinMax)}` : ''} <small>the holes' virtual condition, MMC − position tolerance, on a basic ⌀${f(bc, 1)} circle</small>`, primary: true },
+        { dt: 'Datum B ring', dd: `⌀${gt > 0 ? `${f(g.ringMin)}–` : ''}${f(g.ring)} <small>the pilot's MMB, MMC + its own tolerance at MMC</small>` },
+        { dt: 'Datum A', dd: 'a flat plate <small>the seating face rests on it at its high points</small>' },
+      );
+      if (gt > 0) rows.push({ dt: 'Taken from the part', dd: `up to ${f(g.gtPin)} mm <small>of each hole's tolerance, under an absolute policy — the gauge never accepts a bad part, and rejects some good ones</small>`, cls: 'warn' });
+      else rows.push({ dt: 'Gauge tolerance', dd: '<small>Enter your programme\'s gauge-tolerance policy to see how much part tolerance the gauge takes. Or press “Load worked example”.</small>' });
+      notes.push(['', 'A fixed gauge checks only MMC and MMB conditions. A datum or feature at RFS needs an expanding element — or a CMM.']);
+      notes.push(['', 'The gauge checks location, not size: hole and pilot sizes need their own go/no-go gauges or measurement.']);
+      return () => {
+        svg.replaceChildren();
+        const W = size(), H = 300; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const cx = W / 2, cy = 150, Rg = Math.min(W / 2 - 30, 118), sc = Rg / (bc / 2);
+        el('circle', { cx, cy, r: Rg + 22, fill: 'var(--rd-steel)', 'fill-opacity': 0.12, stroke: 'var(--rd-steel)' });
+        el('circle', { cx, cy, r: Rg, fill: 'none', stroke: 'var(--rd-line)', 'stroke-dasharray': '3 4' });
+        el('circle', { cx, cy, r: Math.max(12, (g.ring / 2) * sc), fill: 'none', stroke: 'var(--rd-accent)', 'stroke-width': 3 });
+        for (let i = 0; i < n; i++) { const a = (2 * Math.PI * i) / n; el('circle', { cx: cx + Rg * Math.cos(a), cy: cy - Rg * Math.sin(a), r: Math.max(2.2, Math.min(6, (g.pin / 2) * sc)), fill: 'var(--rd-blue)' }); }
+        el('text', { x: cx, y: cy - 6, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-accent)', ...halo }, `ring ⌀${f(g.ring, 2)}`);
+        el('text', { x: cx, y: cy + 12, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-blue)', ...halo }, `${n} pins ⌀${f(g.pin, 2)}`);
+        el('text', { x: 8, y: H - 8, 'font-size': 12, fill: 'var(--rd-muted)' }, `pins on a basic ⌀${f(bc, 0)} circle`);
+      };
+    }
+
+    const RUN: Record<string, typeof runPattern> = { pattern: runPattern, gauge: runGauge };
+    const CAPS: Record<string, string> = {
+      pattern: 'Each hole\'s measured deviation (red: outside its zone with the pattern held to the pilot\'s axis). The solid circle is the tightest hole\'s zone at the axis; the dashed one is the same zone moved by the best shift the pilot allows, inside the shaded disc.',
+      gauge: 'A top view of the gauge, not to scale: a ring for the pilot at its MMB, pins at the holes\' virtual condition on the basic bolt circle, and a plate under it all for datum A.',
+    };
+
+    function run() {
+      const rows: Row[] = [], notes: [string, string][] = [];
+      draw = RUN[mode](rows, notes);
+      root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      root.querySelector('[data-cap]')!.textContent = CAPS[mode];
+      if (draw) draw(); else svg.replaceChildren();
+    }
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const select = (key: string, focus = false) => {
+      mode = key;
+      tabs.forEach((b) => { const on = b.dataset.tab === key; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== key));
+      run();
+    };
+    tabs.forEach((b, i) => {
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', () => select(b.dataset.tab!));
+      b.addEventListener('keydown', (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { ev.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.tab!, true); }
+      });
+    });
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (draw && Math.abs(nw - w) > 8) { w = nw; draw(); } }).observe(svg);
+    }
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['g_gt'],
+      note: 'Worked-example value loaded: gauge tolerance 5% of each feature\'s tolerance',
+      values: { g_gt: '5' },
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 150); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
