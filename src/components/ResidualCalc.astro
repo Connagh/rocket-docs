@@ -1,0 +1,288 @@
+---
+// Residual stress in three tabs: as a mean stress in fatigue (with relaxation on the first cycle), as crack driving
+// force in fracture and stress-corrosion cracking (with relaxation by a proof test), and the residual stresses left by
+// autofrettage of a thick cylinder. Maths in src/lib/residual.ts (unit-tested); UI only here.
+const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fracture & SCC' }, { key: 'af', name: 'Autofrettage' }];
+---
+
+<div class="calc rscalc" data-rscalc>
+  <div class="calc-head"><span>Residual stress</span><span class="head-btns"><span>fatigue · fracture · autofrettage</span></span></div>
+  <div class="hc-tabs" role="tablist" aria-label="Residual stress check">
+    {TABS.map((t, i) => <button type="button" role="tab" class="chip" data-tab={t.key} aria-selected={i === 0 ? 'true' : 'false'}>{t.name}</button>)}
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset data-panel="fatigue">
+        <legend>Surface point in fatigue</legend>
+        <div class="row2">
+          <label>Alternating stress (MPa)<input name="f_sa" type="number" min="0" step="any" value="444" /></label>
+          <label>Mean stress (MPa)<input name="f_sm" type="number" step="any" value="444" /></label>
+          <label>Residual stress (MPa)<input name="f_sr" type="number" step="any" value="-400" /></label>
+          <label>Yield F<sub>ty</sub> (MPa)<input name="f_fty" type="number" min="1" step="any" value="1180" /></label>
+          <label>Ultimate F<sub>tu</sub> (MPa)<input name="f_uts" type="number" min="1" step="any" value="1280" /></label>
+          <label>Endurance strength S<sub>e</sub> (MPa)<input name="f_se" type="number" min="1" step="any" value="310" /></label>
+          <label>at cycles<input name="f_ne" type="number" min="1001" step="any" value="1000000" /></label>
+          <label class="check"><input name="f_lim" type="checkbox" checked /> Endurance limit</label>
+        </div>
+        <p class="hint">Local stresses at the surface, notch factor included — as on the <a href="../../fundamentals/fatigue/">Fatigue</a> page, whose S-N line this uses. Residual stress: tension positive, measured or assumed.</p>
+      </fieldset>
+
+      <fieldset data-panel="fracture" hidden>
+        <legend>Surface flaw</legend>
+        <div class="row2">
+          <label>Service stress (MPa)<input name="k_s" type="number" min="0" step="any" value="1094" /></label>
+          <label>Residual stress (MPa)<input name="k_sr" type="number" step="any" value="290" /></label>
+          <label>Yield F<sub>ty</sub> (MPa)<input name="k_fty" type="number" min="1" step="any" value="1450" /></label>
+          <label>Proof stress (MPa)<input name="k_pf" type="number" min="0" step="any" value="1204" placeholder="none" /></label>
+          <label>K<sub>IC</sub> (MPa√m)<input name="k_kic" type="number" min="0.1" step="any" value="70" /></label>
+          <label>K<sub>ISCC</sub> (MPa√m)<input name="k_kscc" type="number" min="0" step="any" placeholder="your value" autocomplete="off" /></label>
+          <label>Flaw depth (mm)<input name="k_a" type="number" min="0.001" step="any" value="0.5" /></label>
+          <label>Geometry factor Y<input name="k_y" type="number" min="0.1" step="any" value="1.12" /></label>
+        </div>
+        <p class="hint">Y = 1.12 for a long, shallow surface flaw. K<sub>ISCC</sub> is the stress-corrosion threshold for your material, heat treatment and environment.</p>
+      </fieldset>
+
+      <fieldset data-panel="af" hidden>
+        <legend>Thick cylinder</legend>
+        <div class="row2">
+          <label>Bore radius (mm)<input name="a_a" type="number" min="0.1" step="any" value="5" /></label>
+          <label>Outside radius (mm)<input name="a_b" type="number" min="0.1" step="any" value="12.5" /></label>
+          <label>Yield F<sub>ty</sub> (MPa)<input name="a_fty" type="number" min="1" step="any" value="1000" /></label>
+          <label>Autofrettage pressure (MPa)<input name="a_pa" type="number" min="0" step="any" value="650" /></label>
+          <label>Working pressure (MPa)<input name="a_p" type="number" min="0" step="any" value="300" /></label>
+        </div>
+        <p class="hint">Tresca, elastic–perfectly plastic, no Bauschinger effect. Real steels yield in reverse sooner after overstrain.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts" data-out></dl>
+      <figure class="hc-fig">
+        <svg viewBox="0 0 420 250" data-chart role="img" aria-label="Chart for the selected residual-stress check"></svg>
+        <figcaption data-cap></figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Elastic–perfectly plastic. Fatigue: Goodman on the fatigue page's S-N line, compressive mean not credited. Fracture:
+    K = Yσ√(πa), uniform residual stress across the flaw. Autofrettage: Hill's thick-cylinder solution, elastic unloading.
+  </div>
+</div>
+
+<style is:global>
+  .hc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.75rem 1rem 0; }
+  .hc-tabs > * { margin: 0 !important; }
+  .calc .hc-tabs button.chip[aria-selected='true'] { border-color: var(--rd-accent); color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 12%, transparent); }
+  .rscalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .rscalc label.check { display: flex; align-items: center; gap: 0.4rem; }
+  .hc-fig { margin: 0.9rem 0 0 !important; }
+  .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .hc-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .rscalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { fatigueWithResidual, fractureWithResidual, flawK, autofrettage, serviceStress, lame } from '../lib/residual';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const g3 = (v: number) => (Math.abs(v) >= 100 ? f(v, 0) : Math.abs(v) >= 10 ? f(v, 1) : Math.abs(v) >= 1 ? f(v, 2) : f(v, 3));
+  const cyc = (n: number) => { if (!Number.isFinite(n)) return 'no limit'; if (n >= 1e7) return `${f(n / 1e6, 0)} million`; const s = 10 ** Math.max(0, Math.floor(Math.log10(n)) - 2); return f(Math.round(n / s) * s, 0); };
+  const sg = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${g3(Math.abs(v))}`;
+  type Row = { dt: string; dd: string; cls?: string; primary?: boolean };
+
+  document.querySelectorAll<HTMLElement>('[data-rscalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      svg.append(e);
+      return e;
+    };
+    const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+    let mode = 'fatigue';
+    let draw: (() => void) | null = null;
+
+    // ---- chart helpers (as in the hand-calc calculator) ----
+    const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 5)); return [1, 2, 2.5, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
+    function frame(o: { x0: number; x1: number; y0: number; y1: number; xl: string; yl: string }) {
+      svg.replaceChildren();
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, L = 56, R = 20, T = 30, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const X = (v: number) => L + ((v - o.x0) / (o.x1 - o.x0)) * (W - L - R), Y = (v: number) => T + ((o.y1 - v) / (o.y1 - o.y0)) * (H - T - B);
+      const sx = nice(o.x1 - o.x0), sy = nice(o.y1 - o.y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : 2);
+      const z = (v: number) => (Math.abs(v) < 1e-9 ? 0 : v), xFirst = Math.ceil(o.x0 / sx - 1e-9) * sx;
+      for (let v = xFirst; v <= o.x1 + 1e-9; v += sx) {
+        el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' });
+        el('text', { x: X(v), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, f(z(v), dp(sx)));
+      }
+      for (let v = Math.ceil(o.y0 / sy - 1e-9) * sy; v <= o.y1 + 1e-9; v += sy) {
+        if (Math.abs(v - o.y0) < 1e-9 && Math.abs(xFirst - o.x0) < 1e-9) continue;
+        el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(z(v), dp(sy)));
+      }
+      if (o.y0 < 0 && o.y1 > 0) el('line', { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.5 });
+      if (o.x0 < 0 && o.x1 > 0) el('line', { x1: X(0), x2: X(0), y1: T, y2: H - B, stroke: 'var(--rd-ink)', 'stroke-opacity': 0.5 });
+      el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, o.xl);
+      el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, o.yl);
+      return { X, Y, W, H, L, R, T, B };
+    }
+    const poly = (pts: [number, number][], color: string, w = 2.2, dash = '') =>
+      el('polyline', { points: pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': w, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+    const legend = (items: [string, string, string?][]) => {
+      let x = 8;
+      for (const [name, color, dash] of items) {
+        el('line', { x1: x, x2: x + 18, y1: 13, y2: 13, stroke: color, 'stroke-width': 2.2, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+        el('text', { x: x + 23, y: 17, 'font-size': 12, fill: 'var(--rd-ink)' }, name);
+        x += 37 + name.length * 7.2;
+      }
+    };
+
+    // ---- fatigue ----
+    function runFatigue(rows: Row[], notes: [string, string][]) {
+      const i = { sa: num('f_sa'), sm: num('f_sm'), sr: num('f_sr') || 0, Fty: num('f_fty'), uts: num('f_uts'), se: num('f_se'), nE: num('f_ne'), limit: field('f_lim').checked };
+      if (!(i.sa >= 0 && Number.isFinite(i.sm) && i.Fty > 0 && i.uts >= i.Fty * 0.5 && i.se > 0 && i.se < 0.9 * i.uts && i.nE > 1e3)) { notes.push(['bad', 'Check the stresses and the S-N data: S<sub>e</sub> below 0.9 F<sub>tu</sub>, at more than 1000 cycles.']); return null; }
+      const r = fatigueWithResidual(i);
+      const ratio = r.N / r.N0;
+      rows.push(
+        { dt: 'Life', dd: `${cyc(r.N)} cycles <small>${Number.isFinite(r.N0) ? `${cyc(r.N0)} without the residual stress` : 'below the endurance limit without it too'}${Number.isFinite(ratio) && Number.isFinite(r.N0) && r.N0 > 0 ? ` · ×${g3(ratio)}` : ''}</small>`, primary: true, cls: ratio < 1 ? 'bad' : ratio > 1 ? 'ok' : '' },
+        { dt: 'Residual after first cycle', dd: `${sg(r.srEff)} MPa <small>${r.srEff !== i.sr ? `relaxed from ${sg(i.sr)} MPa — the total reached yield` : 'unchanged — the total stays below yield'}</small>` },
+        { dt: 'Effective mean', dd: `${sg(r.smEff)} MPa <small>service ${sg(i.sm)} plus residual ${sg(r.srEff)}</small>` },
+        { dt: 'Equivalent reversed', dd: `${g3(r.sar)} MPa <small>Goodman · ${g3(r.sar0)} MPa without the residual stress</small>` },
+      );
+      if (r.srEff !== i.sr) notes.push(['warn', `The residual stress relaxes from ${sg(i.sr)} to ${sg(r.srEff)} MPa on the first cycle: service plus residual cannot pass yield. Large cycles wash residual stress out, so it does most for high-cycle fatigue.`]);
+      if (i.sr < 0 && r.smEff < 0) notes.push(['', 'The residual compression more than cancels the mean stress. Compressive mean stress gets no credit here, as on the Fatigue page — some methods allow it, with test evidence.']);
+      if (i.sr > 0) notes.push(['bad', 'Tensile residual stress is extra mean stress the drawing does not show — from welding, abusive grinding, straightening or quenching.']);
+      notes.push(['', 'Residual stress also fades with cycling and at temperature, and machining removes peened layers — specify peening after the last machining.']);
+      return () => {
+        const x0 = -i.Fty, x1 = i.uts, top = Math.max(i.se, i.sa) * 1.35;
+        const c = frame({ x0, x1, y0: 0, y1: top, xl: 'mean stress (MPa)', yl: 'alternating stress (MPa)' });
+        poly([[c.X(x0), c.Y(i.se)], [c.X(0), c.Y(i.se)], [c.X(i.uts), c.Y(0)]], 'var(--rd-blue)');
+        const yl = (m: number) => Math.min(top, Math.max(0, i.Fty - Math.abs(m)));
+        poly(Array.from({ length: 41 }, (_, k) => x0 + ((x1 - x0) * k) / 40).map((m) => [c.X(m), c.Y(yl(m))]), 'var(--rd-warn)', 1.6, '5 3');
+        const p0: [number, number] = [c.X(i.sm), c.Y(Math.min(i.sa, top))], p1: [number, number] = [c.X(Math.max(x0, Math.min(x1, r.smEff))), c.Y(Math.min(i.sa, top))];
+        if (Math.abs(p1[0] - p0[0]) > 8) {
+          const dir = Math.sign(p1[0] - p0[0]);
+          el('path', { d: `M${p0[0]},${p0[1]} L${p1[0] - dir * 6},${p1[1]} M${p1[0] - dir * 11},${p1[1] - 4} L${p1[0] - dir * 5},${p1[1]} L${p1[0] - dir * 11},${p1[1] + 4}`, fill: 'none', stroke: 'var(--rd-ink)', 'stroke-width': 1.5 });
+        }
+        el('circle', { cx: p0[0], cy: p0[1], r: 4.5, fill: 'var(--rd-muted)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        el('circle', { cx: p1[0], cy: p1[1], r: 5, fill: r.smEff > i.sm ? 'var(--rd-accent)' : 'var(--rd-ok)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        legend([['Goodman, Se', 'var(--rd-blue)'], ['yield', 'var(--rd-warn)', '5 3']]);
+      };
+    }
+
+    // ---- fracture ----
+    function runFracture(rows: Row[], notes: [string, string][]) {
+      const kscc = num('k_kscc'), proof = num('k_pf');
+      const i = { sigma: num('k_s'), sr: num('k_sr') || 0, Fty: num('k_fty'), proof: proof > 0 ? proof : undefined, KIC: num('k_kic'), a: num('k_a'), Y: num('k_y'), KISCC: kscc > 0 ? kscc : undefined };
+      if (!(i.sigma >= 0 && i.Fty > 0 && i.KIC > 0 && i.a > 0 && i.Y > 0)) { notes.push(['bad', 'Check the stresses, toughness, flaw depth and geometry factor.']); return null; }
+      const r = fractureWithResidual(i);
+      rows.push(
+        { dt: 'Critical flaw depth', dd: `${g3(r.aCrit)} mm <small>${g3(r.aCrit0)} mm without the residual stress</small>`, primary: true, cls: r.aCrit < i.a ? 'bad' : '' },
+        { dt: 'Residual in service', dd: `${sg(r.srEff)} MPa <small>${r.srEff !== i.sr ? `relaxed from ${sg(i.sr)} MPa by the ${i.proof ? 'proof test' : 'service stress'}` : 'as entered'}</small>` },
+        { dt: `K at ${g3(i.a)} mm`, dd: `${g3(r.K)} MPa√m <small>${f((100 * r.K) / i.KIC, 0)}% of K<sub>IC</sub> · ${g3(r.K0)} without the residual stress</small>`, cls: r.K >= i.KIC ? 'bad' : '' },
+        { dt: 'From the residual alone', dd: `${g3(r.Kres)} MPa√m <small>sustained, with no load on the part${i.KISCC ? ` · K<sub>ISCC</sub> ${g3(i.KISCC)}` : ''}</small>`, cls: i.KISCC ? (r.Kres >= i.KISCC ? 'bad' : 'ok') : '' },
+      );
+      if (i.KISCC) rows.push({ dt: 'Deepest flaw safe in storage', dd: `${Number.isFinite(r.aScc) ? `${g3(r.aScc)} mm` : 'any'} <small>before the residual stress alone reaches K<sub>ISCC</sub></small>` });
+      else rows.push({ dt: 'Stress corrosion', dd: '<small>Enter K<sub>ISCC</sub> for your material, heat treatment and environment to see which flaws grow in storage.</small>' });
+      if (r.srEff < i.sr && i.proof) notes.push(['ok', `The proof test relaxed the residual stress from ${sg(i.sr)} to ${sg(r.srEff)} MPa: where proof plus residual reached yield, the excess yielded away — a mechanical stress relief.`]);
+      if (i.KISCC && r.Kres >= i.KISCC) notes.push(['bad', `The residual stress alone takes a ${g3(i.a)} mm flaw past K<sub>ISCC</sub>: it can grow by stress corrosion in storage, with no load on the part.`]);
+      notes.push(['', 'Residual stress acts on every crack whether the part is loaded or not. Where it is not measured, fitness-for-service procedures such as BS 7910 and API 579-1 prescribe it — up to yield in as-welded joints.']);
+      return () => {
+        const amax = Math.max(3 * i.a, 1.3 * Math.min(r.aCrit0, 10 * i.a)), as = Array.from({ length: 121 }, (_, k) => (amax * (k + 0.5)) / 121);
+        const top = Math.max(i.KIC * 1.25, (i.KISCC ?? 0) * 1.3);
+        const c = frame({ x0: 0, x1: amax, y0: 0, y1: top, xl: 'flaw depth (mm)', yl: 'K (MPa√m)' });
+        const cap = (v: number) => Math.min(top, v);
+        poly(as.map((a) => [c.X(a), c.Y(cap(flawK(i.sigma, a, i.Y)))]), 'var(--rd-blue)', 1.8, '5 3');
+        poly(as.map((a) => [c.X(a), c.Y(cap(flawK(r.total, a, i.Y)))]), 'var(--rd-accent)');
+        poly(as.map((a) => [c.X(a), c.Y(cap(flawK(r.srEff, a, i.Y)))]), 'var(--rd-warn)', 1.8);
+        el('line', { x1: c.L, x2: c.W - c.R, y1: c.Y(i.KIC), y2: c.Y(i.KIC), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.7 });
+        el('text', { x: c.W - c.R - 4, y: c.Y(i.KIC) - 5, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, 'KIC');
+        if (i.KISCC) {
+          el('line', { x1: c.L, x2: c.W - c.R, y1: c.Y(i.KISCC), y2: c.Y(i.KISCC), stroke: 'var(--rd-warn)', 'stroke-dasharray': '2 3' });
+          el('text', { x: c.W - c.R - 4, y: c.Y(i.KISCC) - 5, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-warn)', ...halo }, 'KISCC');
+        }
+        if (r.aCrit <= amax) el('circle', { cx: c.X(r.aCrit), cy: c.Y(i.KIC), r: 5, fill: 'var(--rd-accent)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        if (r.aCrit0 <= amax) el('circle', { cx: c.X(r.aCrit0), cy: c.Y(i.KIC), r: 4.5, fill: 'var(--rd-blue)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        legend([['with', 'var(--rd-accent)'], ['without', 'var(--rd-blue)', '5 3'], ['residual alone', 'var(--rd-warn)']]);
+      };
+    }
+
+    // ---- autofrettage ----
+    function runAf(rows: Row[], notes: [string, string][]) {
+      const a = num('a_a'), b = num('a_b'), Fty = num('a_fty'), pA = num('a_pa') || 0, p = num('a_p') || 0;
+      if (!(a > 0 && b > a && Fty > 0 && pA >= 0 && p >= 0)) { notes.push(['bad', 'Check the radii (outside larger than bore), yield and pressures.']); return null; }
+      const af = autofrettage(a, b, Fty, pA);
+      const rs = Array.from({ length: 401 }, (_, k) => a + ((b - a) * k) / 400).concat(af.c);
+      const tr = (r: number) => { const s = serviceStress(af, a, b, p, r); return s.st - s.sr; };
+      const peak = rs.reduce((best, r) => (tr(r) > tr(best) ? r : best), a), plain = lame(p, a, b, a);
+      rows.push(
+        { dt: 'Peak stress in service', dd: `${g3(tr(peak))} MPa <small>Tresca, at r = ${g3(peak)} mm · ${g3(plain.st - plain.sr)} MPa at the bore without autofrettage</small>`, primary: true, cls: tr(peak) >= Fty ? 'bad' : '' },
+        { dt: 'Bore hoop in service', dd: `${sg(serviceStress(af, a, b, p, a).st)} MPa <small>${sg(plain.st)} MPa without autofrettage</small>` },
+        { dt: 'Residual at the bore', dd: `${sg(af.boreHoop)} MPa <small>hoop, with no pressure${af.reverse ? ' — beyond reverse yield' : ''}</small>`, cls: af.reverse ? 'bad' : '' },
+        { dt: 'Overstrain', dd: `${f(100 * af.overstrain, 0)}% of the wall <small>yielded to r = ${g3(af.c)} mm · first yield at ${g3(af.pFirst)} MPa, full overstrain at ${g3(af.pFull)} MPa</small>` },
+      );
+      if (pA <= af.pFirst) notes.push(['warn', `The autofrettage pressure is below first yield (${g3(af.pFirst)} MPa): nothing yields, and no residual stress is left.`]);
+      if (pA > af.pFull) notes.push(['warn', `Above ${g3(af.pFull)} MPa the whole wall has yielded: more pressure only bursts it.`]);
+      if (af.reverse) notes.push(['bad', 'Unloading would yield the bore in reverse: the compression is capped at yield, and with the Bauschinger effect this happens sooner. Use less overstrain.']);
+      else notes.push(['', `Reverse yield needs ${g3(Fty)} MPa of compression here; after overstrain real steels yield in reverse sooner (the Bauschinger effect), so keep well clear — ASME VIII Division 3 and gun-tube practice use corrected methods.`]);
+      if (p > af.pA) notes.push(['bad', 'The working pressure is above the autofrettage pressure: the wall yields again in service.']);
+      if (af.overstrain > 0 && serviceStress(af, a, b, p, a).st < 0) notes.push(['ok', 'The bore stays in hoop compression even at working pressure: a crack at the bore barely opens. The peak stress has moved out to where the yielded zone ended.']);
+      return () => {
+        const xs = Array.from({ length: 121 }, (_, k) => a + ((b - a) * k) / 120).concat(af.c).sort((x, y) => x - y);
+        const res = xs.map((r) => af.residual(r).st), svc = xs.map((r) => serviceStress(af, a, b, p, r).st), pl = xs.map((r) => lame(p, a, b, r).st);
+        const all = [...res, ...svc, ...pl, 0], lo = Math.min(...all), hi = Math.max(...all), pad = 0.1 * (hi - lo || 1);
+        const c = frame({ x0: a, x1: b, y0: lo - pad, y1: hi + pad, xl: 'radius (mm)', yl: 'hoop stress (MPa)' });
+        if (af.c > a) el('rect', { x: c.X(a), y: c.T, width: c.X(af.c) - c.X(a), height: c.H - c.T - c.B, fill: 'var(--rd-warn)', 'fill-opacity': 0.07 });
+        poly(xs.map((r, k) => [c.X(r), c.Y(pl[k])]), 'var(--rd-muted)', 1.6, '5 3');
+        poly(xs.map((r, k) => [c.X(r), c.Y(res[k])]), 'var(--rd-blue)');
+        poly(xs.map((r, k) => [c.X(r), c.Y(svc[k])]), 'var(--rd-accent)');
+        if (af.c > a) el('text', { x: c.X(af.c) - 4, y: c.H - c.B - 6, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-warn)', ...halo }, 'yielded');
+        legend([['residual', 'var(--rd-blue)'], ['in service', 'var(--rd-accent)'], ['plain', 'var(--rd-muted)', '5 3']]);
+      };
+    }
+
+    const RUN: Record<string, typeof runFatigue> = { fatigue: runFatigue, fracture: runFracture, af: runAf };
+    const CAPS: Record<string, string> = {
+      fatigue: 'The Goodman line for the endurance strength, with no credit for compressive mean. The grey dot is the service cycle; the residual stress moves it sideways to the coloured dot — towards the line if tensile, away if compressive.',
+      fracture: 'Stress intensity against flaw depth: with the residual stress, without it, and from the residual stress alone. Each crosses KIC at its critical depth.',
+      af: 'Hoop stress through the wall: the residual stress after autofrettage, the total at working pressure, and the plain cylinder at working pressure. The shaded zone yielded.',
+    };
+
+    function run() {
+      const rows: Row[] = [], notes: [string, string][] = [];
+      draw = RUN[mode](rows, notes);
+      root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      root.querySelector('[data-cap]')!.textContent = CAPS[mode];
+      if (draw) draw(); else svg.replaceChildren();
+    }
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const select = (key: string, focus = false) => {
+      mode = key;
+      tabs.forEach((b) => { const on = b.dataset.tab === key; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== key));
+      run();
+    };
+    tabs.forEach((b, i) => {
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', () => select(b.dataset.tab!));
+      b.addEventListener('keydown', (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { ev.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.tab!, true); }
+      });
+    });
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (draw && Math.abs(nw - w) > 8) { w = nw; draw(); } }).observe(svg);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
