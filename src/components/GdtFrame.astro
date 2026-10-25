@@ -1,0 +1,54 @@
+---
+// Anatomy of a feature control frame — the closure bolt holes of the page's worked example: position, ⌀0.5 at MMC,
+// to datums A, B at MMB, and C.
+import { GLYPHS } from '../lib/gdtglyphs';
+
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)';
+const Y0 = 54, H = 30, cells = [52, 86, 186, 222, 278, 314]; // cell boundaries
+const mid = (i: number) => (cells[i] + cells[i + 1]) / 2;
+const circled = (cx: number) => ({ cx, cy: Y0 + H / 2 });
+---
+
+<figure class="viz gfr">
+  <p class="viz-title">Reading a feature control frame</p>
+  <svg viewBox="0 0 360 150" role="img" aria-labelledby="gfr-desc" style="max-width: 410px; margin: 0 auto;">
+    <desc id="gfr-desc">
+      A feature control frame with five cells: the position symbol; a diametral tolerance of 0.5 at maximum material
+      condition; datum A as primary; datum B at maximum material boundary as secondary; datum C as tertiary. Labels
+      explain each part.
+    </desc>
+    <rect x={cells[0]} y={Y0} width={cells[5] - cells[0]} height={H} fill="var(--rd-panel)" stroke={ink} stroke-width="1.4"></rect>
+    {cells.slice(1, 5).map((x) => <line x1={x} x2={x} y1={Y0} y2={Y0 + H} stroke={ink} stroke-width="1.4"></line>)}
+    <g transform={`translate(${mid(0) - 11} ${Y0 + 4}) scale(1.1)`}>
+      <path d={GLYPHS.position.d} fill="none" stroke={hot} stroke-width="1.5"></path>
+    </g>
+    <text x="94" y={Y0 + 20} font-size="13" fill={ink}>⌀0.5</text>
+    {[166, 262].map((cx) => (
+      <g>
+        <circle {...circled(cx)} r="8" fill="none" stroke={ink} stroke-width="1.2"></circle>
+        <text x={cx} y={Y0 + H / 2 + 3.6} text-anchor="middle" font-size="12" font-weight="600" fill={ink}>M</text>
+      </g>
+    ))}
+    <text x={mid(2)} y={Y0 + 20} text-anchor="middle" font-size="13" fill={ink}>A</text>
+    <text x="238" y={Y0 + 20} text-anchor="middle" font-size="13" fill={ink}>B</text>
+    <text x={mid(4)} y={Y0 + 20} text-anchor="middle" font-size="13" fill={ink}>C</text>
+
+    <text x="8" y="26" font-size="13" fill={hot}>characteristic</text>
+    <line x1={mid(0)} x2={mid(0)} y1="32" y2={Y0} stroke={muted}></line>
+    <text x="352" y="26" text-anchor="end" font-size="13" fill={ink}>datums, in order</text>
+    <path d={`M${cells[2]},44 L${cells[2]},38 L${cells[5]},38 L${cells[5]},44`} fill="none" stroke={muted}></path>
+    {['1st', '2nd', '3rd'].map((t, i) => <text x={mid(i + 2)} y="50" text-anchor="middle" font-size="13" fill={muted}>{t}</text>)}
+
+    <line x1="110" x2="110" y1={Y0 + H} y2="98" stroke={muted}></line>
+    <text x="8" y="108" font-size="13" fill={ink}>zone: cylinder ⌀0.5</text>
+    <line x1="262" x2="262" y1={Y0 + H} y2="98" stroke={muted}></line>
+    <text x="352" y="108" text-anchor="end" font-size="13" fill={ink}>B at MMB: datum shift</text>
+    <line x1="166" x2="166" y1={Y0 + H} y2="126" stroke={muted}></line>
+    <text x="166" y="138" text-anchor="middle" font-size="13" fill={ink}>at MMC: bonus allowed</text>
+  </svg>
+  <figcaption>
+    Read left to right: each hole's axis must lie in a ⌀0.5 cylinder at its true position — a larger one as the hole grows
+    from its smallest size — located from datum A first, then B, then C. B at maximum material boundary lets the pattern
+    shift as far as the pilot's clearance allows.
+  </figcaption>
+</figure>

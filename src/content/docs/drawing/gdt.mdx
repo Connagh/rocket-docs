@@ -1,0 +1,205 @@
+---
+title: GD&T
+description: Geometric dimensioning and tolerancing for motor hardware — the geometric characteristics and what each controls, the feature control frame, datums and datum reference frames, size and form, MMC and bonus tolerance, virtual condition and the fastener formulas, and how to tolerance a case, a closure and a seal groove.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import GdtSymbols from '../../../components/GdtSymbols.astro';
+import GdtFrame from '../../../components/GdtFrame.astro';
+import GdtCalc from '../../../components/GdtCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>GD&T states what each feature must do relative to the features it mates with — and gives tolerance back wherever the function allows.</div>
+  <div><b>Before this</b><a href="../../joints/bolted-joints/">Bolted joints</a> · <a href="../../seals/o-ring-design/">O-ring design</a></div>
+  <div><b>Used by</b><a href="../../legacy/?z=gdtprac">Datums & position</a> · <a href="../../legacy/?z=stack">Tolerance stack</a></div>
+</div>
+
+## Why this matters
+
+A dimension and a ± tolerance say how big a feature is and roughly where. They do not say how flat, round, square or
+coaxial it must be, or where it is measured from — and every inspector, machinist and supplier fills that gap
+differently. Geometric dimensioning and tolerancing (GD&T) closes it: each feature is controlled relative to **datums**
+chosen from how the part fits and works, with tolerance zones shaped like the function.
+
+On a motor that is the difference between a seal that keeps its squeeze and one that does not, a closure whose 30 bolts
+all start, and a nozzle that sits on the axis. It also saves money: tolerance that the function does not need is given
+back, often automatically as the features move away from their tightest size.
+
+<Analogy title="Darts">
+  A dart counts by how far it lands from the bull, not by how far left and how far up separately. A ± tolerance on x
+  and y is a square box: it rejects a dart in the corner of the circle that would have scored, and accepts nothing it
+  should not. A position tolerance is the circle — for the same worst case, 57% more area to land in.
+</Analogy>
+
+## The geometric characteristics
+
+<GdtSymbols />
+
+Two rules of thumb pick between them. Use the **least control that guarantees the function**: flatness where a face only
+has to seal, perpendicularity where it must also square to an axis, profile where it must also be in the right place.
+And prefer controls that **a gauge or a measuring machine can check against the same datums the assembly uses**.
+
+## The feature control frame
+
+<GdtFrame />
+
+The frame reads as a sentence: *the position of these holes must be within a ⌀0.5 cylinder at MMC, relative to datums
+A, B at MMB, and C.* The modifiers that most often matter on motor hardware:
+
+- **Ⓜ︎ maximum material condition** — tolerance grows as the feature departs from its tightest size. For clearance:
+  bolt holes, pilots that only have to assemble.
+- **Ⓛ least material condition** — the reverse, to protect a minimum wall or edge distance.
+- **No modifier — regardless of feature size**, the default. For features that locate precisely.
+- **Ⓟ projected tolerance zone** — the zone extends above a threaded hole, where the fastener actually is.
+- **Ⓕ free state** — for non-rigid parts measured without restraint.
+
+## Datums
+
+A **datum feature** is a real surface on the part; the **datum** is the perfect plane, axis or point it establishes,
+in the gauge or fixture that contacts it (the datum feature simulator). Three datums in order of precedence make a
+**datum reference frame**:
+
+- **Primary** — the part rests on it at three points: it fixes three degrees of freedom. Usually the largest
+  mating face.
+- **Secondary** — two points, or the axis of a pilot: two more.
+- **Tertiary** — one point, or a clocking hole: the last.
+
+Choose datums from **assembly and function**, not from convenience in the machine shop: the face a closure seats on,
+the pilot that centres it, the dowel that clocks it. A datum feature that is itself loosely controlled makes everything
+referenced to it loose — so the datum features get their own form controls (flatness of A, perpendicularity of B to A).
+When a secondary datum such as a pilot is referenced at **maximum material boundary (MMB)**, the pattern may also shift
+by the pilot's clearance — tolerance that only applies if the mating part really has that clearance.
+
+## Size and form
+
+- **ASME: Rule #1.** Unless stated otherwise, a feature of size must have perfect form at MMC: the size limits also
+  limit form (the envelope principle).
+- **ISO: independency.** Under ISO 8015, size and form are independent unless the envelope requirement Ⓔ is applied.
+  The same drawing can mean different things under the two systems — say which one governs.
+- **Non-rigid parts.** A thin case wall is not round in the free state; it becomes round when the closure pilot goes
+  in. Control it as it works: an average diameter (AVG) and circularity in the restrained condition, with any free-state
+  limits marked Ⓕ, and a note saying how it is restrained for inspection (ASME Y14.5; ISO 10579).
+
+## MMC, bonus tolerance and virtual condition
+
+With a feature of size controlled at MMC, the allowed tolerance is the stated value plus the **bonus** — how far the
+actual size has moved from MMC:
+
+$$
+t_{allowed} = t + |\,d_{actual} - d_{MMC}\,|
+$$
+
+Measured position from coordinate deviations is $2\sqrt{\Delta x^2 + \Delta y^2}$. The **virtual condition** is the
+worst-case boundary the mating part must clear:
+
+$$
+VC_{hole} = MMC - t
+$$
+
+$$
+VC_{pin} = MMC + t
+$$
+
+so a functional gauge is simply a set of pins at the holes' virtual condition, on the datums. For fastener patterns
+with largest fastener diameter $F$ and clearance holes at MMC $H$:
+
+- **Floating fasteners** (clearance holes in both parts): each part may have $T = H - F$.
+- **Fixed fasteners** (one part threaded): the two share it, $T_1 + T_2 = H - F$ — with a **projected tolerance
+  zone** on the threaded holes. Without one, a leaning thread throws the fastener further off over the height $P$ it
+  projects, and the hole must grow to $H = F + T_1 + T_2\,(1 + 2P/D)$, with $D$ the least thread engagement.
+
+## Tolerancing motor hardware
+
+| Feature | Control | Why |
+| --- | --- | --- |
+| Case bore at a seal | AVG diameter; circularity restrained | Squeeze depends on the bore as the closure holds it |
+| Case flange face | Flatness; perpendicularity to the case axis | Seal seating; closure squareness |
+| Case flange threaded holes | Position at MMC, projected zone, to face, axis and clocking | Bolts must start and seat without bending |
+| Closure seating face (datum A) | Flatness | Primary datum and face-seal land |
+| Closure pilot (datum B) | Size; perpendicularity to A | Centres the closure and its seal groove |
+| Closure bolt holes | Position at MMC to A, B at MMB, C | Assembly; gauged with pins |
+| Seal groove root | Circular runout or position to B | Eccentricity eats squeeze |
+| Groove walls | Parallelism or profile | Gland volume and ring stability |
+| Domes, nozzle contour | Profile of a surface to the case datums | Shape, thickness and location at once |
+| Ports and bosses | Position, and perpendicularity of their seal faces | Fitting alignment and sealing |
+
+Anything not controlled on the drawing falls to the **general tolerances** in the title block (ISO 22081, or the older
+ISO 2768-2). Those are coarse by design: class K of ISO 2768-2 allows 0.2 mm of runout on any round feature. Check every
+feature the function depends on has its own control.
+
+## ASME and ISO
+
+| Topic | ASME Y14.5-2018 | ISO GPS |
+| --- | --- | --- |
+| Size and form | Rule #1: envelope by default | Independency by default (ISO 8015); Ⓔ for envelope |
+| Concentricity, symmetry | Removed in 2018 | Still used |
+| Exact dimensions | Basic dimensions | Theoretically exact dimensions |
+| No modifier means | Regardless of feature size | The same |
+| Datum modifiers | MMB, LMB on datum references | Ⓜ︎, Ⓛ on datum references (ISO 2692) |
+| Non-rigid parts | Free state, restrained condition, AVG | ISO 10579 |
+
+## Calculator
+
+<GdtCalc />
+
+## Worked example — the aft closure, its bolts and the nozzle seal groove
+
+The calculator's starting values in each tab are this example's.
+
+1. **Datums for the closure.** The 30-bolt aft closure ([Bolted joints](../../joints/bolted-joints/#worked-example--the-aft-closure))
+   seats on the case flange and is centred by a pilot in the case bore. So: **A**, the seating face, with its own
+   flatness; **B**, the pilot diameter, perpendicular to A; **C**, a dowel hole for clocking.
+2. **The bolt holes.** M10 bolts in ⌀11.0–11.2 holes on a basic 285 mm bolt circle: position ⌀0.5 at MMC to A, B at
+   MMB, C. A hole made at ⌀11.15 earns a 0.15 bonus — ⌀0.65 allowed. Its axis measures 0.18 and 0.21 mm off true
+   position: ⌀0.553. It conforms, **only because of the bonus**; the same error in a ⌀11.0 hole would be rejected,
+   correctly, since a bolt might not pass. The functional gauge is 30 pins at the virtual condition, ⌀10.5.
+3. **The threaded holes.** The bolts screw into the case flange through the 24 mm closure: fixed fasteners. The
+   clearance is $11.0 - 10.0 = 1.0$, so ⌀0.5 for the closure holes leaves ⌀0.5 for the threaded holes — **with a
+   projected tolerance zone 24 mm high**. Without it, over 15 mm of thread engagement, the threaded holes could have
+   only ⌀0.12, or the closure holes would have to open to ⌀12.6, which the bolt heads and the seal land cannot spare.
+4. **The nozzle seal groove.** The [O-ring page's](../../seals/o-ring-design/#worked-example--a-nozzle-to-case-radial-seal)
+   radial seal: 150 mm bore, pilot ⌀149.860–149.900, groove root ⌀141.45–141.55. That page assumed the groove
+   coaxial with its pilot, and found 10.8% minimum squeeze at end of life — just above its 10% floor. The drawing has
+   to make that true. With **circular runout 0.05 of the groove root to B**, the gland grows from 4.408 to 4.433 mm at
+   worst, and the same analysis gives **10.4%**. With no runout specified, the general tolerance allows 0.2: gland
+   4.508 mm and **9.2%** — below the floor, on a part that passes every dimension on the drawing.
+5. **The case.** A 1.377 mm wall on a 300 mm bore is not round until the pilot goes in. Specify the bore at the seal as
+   an average diameter with circularity in the restrained condition — restrained by a plug gauge standing in for the
+   closure pilot — and the flange face perpendicular to the case axis, which carries the closure's datum B.
+
+## Where this stops
+
+- **An introduction to the language.** Datum schemes, composite and pattern position, profile with datum shift and
+  inspection planning go further on [Datums & position](../../legacy/?z=gdtprac).
+- **One feature at a time.** How tolerances add up across an assembly is a
+  [tolerance stack](../../legacy/?z=stack).
+- **ASME Y14.5 conventions** in the calculator; ISO differs in places — check which standard your drawing invokes.
+- **Squeeze from geometry alone** in the gland tab; the full seal check is on [O-ring design](../../seals/o-ring-design/).
+
+## On the drawing
+
+- **The governing standard** — ASME Y14.5-2018 or ISO GPS — named in the title block.
+- **Datum features** chosen from assembly, each with its own form control.
+- **Basic dimensions** for every true position and profile.
+- **A geometric control on every feature the function depends on** — none left to the general tolerances by accident.
+- **Projected zones** on threaded holes and press-fit pins.
+- **Restraint notes** for non-rigid features, saying how the part is held for inspection.
+
+## References and further reading
+
+- ASME Y14.5-2018, *Dimensioning and Tolerancing*; ASME Y14.5.1-2019, *Mathematical Definition of Dimensioning and
+  Tolerancing Principles*.
+- ISO 1101, *Geometrical tolerancing*; ISO 5459, *Datums and datum systems*; ISO 8015, *Fundamentals*; ISO 2692,
+  *Maximum material requirement*; ISO 10579, *Non-rigid parts*.
+- ISO 22081, *General geometrical specifications*; ISO 2768-2, *General tolerances for geometrical tolerances*.
+- A. Krulikowski, *Fundamentals of Geometric Dimensioning and Tolerancing*, 3rd ed., Delmar (2012).
+- G. Henzold, *Geometrical Dimensioning and Tolerancing for Design, Manufacturing and Inspection*, 3rd ed.,
+  Butterworth-Heinemann (2020).
+
+<Aside type="note">
+  Guidance on method from general practice. Your drawing standard, your organisation's drafting practice and your
+  inspection capability govern how features are toleranced.
+</Aside>

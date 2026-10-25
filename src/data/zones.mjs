@@ -73,6 +73,7 @@ export const REBUILT = {
   feamat: 'verify/fea-cards',
   fea: 'verify/fea-and-test',
   correl: 'verify/test-correlation',
+  gdt: 'drawing/gdt',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',
