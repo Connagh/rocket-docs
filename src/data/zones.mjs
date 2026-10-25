@@ -68,6 +68,7 @@ export const REBUILT = {
   thermal: 'motor/transient-thermal',
   diffexp: 'joints/differential-expansion',
   loadpath: 'joints/load-paths',
+  handcalc: 'fundamentals/hand-calcs',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',
