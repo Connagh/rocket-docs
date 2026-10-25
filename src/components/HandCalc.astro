@@ -181,7 +181,7 @@ const SECTIONS = [
     const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 5)); return [1, 2, 2.5, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
     function frame(o: { x0: number; x1: number; y0: number; y1: number; xl: string; yl: string; fx?: (v: number) => string }) {
       svg.replaceChildren();
-      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, L = 56, R = 20, T = 30, B = 40;
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, L = 64, R = 20, T = 30, B = 40;
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       const X = (v: number) => L + ((v - o.x0) / (o.x1 - o.x0)) * (W - L - R), Y = (v: number) => T + ((o.y1 - v) / (o.y1 - o.y0)) * (H - T - B);
       const sx = nice(o.x1 - o.x0), sy = nice(o.y1 - o.y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : 2);

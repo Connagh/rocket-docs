@@ -201,7 +201,9 @@ in the wall, before the column buckles as a whole.
 
 - **Before meshing**, the hand calc says where the detail is needed: several elements across each edge zone
   ($\pi/\beta$), several through the thickness where a solid part bends.
-- **Reactions first.** The model's reactions must equal the applied loads. If they do not, nothing else in it can be
+- **Material cards first.** Units, constants and tables checked before anything else — see
+  [FEA material cards](../../verify/fea-cards/).
+- **Reactions next.** The model's reactions must equal the applied loads. If they do not, nothing else in it can be
   trusted.
 - **Then the far field.** Away from details, the model's membrane stresses and deflections should match the hand calc.
   Deflections should sit between the simply supported and clamped bounds.

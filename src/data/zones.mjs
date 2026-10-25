@@ -70,6 +70,7 @@ export const REBUILT = {
   loadpath: 'joints/load-paths',
   handcalc: 'fundamentals/hand-calcs',
   residual: 'materials/residual-stress',
+  feamat: 'verify/fea-cards',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',

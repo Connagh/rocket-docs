@@ -1,0 +1,392 @@
+---
+// Material-card checks in five tabs: units and isotropic constants, orthotropic stability, nearly incompressible
+// materials, a true-stress plastic table built from tensile properties, and secant thermal expansion.
+// Maths in src/lib/feacards.ts (unit-tested); UI only here.
+import { UNIT_SYSTEMS } from '../lib/feacards';
+
+const TABS = [
+  { key: 'units', name: 'Units & elastic' }, { key: 'ortho', name: 'Orthotropic' }, { key: 'incomp', name: 'Near-incompressible' },
+  { key: 'plastic', name: 'Plastic curve' }, { key: 'cte', name: 'Thermal expansion' },
+];
+---
+
+<div class="calc cdcalc" data-cdcalc>
+  <div class="calc-head"><span>Material card checks</span><span class="head-btns"><span>before you trust the model</span></span></div>
+  <div class="hc-tabs" role="tablist" aria-label="Card check">
+    {TABS.map((t, i) => <button type="button" role="tab" class="chip" data-tab={t.key} aria-selected={i === 0 ? 'true' : 'false'}>{t.name}</button>)}
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset data-panel="units">
+        <legend>Isotropic card, as typed</legend>
+        <label>Unit system<select name="u_sys">{UNIT_SYSTEMS.map((u) => <option value={u.key}>{u.name}</option>)}</select></label>
+        <div class="row2">
+          <label><span data-ulab="E">E</span><input name="u_E" type="number" min="0" step="any" value="205000" /></label>
+          <label>Poisson's ratio<input name="u_nu" type="number" min="-1" max="0.5" step="any" value="0.29" /></label>
+          <label><span data-ulab="G">G</span><input name="u_G" type="number" min="0" step="any" placeholder="if the card gives it" /></label>
+          <label><span data-ulab="rho">Density</span><input name="u_rho" type="number" min="0" step="any" value="7.85e-9" /></label>
+        </div>
+        <p class="hint">Enter the numbers exactly as they sit in the model. The wave speed √(E/ρ) shows at once whether the density is in the system's units.</p>
+      </fieldset>
+
+      <fieldset data-panel="ortho" hidden>
+        <legend>Orthotropic engineering constants</legend>
+        <div class="row2">
+          <label>E<sub>1</sub><input name="o_E1" type="number" step="any" value="160000" /></label>
+          <label>E<sub>2</sub><input name="o_E2" type="number" step="any" value="9000" /></label>
+          <label>E<sub>3</sub><input name="o_E3" type="number" step="any" value="9000" /></label>
+          <label>ν<sub>12</sub><input name="o_n12" type="number" step="any" value="0.32" /></label>
+          <label>ν<sub>13</sub><input name="o_n13" type="number" step="any" value="0.32" /></label>
+          <label>ν<sub>23</sub><input name="o_n23" type="number" step="any" value="0.45" /></label>
+          <label>G<sub>12</sub><input name="o_G12" type="number" step="any" value="5000" /></label>
+          <label>G<sub>13</sub><input name="o_G13" type="number" step="any" value="5000" /></label>
+          <label>G<sub>23</sub><input name="o_G23" type="number" step="any" value="3100" /></label>
+        </div>
+        <p class="hint">Major Poisson's ratios: ν<sub>ij</sub> is the strain in j from a stress in i. Any consistent units. The defaults are a typical carbon/epoxy unidirectional ply.</p>
+      </fieldset>
+
+      <fieldset data-panel="incomp" hidden>
+        <legend>Rubber or propellant</legend>
+        <div class="row2">
+          <label>Young's modulus E (MPa)<input name="i_E" type="number" min="0" step="any" value="3.6" /></label>
+          <label>Bulk modulus K (MPa)<input name="i_K" type="number" min="0" step="any" value="3500" /></label>
+          <label>The ν you would have entered<input name="i_nu" type="number" min="0" max="0.5" step="any" value="0.49" /></label>
+          <label>Pressure to compare (MPa)<input name="i_p" type="number" min="0" step="any" value="10" /></label>
+        </div>
+        <p class="hint">E at the rate and temperature of the load case; K from a volumetric test. Defaults: the propellant on the <a href="../../motor/propellant-grain/">Propellant grain</a> page.</p>
+      </fieldset>
+
+      <fieldset data-panel="plastic" hidden>
+        <legend>Metal tensile properties</legend>
+        <div class="row2">
+          <label>E (MPa)<input name="p_E" type="number" min="1" step="any" value="205000" /></label>
+          <label>Yield F<sub>ty</sub> (MPa)<input name="p_fty" type="number" min="1" step="any" value="1450" /></label>
+          <label>Ultimate F<sub>tu</sub> (MPa)<input name="p_ftu" type="number" min="1" step="any" value="1520" /></label>
+          <label>Uniform elongation (%)<input name="p_eu" type="number" min="0.1" step="any" value="5" /></label>
+          <label>Rows<input name="p_n" type="number" min="3" max="20" step="1" value="8" /></label>
+        </div>
+        <p class="hint">Uniform elongation is the engineering strain at the ultimate — where necking starts — not the elongation at break.</p>
+      </fieldset>
+
+      <fieldset data-panel="cte" hidden>
+        <legend>Instantaneous expansion data</legend>
+        <div class="row2">
+          <label>At T<sub>1</sub> (°C)<input name="c_T1" type="number" step="any" value="-50" /></label>
+          <label>α (10⁻⁶/K)<input name="c_a1" type="number" step="any" value="21" /></label>
+          <label>At T<sub>2</sub> (°C)<input name="c_T2" type="number" step="any" value="150" /></label>
+          <label>α (10⁻⁶/K)<input name="c_a2" type="number" step="any" value="25" /></label>
+          <label>Solver's reference (°C)<input name="c_ref" type="number" step="any" value="20" /></label>
+          <label>Stress-free temperature (°C)<input name="c_T0" type="number" step="any" value="20" /></label>
+          <label>Hottest in the model (°C)<input name="c_Tm" type="number" step="any" value="150" /></label>
+        </div>
+        <p class="hint">Instantaneous α is the slope of the expansion curve at a temperature; handbooks give either kind — check which. Linear between the two points.</p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts" data-out></dl>
+      <div class="cd-table" data-table hidden>
+        <div class="cd-table-head"><span>Plastic table — true stress (MPa), true plastic strain</span><button type="button" class="chip" data-copy>Copy</button></div>
+        <textarea readonly rows="8" data-csv aria-label="Plastic table as comma-separated values"></textarea>
+      </div>
+      <figure class="hc-fig">
+        <svg viewBox="0 0 420 250" data-chart role="img" aria-label="Chart for the selected card check"></svg>
+        <figcaption data-cap></figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Checks, not material data: every value here is an example. Units: bar wave speed √(E/ρ). Orthotropic: symmetry,
+    Lempriere's bounds and the compliance determinant. Plastic: Ramberg–Osgood through yield and the ultimate, converted to
+    true values up to necking. Expansion: instantaneous α linear in temperature, integrated to secant values.
+  </div>
+</div>
+
+<style is:global>
+  .hc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.75rem 1rem 0; }
+  .hc-tabs > * { margin: 0 !important; }
+  .calc .hc-tabs button.chip[aria-selected='true'] { border-color: var(--rd-accent); color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 12%, transparent); }
+  .cdcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .cdcalc .nc { text-transform: none; } /* uppercase labels would turn ν, ρ and α into capitals */
+  .cd-table { margin: 0.75rem 0 0 !important; }
+  .cd-table-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .cd-table textarea { width: 100%; margin-top: 0.35rem; font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); background: var(--rd-panel2, var(--rd-panel)); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; resize: vertical; }
+  .hc-fig { margin: 0.9rem 0 0 !important; }
+  .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .hc-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .cdcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { UNIT_SYSTEMS, cardUnits, shearModulus, bulkModulus, poissonFromEG, poissonFromEK, neoHookean, orthotropic, plasticTable, rambergOsgoodStress, expansion, type UnitKey } from '../lib/feacards';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const g3 = (v: number) => (Math.abs(v) >= 100 ? f(v, 0) : Math.abs(v) >= 10 ? f(v, 1) : Math.abs(v) >= 1 ? f(v, 2) : f(v, 3));
+  const deg = (v: number) => f(v, Math.abs(v - Math.round(v)) < 0.05 ? 0 : 1);
+  const sci = (v: number) => { if (!Number.isFinite(v) || v === 0) return f(v, 0); const e = Math.floor(Math.log10(Math.abs(v))); return e >= -2 && e < 6 ? g3(v) : `${f(v / 10 ** e, 3)}×10<sup>${e}</sup>`; };
+  type Row = { dt: string; dd: string; cls?: string; primary?: boolean };
+
+  document.querySelectorAll<HTMLElement>('[data-cdcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const tableBox = root.querySelector<HTMLElement>('[data-table]')!, csv = root.querySelector<HTMLTextAreaElement>('[data-csv]')!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      svg.append(e);
+      return e;
+    };
+    const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+    let mode = 'units';
+    let draw: (() => void) | null = null;
+
+    // ---- chart helpers (as in the hand-calc calculator) ----
+    const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 5)); return [1, 2, 2.5, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
+    function frame(o: { x0: number; x1: number; y0: number; y1: number; xl: string; yl: string; fx?: (v: number) => string; fy?: (v: number) => string; sx?: number; sy?: number }) {
+      svg.replaceChildren();
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, L = 64, R = 20, T = 30, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const X = (v: number) => L + ((v - o.x0) / (o.x1 - o.x0)) * (W - L - R), Y = (v: number) => T + ((o.y1 - v) / (o.y1 - o.y0)) * (H - T - B);
+      const sx = o.sx ?? nice(o.x1 - o.x0), sy = o.sy ?? nice(o.y1 - o.y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : s >= 0.01 ? 2 : 3);
+      const z = (v: number) => (Math.abs(v) < 1e-12 ? 0 : v), xFirst = Math.ceil(o.x0 / sx - 1e-9) * sx;
+      for (let v = xFirst; v <= o.x1 + 1e-9; v += sx) {
+        el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' });
+        el('text', { x: X(v), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, o.fx ? o.fx(z(v)) : f(z(v), dp(sx)));
+      }
+      for (let v = Math.ceil(o.y0 / sy - 1e-9) * sy; v <= o.y1 + 1e-9; v += sy) {
+        if (Math.abs(v - o.y0) < 1e-9 && Math.abs(xFirst - o.x0) < 1e-9) continue;
+        el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, o.fy ? o.fy(z(v)) : f(z(v), dp(sy)));
+      }
+      el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, o.xl);
+      el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, o.yl);
+      return { X, Y, W, H, L, R, T, B };
+    }
+    const poly = (pts: [number, number][], color: string, w = 2.2, dash = '') =>
+      el('polyline', { points: pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': w, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+    const legend = (items: [string, string, string?][]) => {
+      let x = 8;
+      for (const [name, color, dash] of items) {
+        el('line', { x1: x, x2: x + 18, y1: 13, y2: 13, stroke: color, 'stroke-width': 2.2, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+        el('text', { x: x + 23, y: 17, 'font-size': 12, fill: 'var(--rd-ink)' }, name);
+        x += 37 + name.length * 7.2;
+      }
+    };
+    const bars = (items: { name: string; u: number }[], xl: string) => {
+      svg.replaceChildren();
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, Lx = 98, R = 20, T = 30, B = 34;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const top = Math.max(1.2, ...items.map((i) => (Number.isFinite(i.u) ? i.u : 0))) * 1.05, X = (u: number) => Lx + (Math.min(u, top) / top) * (W - Lx - R), row = (H - T - B) / items.length;
+      for (let u = 0; u <= top + 1e-9; u += top > 2.5 ? 0.5 : 0.25) {
+        el('line', { x1: X(u), x2: X(u), y1: T, y2: H - B, stroke: u === 1 ? 'var(--rd-ink)' : 'var(--rd-line)', 'stroke-opacity': u === 1 ? 0.7 : 1 });
+        el('text', { x: X(u), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, `${f(100 * u, 0)}%`);
+      }
+      items.forEach((it, i) => {
+        const y = T + i * row + row * 0.2, u = Number.isFinite(it.u) ? it.u : top;
+        el('rect', { x: Lx, y, width: Math.max(1, X(u) - Lx), height: row * 0.6, rx: 2, fill: u >= 1 ? 'var(--rd-accent)' : 'var(--rd-blue)', 'fill-opacity': 0.8 });
+        el('text', { x: Lx - 6, y: y + row * 0.3 + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ink)' }, it.name);
+      });
+      el('text', { x: W / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, xl);
+    };
+
+    // ---- units and isotropic constants ----
+    function runUnits(rows: Row[], notes: [string, string][]) {
+      const sys = UNIT_SYSTEMS.find((u) => u.key === field('u_sys').value)!;
+      root.querySelector('[data-ulab="E"]')!.textContent = `E (${sys.stress})`;
+      root.querySelector('[data-ulab="G"]')!.textContent = `G (${sys.stress})`;
+      root.querySelector('[data-ulab="rho"]')!.textContent = `Density (${sys.density})`;
+      const E = num('u_E'), nu = num('u_nu'), G = num('u_G'), rho = num('u_rho');
+      if (!(E > 0 && rho > 0 && nu > -1 && nu < 0.5)) { notes.push(['bad', 'Enter E, density and a Poisson\'s ratio between −1 and 0.5.']); return null; }
+      const c = cardUnits(sys.key as UnitKey, E, rho);
+      const metalish = c.wave >= 2500 && c.wave <= 13000, plausible = c.wave >= 10 && c.wave <= 20000;
+      rows.push(
+        { dt: 'Wave speed <span class="nc">√(E/ρ)</span>', dd: `${g3(c.wave)} m/s <small>${metalish ? 'about right for a metal or a stiff composite' : plausible ? 'plausible for a polymer, rubber or foam — not for a metal' : 'not a real material: check the density units'}</small>`, primary: true, cls: plausible ? 'ok' : 'bad' },
+        { dt: 'Density, in SI', dd: `${sci(c.rhoSI)} kg/m³ <small>${c.densityPlausible ? 'a real material' : 'no solid has this density'}</small>`, cls: c.densityPlausible ? '' : 'bad' },
+        { dt: 'Modulus, in SI', dd: `${sci(c.EMPa)} MPa <small>${g3(c.EMPa / 1000)} GPa</small>` },
+        { dt: 'Shear modulus', dd: `${sci(shearModulus(E, nu))} ${sys.stress} <small>E/2(1 + ν) — implied by E and ν</small>` },
+        { dt: 'Bulk modulus', dd: `${sci(bulkModulus(E, nu))} ${sys.stress} <small>E/3(1 − 2ν)</small>` },
+      );
+      if (G > 0) {
+        const nuG = poissonFromEG(E, G), off = Math.abs(nuG - nu);
+        rows.push({ dt: '<span class="nc">ν</span> implied by E and G', dd: `${f(nuG, 3)} <small>${off < 0.01 ? 'consistent with the ν entered' : `the card says ${f(nu, 3)} — an isotropic solver uses two of the three and ignores the third`}</small>`, cls: off < 0.01 ? 'ok' : 'warn' });
+      }
+      if (!c.densityPlausible) notes.push(['bad', `The density reads as ${sci(c.rhoSI)} kg/m³. In ${sys.name} a density of ${sci(7850 / sys.toKgM3)} ${sys.density} is steel — every mass, inertia load, natural frequency and explicit time step is wrong by the same factor.`]);
+      notes.push(['', 'Check the model\'s total mass against the CAD or the scales before anything else: it tests the density and the units of every part at once.']);
+      return () => {
+        // a log strip of wave speeds, with typical material bands
+        const lo = -3, hi = 8, W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420)));
+        const fr = frame({ x0: lo, x1: hi, y0: 0, y1: 1, xl: 'bar wave speed √(E/ρ), m/s', yl: '', fx: (v) => (v % 2 === 0 ? `10${v < 0 ? '⁻' : ''}${'⁰¹²³⁴⁵⁶⁷⁸'[Math.abs(v)]}` : ''), sx: 1, sy: 2 });
+        const bands: [string, number, number, string][] = [['rubber', 1.3, 2.1, 'var(--rd-warn)'], ['polymer', 3.0, 3.4, 'var(--rd-ok)'], ['metal', 3.5, 3.85, 'var(--rd-blue)']];
+        bands.forEach(([name, a, b, col], i) => {
+          el('rect', { x: fr.X(a), y: fr.T + 20 + i * 44, width: fr.X(b) - fr.X(a), height: 30, fill: col, 'fill-opacity': 0.25, stroke: col });
+          el('text', { x: fr.X(b) + 5, y: fr.T + 40 + i * 44, 'font-size': 12, fill: 'var(--rd-ink)' }, name);
+        });
+        const x = fr.X(Math.max(lo, Math.min(hi, Math.log10(c.wave))));
+        el('line', { x1: x, x2: x, y1: fr.T, y2: fr.H - fr.B, stroke: plausible ? 'var(--rd-ink)' : 'var(--rd-accent)', 'stroke-width': 2.4 });
+        el('text', { x: x + (x > W / 2 ? -6 : 6), y: fr.T + 12, 'text-anchor': x > W / 2 ? 'end' : 'start', 'font-size': 12, fill: plausible ? 'var(--rd-ink)' : 'var(--rd-accent)', ...halo }, 'this card');
+      };
+    }
+
+    // ---- orthotropic ----
+    function runOrtho(rows: Row[], notes: [string, string][]) {
+      const c = { E1: num('o_E1'), E2: num('o_E2'), E3: num('o_E3'), n12: num('o_n12'), n13: num('o_n13'), n23: num('o_n23'), G12: num('o_G12'), G13: num('o_G13'), G23: num('o_G23') };
+      if (Object.values(c).some((v) => !Number.isFinite(v))) { notes.push(['bad', 'Enter all nine constants.']); return null; }
+      const o = orthotropic(c);
+      rows.push(
+        { dt: 'Stability', dd: `${o.stable ? 'passes' : 'fails'} <small>determinant ${f(o.det, 4)} — must be positive, with every modulus positive and each |ν<sub>ij</sub>| below √(E<sub>i</sub>/E<sub>j</sub>)</small>`, primary: true, cls: o.stable ? 'ok' : 'bad' },
+        { dt: 'Minor ratios', dd: `ν<sub>21</sub> ${f(o.n21, 4)} <small>ν<sub>31</sub> ${f(o.n31, 4)} · ν<sub>32</sub> ${f(o.n32, 4)} — from ν<sub>ji</sub> = ν<sub>ij</sub>E<sub>j</sub>/E<sub>i</sub></small>` },
+        ...o.bounds.map((b) => ({ dt: `<span class="nc">${b.name}</span> bound`, dd: `${f(b.v, 3)} of ${f(b.max, 3)} <small>|${b.name}| < √(E<sub>i</sub>/E<sub>j</sub>)</small>`, cls: b.v < b.max ? '' : 'bad' })),
+      );
+      if (Number.isFinite(o.G23iso)) rows.push({ dt: 'G23 for E2 = E3', dd: `${g3(o.G23iso)} <small>E<sub>2</sub>/2(1 + ν<sub>23</sub>) · entered ${g3(c.G23)}</small>`, cls: Math.abs(c.G23 / o.G23iso - 1) < 0.05 ? 'ok' : 'warn' });
+      if (!o.stable) notes.push(['bad', 'Not a material: no real solid has these constants. The usual cause is swapped axes — E1 and E2 exchanged while the Poisson\'s ratios stayed — or minor ratios typed where major ones belong.']);
+      if (c.E1 > 3 * c.E2 && c.n12 < 0.1) notes.push(['warn', `ν12 = ${f(c.n12, 3)} with E1 ${f(c.E1 / c.E2, 0)} times E2: that looks like the minor ratio ν21. The card would still be stable — and wrong. Check which convention the source and the solver use.`]);
+      if (Number.isFinite(o.G23iso) && Math.abs(c.G23 / o.G23iso - 1) >= 0.05) notes.push(['warn', 'With E2 = E3 the 2–3 plane is usually isotropic, so G23 should be close to E2/2(1 + ν23).']);
+      notes.push(['', 'Check the material orientation in the model too: the right constants on the wrong axes pass every test on this tab.']);
+      return () => bars([...o.bounds.map((b) => ({ name: b.name, u: b.v / b.max })), { name: 'det', u: o.det > 0 ? 0 : Infinity }], 'share of each bound');
+    }
+
+    // ---- nearly incompressible ----
+    function runIncomp(rows: Row[], notes: [string, string][]) {
+      const E = num('i_E'), K = num('i_K'), nuG = num('i_nu'), p = num('i_p') || 0;
+      if (!(E > 0 && K > E / 3)) { notes.push(['bad', 'Enter E and a bulk modulus K larger than E/3.']); return null; }
+      const nu = poissonFromEK(E, K), G = shearModulus(E, nu), nh = neoHookean(G, K);
+      rows.push(
+        { dt: "Poisson's ratio from K", dd: `${f(nu, 6)} <small>(3K − E)/6K — enter it to this precision</small>`, primary: true },
+        { dt: 'Shear modulus', dd: `${g3(G)} MPa <small>K/G = ${f(K / G, 0)}</small>` },
+        { dt: 'Neo-Hookean', dd: `C10 ${f(nh.C10, 4)} MPa <small>D1 ${sci(nh.D1)} MPa⁻¹ — μ = 2C10, K = 2/D1</small>` },
+      );
+      if (nuG > 0 && nuG < 0.5) {
+        const Kg = bulkModulus(E, nuG), r = Kg / K;
+        rows.push({ dt: `With <span class="nc">ν</span> = ${nuG}`, dd: `K = ${sci(Kg)} MPa <small>${r < 1 ? `${f(1 / r, 1)} times too soft in volume` : `${f(r, 1)} times too stiff in volume`}</small>`, cls: Math.abs(Math.log(r)) > Math.log(1.25) ? 'bad' : 'ok' });
+        if (p > 0) rows.push({ dt: 'Volume change', dd: `${f((100 * p) / K, 3)}% <small>at ${g3(p)} MPa · ${f((100 * p) / Kg, 3)}% with ν = ${nuG}</small>` });
+      }
+      notes.push(['', 'Near ν = 0.5 the bulk modulus depends on the fourth decimal place. Take K from a volumetric test and derive ν; never round it to 0.49 or 0.5.']);
+      notes.push(['', 'Use the solver\'s hybrid (mixed) elements for nearly incompressible solids; ordinary elements lock up and come out too stiff.']);
+      notes.push(['', 'E for rubber and propellant depends on rate and temperature: the card belongs to a load case. For time-dependent loads use the viscoelastic form — see <a href="../../fundamentals/viscoelasticity/">Viscoelasticity</a>.']);
+      return () => {
+        const kg = (v: number) => (2 * (1 + v)) / (3 * (1 - 2 * v));
+        const c = frame({ x0: 0.3, x1: 0.5, y0: 0, y1: 4.5, xl: "Poisson's ratio ν", yl: 'log₁₀(K/G)', sy: 1 });
+        const nus = Array.from({ length: 200 }, (_, i) => 0.3 + (0.19999 * i) / 199);
+        poly(nus.map((v) => [c.X(v), c.Y(Math.log10(kg(v)))]), 'var(--rd-ink)');
+        if (Math.log10(K / G) <= 4.5) el('circle', { cx: c.X(Math.min(0.5, nu)), cy: c.Y(Math.log10(K / G)), r: 5, fill: 'var(--rd-blue)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        if (nuG > 0.3 && nuG < 0.5) el('circle', { cx: c.X(nuG), cy: c.Y(Math.log10(kg(nuG))), r: 5, fill: 'var(--rd-accent)', stroke: 'var(--rd-panel)', 'stroke-width': 1.5 });
+        legend([['from K', 'var(--rd-blue)'], ['guessed ν', 'var(--rd-accent)']]);
+      };
+    }
+
+    // ---- plastic table ----
+    function runPlastic(rows: Row[], notes: [string, string][]) {
+      const E = num('p_E'), Fty = num('p_fty'), Ftu = num('p_ftu'), eu = num('p_eu') / 100, n = Math.round(num('p_n')) || 8;
+      const pt = E > 0 && Fty > 0 ? plasticTable(E, Fty, Ftu, eu, Math.min(20, Math.max(3, n))) : null;
+      if (!pt) { tableBox.hidden = true; notes.push(['bad', 'Needs F<sub>tu</sub> above F<sub>ty</sub>, and a uniform elongation that leaves more than 0.2% plastic strain at the ultimate.']); return null; }
+      const last = pt.table[pt.table.length - 1];
+      rows.push(
+        { dt: 'Hardening exponent n', dd: `${f(pt.n, 1)} <small>Ramberg–Osgood, through ${g3(Fty)} MPa at 0.2% and ${g3(Ftu)} MPa at ${f(100 * eu, 1)}%</small>`, primary: true },
+        { dt: 'True stress at necking', dd: `${g3(last.trueStress)} MPa <small>${f(100 * (last.trueStress / Ftu - 1), 1)}% above the engineering ultimate</small>` },
+        { dt: 'True plastic strain at necking', dd: `${f(100 * last.truePlastic, 2)}% <small>the last row; beyond it many solvers hold the stress flat</small>` },
+        { dt: 'First row', dd: `${g3(pt.table[0].trueStress)} MPa <small>at zero plastic strain — the proportional limit, where the fitted plastic strain is 0.01%</small>` },
+      );
+      tableBox.hidden = false;
+      csv.value = pt.table.map((r) => `${r.trueStress.toFixed(1)}, ${r.truePlastic.toFixed(5)}`).join('\n');
+      if (pt.n > 30) notes.push(['', `n = ${f(pt.n, 0)}: very little hardening — typical of high-strength steels, whose yield is close to their ultimate. The part has little reserve once it yields.`]);
+      notes.push(['', 'Typical properties for stiffness and correlation; minimum (A- or B-basis) curves when the plastic analysis itself is the strength check. Do not mix the two in one model.']);
+      notes.push(['', 'Run one element in uniaxial tension with this table: the output must retrace the curve. Past necking the true curve keeps rising, and failure needs its own criterion.']);
+      return () => {
+        const emax = eu * 1.6, es = Array.from({ length: 160 }, (_, i) => (emax * (i + 1)) / 160);
+        const sEng = (e: number) => (e <= eu ? rambergOsgoodStress(E, Fty, pt.n, e) : Ftu * (1 - 0.6 * ((e - eu) / eu) ** 2));
+        const top = last.trueStress * 1.12, bottom = Math.min(Fty * 0.8, pt.table[0].eng * 0.95);
+        const c = frame({ x0: 0, x1: emax * 100, y0: bottom, y1: top, xl: 'strain (%)', yl: 'stress (MPa)' });
+        poly(es.filter((e) => sEng(e) >= bottom).map((e) => [c.X(100 * e), c.Y(sEng(e))]), 'var(--rd-blue)');
+        const tp = pt.table.map((r) => [c.X(100 * (r.truePlastic + r.trueStress / E)), c.Y(r.trueStress)] as [number, number]);
+        poly(tp, 'var(--rd-accent)');
+        el('path', { d: `M${tp[tp.length - 1][0]},${tp[tp.length - 1][1]} L${c.X(emax * 100)},${tp[tp.length - 1][1]}`, fill: 'none', stroke: 'var(--rd-ink)', 'stroke-dasharray': '4 3' });
+        tp.forEach(([x, y]) => el('circle', { cx: x, cy: y, r: 3.2, fill: 'var(--rd-accent)' }));
+        el('text', { x: c.X(emax * 100) - 4, y: tp[tp.length - 1][1] - 6, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, 'held flat');
+        legend([['engineering', 'var(--rd-blue)'], ['true table', 'var(--rd-accent)']]);
+      };
+    }
+
+    // ---- thermal expansion ----
+    function runCte(rows: Row[], notes: [string, string][]) {
+      const T1 = num('c_T1'), a1 = num('c_a1') * 1e-6, T2 = num('c_T2'), a2 = num('c_a2') * 1e-6, Tr = num('c_ref'), T0 = num('c_T0'), Tm = num('c_Tm');
+      if (![T1, a1, T2, a2, Tr, T0, Tm].every(Number.isFinite) || T2 === T1 || Tm === T0) { notes.push(['bad', 'Enter two distinct data temperatures and a hottest temperature different from the stress-free one.']); return null; }
+      const x = expansion(T1, a1, T2, a2);
+      const right = x.strain(T0, Tm), asInst = x.inst(Tm) * (Tm - Tr) - x.inst(T0) * (T0 - Tr);
+      const temps = Array.from({ length: 5 }, (_, i) => Math.min(T1, T0) + ((Math.max(Tm, T2) - Math.min(T1, T0)) * i) / 4);
+      rows.push(
+        { dt: `Secant <span class="nc">α</span> at ${deg(Tm)} °C`, dd: `${f(x.secant(Tr, Tm) * 1e6, 2)} ×10⁻⁶/K <small>mean from the ${deg(Tr)} °C reference · instantaneous there ${f(x.inst(Tm) * 1e6, 2)}</small>`, primary: true },
+        { dt: 'Thermal strain', dd: `${f(right * 1e6, 0)} µε <small>from ${deg(T0)} to ${deg(Tm)} °C</small>` },
+        { dt: 'Instantaneous entered as secant', dd: `${f(asInst * 1e6, 0)} µε <small>${f(100 * (asInst / right - 1), 1)}% ${asInst > right ? 'too much' : 'too little'} expansion</small>`, cls: Math.abs(asInst / right - 1) > 0.02 ? 'warn' : '' },
+        { dt: 'Card: secant <span class="nc">α</span> from the reference', dd: temps.map((T) => `${deg(T)} °C: ${Math.abs(T - Tr) < 1e-9 ? f(x.inst(Tr) * 1e6, 2) : f(x.secant(Tr, T) * 1e6, 2)}`).join(' · ') + ' <small>×10⁻⁶/K</small>' },
+      );
+      if (Tm > Math.max(T1, T2) || Math.min(T0, Tm) < Math.min(T1, T2)) notes.push(['warn', `The model runs outside the data (${deg(Math.min(T1, T2))} to ${deg(Math.max(T1, T2))} °C). Most solvers hold the end values flat outside a table; this tab extends the straight line, which is only a guess either way.`]);
+      notes.push(['', 'Give the solver secant coefficients and the reference temperature they are measured from — Abaqus ZERO, the Ansys reference temperature, Nastran TREF. A wrong reference shifts every thermal strain.']);
+      notes.push(['', 'Every other property in a temperature-dependent card has the same trap: if the table stops at 100 °C and the part reaches 150 °C, the solver uses the 100 °C values.']);
+      return () => {
+        const lo = Math.min(T0, Tm, T1), hi = Math.max(T0, Tm, T2), Ts = Array.from({ length: 81 }, (_, i) => lo + ((hi - lo) * i) / 80);
+        const s = Ts.map((T) => x.strain(T0, T) * 1e6), si = Ts.map((T) => (x.inst(T) * (T - Tr) - x.inst(T0) * (T0 - Tr)) * 1e6);
+        const all = [...s, ...si, 0], ymin = Math.min(...all), ymax = Math.max(...all), pad = 0.08 * (ymax - ymin || 1);
+        const c = frame({ x0: lo, x1: hi, y0: ymin - pad, y1: ymax + pad, xl: 'temperature (°C)', yl: 'thermal strain (µε)' });
+        const dlo = Math.min(T1, T2), dhi = Math.max(T1, T2);
+        if (hi > dhi) el('rect', { x: c.X(dhi), y: c.T, width: c.X(hi) - c.X(dhi), height: c.H - c.T - c.B, fill: 'var(--rd-warn)', 'fill-opacity': 0.08 });
+        if (lo < dlo) el('rect', { x: c.X(lo), y: c.T, width: c.X(dlo) - c.X(lo), height: c.H - c.T - c.B, fill: 'var(--rd-warn)', 'fill-opacity': 0.08 });
+        poly(Ts.map((T, i) => [c.X(T), c.Y(si[i])]), 'var(--rd-accent)', 2, '5 3');
+        poly(Ts.map((T, i) => [c.X(T), c.Y(s[i])]), 'var(--rd-blue)');
+        legend([['secant (right)', 'var(--rd-blue)'], ['instantaneous', 'var(--rd-accent)', '5 3']]);
+      };
+    }
+
+    const RUN: Record<string, typeof runUnits> = { units: runUnits, ortho: runOrtho, incomp: runIncomp, plastic: runPlastic, cte: runCte };
+    const CAPS: Record<string, string> = {
+      units: 'Bar wave speed √(E/ρ) on a log scale, with typical bands. A density in the wrong units moves the line by orders of magnitude.',
+      ortho: 'Each Poisson\'s ratio as a share of its bound; the det bar fills only if the compliance determinant is not positive. Any full bar means the constants are not a material.',
+      incomp: 'Bulk-to-shear modulus ratio against Poisson\'s ratio. Near 0.5 a tiny change in ν changes K many times over.',
+      plastic: 'The engineering curve and the true-stress table built from it. Beyond the last row many solvers hold the stress flat.',
+      cte: 'Thermal strain from the stress-free temperature: secant coefficients, and instantaneous ones entered as if they were secant. Shaded: outside the data.',
+    };
+
+    function run() {
+      const rows: Row[] = [], notes: [string, string][] = [];
+      if (mode !== 'plastic') tableBox.hidden = true;
+      draw = RUN[mode](rows, notes);
+      root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      root.querySelector('[data-cap]')!.textContent = CAPS[mode];
+      if (draw) draw(); else svg.replaceChildren();
+    }
+
+    root.querySelector('[data-copy]')!.addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget as HTMLButtonElement;
+      try { await navigator.clipboard.writeText(csv.value); btn.textContent = 'Copied'; }
+      catch { csv.focus(); csv.select(); btn.textContent = 'Select and copy'; }
+      window.setTimeout(() => (btn.textContent = 'Copy'), 1500);
+    });
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const select = (key: string, focus = false) => {
+      mode = key;
+      tabs.forEach((b) => { const on = b.dataset.tab === key; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== key));
+      run();
+    };
+    tabs.forEach((b, i) => {
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', () => select(b.dataset.tab!));
+      b.addEventListener('keydown', (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { ev.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.tab!, true); }
+      });
+    });
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (draw && Math.abs(nw - w) > 8) { w = nw; draw(); } }).observe(svg);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
