@@ -1,0 +1,45 @@
+---
+// The ISO 286 tolerance zones at ⌀150 — the O-ring page's seal bore — for an H7 hole and six grade-6 shafts, coloured by
+// the kind of fit each makes with it. Values from src/lib/fits.ts.
+import { holeDeviations, shaftDeviations, isoFit } from '../lib/fits';
+
+const D = 150, ink = 'var(--rd-ink)', muted = 'var(--rd-muted)';
+const COL = { clearance: 'var(--rd-blue)', transition: 'var(--rd-warn)', interference: 'var(--rd-accent)' } as const;
+const hole = holeDeviations(D, 'H', 7);
+const shafts = ['g', 'h', 'k', 'n', 'p', 's'].map((l) => ({ l, ...shaftDeviations(D, l, 6), kind: isoFit(D, 'H', 7, l, 6).kind as keyof typeof COL }));
+const lo = -45, hi = 130, TOP = 26, BOT = 186;
+const Y = (v: number) => TOP + ((hi - v) / (hi - lo)) * (BOT - TOP);
+const X0 = 92, STEP = 37, BW = 28;
+---
+
+<figure class="viz fzn">
+  <p class="viz-title">Tolerance zones at ⌀150, in micrometres</p>
+  <svg viewBox="0 0 320 226" role="img" aria-labelledby="fzn-desc" style="max-width: 400px; margin: 0 auto;">
+    <desc id="fzn-desc">
+      An H7 hole zone from 0 to plus {hole.ES} micrometres, beside six shaft zones: {shafts.map((s) => `${s.l}6 from ${s.ei} to ${s.es}`).join(', ')}.
+      g6 and h6 make clearance fits with it, k6 and n6 transition fits, p6 and s6 interference fits.
+    </desc>
+    {[-40, 0, 40, 80, 120].map((v) => (
+      <g>
+        <line x1="34" x2="312" y1={Y(v)} y2={Y(v)} stroke={v === 0 ? ink : 'var(--rd-line)'} stroke-opacity={v === 0 ? 0.7 : 1}></line>
+        <text x="30" y={Y(v) + 4} text-anchor="end" font-size="12" fill={muted}>{v > 0 ? `+${v}` : v}</text>
+      </g>
+    ))}
+    <rect x="38" y={Y(hole.ES)} width="38" height={Y(hole.EI) - Y(hole.ES)} fill={ink} fill-opacity="0.18" stroke={ink}></rect>
+    <text x="57" y={Y(hole.EI) + 14} text-anchor="middle" font-size="12" font-weight="600" fill={ink}>H7</text>
+    {shafts.map((s, i) => (
+      <g>
+        <rect x={X0 + i * STEP} y={Y(s.es)} width={BW} height={Y(s.ei) - Y(s.es)} fill={COL[s.kind]} fill-opacity="0.3" stroke={COL[s.kind]}></rect>
+        <text x={X0 + i * STEP + BW / 2} y={Y(s.ei) + 14} text-anchor="middle" font-size="12" font-weight="600" fill={COL[s.kind]}>{s.l}6</text>
+      </g>
+    ))}
+    <text x="34" y="220" font-size="12" fill={COL.clearance}>clearance</text>
+    <text x="128" y="220" font-size="12" fill={COL.transition}>transition</text>
+    <text x="226" y="220" font-size="12" fill={COL.interference}>interference</text>
+  </svg>
+  <figcaption>
+    The zero line is the basic size. The hole's letter sets where its zone starts, its grade how wide it is. A shaft zone
+    wholly below the hole's gives clearance; wholly above, interference; overlapping, a transition fit that may go either
+    way.
+  </figcaption>
+</figure>

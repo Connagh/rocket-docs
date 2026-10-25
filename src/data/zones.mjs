@@ -75,6 +75,7 @@ export const REBUILT = {
   correl: 'verify/test-correlation',
   gdt: 'drawing/gdt',
   gdtprac: 'drawing/datums-and-position',
+  fits: 'drawing/fits-and-limits',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',

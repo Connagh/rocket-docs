@@ -1,0 +1,255 @@
+---
+// ISO 286 fits in two tabs: limits and the clearance band across a temperature range for two materials, and an
+// interference fit's contact pressure, stress, holding and shrink-fit temperature. Maths in src/lib/fits.ts and
+// src/lib/expansion.ts (unit-tested); UI only here.
+import { HOLE_LETTERS, SHAFT_LETTERS, GRADES } from '../lib/fits';
+import { EXP_MATERIALS } from '../lib/expansion';
+
+const TABS = [{ key: 'fit', name: 'ISO fit' }, { key: 'press', name: 'Interference fit' }];
+const sel = (name: string, opts: readonly (string | number)[], v: string | number) => ({ name, opts, v });
+---
+
+<div class="calc ftcalc" data-ftcalc>
+  <div class="calc-head"><span>Fits &amp; limits</span><span class="head-btns"><span>ISO 286 · temperature · Lamé</span></span></div>
+  <div class="hc-tabs" role="tablist" aria-label="Fit check">
+    {TABS.map((t, i) => <button type="button" role="tab" class="chip" data-tab={t.key} aria-selected={i === 0 ? 'true' : 'false'}>{t.name}</button>)}
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      {[{ p: 'f', d: 150, hl: 'H', hg: 7, sl: 'g', sg: 6, hm: 'steel', sm: 'al', panel: 'fit', legend: 'Hole and shaft' }, { p: 'p', d: 310, hl: 'H', hg: 7, sl: 's', sg: 6, hm: 'al', sm: 'steel', panel: 'press', legend: 'Interference fit' }].map((c, k) => (
+        <fieldset data-panel={c.panel} hidden={k > 0}>
+          <legend>{c.legend}</legend>
+          <div class="row2">
+            <label>Nominal size (mm)<input name={`${c.p}_d`} type="number" min="0.1" max="500" step="any" value={c.d} /></label>
+            <span></span>
+            {[sel(`${c.p}_hl`, HOLE_LETTERS, c.hl), sel(`${c.p}_hg`, GRADES, c.hg), sel(`${c.p}_sl`, SHAFT_LETTERS, c.sl), sel(`${c.p}_sg`, GRADES, c.sg)].map((s, i) => (
+              <label>{['Hole letter', 'Hole grade (IT)', 'Shaft letter', 'Shaft grade (IT)'][i]}<select name={s.name}>{s.opts.map((o) => <option value={o} selected={o === s.v}>{o}</option>)}</select></label>
+            ))}
+            <label>{c.panel === 'press' ? 'Outer part (hub)' : 'Hole part'}<select name={`${c.p}_hm`}>{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === c.hm}>{m.name}</option>)}</select></label>
+            <label>{c.panel === 'press' ? 'Inner part' : 'Shaft part'}<select name={`${c.p}_sm`}>{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === c.sm}>{m.name}</option>)}</select></label>
+            <label>Coldest (°C)<input name={`${c.p}_tc`} type="number" step="any" value="-40" /></label>
+            <label>Hottest (°C)<input name={`${c.p}_th`} type="number" step="any" value="60" /></label>
+            {c.panel === 'press' && <>
+              <label>Hub outside ⌀ (mm)<input name="p_D" type="number" min="0" step="any" value="330" /></label>
+              <label>Inner part's bore ⌀ (mm)<input name="p_di" type="number" min="0" step="any" value="290" /></label>
+              <label>Fit length (mm)<input name="p_L" type="number" min="0" step="any" value="30" /></label>
+              <label>Friction μ<input name="p_mu" type="number" min="0" step="0.01" value="0.15" /></label>
+              <label>Hub yield (MPa)<input name="p_fy" type="number" min="0" step="any" value="500" /></label>
+              <label>Assembly clearance (mm)<input name="p_ac" type="number" min="0" step="any" value="0.05" /></label>
+            </>}
+          </div>
+          <p class="hint">{c.panel === 'press' ? 'Shrink fit: the hub is heated (or the inner part cooled) until the largest interference becomes the assembly clearance. Yield is typical — use your allowable at temperature.' : 'Limits are at 20 °C, the ISO 1 reference temperature. Sizes to 500 mm; letters and grades as tabulated in ISO 286-2 — check critical values against the standard.'}</p>
+        </fieldset>
+      ))}
+    </form>
+    <div>
+      <dl class="readouts" data-out></dl>
+      <figure class="hc-fig">
+        <svg viewBox="0 0 420 250" data-chart role="img" aria-label="Chart for the selected fit"></svg>
+        <figcaption data-cap></figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    ISO 286-1 and -2 limits for sizes to 500 mm. Uniform temperature, linear expansion from 20 °C. Interference fits: Lamé
+    thick cylinders, no surface smoothing, elastic, holding force μ·p·π·d·L.
+  </div>
+</div>
+
+<style is:global>
+  .hc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.75rem 1rem 0; }
+  .hc-tabs > * { margin: 0 !important; }
+  .calc .hc-tabs button.chip[aria-selected='true'] { border-color: var(--rd-accent); color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 12%, transparent); }
+  .ftcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .hc-fig { margin: 0.9rem 0 0 !important; }
+  .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .hc-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .ftcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { isoFit, clearanceShift } from '../lib/fits';
+  import { EXP_MATERIALS, fitPressure, fitStresses, fitHolding } from '../lib/expansion';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 3) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const um = (v: number) => { const n = Math.round(v * 1000); return n === 0 ? '0' : `${n > 0 ? '+' : '−'}${Math.abs(n)}`; };
+  const range = (a: number, b: number) => `${f(a)} to ${f(b)} mm`;
+  const M = (k: string) => EXP_MATERIALS.find((m) => m.key === k)!;
+  type Row = { dt: string; dd: string; cls?: string; primary?: boolean };
+  const kindOf = (a: number, b: number) => (a >= 0 ? 'clearance' : b <= 0 ? 'interference' : 'transition');
+
+  document.querySelectorAll<HTMLElement>('[data-ftcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      svg.append(e);
+      return e;
+    };
+    const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+    let mode = 'fit';
+    let draw: (() => void) | null = null;
+
+    // ---- chart helpers (as in the hand-calc calculator) ----
+    const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 5)); return [1, 2, 2.5, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
+    function frame(o: { x0: number; x1: number; y0: number; y1: number; xl: string; yl: string }) {
+      svg.replaceChildren();
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, L = 64, R = 20, T = 30, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const X = (v: number) => L + ((v - o.x0) / (o.x1 - o.x0)) * (W - L - R), Y = (v: number) => T + ((o.y1 - v) / (o.y1 - o.y0)) * (H - T - B);
+      let sx = nice(o.x1 - o.x0);
+      while ((o.x1 - o.x0) / sx > (W - L - R) / 46) sx *= 2;
+      const sy = nice(o.y1 - o.y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : s >= 0.01 ? 2 : 3);
+      const z = (v: number) => (Math.abs(v) < 1e-12 ? 0 : v), xFirst = Math.ceil(o.x0 / sx - 1e-9) * sx;
+      for (let v = xFirst; v <= o.x1 + 1e-9; v += sx) {
+        el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' });
+        el('text', { x: X(v), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, f(z(v), dp(sx)));
+      }
+      for (let v = Math.ceil(o.y0 / sy - 1e-9) * sy; v <= o.y1 + 1e-9; v += sy) {
+        if (Math.abs(v - o.y0) < 1e-9 && Math.abs(xFirst - o.x0) < 1e-9) continue;
+        el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(z(v), dp(sy)));
+      }
+      if (o.y0 < 0 && o.y1 > 0) el('line', { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.6 });
+      el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, o.xl);
+      el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, o.yl);
+      return { X, Y, W, H, L, R, T, B };
+    }
+    const poly = (pts: [number, number][], color: string, w = 2.2, dash = '') =>
+      el('polyline', { points: pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': w, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+    const legend = (items: [string, string, string?][]) => {
+      let x = 8;
+      for (const [name, color, dash] of items) {
+        el('line', { x1: x, x2: x + 18, y1: 13, y2: 13, stroke: color, 'stroke-width': 2.2, ...(dash ? { 'stroke-dasharray': dash } : {}) });
+        el('text', { x: x + 23, y: 17, 'font-size': 12, fill: 'var(--rd-ink)' }, name);
+        x += 37 + name.length * 7.2;
+      }
+    };
+
+    /** The fit named in a panel, or null with a note if it is outside the tables. */
+    function readFit(p: string, notes: [string, string][]) {
+      const d = num(`${p}_d`);
+      try {
+        return { d, fit: isoFit(d, field(`${p}_hl`).value, +field(`${p}_hg`).value, field(`${p}_sl`).value, +field(`${p}_sg`).value) };
+      } catch (e) {
+        notes.push(['bad', (e as Error).message.includes('500') ? 'Sizes here run to 500 mm.' : 'That letter and grade are not tabulated here.']);
+        return null;
+      }
+    }
+
+    // ---- ISO fit ----
+    function runFit(rows: Row[], notes: [string, string][]) {
+      const r = readFit('f', notes);
+      if (!r) return null;
+      const { d, fit } = r, hm = M(field('f_hm').value), sm = M(field('f_sm').value), tc = num('f_tc'), th = num('f_th');
+      const at = (T: number) => { const s = clearanceShift(d, sm.alpha, hm.alpha, T); return [fit.cMin + s, fit.cMax + s]; };
+      const [cc0, cc1] = at(tc), [ch0, ch1] = at(th);
+      rows.push(
+        { dt: 'Hole', dd: `⌀${f(fit.hole.min)} – ${f(fit.hole.max)} <small>${field('f_hl').value}${field('f_hg').value}: ${um(fit.hole.EI / 1000)} / ${um(fit.hole.ES / 1000)} µm</small>` },
+        { dt: 'Shaft', dd: `⌀${f(fit.shaft.min)} – ${f(fit.shaft.max)} <small>${field('f_sl').value}${field('f_sg').value}: ${um(fit.shaft.ei / 1000)} / ${um(fit.shaft.es / 1000)} µm</small>` },
+        { dt: 'At 20 °C', dd: `${fit.kind} <small>clearance ${range(fit.cMin, fit.cMax)} — negative is interference</small>`, primary: true },
+        { dt: `At ${f(tc, 0)} °C`, dd: `${kindOf(cc0, cc1)} <small>${range(cc0, cc1)}</small>`, cls: kindOf(cc0, cc1) !== fit.kind ? 'warn' : '' },
+        { dt: `At ${f(th, 0)} °C`, dd: `${kindOf(ch0, ch1)} <small>${range(ch0, ch1)}</small>`, cls: kindOf(ch0, ch1) !== fit.kind ? 'warn' : '' },
+      );
+      if (hm.alpha !== sm.alpha) {
+        const tighter = sm.alpha > hm.alpha ? 'hot' : 'cold';
+        notes.push(['', `The shaft expands ${sm.alpha > hm.alpha ? 'more' : 'less'} than the hole, so the fit tightens when ${tighter} by ${f(Math.abs(d * (sm.alpha - hm.alpha)) * 1000, 1)} µm per kelvin of difference.`]);
+      } else notes.push(['', 'Same material: a uniform temperature change leaves the fit alone. Transients — one part heating first — still change it.']);
+      if (fit.kind === 'clearance' && Math.min(cc0, ch0) < 0) notes.push(['bad', 'A clearance fit at 20 °C becomes an interference at one end of the range: a sliding or removable part seizes there.']);
+      if (fit.kind === 'interference' && Math.max(cc1, ch1) > 0) notes.push(['bad', 'An interference fit at 20 °C can go loose at one end of the range: it cannot be relied on to hold or locate there.']);
+      return () => {
+        const t0 = Math.min(tc, 20) - 10, t1 = Math.max(th, 20) + 10, Ts = [t0, t1];
+        const ys = Ts.flatMap((T) => at(T)).concat(0).map((v) => v * 1000), lo = Math.min(...ys), hi = Math.max(...ys), pad = 0.1 * (hi - lo || 1);
+        const c = frame({ x0: t0, x1: t1, y0: lo - pad, y1: hi + pad, xl: 'temperature (°C)', yl: 'clearance (µm)' });
+        el('polygon', { points: [[t0, 0], [t1, 0], [t1, 1], [t0, 1]].map(([T, k]) => `${c.X(T)},${c.Y(at(T)[k] * 1000)}`).join(' '), fill: 'var(--rd-blue)', 'fill-opacity': 0.18 });
+        poly(Ts.map((T) => [c.X(T), c.Y(at(T)[0] * 1000)]), 'var(--rd-blue)', 1.8);
+        poly(Ts.map((T) => [c.X(T), c.Y(at(T)[1] * 1000)]), 'var(--rd-blue)', 1.8);
+        [tc, 20, th].forEach((T) => el('line', { x1: c.X(T), x2: c.X(T), y1: c.T, y2: c.H - c.B, stroke: T === 20 ? 'var(--rd-ink)' : 'var(--rd-warn)', 'stroke-dasharray': '3 3', 'stroke-opacity': 0.7 }));
+        if (lo < 0) el('text', { x: c.W - c.R - 4, y: c.Y(0) + 15, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-accent)', ...halo }, 'interference');
+        if (hi > 0) el('text', { x: c.W - c.R - 4, y: c.Y(0) - 6, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ok)', ...halo }, 'clearance');
+        legend([['the fit\'s range', 'var(--rd-blue)']]);
+      };
+    }
+
+    // ---- interference fit ----
+    function runPress(rows: Row[], notes: [string, string][]) {
+      const r = readFit('p', notes);
+      if (!r) return null;
+      const { d, fit } = r, hub = M(field('p_hm').value), inner = M(field('p_sm').value), tc = num('p_tc'), th = num('p_th');
+      const D = num('p_D'), di = num('p_di') || 0, L = num('p_L') || 0, mu = num('p_mu') || 0, fy = num('p_fy'), ac = num('p_ac') || 0;
+      if (!(D > d && di < d)) { notes.push(['bad', 'The hub\'s outside diameter must exceed the fit diameter, and the inner part\'s bore be smaller than it.']); return null; }
+      const geo = { d, D, di, Eo: hub.E, nuo: hub.nu, Ei: inner.E, nui: inner.nu };
+      const inter = (T: number) => { const s = clearanceShift(d, inner.alpha, hub.alpha, T); return [-(fit.cMax + s), -(fit.cMin + s)]; }; // [least, most]
+      const temps = [tc, 20, th];
+      const pr = temps.map((T) => inter(T).map((x) => fitPressure(x, geo)));
+      const pMax = Math.max(...pr.map((p) => p[1])), tWorst = temps[pr.map((p) => p[1]).indexOf(pMax)];
+      const loosest = temps.reduce((a, T) => (inter(T)[0] < inter(a)[0] ? T : a), temps[0]), dLoose = inter(loosest)[0];
+      const st = fitStresses(pMax, geo), hold = fitHolding(fitPressure(dLoose, geo), d, L, mu);
+      const shrink = (-fit.cMin + ac) / (hub.alpha * d);
+      temps.forEach((T, i) => { const [a, b] = inter(T); rows.push({ dt: `Interference at ${f(T, 0)} °C`, dd: `${range(a, b)} <small>${a <= 0 ? 'can be loose' : 'always gripping'} · pressure ${f(pr[i][0], 2)}–${f(pr[i][1], 2)} MPa</small>`, cls: a <= 0 ? 'bad' : '', primary: T === 20 }); });
+      rows.push(
+        { dt: 'Hub stress, worst', dd: `${f(st.vmOuter, 0)} MPa <small>von Mises at the bore, at ${f(tWorst, 0)} °C${fy > 0 ? ` · ${f((100 * st.vmOuter) / fy, 0)}% of yield` : ''}</small>`, cls: fy > 0 && st.vmOuter > fy ? 'bad' : '' },
+        { dt: 'Holding, least', dd: `${f(hold.force / 1000, 2)} kN <small>axial, at ${f(loosest, 0)} °C with the least interference · torque ${f(hold.torque / 1e6, 2)} kN·m</small>`, cls: hold.force <= 0 ? 'bad' : '' },
+        { dt: 'Shrink-fit temperature', dd: `+${f(shrink, 0)} K <small>heat the hub this much above the inner part to open ${f(ac, 2)} mm of assembly clearance</small>` },
+      );
+      if (dLoose <= 0) notes.push(['bad', `At ${f(loosest, 0)} °C the least interference is ${f(dLoose)} mm: the fit can go loose. Pin, key or bolt the parts, or choose materials and a fit that grip across the whole range.`]);
+      if (fy > 0 && st.vmOuter > 0.67 * fy) notes.push(['warn', 'The hub runs above two-thirds of yield at the tightest corner: a heavier hub, a lighter fit, or a stronger material.']);
+      notes.push(['', 'Part of the interference is lost as surface peaks flatten on assembly — methods such as DIN 7190 subtract a share of the roughness. Specify the finish on both parts.']);
+      return () => {
+        const t0 = Math.min(tc, 20) - 10, t1 = Math.max(th, 20) + 10, N = 40, Ts = Array.from({ length: N + 1 }, (_, i) => t0 + ((t1 - t0) * i) / N);
+        const pl = Ts.map((T) => fitPressure(inter(T)[0], geo)), ph = Ts.map((T) => fitPressure(inter(T)[1], geo));
+        const hi = Math.max(...ph) * 1.15 || 1;
+        const c = frame({ x0: t0, x1: t1, y0: 0, y1: hi, xl: 'temperature (°C)', yl: 'contact pressure (MPa)' });
+        el('polygon', { points: [...Ts.map((T, i) => `${c.X(T)},${c.Y(pl[i])}`), ...Ts.slice().reverse().map((T, i) => `${c.X(T)},${c.Y(ph[N - i])}`)].join(' '), fill: 'var(--rd-blue)', 'fill-opacity': 0.18 });
+        poly(Ts.map((T, i) => [c.X(T), c.Y(pl[i])]), 'var(--rd-accent)', 1.8);
+        poly(Ts.map((T, i) => [c.X(T), c.Y(ph[i])]), 'var(--rd-blue)', 1.8);
+        [tc, th].forEach((T) => el('line', { x1: c.X(T), x2: c.X(T), y1: c.T, y2: c.H - c.B, stroke: 'var(--rd-warn)', 'stroke-dasharray': '3 3', 'stroke-opacity': 0.7 }));
+        legend([['most interference', 'var(--rd-blue)'], ['least', 'var(--rd-accent)']]);
+      };
+    }
+
+    const RUN: Record<string, typeof runFit> = { fit: runFit, press: runPress };
+    const CAPS: Record<string, string> = {
+      fit: 'The fit\'s clearance range against temperature for the two materials: above zero the parts slide, below it they grip. Dashed lines mark the coldest, 20 °C and the hottest.',
+      press: 'Contact pressure against temperature for the tightest and loosest combination of limits. Where the lower line meets zero, the fit can go loose.',
+    };
+
+    function run() {
+      const rows: Row[] = [], notes: [string, string][] = [];
+      draw = RUN[mode](rows, notes);
+      root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      root.querySelector('[data-cap]')!.textContent = CAPS[mode];
+      if (draw) draw(); else svg.replaceChildren();
+    }
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const select = (key: string, focus = false) => {
+      mode = key;
+      tabs.forEach((b) => { const on = b.dataset.tab === key; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== key));
+      run();
+    };
+    tabs.forEach((b, i) => {
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', () => select(b.dataset.tab!));
+      b.addEventListener('keydown', (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { ev.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.tab!, true); }
+      });
+    });
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (draw && Math.abs(nw - w) > 8) { w = nw; draw(); } }).observe(svg);
+    }
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>

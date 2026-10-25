@@ -1,0 +1,172 @@
+---
+title: Fits & limits
+description: ISO 286 limits and fits for motor hardware — standard tolerance grades and fundamental deviations, hole and shaft basis, clearance, transition and interference fits, choosing fits for pilots, seal bores, bearings, pins and bushings, and how temperature and dissimilar materials change a fit.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import FitZones from '../../../components/FitZones.astro';
+import FitsCalc from '../../../components/FitsCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>A fit is the clearance or interference between two toleranced parts: ISO 286 gives each a letter for position and a grade for width, and the pair decides whether they slide, locate or grip — at every temperature they will see.</div>
+  <div><b>Before this</b><a href="../gdt/">GD&T</a> · <a href="../../joints/differential-expansion/">Differential expansion</a></div>
+  <div><b>Used by</b><a href="../../seals/o-ring-design/">O-ring design</a> · <a href="../../legacy/?z=stack">Tolerance stack</a></div>
+</div>
+
+## Why this matters
+
+Every pilot, seal bore, bearing seat, dowel and bushing on a motor is a fit. Too loose and a closure sits off-centre,
+a seal extrudes or a pin does not locate; too tight and a part will not assemble, or a bearing runs hot, or a hub
+cracks. And a fit chosen at 20 °C can do all of these at −40 or +60 °C when the two parts are made of different
+materials.
+
+ISO 286 turns the choice into a short code — *⌀150 H8/f7* — that every machinist, inspector and supplier reads the same
+way, and that fixes both limits of both parts.
+
+<Analogy title="A door in its frame">
+  A door needs clearance to swing, but not so much that it rattles or lets the draught through. A good joiner hangs it
+  for winter as well as summer, because wood swells in the damp. Choosing a fit is the same judgement: the gap the
+  function needs, between limits the workshop can hold, in every season the part will see.
+</Analogy>
+
+## The system
+
+A size is written as a **nominal size**, a **letter** and a **grade**:
+
+- **The grade (IT1–IT18)** is the width of the tolerance zone. It grows with size and steps by about 1.6 times per
+  grade — ten times every five grades. IT6–IT7 is precision turning and grinding, IT8–IT9 good turning, IT11 and coarser
+  general machining.
+- **The letter** is the **fundamental deviation**: where the zone sits relative to the nominal size. Upper case for holes,
+  lower case for shafts. **H** holes and **h** shafts start exactly at the nominal size; a–g shafts sit below it
+  (clearance), k–z above it (interference); js and JS straddle it.
+- **Hole basis** — all holes H, the shafts varied — is the usual choice: reamers and plug gauges come in fixed sizes,
+  shafts are easy to turn to any size. Shaft basis (h) suits a bar stock or a pin used through several holes.
+
+Standard tolerances, µm, for a few sizes and grades:
+
+| Size (mm) | IT6 | IT7 | IT8 | IT9 | IT11 |
+| --- | --- | --- | --- | --- | --- |
+| over 18 to 30 | 13 | 21 | 33 | 52 | 130 |
+| over 80 to 120 | 22 | 35 | 54 | 87 | 220 |
+| over 120 to 180 | 25 | 40 | 63 | 100 | 250 |
+| over 250 to 315 | 32 | 52 | 81 | 130 | 320 |
+
+## Clearance, transition and interference
+
+<FitZones />
+
+With the hole's limits $EI$, $ES$ and the shaft's $ei$, $es$:
+
+$$
+c_{max} = ES - ei
+$$
+
+$$
+c_{min} = EI - es
+$$
+
+Both positive is a **clearance** fit; both negative an **interference** fit; one of each a **transition** fit, which
+may assemble either way. A common set, all on an H hole:
+
+| Fit | Kind | Use |
+| --- | --- | --- |
+| H11/c11, H9/d9 | Loose and free running | Coarse clearance, hot or dirty assemblies |
+| H8/f7 | Close running | Running shafts, piston-type seal housings (ISO 3601) |
+| H7/g6 | Sliding | Accurate location that still assembles by hand |
+| H7/h6 | Locational clearance | Snug location of stationary parts |
+| H7/k6 | Locational transition | Accurate location, light tapping to assemble |
+| H7/n6 | Locational transition, tighter | Location that should not move |
+| H7/p6 | Locational interference | Rigid location, removable with a press |
+| H7/s6 | Medium drive | Bushings and sleeves that carry load by grip |
+
+## Choosing fits for motor hardware
+
+| Feature | Typical fit | What decides it |
+| --- | --- | --- |
+| Closure pilot in the case bore | H8/f7 to H7/g6 | Location and datum shift ([Datums & position](../datums-and-position/)); assembly over seals |
+| Radial O-ring seal bore and plug | H8/f7 (ISO 3601-2) or closer | Extrusion gap is the largest clearance; eccentricity eats squeeze |
+| Rolling-bearing seats | Shaft k5–m6, housing H7–J7, from the bearing maker | Which ring rotates under the load; bearing rings have their own tolerances (ISO 492) |
+| Dowel pins | m6 pin in H7 on the fixed side; a looser hole on the removable side | Location without the pin carrying assembly load |
+| Bushings in lugs and clevises | H7/p6 to H7/s6 | Grip against rotation and push-out; hub stress |
+| Throat inserts and liners | Designed gaps, not a standard fit | Growth during firing — see [Transient thermal](../../motor/transient-thermal/) |
+
+## Temperature changes the fit
+
+ISO 286 limits apply at **20 °C** (ISO 1). Two parts of different materials change their fit with temperature:
+
+$$
+\Delta c = -\,d\,(\alpha_{shaft} - \alpha_{hole})\,(T - 20)
+$$
+
+- **An aluminium part in steel** tightens when hot and loosens when cold — a sliding fit can seize hot, an interference
+  fit can go loose cold if the aluminium is inside, or hot if it is outside.
+- **Same material** leaves the fit alone at uniform temperature; only transients change it.
+- **Interference fits** give a contact pressure, hub stress and holding force from Lamé's thick-cylinder solution —
+  see [Differential expansion](../../joints/differential-expansion/#fits-that-change-with-temperature). Check the
+  tightest corner for stress and the loosest for grip.
+- **Shrink fitting** heats the outer part (or cools the inner) by
+  $\Delta T = (\delta_{max} + c_{assembly})/(\alpha\,d)$ so it slides on, then grips as it equalises.
+
+## Calculator
+
+<FitsCalc />
+
+## Worked example — four fits on the motor
+
+The calculator's starting values are the first and last of these.
+
+1. **The nozzle seal bore.** The [O-ring page's](../../seals/o-ring-design/#worked-example--a-nozzle-to-case-radial-seal)
+   bore, ⌀150.000–150.063, is a ⌀150 **H8**. Its plug, ⌀149.860–149.900, gives up to 0.203 mm of clearance — which is
+   why that page needed a back-up ring. The ISO 3601 housing fit, **H8/f7**, gives 0.043–0.146 mm: inside the
+   roughly 0.15 mm a 90 Shore ring tolerates at 10 MPa, but not the 0.08 mm of a 70 Shore one. **H7/g6** gives
+   0.014–0.079 mm, within both, and halves the eccentricity that eats squeeze
+   ([GD&T](../gdt/#worked-example--the-aft-closure-its-bolts-and-the-nozzle-seal-groove)) — at the cost of IT6 and IT7
+   machining and a careful lead-in chamfer for assembly over the ring.
+2. **If the plug were aluminium.** In the steel case bore, H7/g6 at +60 °C becomes **0.054 mm of interference** — the
+   nozzle seizes — and at −40 °C opens to **0.182 mm** of clearance, more than double the extrusion gap. Titanium would
+   reverse the trend and still go slightly tight when cold. A close sliding fit wants matched materials.
+3. **A dowel pin.** An ⌀8 m6 pin in an H7 hole: −0.015 to +0.009 mm, a transition fit that pushes or lightly presses in
+   on the fixed side. On the removable side, F7 gives −0.002 to +0.022 mm — essentially a slip fit.
+4. **The aluminium ring on the steel attach ring.** The ⌀310 joint from
+   [Differential expansion](../../joints/differential-expansion/#worked-example--the-300-mm-motor-from-40-to-60-c),
+   now as **H7/s6**: 0.118–0.202 mm of interference at 20 °C. At −40 °C, 0.330–0.414 mm — 4.5 MPa of contact pressure
+   and 74 MPa in the aluminium, 15% of its yield. At +60 °C, −0.023 to +0.061 mm: **it can go loose**. As that page
+   concluded, the fit only centres the ring; pins or bolts must carry the load. To assemble it, warm the ring about
+   35 K above the steel.
+
+## Where this stops
+
+- **ISO 286 tables to 500 mm** for the common letters (d to s, D to S) and grades IT4–IT12. Larger sizes, other letters
+  and J holes are in the standard.
+- **Uniform temperature.** Firing transients heat parts unevenly — use [Transient thermal](../../motor/transient-thermal/)
+  for the temperatures.
+- **Elastic interference fits,** with no surface smoothing, no centrifugal loosening and no creep.
+- **Form is separate.** Under ISO 8015 a size tolerance does not control form; apply the envelope requirement Ⓔ to
+  fitting features, or rely on ASME's Rule #1 ([GD&T](../gdt/#size-and-form)).
+
+## On the drawing
+
+- **The fit as limits or as a code** — ⌀150 H8 and ⌀150 f7, or the limits themselves — on each part's drawing.
+- **The envelope requirement** on fitting features under ISO GPS (⌀150 H8 Ⓔ).
+- **Surface finish** on press and shrink fits, and lead-in chamfers wherever a part or a seal slides on.
+- **The assembly method** for interference fits — press, heat or cool, and the temperatures.
+- **Matched materials,** or the temperature range the fit was checked over.
+
+## References and further reading
+
+- ISO 286-1 and ISO 286-2, *ISO code system for tolerances on linear sizes*.
+- ISO 1, *Standard reference temperature for geometrical product specification*.
+- ISO 3601-2, *Fluid power systems — O-rings — Housing dimensions for general applications*.
+- ISO 14405-1, *Dimensional tolerancing — Linear sizes*.
+- ISO 2338 and ISO 8734, *Parallel pins*; ISO 492, *Rolling bearings — Radial bearings — Geometrical product
+  specifications and tolerance values*.
+- DIN 7190, *Interference fits — Calculation and design rules*.
+- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill — press and shrink fits.
+
+<Aside type="note">
+  Guidance on method from general practice. Tabulated limits are reproduced for convenience — check critical values
+  against ISO 286-2, and fits for bearings and seals against the maker's and the governing standard's recommendations.
+</Aside>
