@@ -1,0 +1,228 @@
+---
+// Two parallel load paths joining the same two points: how they share an applied load by stiffness, what a gap does,
+// the force a mismatch sets up between them, where the joint first fails and whether the survivor holds.
+// Maths in src/lib/loadpath.ts (unit-tested); UI only here.
+---
+
+<div class="calc lscalc" data-lscalc>
+  <div class="calc-head"><span>Two load paths</span><span class="head-btns"><span>stiffness · gap · mismatch</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset>
+        <legend>Path 1</legend>
+        <div class="row2">
+          <label>Stiffness (kN/mm)<input name="k1" type="number" min="0.001" step="any" value="267.3" /></label>
+          <label>Gap (mm)<input name="g1" type="number" min="0" step="any" value="0" /></label>
+          <label>Capacity (kN)<input name="c1" type="number" min="0" step="any" placeholder="your allowable" autocomplete="off" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Path 2</legend>
+        <div class="row2">
+          <label>Stiffness (kN/mm)<input name="k2" type="number" min="0.001" step="any" value="148.7" /></label>
+          <label>Gap (mm)<input name="g2" type="number" min="0" step="any" value="0" /></label>
+          <label>Capacity (kN)<input name="c2" type="number" min="0" step="any" placeholder="your allowable" autocomplete="off" /></label>
+        </div>
+        <p class="hint">A tube: k = E·π·D·t/L. A gap is free movement either way before the path takes load — hole clearance, a slip joint.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Load</legend>
+        <div class="row2">
+          <label>Applied load (kN, tension +)<input name="P" type="number" step="any" value="0" /></label>
+          <label>Path 1 longer by (mm)<input name="d" type="number" step="any" value="1.80" /></label>
+        </div>
+        <p class="hint">The mismatch is how much longer path 1 would be than path 2 with nothing joining them — pressure growth, thermal expansion, a tolerance.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Your programme's factor</legend>
+        <div class="row2">
+          <label>Ultimate factor<input name="fu" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
+        </div>
+        <p class="hint">Applied here to each path's force at the operating point, mismatch included. If your programme treats pressure-growth or thermal loads differently, enter them accordingly.</p>
+        <p class="hint example-note" data-example-note hidden></p>
+      </fieldset>
+    </form>
+    <div>
+      <dl class="readouts">
+        <div class="readout primary" data-cls="f1"><dt>Path 1 carries</dt><dd data-r="f1">—</dd></div>
+        <div class="readout primary" data-cls="f2"><dt>Path 2 carries</dt><dd data-r="f2">—</dd></div>
+        <div class="readout"><dt>From the mismatch alone</dt><dd data-r="mis">—</dd></div>
+        <div class="readout"><dt>Applied-load split</dt><dd data-r="split">—</dd></div>
+        <div class="readout" data-cls="ff"><dt>First failure</dt><dd data-r="ff">—</dd></div>
+        <div class="readout" data-cls="ms"><dt>Margin</dt><dd data-r="ms">—</dd></div>
+        <div class="readout" data-cls="fs"><dt>If the first path fails</dt><dd data-r="fs">—</dd></div>
+      </dl>
+      <figure class="ls-fig">
+        <svg viewBox="0 0 420 260" data-chart role="img" aria-label="Force in each path and in total against the displacement of the joint"></svg>
+        <figcaption>Force in each path against the joint's displacement. The paths share one displacement, so the stiffer line takes more of any load; a gap is a flat start; a mismatch shifts path 1 sideways, so both carry force at zero applied load.</figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Two linear-elastic paths in parallel between the same two points, each with an optional gap; a path fails at its
+    capacity and carries nothing after. No yielding, no load redistribution before failure.
+  </div>
+</div>
+
+<style is:global>
+  .lscalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .ls-fig { margin: 0.9rem 0 0 !important; }
+  .ls-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .ls-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .lscalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { shareLoad, mismatchForce, firstFailure, type Path } from '../lib/loadpath';
+  import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
+  const kN = (v: number) => f(v / 1000, Math.abs(v) < 10000 ? 2 : 1);
+  const sgn = (v: number) => `${v >= 0 ? '+' : ''}${f(v, 2)}`;
+
+  document.querySelectorAll<HTMLElement>('[data-lscalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const r = (k: string) => root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+    const cls = (k: string, c: string) => (root.querySelector(`[data-cls="${k}"]`)!.className = `readout${k === 'f1' || k === 'f2' ? ' primary' : ''} ${c}`);
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    let last: Parameters<typeof chart> | null = null;
+    const sense = (v: number) => (Math.abs(v) < 0.5 ? 'carries nothing' : v > 0 ? 'tension' : 'compression');
+
+    function run() {
+      const notes: [string, string][] = [];
+      const k1 = num('k1') * 1000, k2 = num('k2') * 1000, P = (num('P') || 0) * 1000, d = num('d') || 0;
+      const c1 = num('c1') * 1000, c2 = num('c2') * 1000, fu = readFactor(field('fu').value);
+      if (!(k1 > 0 && k2 > 0)) {
+        for (const k of ['f1', 'f2', 'mis', 'split', 'ff', 'ms', 'fs']) r(k).textContent = '—';
+        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Enter both stiffnesses, above zero.</li>';
+        chart(null);
+        return;
+      }
+      const p1: Path = { k: k1, gap: num('g1') || 0, cap: c1 > 0 ? c1 : undefined };
+      const p2: Path = { k: k2, gap: num('g2') || 0, cap: c2 > 0 ? c2 : undefined };
+      const s = shareLoad(P, p1, p2, d), s0 = shareLoad(0, p1, p2, d);
+      const show = (k: 'f1' | 'f2', v: number, cap?: number) => {
+        const use = cap ? Math.abs(v) / cap : NaN;
+        r(k).innerHTML = `${Math.abs(v) < 0.5 ? '0' : `${v > 0 ? '+' : '−'}${kN(Math.abs(v))}`} kN <small>${sense(v)}${cap ? ` · ${f(100 * use, 0)}% of capacity` : ''}</small>`;
+        cls(k, cap ? (use >= 1 ? 'bad' : use > 0.8 ? 'warn' : 'ok') : '');
+      };
+      show('f1', s.f1, p1.cap); show('f2', s.f2, p2.cap);
+
+      const fm = mismatchForce(d, p1, p2);
+      r('mis').innerHTML = d === 0 ? `none <small>no mismatch entered</small>` : `${kN(fm)} kN <small>${fm < 0.5 ? 'the gaps take up the mismatch' : 'in both paths, equal and opposite, with no applied load'}</small>`;
+
+      const sh1 = P !== 0 ? (s.f1 - s0.f1) / P : k1 / (k1 + k2);
+      r('split').innerHTML = `${f(100 * sh1, 0)}% / ${f(100 * (1 - sh1), 0)}% <small>${P !== 0 ? 'of the applied load, path 1 / path 2' : 'of any applied load, while both paths are engaged'}</small>`;
+
+      // first failure and the survivor
+      const ff = firstFailure(P === 0 ? 1 : P, p1, p2, d);
+      const sumCap = (p1.cap ?? 0) + (p2.cap ?? 0);
+      if (!p1.cap && !p2.cap) { r('ff').innerHTML = 'enter a capacity <small>for either path</small>'; cls('ff', ''); }
+      else if (ff.load === 0) { r('ff').innerHTML = `path ${ff.path}, at no applied load <small>the mismatch alone exceeds its capacity</small>`; cls('ff', 'bad'); }
+      else if (!Number.isFinite(ff.load)) { r('ff').innerHTML = 'none found <small>neither path reaches its capacity</small>'; cls('ff', 'ok'); }
+      else {
+        r('ff').innerHTML = `path ${ff.path}, at ${kN(Math.abs(ff.load))} kN applied <small>${ff.load < 0 ? 'compression' : 'tension'} · ${p1.cap && p2.cap ? `not the ${kN(sumCap)} kN sum of the capacities` : 'the other path has no capacity entered'}</small>`;
+        cls('ff', Math.abs(ff.load) > Math.abs(P) ? 'ok' : 'bad');
+      }
+
+      if (fu === null) { r('ms').innerHTML = `<small>${awaitingMessage(['ultimate factor'], 'the margin')}</small>`; cls('ms', ''); }
+      else if (!p1.cap && !p2.cap) { r('ms').innerHTML = '— <small>enter a capacity for either path</small>'; cls('ms', ''); }
+      else {
+        const ms = [[s.f1, p1.cap, 1], [s.f2, p2.cap, 2]].filter(([v, c]) => c && Math.abs(v as number) > 0.5)
+          .map(([v, c, i]) => [(c as number) / (fu * Math.abs(v as number)) - 1, i] as const).sort((a, b) => a[0] - b[0]);
+        if (!ms.length) { r('ms').innerHTML = 'no load <small>the paths with a capacity carry nothing</small>'; cls('ms', 'ok'); }
+        else { r('ms').innerHTML = `MS ${sgn(ms[0][0])} <small>path ${ms[0][1]}, ${f(fu, 2)} × its force against its capacity</small>`; cls('ms', ms[0][0] < 0 ? 'bad' : 'ok'); }
+      }
+
+      if (Number.isFinite(ff.load) && ff.path && P !== 0) {
+        const other = ff.path === 1 ? p2 : p1, n = ff.path === 1 ? 2 : 1;
+        if (other.cap) {
+          const use = Math.abs(P) / other.cap;
+          r('fs').innerHTML = `path ${n} alone: ${f(100 * use, 0)}% <small>of its capacity, carrying all ${kN(Math.abs(P))} kN</small>`;
+          cls('fs', use >= 1 ? 'bad' : 'ok');
+        } else { r('fs').innerHTML = `path ${n} alone <small>enter its capacity to check it</small>`; cls('fs', ''); }
+      } else { r('fs').innerHTML = '— <small>needs an applied load and a capacity</small>'; cls('fs', ''); }
+
+      if (d !== 0 && fm >= 0.5) notes.push(['warn', `A ${f(Math.abs(d), 2)} mm mismatch forces ${kN(fm)} kN through both paths before any load is applied. Fix one end and let the other slide — a gap larger than the mismatch — or make one path compliant.`]);
+      if (d !== 0 && fm < 0.5) notes.push(['ok', 'The gaps are larger than the mismatch: the paths no longer fight each other. A sliding end still has to carry the loads across it — radial and shear — and stay seated.']);
+      if (P !== 0 && Math.abs(sh1 - 0.5) > 0.15) notes.push(['', `The stiffer path takes ${f(100 * Math.max(sh1, 1 - sh1), 0)}% of the applied load — load goes where the stiffness is, not where it was intended.`]);
+      if ((p1.gap ?? 0) > 0 || (p2.gap ?? 0) > 0) notes.push(['', 'A path with a gap carries nothing until the joint has moved through it. In a bolted shear joint with clearance holes, the first bolt to bear takes the load; in a bonded and bolted joint, the bond fails before the bolts engage.']);
+      if (p1.cap && p2.cap && Number.isFinite(ff.load) && ff.load !== 0) notes.push(['', `Capacities do not add: the joint fails when its first path does, at ${kN(Math.abs(ff.load))} kN — then the other must carry everything alone.`]);
+
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      chart(p1, p2, d, s.u, P);
+    }
+
+    function chart(p1: Path | null, p2?: Path, d = 0, uOp = 0, P = 0) {
+      const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+      svg.replaceChildren();
+      last = [p1, p2, d, uOp, P];
+      if (!p1 || !p2) return;
+      const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 260, L = 56, R = 20, T = 30, B = 40;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const marks = [0, d, uOp, d + (p1.gap ?? 0), -(p2.gap ?? 0), p2.gap ?? 0];
+      let u0 = Math.min(...marks), u1 = Math.max(...marks);
+      if (u1 - u0 < 1e-6) { u0 = -1; u1 = 1; }
+      const pad = 0.2 * (u1 - u0); u0 -= pad; u1 += pad;
+      const N = 160, us = Array.from({ length: N + 1 }, (_, i) => u0 + ((u1 - u0) * i) / N);
+      const F1 = (u: number) => p1.k * Math.sign(u - d) * Math.max(0, Math.abs(u - d) - (p1.gap ?? 0));
+      const F2 = (u: number) => p2.k * Math.sign(u) * Math.max(0, Math.abs(u) - (p2.gap ?? 0));
+      const ys = us.flatMap((u) => [F1(u), F2(u), F1(u) + F2(u)]).concat([P, ...(p1.cap ? [p1.cap, -p1.cap] : []), ...(p2.cap ? [p2.cap, -p2.cap] : [])]).map((v) => v / 1000);
+      let lo = Math.min(...ys), hi = Math.max(...ys);
+      const yp = 0.08 * (hi - lo || 1); lo -= yp; hi += yp;
+      const X = (u: number) => L + ((u - u0) / (u1 - u0)) * (W - L - R), Y = (v: number) => T + ((hi - v) / (hi - lo)) * (H - T - B);
+      const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+      const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 4)); return [1, 2, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
+      const ux = nice(u1 - u0), vy = nice(hi - lo);
+      for (let u = Math.ceil(u0 / ux) * ux; u <= u1; u += ux) {
+        svg.append(el('line', { x1: X(u), x2: X(u), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
+        svg.append(el('text', { x: X(u), y: H - B + 15, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-muted)' }, f(u, ux < 0.1 ? 2 : ux < 1 ? 1 : 0)));
+      }
+      for (let v = Math.ceil(lo / vy) * vy; v <= hi; v += vy) svg.append(el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-muted)' }, f(v, vy < 1 ? 1 : 0)));
+      if (lo < 0 && hi > 0) svg.append(el('line', { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.6 }));
+      for (const [cap, color] of [[p1.cap, 'var(--rd-blue)'], [p2.cap, 'var(--rd-accent)']] as const) {
+        if (!cap) continue;
+        for (const v of [cap, -cap]) if (v / 1000 > lo && v / 1000 < hi) svg.append(el('line', { x1: L, x2: W - R, y1: Y(v / 1000), y2: Y(v / 1000), stroke: color, 'stroke-dasharray': '2 4', 'stroke-width': 1.4 }));
+      }
+      if (P !== 0) svg.append(el('line', { x1: L, x2: W - R, y1: Y(P / 1000), y2: Y(P / 1000), stroke: 'var(--rd-muted)', 'stroke-dasharray': '6 4' }));
+      const line = (fn: (u: number) => number, color: string, w: number, dash = '') =>
+        svg.append(el('polyline', { points: us.map((u) => `${X(u).toFixed(1)},${Y(fn(u) / 1000).toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': w, ...(dash ? { 'stroke-dasharray': dash } : {}) }));
+      line((u) => F1(u) + F2(u), 'var(--rd-ink)', 1.6, '6 3');
+      line(F1, 'var(--rd-blue)', 2.4);
+      line(F2, 'var(--rd-accent)', 2.4);
+      svg.append(el('line', { x1: X(uOp), x2: X(uOp), y1: T, y2: H - B, stroke: 'var(--rd-ink)', 'stroke-opacity': 0.35 }));
+      for (const [v, color] of [[F1(uOp), 'var(--rd-blue)'], [F2(uOp), 'var(--rd-accent)'], [P, 'var(--rd-ink)']] as const) svg.append(el('circle', { cx: X(uOp), cy: Y(v / 1000), r: 4.5, fill: color, stroke: 'var(--rd-panel)', 'stroke-width': 1.5 }));
+      [['path 1', 'var(--rd-blue)', ''], ['path 2', 'var(--rd-accent)', ''], ['total', 'var(--rd-ink)', '4 3']].forEach(([name, color, dash], i) => {
+        const lx = L + i * Math.min(96, (W - L - R) / 3);
+        svg.append(el('line', { x1: lx, x2: lx + 18, y1: 13, y2: 13, stroke: color, 'stroke-width': 2.2, ...(dash ? { 'stroke-dasharray': dash } : {}) }));
+        svg.append(el('text', { x: lx + 23, y: 17, 'font-size': 12, fill: 'var(--rd-ink)' }, name));
+      });
+      svg.append(el('text', { x: X(uOp) + (X(uOp) > (L + W) / 2 ? -6 : 6), y: T + 13, 'text-anchor': X(uOp) > (L + W) / 2 ? 'end' : 'start', 'font-size': 12, fill: 'var(--rd-ink)', ...halo }, 'operating point'));
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, 'joint displacement (mm)'));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'force (kN)'));
+    }
+
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (last && Math.abs(nw - w) > 8) { w = nw; chart(...last); } }).observe(root.querySelector('[data-chart]')!);
+    }
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['fu', 'c2'],
+      note: 'Worked-example values loaded: aft attachment capacity 120 kN, ultimate factor 1.25',
+      values: { k1: '267.3', g1: '0', c1: '', k2: '148.7', g2: '0', c2: '120', P: '0', d: '1.80', fu: '1.25' },
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>
