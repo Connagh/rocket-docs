@@ -71,6 +71,7 @@ export const REBUILT = {
   handcalc: 'fundamentals/hand-calcs',
   residual: 'materials/residual-stress',
   feamat: 'verify/fea-cards',
+  fea: 'verify/fea-and-test',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',

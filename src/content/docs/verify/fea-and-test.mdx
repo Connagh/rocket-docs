@@ -1,0 +1,228 @@
+---
+title: FEA & test
+description: Building and checking a finite-element model of motor hardware — idealisation, symmetry and element choice, mesh convergence with Richardson extrapolation, singularities, boundary conditions, loads and contact, the checks every result needs before it goes in a report, and how the model and the test inform each other.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import FeaConvergence from '../../../components/FeaConvergence.astro';
+import FeaCalc from '../../../components/FeaCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>A finite-element model answers exactly the question you built into it: choose the simplest model that answers the real question, prove the mesh has converged, and check that the answer obeys physics before anyone reads it.</div>
+  <div><b>Before this</b><a href="../../fundamentals/hand-calcs/">Hand calcs</a> · <a href="../fea-cards/">FEA material cards</a></div>
+  <div><b>Used by</b><a href="../proof-testing/">Proof testing</a> · <a href="../margin-policy/">Margin policy</a></div>
+</div>
+
+## Why this matters
+
+A finite-element model always produces an answer, in colour, to four significant figures. Whether it is right depends
+on decisions the contour plot does not show: what was left out, how fine the mesh is where it matters, what holds the
+model in place, how the loads go in. Most wrong analyses are not wrong because the solver failed. They are wrong
+because the model answered a different question from the one being asked — and nobody checked.
+
+Two words help keep this straight:
+
+- **Verification** — are the equations being solved right? Code checks, mesh convergence, equilibrium.
+- **Validation** — are they the right equations? Comparison with test, which is the only thing that can show the
+  idealisation is good enough.
+
+NASA-STD-7009 and ASME V&V 10 set out both for models whose results support decisions.
+
+<Analogy title="A map">
+  A map is useful because it leaves things out: a road map has no contour lines, a hiking map no traffic lights. Use
+  the wrong map and every detail can be accurate while the route is wrong. A model is a map of the part for one
+  question. Converging the mesh makes the map sharper; it does not make it the right map.
+</Analogy>
+
+## From question to model
+
+Start with the question — burst margin of the case, seal-gap opening at the aft joint, bolt load, natural frequency of
+a bracket — then choose the simplest model that can answer it:
+
+| Model | Good for | Leaves out |
+| --- | --- | --- |
+| Hand calc | Sizing; far-field stresses; checking everything else | Detail, interaction |
+| Axisymmetric shell | Case, domes and skirts under pressure and axial load; junction bending | Bolts, local 3-D detail, non-axisymmetric loads |
+| Axisymmetric solid | Closures, bosses, flange sections, thick parts, through-thickness stress | Discrete bolts (smeared into a ring), bending loads |
+| 3-D sector with cyclic symmetry | One bolt pitch of a flange joint, with contact and preload | Loads that are not the same at every bolt |
+| Full 3-D | Bending and side loads, real asymmetric detail, assemblies | Nothing — and costs the most to check |
+
+- **Symmetry needs symmetric loads too.** An axisymmetric case model cannot take a bending moment; a quarter model
+  cannot take an asymmetric load.
+- **Shells or solids.** Thin walls ($r/t$ above about 10) are shells; junctions, lands and thick parts are solids.
+  Linear solid elements lock in bending — use quadratic elements, or several linear ones through the thickness.
+- **Linear or nonlinear.** Large deflection of thin shells, plasticity near burst, and contact in joints and seals each
+  make the model nonlinear, with its own convergence and checks.
+
+## Mesh and convergence
+
+A finite-element result carries a discretisation error that shrinks as the mesh is refined. The only way to know how
+big it is: solve on three meshes and watch the quantity you will report. For element sizes $h_1 < h_2 < h_3$ with a
+constant ratio $r$ and results $f_1, f_2, f_3$:
+
+$$
+p = \frac{\ln\big[(f_3 - f_2)/(f_2 - f_1)\big]}{\ln r}
+$$
+
+$$
+f_{exact} \approx f_1 + \frac{f_1 - f_2}{r^p - 1}
+$$
+
+The **grid convergence index**, $\text{GCI} = 1.25\,|(f_2 - f_1)/f_1|\,/\,(r^p - 1)$, puts a band on the finest result
+(Roache). Three conditions make this mean something:
+
+- **Monotonic convergence** — the changes shrink and keep their sign. Oscillating or growing changes mean refine
+  further, or something is singular.
+- **The asymptotic range** — the observed order $p$ is near the element's theoretical order, and
+  $\text{GCI}_{32}/(r^p\,\text{GCI}_{21})$ is near 1. Meshes too coarse for the feature give confident nonsense.
+- **The quantity that matters**, at the point that matters. Displacements converge on coarse meshes; peak stresses need
+  several elements across the zone where they change — for a shell edge, the zone $\pi/\beta \approx 2.4\sqrt{rt}$
+  from [Hand calcs](../../fundamentals/hand-calcs/#thin-shells).
+
+## Singularities
+
+Some points have no converged stress at all. At a sharp internal corner, the elastic stress is infinite: near the
+corner it grows as $r^{\lambda-1}$, with Williams' exponent $\lambda = 0.545$ for a 90° corner and 0.5 for a crack. Every
+halving of the mesh multiplies the reported peak by $2^{1-\lambda} = 1.37$ — for ever.
+
+<FeaConvergence />
+
+The same happens at point loads, point constraints, contact edges and the corners of bonded dissimilar materials. So:
+
+- **Model the real radius.** If the drawing has a 0.5 mm fillet, the model has one too, meshed finely enough to
+  converge. The radius then becomes a drawing requirement.
+- **Read stresses where a method defines them.** Through-thickness linearisation into membrane and bending for
+  pressure-vessel codes; hot-spot extrapolation from fixed distances for welds; stress intensity for cracks.
+- **Spread loads and supports** over a realistic area. Introduce them with a coupling that does not stiffen the part —
+  Nastran RBE3 or an Abaqus distributing coupling — unless the real part is rigid.
+
+## Boundary conditions and loads
+
+- **Remove every rigid-body motion and nothing more.** Under-constrained models will not solve; over-constrained ones
+  solve happily and report stresses the real part never sees. Fixing the end of a case model rigidly, when the real
+  flange grows and rotates with it, creates the clamped-edge bending of the
+  [hand calc](../../fundamentals/hand-calcs/#thin-shells) — about twice the hoop stress, out of nothing.
+- **Free bodies stay free.** A motor in flight is held by nothing: balance its loads with inertia (inertia relief)
+  rather than inventing a support.
+- **Pressure goes on every wetted face** — the closures and nozzle as well as the wall. Check the reaction.
+- **Symmetry planes** need the symmetry conditions, not just a cut.
+
+## Contact and preload
+
+Joints and seals bring contact: surfaces that can separate, slide and carry pressure only in compression.
+
+- **Preload first, then load.** Bolt pretension in its own step; check the clamp force against the
+  [Bolted joints](../../joints/bolted-joints/) calculation before applying service loads.
+- **Initial gaps and overlaps** in the geometry become forces or free play at the first increment — clean them up.
+- **Converge contact too.** Contact pressure needs a mesh fine enough on both surfaces; check penetration and that the
+  contact status is not chattering between increments.
+- **Watch the artificial terms.** Stabilisation or hourglass energy should be a small fraction of the strain energy —
+  a few per cent at most — or the result comes from the numerics, not the part.
+- **Seal gaps** come from separation at the seal line, at the coldest, lowest-preload case — see
+  [Sealing strategy](../../seals/sealing-strategy/).
+
+## Before the results go in a report
+
+1. **Inputs** — geometry at the drawing revision; [material cards](../fea-cards/) checked; units.
+2. **Reactions** equal the applied loads, to round-off. A static model is in equilibrium or it has a missing load.
+3. **Deformed shape** — animate it, at a sensible scale. It should move the way the part would.
+4. **Far field** against the hand calc: membrane stresses, displacements, frequencies.
+5. **Convergence** of every reported quantity, at its point.
+6. **Singularities** identified, and no result read at one.
+7. **Diagnostics** — solver warnings, element distortion, negative eigenvalues, energy balance in nonlinear and
+   explicit runs.
+8. **Sensitivity** — bound the uncertain inputs: support stiffness, friction, gaps, material scatter.
+9. **Validation** — compare with test where one exists ([Test correlation](../../legacy/?z=correl) is the next
+   step).
+10. **Record** — question, assumptions, inputs and their sources, checks and results, so another engineer can repeat
+    it.
+
+## The model and the test
+
+The model plans the test and the test checks the model:
+
+- **Place gauges in gentle gradients**, where a small error in position does not matter, and compare with the
+  model's strain averaged over the gauge length, on the same surface.
+- **Gauge both surfaces** wherever the part bends — one surface cannot separate membrane from bending.
+- **Rosettes** where the principal directions are not known. For a rectangular rosette with gauges $a$, $b$, $c$ at
+  0°, 45° and 90°:
+
+$$
+\varepsilon_{1,2} = \frac{\varepsilon_a + \varepsilon_c}{2} \pm R
+$$
+
+$$
+R = \frac{1}{\sqrt{2}}\sqrt{(\varepsilon_a - \varepsilon_b)^2 + (\varepsilon_b - \varepsilon_c)^2}
+$$
+
+- **A proof test is a validation test.** Gauged at the right places, it checks the case model at a known load on the
+  real hardware — see [Proof testing](../proof-testing/).
+
+## Calculator
+
+<FeaCalc />
+
+## Worked example — checking a model of the case at its aft flange
+
+The question: the peak stress in the 300 mm D6AC case wall where it meets the aft flange, at MEOP (10 MPa). The model
+is the simplest that can answer it: an axisymmetric shell, here a real one-dimensional finite-element model of the
+wall that runs in the **Mesh convergence** tab, with the end clamped to stand for the flange.
+
+1. **The free body.** The first run had pressure on the wall but not on the closures. The far-field hoop stress was
+   1094 MPa — exactly $pr/t$, so it looked right. But the axial reaction was **zero**, against the
+   $10 \times \pi \times 150^2 = 707$ kN it must carry. The radial growth gave it away too: 0.804 mm, 17% more than
+   the closed-end 0.688 mm, and exactly the open-ended value. With the end load applied, both agree. (These first-run
+   values are the defaults in the **Equilibrium & far field** tab.)
+2. **Mesh convergence.** Elements of 16, 8 and 4 mm give peak axial stresses of 1811, 2108 and 2205 MPa. Monotonic,
+   observed order 1.62, extrapolated **2252 MPa**, GCI 2.7%, asymptotic ratio 1.05 — a study that can be trusted.
+   The exact answer for this model is 2241 MPa: the 4 mm mesh is 1.6% low, the extrapolation 0.5% high. A study on
+   32, 16 and 8 mm meshes — fewer than five elements across the 35 mm edge zone — gives an order of 0.87 and
+   extrapolates to 2467 MPa, 10% high. Coarser still, it does not converge at all.
+3. **Converged is not right.** The 2241 MPa is real for this model and an artefact for the case: it comes from the
+   clamp. The [hand calc](../../fundamentals/hand-calcs/#thin-shells) gives the same number for a rigid edge, about
+   twice the hoop stress. The real flange grows and rotates with the wall, so the model must include it — or at least
+   its stiffness — and the wall needs a land where it joins. Sharpen the land's inside corner to a true 90° and the
+   peak would climb by 1.37 times with every halving of the mesh: model the drawing's fillet radius instead.
+4. **The test.** At the 11 MPa proof test, a rosette 100 mm from the flange — nearly three edge zones away, in a gentle
+   gradient — reads, for this example, 1260, 3170 and 4950 µε at 0°, 45° and 90° from the axis. In the
+   **Strain gauges** tab: 1190 MPa hoop and 603 MPa axial, against the model's 1204 and 602 — 1.2% and 0.2%. The
+   membrane model is validated there. The edge region needs its own gauges, or the comparison waits for
+   [test correlation](../../legacy/?z=correl).
+
+## Where this stops
+
+- **Method, not a solver manual.** Element formulations, contact algorithms and solver settings differ between codes;
+  follow your code's documentation and your organisation's modelling guidelines.
+- **Richardson extrapolation** assumes smooth convergence in the asymptotic range. It does not apply at singular
+  points or to quantities that switch behaviour, such as contact status or buckling modes.
+- **The edge model** is linear, axisymmetric and thin-shell: a demonstration with a known answer, not a design tool.
+- **Validation needs tests** designed for it — loads, boundary conditions and measurements the model can reproduce.
+
+## On the drawing
+
+- **Radii and lands the model relied on** — as minimum dimensions, so the part cannot be made sharper than analysed.
+- **The drawing revision** each model represents, recorded in the analysis.
+- **Gauge locations, orientations and surfaces** on the test drawing or procedure, matching the model's read-out
+  points.
+
+## References and further reading
+
+- NASA-STD-7009, *Standard for Models and Simulations*.
+- ASME V&V 10, *Standard for Verification and Validation in Computational Solid Mechanics*.
+- P. J. Roache, *Verification and Validation in Computational Science and Engineering*, Hermosa (1998).
+- I. B. Celik et al., "Procedure for estimation and reporting of uncertainty due to discretization in CFD
+  applications", *Journal of Fluids Engineering* 130 (2008).
+- M. L. Williams, "Stress singularities resulting from various boundary conditions in angular corners of plates in
+  extension", *Journal of Applied Mechanics* 19 (1952).
+- R. D. Cook, D. S. Malkus, M. E. Plesha and R. J. Witt, *Concepts and Applications of Finite Element Analysis*, 4th
+  ed., Wiley (2002).
+- A. Hobbacher (ed.), *IIW Recommendations for Fatigue Design of Welded Joints and Components* — hot-spot stress.
+- K. Hoffmann, *An Introduction to Stress Analysis and Transducer Design using Strain Gauges*, HBM.
+
+<Aside type="note">
+  Guidance on method from general practice. Your organisation's modelling guidelines, verification and validation
+  requirements and acceptance criteria govern.
+</Aside>

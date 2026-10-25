@@ -1,0 +1,57 @@
+---
+// Converged or singular: the peak stress at the clamped edge of the 300 mm case from the page's own finite-element model
+// (src/lib/fea.ts) as the mesh is refined, against the peak at a sharp 90° internal corner, which grows as h^(λ−1)
+// with Williams' exponent λ = 0.545 and never converges.
+import { edgeModel, edgeExact, williamsLambda } from '../lib/fea';
+
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', cold = 'var(--rd-blue)';
+const X0 = 22, X1 = 190, TOP = 30, BOT = 108;
+const CASE = [10, 150.69, 1.377, 205000, 0.29] as const;
+const exact = edgeExact(...CASE), zone = Math.PI / ((3 * (1 - 0.29 ** 2)) ** 0.25 / Math.sqrt(150.69 * 1.377));
+const hs = [32, 16, 8, 4, 2, 1];
+const edge = hs.map((h) => ({ h, across: zone / h, ratio: edgeModel(...CASE, 192, 192 / h).sigmaEdge / exact }));
+const lam = williamsLambda(270), corner = hs.map((h, i) => ({ i, ratio: (h / 32) ** (lam - 1) }));
+// both panels share the x axis: halvings of the element size from 32 mm
+const X = (i: number) => X0 + (i / 5) * (X1 - X0);
+const Ya = (v: number) => TOP + ((1.05 - v) / (1.05 - 0.5)) * (BOT - TOP);
+const Yb = (v: number) => TOP + ((5.2 - v) / (5.2 - 0.8)) * (BOT - TOP);
+const pct = (v: number) => `${v < 1 ? '−' : '+'}${Math.abs(100 * (v - 1)).toFixed(v > 0.98 ? 1 : 0)}%`;
+---
+
+<figure class="viz fcv">
+  <p class="viz-title">Converged or singular?</p>
+  <div class="fcv-grid">
+    <svg viewBox="0 0 200 150" role="img" aria-label={`Peak stress at the clamped edge of the case model as a fraction of the exact value, for elements of 32 down to 1 mm: ${edge.map((e) => e.ratio.toFixed(3)).join(', ')}. It converges to the exact value.`}>
+      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>A smooth edge converges</text>
+      <line x1={X0} x2={X1} y1={Ya(1)} y2={Ya(1)} stroke={cold} stroke-dasharray="4 3"></line>
+      <text x={X1} y={Ya(1) - 4} text-anchor="end" font-size="10" fill={cold}>exact</text>
+      <path d={'M' + edge.map((e, i) => `${X(i).toFixed(1)},${Ya(e.ratio).toFixed(1)}`).join(' L')} fill="none" stroke={ink} stroke-width="1.8"></path>
+      {edge.map((e, i) => <circle cx={X(i)} cy={Ya(e.ratio)} r="3" fill={ink}></circle>)}
+      <text x={X(1) + 6} y={Ya(edge[1].ratio) + 14} font-size="11" fill={ink}>{pct(edge[1].ratio)}</text>
+      <text x={X(3) + 2} y={Ya(edge[3].ratio) + 16} font-size="11" fill={ink}>{pct(edge[3].ratio)}</text>
+      <text x="8" y="127" font-size="11" fill={ink}>32 → 1 mm elements</text>
+      <text x="8" y="143" font-size="10" fill={muted}>case edge model, peak / exact</text>
+    </svg>
+
+    <svg viewBox="0 0 200 150" role="img" aria-label={`Peak stress at a sharp 90 degree internal corner, relative to the coarsest mesh, as the mesh is halved five times: it multiplies by ${(2 ** (1 - lam)).toFixed(2)} each time and never converges.`}>
+      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>A sharp corner never does</text>
+      <path d={'M' + corner.map((c) => `${X(c.i).toFixed(1)},${Yb(c.ratio).toFixed(1)}`).join(' L')} fill="none" stroke={hot} stroke-width="1.8"></path>
+      {corner.map((c) => <circle cx={X(c.i)} cy={Yb(c.ratio)} r="3" fill={hot}></circle>)}
+      <text x={X(0) + 2} y={TOP + 12} font-size="11" fill={hot}>×{(2 ** (1 - lam)).toFixed(2)} each halving</text>
+      <text x={X(5)} y={Yb(corner[5].ratio) - 6} text-anchor="end" font-size="11" fill={hot}>×{corner[5].ratio.toFixed(1)}</text>
+      <text x="8" y="127" font-size="11" fill={ink}>32 → 1 mm elements</text>
+      <text x="8" y="143" font-size="10" fill={muted}>90° corner, peak / coarsest</text>
+    </svg>
+  </div>
+  <figcaption>
+    Left: this page's model of the case wall clamped at a stiff flange — the peak converges, and once there are about
+    eight elements across the {Math.round(zone)} mm edge zone it is within 2%. Right: at a sharp internal corner the
+    elastic stress is infinite, so the peak just keeps growing as the mesh is refined. A convergence study tells them apart.
+  </figcaption>
+</figure>
+
+<style>
+  .fcv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: 0.75rem 1rem; }
+  .fcv-grid > * { margin: 0 !important; }
+  .fcv-grid svg { max-width: 245px; margin: 0 auto !important; }
+</style>
