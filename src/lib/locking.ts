@@ -36,12 +36,12 @@ export type FeatureKey = 'none' | 'split' | 'serrated' | 'jam' | 'prevailing' | 
 
 /** What each locking feature does — the classes and verification methods of NASA-STD-5020B §4.6 and Appendix B. */
 export const FEATURES: Record<FeatureKey, { name: string; independent: boolean; mechanical: boolean; does: string; verify: string }> = {
-  none: { name: 'None — preload only', independent: false, mechanical: false,
+  none: { name: 'None: preload only', independent: false, mechanical: false,
     does: 'Preload is the primary locking: friction holds while nothing slips. Not a locking feature on its own.', verify: '—' },
   split: { name: 'Split or tooth lock washer', independent: false, mechanical: false,
     does: 'Flattens at a small fraction of preload and then acts as a plain washer: minimal, if any, locking.', verify: 'Not to be used as a secondary locking feature' },
   serrated: { name: 'Serrated bearing face', independent: false, mechanical: false,
-    does: 'Works comparatively well, but only while preload lasts — so it cannot back up preload. Can damage the bearing surface.', verify: 'Depends on preload' },
+    does: 'Works comparatively well, but only while preload lasts, so it cannot back up preload. Can damage the bearing surface.', verify: 'Depends on preload' },
   jam: { name: 'Jam nut', independent: false, mechanical: false,
     does: 'Relies on its own preload against the main nut, so a change in preload can defeat it.', verify: 'May not satisfy the preload-independent requirement' },
   prevailing: { name: 'Prevailing torque (deformed thread, insert, patch)', independent: true, mechanical: false,
@@ -49,5 +49,5 @@ export const FEATURES: Record<FeatureKey, { name: string; independent: boolean; 
   adhesive: { name: 'Adhesive thread locker (cured)', independent: true, mechanical: false,
     does: 'With adequate cure, holds preload comparatively well even in severe vibration. Needs a validated process.', verify: 'Torque test on witness samples made with the same materials and process' },
   wire: { name: 'Safety wire, cable or cotter pin', independent: true, mechanical: true,
-    does: 'Positive: allows rotation only until the wire or pin is taut — some preload loss, but the part cannot come off.', verify: 'Visual inspection after installation' },
+    does: 'Positive: allows rotation only until the wire or pin is taut (some preload loss, but the part cannot come off).', verify: 'Visual inspection after installation' },
 };

@@ -65,8 +65,8 @@ const DEFAULT_FAMS = ['steel', 'ss', 'ti', 'al', 'ni']; // the worked example: m
   </div>
   <div class="calc-foot">
     Typical room-temperature values for screening and ranking, not design allowables (shared with REF·DB v1). Strength is
-    0.2% proof for metals, failure stress for ceramics and ablatives, and <b>fibre-direction</b> strength for composites —
-    a real laminate is far lower — so cross-family rankings involving composites flatter them. Toughness is indicative.
+    0.2% proof for metals, failure stress for ceramics and ablatives, and <b>fibre-direction</b> strength for composites.
+    A real laminate is much lower, so cross-family rankings that include composites make them look too good. Toughness is indicative.
   </div>
   <script type="application/json" data-data set:html={JSON.stringify({ materials: data.materials, FAMILIES })}></script>
 </div>
@@ -161,7 +161,7 @@ const DEFAULT_FAMS = ['steel', 'ss', 'ti', 'al', 'ni']; // the worked example: m
       const s = state();
       const idxOnAxes = !!s.idx && s.idx.x === s.x.key && s.idx.y === s.y.key;
       root.querySelector('[data-idxuse]')!.innerHTML = s.idx
-        ? `<b>M = ${s.idx.tex.replace(/\\sigma_y/g, 'σ<sub>y</sub>').replace(/\\rho/g, 'ρ').replace(/\\alpha/g, 'α').replace(/K_\{IC\}/g, 'K<sub>IC</sub>').replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>').replace(/\^(\d)/g, '<sup>$1</sup>').replace(/\\/g, '')}</b> — ${s.idx.use}`
+        ? `<b>M = ${s.idx.tex.replace(/\\sigma_y/g, 'σ<sub>y</sub>').replace(/\\rho/g, 'ρ').replace(/\\alpha/g, 'α').replace(/K_\{IC\}/g, 'K<sub>IC</sub>').replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>').replace(/\^(\d)/g, '<sup>$1</sup>').replace(/\\/g, '')}</b>: ${s.idx.use}`
         : 'Free axes: pick any two properties.';
       const ranked = s.idx ? rank(materials, s.idx, s.filters) : [];
       const pass = new Set((s.idx ? ranked.map((r) => r.m) : materials.filter((m) =>
@@ -180,7 +180,7 @@ const DEFAULT_FAMS = ['steel', 'ss', 'ti', 'al', 'ni']; // the worked example: m
       svg.replaceChildren();
       const W = 640, H = 470, L = 58, R = 14, T = 14, B = 46;
       const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
-      if (!pts.length) { svg.append(el('text', { x: W / 2, y: H / 2, 'text-anchor': 'middle', fill: 'var(--sl-color-gray-3)', 'font-size': 13 }, 'Nothing to plot — choose some families.')); return; }
+      if (!pts.length) { svg.append(el('text', { x: W / 2, y: H / 2, 'text-anchor': 'middle', fill: 'var(--sl-color-gray-3)', 'font-size': 13 }, 'Nothing to plot: choose some families.')); return; }
       const lx0 = Math.floor(Math.log10(Math.min(...xs)) - 0.05), lx1 = Math.ceil(Math.log10(Math.max(...xs)) + 0.05);
       const ly0 = Math.floor(Math.log10(Math.min(...ys)) - 0.05), ly1 = Math.ceil(Math.log10(Math.max(...ys)) + 0.05);
       const X = (v: number) => L + ((Math.log10(v) - lx0) / Math.max(1e-9, lx1 - lx0)) * (W - L - R);

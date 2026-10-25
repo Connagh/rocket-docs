@@ -44,7 +44,7 @@ Throat to nozzle pilot, 0.05, zone`;
           <label>Assemblies to cover (%)<input name="r_p" type="number" min="0" max="100" step="any" placeholder="your requirement" autocomplete="off" /></label>
           <label>Limit on the offset (mm)<input name="r_lim" type="number" min="0" step="any" placeholder="your requirement" autocomplete="off" /></label>
         </div>
-        <p class="hint">Offsets at the plane that matters — here the thrust line at the centre of gravity. Kind: <b>zone</b>, anywhere in a position or coaxiality zone of that radius; <b>shift</b>, a clearance fully taken up in a random direction; <b>fixed</b>, a clearance taken up the same way every time. Write a tilt as “t/l”, a tolerance over the length it acts on; it is carried to the lever arm.</p>
+        <p class="hint">Offsets at the plane that matters: here the thrust line at the centre of gravity. Kind: <b>zone</b>, anywhere in a position or coaxiality zone of that radius; <b>shift</b>, a clearance fully taken up in a random direction; <b>fixed</b>, a clearance taken up the same way every time. Write a tilt as “t/l”, a tolerance over the length it acts on; it is carried to the lever arm.</p>
       </fieldset>
       <p class="hint example-note" data-example-note hidden></p>
     </form>
@@ -156,12 +156,12 @@ Throat to nozzle pilot, 0.05, zone`;
       const verdict = (a: number, b: number) => (hasLim ? (inside(a, b) ? 'ok' : 'bad') : '');
       const uniform = p.rows.some((c) => c.dist === 'uniform');
       rows.push({ dt: 'Nominal', dd: `${f(st.nominal)} <small>every part at the middle of its limits</small>`, primary: true });
-      rows.push({ dt: 'Worst case', dd: `${f(st.wcMin)} to ${f(st.wcMax)} <small>± ${f(st.wc)} — every part at its worst limit at once</small>`, cls: verdict(st.wcMin, st.wcMax) });
+      rows.push({ dt: 'Worst case', dd: `${f(st.wcMin)} to ${f(st.wcMax)} <small>± ${f(st.wc)}: every part at its worst limit at once</small>`, cls: verdict(st.wcMin, st.wcMax) });
       rows.push({ dt: 'RSS', dd: `${f(st.nominal - textbook.rss)} to ${f(st.nominal + textbook.rss)} <small>± ${f(textbook.rss)} = √Σ(s·t)²: every part normal, centred, its tolerance ±3σ</small>`, cls: verdict(st.nominal - textbook.rss, st.nominal + textbook.rss) });
       if (hasCpk || uniform) {
         const c = capability(st.nominal, st.sigma, lsl, usl);
         rows.push({ dt: hasCpk ? `Parts at Cpk ${f(cpk, 2)}` : 'With the uniform parts', dd: `${f(st.rssMin)} to ${f(st.rssMax)} <small>±3σ, σ = ${f(st.sigma, 4)}${hasLim ? ` · assembly Cpk ${f(c.cpk, 2)}, ${pct(c.below + c.above)} predicted outside` : ''}</small>`, cls: verdict(st.rssMin, st.rssMax) });
-      } else rows.push({ dt: 'Cpk-based', dd: '<small>Enter the parts’ process Cpk — from your suppliers’ measured process data, not from this site — to base the statistics on it. Or press “Load worked example”.</small>' });
+      } else rows.push({ dt: 'Cpk-based', dd: '<small>Enter the parts’ process Cpk (from your suppliers’ measured process data, not from this site) to base the statistics on it. Or press “Load worked example”.</small>' });
       const out = (lsl === undefined ? 0 : mc.below(lsl)) + (usl === undefined ? 0 : mc.above(usl));
       rows.push({ dt: 'Monte Carlo', dd: `${f(mc.quantile(0.00135))} to ${f(mc.quantile(0.99865))} <small>middle 99.73% of ${N.toLocaleString('en-GB')} assemblies${hasCpk ? '' : ', normal parts at Cpk 1'}${hasLim ? (out > 0 ? ` · ${pct(out)} outside the limits (${Math.round(out * N).toLocaleString('en-GB')})` : ' · none outside the limits') : ''}</small>`, cls: hasLim ? (out > 0 ? 'warn' : 'ok') : '' });
       if (!hasLim) rows.push({ dt: 'Requirement', dd: criterion('limit on the result', 'check each method against it') });
@@ -170,9 +170,9 @@ Throat to nozzle pilot, 0.05, zone`;
 
       if (order[0].varShare > 0.5) notes.push(['warn', `${esc(order[0].name)} is ${f(100 * order[0].varShare, 0)}% of the variance (${f(100 * order[0].wcShare, 0)}% of the worst case). Tightening anything else barely moves the result.`]);
       if (hasLim && inside(st.wcMin, st.wcMax)) notes.push(['ok', 'The worst case meets the limit: every assembly of in-tolerance parts does, whatever the distributions. No statistics needed.']);
-      else if (hasLim && inside(st.nominal - textbook.rss, st.nominal + textbook.rss)) notes.push(['warn', 'The worst case fails and the statistics pass. Accepting that is a decision, not a calculation: it needs process data showing the parts are centred, independent and as capable as assumed — and a failure that is tolerable at the predicted rate, or that inspection will catch.']);
+      else if (hasLim && inside(st.nominal - textbook.rss, st.nominal + textbook.rss)) notes.push(['warn', 'The worst case fails and the statistics pass. Accepting that is a decision, not a calculation: it needs process data showing the parts are centred, independent and as capable as assumed (and a failure that is tolerable at the predicted rate, or that inspection will catch).']);
       else if (hasLim) notes.push(['bad', 'Even the statistical stack misses the limit: change the design or the tolerances that dominate.']);
-      if (uniform) notes.push(['', 'Uniform parts — tool wear, an uncontrolled feature, a lot whose mean can sit anywhere — have a σ 1.7 times the normal one, and widen the statistical result.']);
+      if (uniform) notes.push(['', 'Uniform parts (tool wear, an uncontrolled feature, a lot whose mean can sit anywhere) have a σ 1.7 times the normal one, and widen the statistical result.']);
       notes.push(['', 'RSS and Monte Carlo assume independent parts. Features made in the same setup, from the same tool or batch, are correlated: add them worst case.']);
 
       return () => {
@@ -203,7 +203,7 @@ Throat to nozzle pilot, 0.05, zone`;
       const extra = (d: number) => [F > 0 ? `${f(F * d, 1)} N·m at ${f(F, 1)} kN` : '', lever > 0 ? `${f((Math.atan(d / lever) * 180) / Math.PI, 3)}° over ${f(lever, 0)} mm` : ''].filter(Boolean).join(' · ');
       const vs = (d: number) => (hasL ? (d <= lim ? 'ok' : 'bad') : '');
       rows.push({ dt: 'Worst case', dd: `${f(s.wc)} mm <small>every offset in line · ${extra(s.wc)}</small>`, cls: vs(s.wc) });
-      rows.push({ dt: 'RSS of the radii', dd: `${f(s.rssRadii)} mm <small>exceeded by ${pct(s.mc.above(s.rssRadii))} of assemblies — not a bound for vectors</small>`, cls: 'warn' });
+      rows.push({ dt: 'RSS of the radii', dd: `${f(s.rssRadii)} mm <small>exceeded by ${pct(s.mc.above(s.rssRadii))} of assemblies, not a bound for vectors</small>`, cls: 'warn' });
       rows.push({ dt: 'Monte Carlo median', dd: `${f(q(0.5))} mm <small>half of ${N.toLocaleString('en-GB')} assemblies are better · largest seen ${f(s.mc.max)} mm</small>` });
       if (hasP) rows.push({ dt: `Covering ${f(pIn, pIn % 1 ? 2 : 0)}%`, dd: `${f(qp)} mm <small>${extra(qp)}</small>`, cls: vs(qp), primary: true });
       else rows.push({ dt: 'Coverage', dd: criterion('fraction of assemblies to cover', 'read the offset they stay within') });
@@ -213,8 +213,8 @@ Throat to nozzle pilot, 0.05, zone`;
       rows.push({ dt: 'Largest shares of the worst case', dd: shares(order.map((r): [string, number] => [r.name, r.wcShare])) });
 
       notes.push(['warn', `Offsets in random directions add as vectors. The RSS of the radii, ${f(s.rssRadii)} mm, treats each like a ±3σ dimension; a clearance taken up fully is nothing like that, and ${pct(s.mc.above(s.rssRadii))} of assemblies exceed it. Use the Monte Carlo.`]);
-      if (p.rows.some((o) => o.kind === 'fixed')) notes.push(['', 'Fixed offsets all point the same way — to the right in the chart — and add arithmetically, like a worst case, before the random ones spread around them.']);
-      if (hasL && s.wc > lim && hasP && qp <= lim) notes.push(['warn', 'The worst case exceeds the limit but the required coverage meets it. That is acceptable only where the programme accepts a statistical requirement — and is best backed by measuring the alignment of every motor.']);
+      if (p.rows.some((o) => o.kind === 'fixed')) notes.push(['', 'Fixed offsets all point the same way (to the right in the chart) and add arithmetically, like a worst case, before the random ones spread around them.']);
+      if (hasL && s.wc > lim && hasP && qp <= lim) notes.push(['warn', 'The worst case exceeds the limit but the required coverage meets it. That is acceptable only where the programme accepts a statistical requirement, and is best backed by measuring the alignment of every motor.']);
       if (p.rows.some((o) => o.kind === 'shift')) notes.push(['', 'A clearance shift is frozen when the bolts are tightened. Assembling in a fixture that centres the part removes it; assembling horizontally turns it into a fixed offset downwards.']);
 
       return () => {
@@ -238,7 +238,7 @@ Throat to nozzle pilot, 0.05, zone`;
     const RUN: Record<string, typeof runLin> = { lin: runLin, rad: runRad };
     const CAPS: Record<string, string> = {
       lin: 'The Monte Carlo result as a histogram, with the worst-case and RSS bands and the limits once entered. The worst case sits far out in the tails, where almost no assembly goes.',
-      rad: 'Where the axis lands in simulated assemblies, with the worst case, the RSS of the radii and — once entered — the coverage and the limit.',
+      rad: 'Where the axis lands in simulated assemblies, with the worst case, the RSS of the radii and (once entered) the coverage and the limit.',
     };
 
     function run() {

@@ -30,7 +30,7 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
           <label>Data measured at (°C)<input name="tref" type="number" step="any" value={PRESETS.seal.tRef} /></label>
           <label>ν, for the solver card<input name="nu" type="number" min="0" max="0.4999" step="0.001" value="0.495" /></label>
         </div>
-        <label>Prony arms — E<sub>i</sub> (MPa), τ<sub>i</sub> (s), one per line
+        <label>Prony arms: E<sub>i</sub> (MPa), τ<sub>i</sub> (s), one per line
           <textarea name="arms" rows="6">{armsText(PRESETS.seal.arms)}</textarea>
         </label>
         <p class="hint">Illustrative presets, not measurements of any real compound. Shift factors use the general WLF constants referred to T<sub>g</sub>.</p>
@@ -50,7 +50,7 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
     </form>
     <div>
       <dl class="readouts">
-        <div class="readout primary"><dt>Squeeze recovered in the window — released cold</dt><dd data-r="recC">—</dd></div>
+        <div class="readout primary"><dt>Squeeze recovered in the window: released cold</dt><dd data-r="recC">—</dd></div>
         <div class="readout"><dt>…released at storage temperature</dt><dd data-r="recS">—</dd></div>
         <div class="readout"><dt>Sealing force left after storage</dt><dd data-r="ret">—</dd></div>
       </dl>
@@ -63,7 +63,7 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
       </dl>
       <figure class="ve-fig">
         <svg viewBox="0 0 480 240" data-rc role="img" aria-label="Relaxation modulus and inverse creep compliance against time"></svg>
-        <figcaption>At the storage temperature: the relaxation modulus E(t) and the inverse creep compliance 1/J(t). The same material, two experiments — 1/J(t) never falls below E(t), and for a broad spectrum like this one the two stay close.</figcaption>
+        <figcaption>At the storage temperature: the relaxation modulus E(t) and the inverse creep compliance 1/J(t). The same material, two experiments: 1/J(t) never falls below E(t), and for a broad spectrum like this one the two stay close.</figcaption>
       </figure>
       <figure class="ve-fig">
         <svg viewBox="0 0 480 230" data-rec role="img" aria-label="Recovered fraction of squeeze against time after release"></svg>
@@ -81,7 +81,7 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
     </div>
   </div>
   <div class="calc-foot">
-    Linear viscoelasticity, thermorheologically simple (one shift factor for every arm), WLF shift — valid from about
+    Linear viscoelasticity, thermorheologically simple (one shift factor for every arm), WLF shift: valid from about
     T<sub>g</sub> to T<sub>g</sub> + 100 K. Real seals also take a chemical set as they age, and real propellants dewet;
     neither is in a linear model.
   </div>
@@ -164,9 +164,9 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
       const out: [string, string][] = [];
       out.push(['', `At ${deg(tc)} every relaxation process runs ${sci(aC / aS)} times slower than at ${deg(ts)}. Released cold, the seal gives back ${f(recC * 100, 1)}% of its squeeze in ${f(win, win < 1 ? 2 : 0)} s, against ${f(recS * 100, 1)}% warm.`]);
       if (recC < 0.25) out.push(['warn', 'A seal that cannot spring back as fast as the gap opens loses contact, and hot gas finds the path. That was the Challenger mechanism: cold O-rings that had lost their resilience. See the O-ring page.']);
-      out.push(['', `Stored squeezed for ${f(num('hold'), 0)} ${field('unit').selectedOptions[0].text} at ${deg(ts)}, it keeps ${f(ret * 100, 0)}% of its initial sealing force — the rest has relaxed away. Real compounds also take a chemical set as they age, which this linear model does not include.`]);
+      out.push(['', `Stored squeezed for ${f(num('hold'), 0)} ${field('unit').selectedOptions[0].text} at ${deg(ts)}, it keeps ${f(ret * 100, 0)}% of its initial sealing force: the rest has relaxed away. Real compounds also take a chemical set as they age, which this linear model does not include.`]);
       const g = 1 - p.eInf / instantaneous(p);
-      if (g > 0.999) out.push(['warn', `The arms carry ${f(g * 100, 2)}% of the instantaneous modulus — the relaxed modulus is tiny compared with the glassy one. Check that the Prony data and E∞ are on the same basis.`]);
+      if (g > 0.999) out.push(['warn', `The arms carry ${f(g * 100, 2)}% of the instantaneous modulus: the relaxed modulus is tiny compared with the glassy one. Check that the Prony data and E∞ are on the same basis.`]);
       notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
 
       rcChart(p, aS, hold);
@@ -260,7 +260,7 @@ const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 
         svg.append(el('line', { x1: X(T), x2: X(T), y1: a.T, y2: a.H - a.B, stroke: 'var(--rd-line)' }));
         svg.append(el('text', { x: X(T), y: a.H - a.B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, `${T}`));
       }
-      svg.append(el('text', { x: (a.L + a.W - a.R) / 2, y: a.H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'temperature, °C — 1 Hz'));
+      svg.append(el('text', { x: (a.L + a.W - a.R) / 2, y: a.H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'temperature, °C: 1 Hz'));
       svg.append(el('text', { x: 12, y: (a.T + a.H - a.B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-hot)', transform: `rotate(-90 12 ${(a.T + a.H - a.B) / 2})` }, "E′, MPa"));
       svg.append(el('text', { x: a.W - 8, y: (a.T + a.H - a.B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-blue)', transform: `rotate(90 ${a.W - 8} ${(a.T + a.H - a.B) / 2})` }, 'tan δ'));
       svg.append(el('path', { d: Ts.map((T, k) => `${k ? 'L' : 'M'}${X(T).toFixed(1)},${YE(d[k].storage).toFixed(1)}`).join(''), fill: 'none', stroke: 'var(--rd-hot)', 'stroke-width': 2.5 }));

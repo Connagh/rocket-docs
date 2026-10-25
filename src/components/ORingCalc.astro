@@ -5,7 +5,7 @@ import data from '../data/orings.json';
 
 <div class="calc orcalc" data-orcalc>
   <div class="calc-head">
-    <span>O-ring gland — worst-case check</span>
+    <span>O-ring gland: worst-case check</span>
     <button type="button" class="chip" data-suggest>Suggest groove for 20% squeeze / 75% fill</button>
   </div>
   <div class="calc-body">
@@ -15,9 +15,9 @@ import data from '../data/orings.json';
         <div class="row2">
           <label>Gland
             <select name="arr">
-              <option value="piston">Radial — groove in piston / plug</option>
-              <option value="rod">Radial — groove in housing / bore</option>
-              <option value="face">Face (axial) — groove in a flange</option>
+              <option value="piston">Radial: groove in piston / plug</option>
+              <option value="rod">Radial: groove in housing / bore</option>
+              <option value="face">Face (axial): groove in a flange</option>
             </select>
           </label>
           <label>Duty
@@ -41,7 +41,7 @@ import data from '../data/orings.json';
         <p class="hint" data-idhint></p>
       </fieldset>
       <fieldset>
-        <legend>Hardware — min / max</legend>
+        <legend>Hardware: min / max</legend>
         <div class="or-grid" data-dims>
           <span></span><span>min</span><span>max</span>
           <span data-lbl="bore">Bore Ø</span><input name="boreMin" type="number" step="any" value="150.000" /><input name="boreMax" type="number" step="any" value="150.063" />
@@ -55,7 +55,7 @@ import data from '../data/orings.json';
         <legend>Service</legend>
         <div class="row2">
           <label>Compound
-            <select name="cmp">{data.compounds.map((c) => <option value={c.code} selected={c.code === 'FKM'}>{c.code} — {c.name}</option>)}</select>
+            <select name="cmp">{data.compounds.map((c) => <option value={c.code} selected={c.code === 'FKM'}>{c.code}: {c.name}</option>)}</select>
           </label>
           <label>Medium
             <select name="med">{data.media.map((m) => <option value={m.key}>{m.name}</option>)}</select>
@@ -207,10 +207,10 @@ import data from '../data/orings.json';
         `${cmp.code} is typically good for ${cmp.tMin} to ${cmp.tMax} °C; service is ${i.tMin} to ${i.tMax} °C.`]);
       const m = cmp.media[med];
       checks.push(['Medium', m === 'ok' ? 'ok' : m === 'lim' ? 'warn' : 'bad',
-        `${cmp.code} in ${data.media.find((x: any) => x.key === med).name.toLowerCase()}: ${m === 'ok' ? 'generally compatible' : m === 'lim' ? 'limited — check the specific grade' : 'not compatible'}.`]);
+        `${cmp.code} in ${data.media.find((x: any) => x.key === med).name.toLowerCase()}: ${m === 'ok' ? 'generally compatible' : m === 'lim' ? 'limited: check the specific grade' : 'not compatible'}.`]);
       if (i.opening > 0 && i.tMin < cmp.tMin + 15)
         checks.push(['Cold resilience', 'bad',
-          `The joint opens under pressure while the ring is within 15 °C of its low-temperature limit. A cold ring recovers slowly and may not follow the gap — the Challenger failure mechanism. Check recovery at temperature (TR-10, resilience tests), keep the ring warm, or design the joint not to open.`]);
+          `The joint opens under pressure while the ring is within 15 °C of its low-temperature limit. A cold ring recovers slowly and may not follow the gap: the Challenger failure mechanism. Check recovery at temperature (TR-10, resilience tests), keep the ring warm, or design the joint not to open.`]);
 
       const worst = checks.some((c) => c[1] === 'bad') ? 'bad' : checks.some((c) => c[1] === 'warn') ? 'warn' : 'ok';
       r('verdict').textContent = worst === 'ok' ? 'Passes all checks' : worst === 'warn' ? 'Check the amber items' : `${checks.filter((c) => c[1] === 'bad').length} failing check(s)`;

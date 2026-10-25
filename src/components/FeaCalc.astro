@@ -34,7 +34,7 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
           <label>Element size (mm)<input name="y_h3" type="number" min="0" step="any" value="16" /></label>
         </div>
         <p class="hint" data-sub="model">A real model: the case wall as cubic elements on an elastic foundation, clamped at a rigid flange, solved in your browser. Its exact answer is known.</p>
-        <p class="hint" data-sub="yours" hidden>The same quantity, at the same point, from three meshes refined everywhere it matters — ideally by a constant ratio of about 1.3 or more.</p>
+        <p class="hint" data-sub="yours" hidden>The same quantity, at the same point, from three meshes refined everywhere it matters: ideally by a constant ratio of about 1.3 or more.</p>
       </fieldset>
 
       <fieldset data-panel="free" hidden>
@@ -181,7 +181,7 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
         zone = Math.PI / ((3 * (1 - nu * nu)) ** 0.25 / Math.sqrt(r * t));
         const L = hc * Math.max(4, Math.ceil((6 * zone) / hc)), nmax = 300; // six edge zones, a whole number of coarse elements
         const ns = [hc, hc / rr, hc / (rr * rr)].map((h) => Math.max(1, Math.round(L / h)));
-        if (ns[2] > nmax) { notes.push(['bad', `The finest mesh would need ${ns[2]} elements; keep it under ${nmax} here — use a coarser start or a smaller ratio.`]); return null; }
+        if (ns[2] > nmax) { notes.push(['bad', `The finest mesh would need ${ns[2]} elements; keep it under ${nmax} here: use a coarser start or a smaller ratio.`]); return null; }
         solve = (h: number) => edgeModel(p, r, t, E, nu, L, Math.max(1, Math.round(L / h))).sigmaEdge;
         [h3, h2, h1] = ns.map((n) => L / n);
         [f3, f2, f1] = [h3, h2, h1].map(solve);
@@ -192,14 +192,14 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
       }
       const R = richardson(f1, f2, f3, h1, h2, h3);
       const inRange = R.kind === 'monotonic' && Math.abs(R.asymptotic - 1) < 0.1;
-      const kindText: Record<string, string> = { monotonic: inRange ? 'monotonic, in the asymptotic range — the study can be used' : 'monotonic, but not yet in the asymptotic range — refine further', oscillatory: 'oscillatory — refine further before trusting it', divergent: 'diverging — a singularity, or meshes too coarse to start converging', converged: 'identical results — already converged' };
+      const kindText: Record<string, string> = { monotonic: inRange ? 'monotonic, in the asymptotic range: the study can be used' : 'monotonic, but not yet in the asymptotic range: refine further', oscillatory: 'oscillatory: refine further before trusting it', divergent: 'diverging: a singularity, or meshes too coarse to start converging', converged: 'identical results: already converged' };
       rows.push({ dt: 'Convergence', dd: `${R.kind} <small>${kindText[R.kind]} · ${g4(f3)} → ${g4(f2)} → ${g4(f1)} at ${g3(h3)}, ${g3(h2)}, ${g3(h1)} mm</small>`, primary: true, cls: inRange || R.kind === 'converged' ? 'ok' : R.kind === 'monotonic' ? 'warn' : 'bad' });
       if (R.kind === 'monotonic') {
         rows.push(
           { dt: 'Observed order', dd: `${f(R.p, 2)} <small>should be near the element's theoretical order for this quantity</small>` },
           { dt: 'Extrapolated', dd: `${g4(R.ext)} <small>Richardson, to zero element size</small>` },
           { dt: 'Grid convergence index', dd: `${f(100 * R.gci, 2)}% <small>a band on the finest result, with a factor of safety of 1.25 on the estimate</small>` },
-          { dt: 'Asymptotic range', dd: `${f(R.asymptotic, 3)} <small>${inRange ? 'close to 1: the three meshes behave as theory says' : 'far from 1: the meshes are not yet in the asymptotic range — extrapolation unreliable'}</small>`, cls: inRange ? 'ok' : 'warn' },
+          { dt: 'Asymptotic range', dd: `${f(R.asymptotic, 3)} <small>${inRange ? 'close to 1: the three meshes behave as theory says' : 'far from 1: the meshes are not yet in the asymptotic range (extrapolation unreliable)'}</small>`, cls: inRange ? 'ok' : 'warn' },
         );
         if (!inRange) notes.push(['warn', 'The asymptotic-range check is well away from 1, so the observed order and the extrapolation are not yet reliable. Refine further.']);
       }
@@ -208,10 +208,10 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
           { dt: 'Exact answer', dd: `${g4(exact)} <small>the finest mesh is ${pc(f1 / exact - 1)}${R.kind === 'monotonic' ? ` · extrapolation ${pc(R.ext / exact - 1)}` : ''}</small>`, cls: Math.abs(f1 / exact - 1) < 0.02 ? 'ok' : 'warn' },
           { dt: 'Elements across the edge zone', dd: `${f(zone / h3, 1)} → ${f(zone / h2, 1)} → ${f(zone / h1, 1)} <small>edge zone π/β = ${g3(zone)} mm</small>` },
         );
-        notes.push(['warn', 'Converged is not the same as right: this peak is an artefact of clamping the end. A real flange grows and rotates with the case — model it, or its stiffness.']);
+        notes.push(['warn', 'Converged is not the same as right: this peak is an artefact of clamping the end. A real flange grows and rotates with the case: model it, or its stiffness.']);
       }
-      if (R.kind === 'divergent') notes.push(['bad', 'The result keeps changing faster as the mesh is refined. Either the coarse meshes are far too coarse, or the point is singular — a sharp corner, a point load or a point constraint — and has no converged value.']);
-      notes.push(['', 'Converge the quantity you will report, at the point you will report it — a peak stress needs a much finer mesh than a displacement.']);
+      if (R.kind === 'divergent') notes.push(['bad', 'The result keeps changing faster as the mesh is refined. Either the coarse meshes are far too coarse, or the point is singular (a sharp corner, a point load or a point constraint) and has no converged value.']);
+      notes.push(['', 'Converge the quantity you will report, at the point you will report it: a peak stress needs a much finer mesh than a displacement.']);
       return () => {
         const hs = [h1, h2, h3], fs = [f1, f2, f3];
         const ys = [...fs, ...(Number.isFinite(exact) ? [exact] : []), ...(R.kind === 'monotonic' ? [R.ext] : [])];
@@ -243,22 +243,22 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
       const checks: { name: string; u: number }[] = [];
       if (Number.isFinite(Rm)) {
         const d = Rm / Rx - 1;
-        rows.push({ dt: 'Axial reaction', dd: `${g4(Rm / 1000)} kN <small>must be ${g4(Rx / 1000)} kN — ${pc(d)}</small>`, primary: true, cls: Math.abs(d) < 0.001 ? 'ok' : 'bad' });
+        rows.push({ dt: 'Axial reaction', dd: `${g4(Rm / 1000)} kN <small>must be ${g4(Rx / 1000)} kN: ${pc(d)}</small>`, primary: true, cls: Math.abs(d) < 0.001 ? 'ok' : 'bad' });
         checks.push({ name: 'reaction', u: Rm / Rx });
         if (Math.abs(d) >= 0.001) notes.push(['bad', Math.abs(Rm) < 0.01 * Rx ? 'No axial reaction: the pressure on the closures is missing, so the case carries no end load. Hoop stress alone will not show it.' : 'A static model is in equilibrium to round-off: a reaction that differs from the applied load means a load is missing, doubled, or applied to the wrong faces.']);
       }
       if (Number.isFinite(sm)) {
         const d = sm / sh - 1;
-        rows.push({ dt: 'Far-field hoop stress', dd: `${g4(sm)} MPa <small>pr/t = ${g4(sh)} MPa — ${pc(d)}</small>`, cls: Math.abs(d) < 0.02 ? 'ok' : 'warn' });
+        rows.push({ dt: 'Far-field hoop stress', dd: `${g4(sm)} MPa <small>pr/t = ${g4(sh)} MPa: ${pc(d)}</small>`, cls: Math.abs(d) < 0.02 ? 'ok' : 'warn' });
         checks.push({ name: 'hoop', u: sm / sh });
       }
       if (Number.isFinite(wm)) {
         const d = wm / wc - 1, open = Math.abs(wm / wo - 1) < 0.02 && Math.abs(d) > 0.05;
-        rows.push({ dt: 'Far-field radial growth', dd: `${g4(wm)} mm <small>closed ends ${g4(wc)} mm — ${pc(d)}${open ? ' · matches open ends' : ''}</small>`, cls: Math.abs(d) < 0.02 ? 'ok' : 'bad' });
+        rows.push({ dt: 'Far-field radial growth', dd: `${g4(wm)} mm <small>closed ends ${g4(wc)} mm: ${pc(d)}${open ? ' · matches open ends' : ''}</small>`, cls: Math.abs(d) < 0.02 ? 'ok' : 'bad' });
         checks.push({ name: 'growth', u: wm / wc });
         if (open) notes.push(['bad', `The growth matches an open-ended cylinder (${g4(wo)} mm): the end load is missing. With it, the axial stress pr/2t and Poisson's effect cut the growth by ν/2.`]);
       }
-      notes.push(['', 'Check reactions on every run, before looking at a single stress. Then far-field stresses and displacements against the hand calc — see <a href="../../fundamentals/hand-calcs/">Hand calcs</a>.']);
+      notes.push(['', 'Check reactions on every run, before looking at a single stress. Then far-field stresses and displacements against the hand calc. See <a href="../../fundamentals/hand-calcs/">Hand calcs</a>.']);
       return () => {
         svg.replaceChildren();
         const W = Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420))), H = 250, Lx = 98, R = 20, T = 30, B = 34;
@@ -283,12 +283,12 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
       if (!(ang >= 90 && ang <= 360)) { notes.push(['bad', 'Enter an interior angle between 90° and 360°.']); return null; }
       const lam = williamsLambda(ang), g = 2 ** (1 - lam);
       rows.push({ dt: `Williams exponent <span class="nc">λ</span>`, dd: `${f(lam, 4)} <small>${lam < 1 ? `stress grows as r<sup>${f(lam - 1, 3)}</sup> towards the corner` : 'not singular'}</small>`, primary: true, cls: lam < 1 ? 'bad' : 'ok' });
-      if (lam < 1) rows.push({ dt: 'Each mesh halving', dd: `×${f(g, 3)} <small>×${f(g ** n, 2)} after ${n} halvings — no converged value</small>`, cls: 'bad' });
+      if (lam < 1) rows.push({ dt: 'Each mesh halving', dd: `×${f(g, 3)} <small>×${f(g ** n, 2)} after ${n} halvings: no converged value</small>`, cls: 'bad' });
       if (Number.isFinite(avg) && Number.isFinite(un) && avg !== 0) {
         const j = Math.abs(un / avg - 1);
-        rows.push({ dt: 'Averaged against element', dd: `${pc(un / avg - 1)} <small>${g3(un)} against ${g3(avg)} MPa — ${j > 0.1 ? 'a large jump: the mesh is too coarse here' : 'small: the field is resolved here'}</small>`, cls: j > 0.1 ? 'warn' : 'ok' });
+        rows.push({ dt: 'Averaged against element', dd: `${pc(un / avg - 1)} <small>${g3(un)} against ${g3(avg)} MPa: ${j > 0.1 ? 'a large jump: the mesh is too coarse here' : 'small: the field is resolved here'}</small>`, cls: j > 0.1 ? 'warn' : 'ok' });
       }
-      if (Number.isFinite(s04) && Number.isFinite(s10)) rows.push({ dt: 'Weld hot-spot stress', dd: `${g3(hotSpot(s04, s10))} MPa <small>1.67 σ<sub>0.4t</sub> − 0.67 σ<sub>1.0t</sub> (IIW, fine mesh) — for hot-spot S-N curves only</small>` });
+      if (Number.isFinite(s04) && Number.isFinite(s10)) rows.push({ dt: 'Weld hot-spot stress', dd: `${g3(hotSpot(s04, s10))} MPa <small>1.67 σ<sub>0.4t</sub> − 0.67 σ<sub>1.0t</sub> (IIW, fine mesh), for hot-spot S-N curves only</small>` });
       if (lam < 1) notes.push(['bad', 'At a singular point the stress the model reports is set by the mesh, not the part. Model the real radius and converge it, read stresses at a distance with a method that defines one, or use fracture mechanics for cracks.']);
       notes.push(['', 'Point loads and single-node constraints are singular too. Spread loads over a realistic area, and introduce them with a coupling that does not stiffen the part (Nastran RBE3, Abaqus distributing coupling) unless the real part is rigid.']);
       notes.push(['', 'Nodal averaging smooths stress across element boundaries and hides how far apart the elements disagree. Compare the unaveraged values at the peak.']);

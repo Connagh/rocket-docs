@@ -24,7 +24,7 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
           <label>at cycles<input name="f_ne" type="number" min="1001" step="any" value="1000000" /></label>
           <label class="check"><input name="f_lim" type="checkbox" checked /> Endurance limit</label>
         </div>
-        <p class="hint">Local stresses at the surface, notch factor included — as on the <a href="../../fundamentals/fatigue/">Fatigue</a> page, whose S-N line this uses. Residual stress: tension positive, measured or assumed.</p>
+        <p class="hint">Local stresses at the surface, notch factor included, as on the <a href="../../fundamentals/fatigue/">Fatigue</a> page, whose S-N line this uses. Residual stress: tension positive, measured or assumed.</p>
       </fieldset>
 
       <fieldset data-panel="fracture" hidden>
@@ -149,14 +149,14 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
       const ratio = r.N / r.N0;
       rows.push(
         { dt: 'Life', dd: `${cyc(r.N)} cycles <small>${Number.isFinite(r.N0) ? `${cyc(r.N0)} without the residual stress` : 'below the endurance limit without it too'}${Number.isFinite(ratio) && Number.isFinite(r.N0) && r.N0 > 0 ? ` · ×${g3(ratio)}` : ''}</small>`, primary: true, cls: ratio < 1 ? 'bad' : ratio > 1 ? 'ok' : '' },
-        { dt: 'Residual after first cycle', dd: `${sg(r.srEff)} MPa <small>${r.srEff !== i.sr ? `relaxed from ${sg(i.sr)} MPa — the total reached yield` : 'unchanged — the total stays below yield'}</small>` },
+        { dt: 'Residual after first cycle', dd: `${sg(r.srEff)} MPa <small>${r.srEff !== i.sr ? `relaxed from ${sg(i.sr)} MPa: the total reached yield` : 'unchanged: the total stays below yield'}</small>` },
         { dt: 'Effective mean', dd: `${sg(r.smEff)} MPa <small>service ${sg(i.sm)} plus residual ${sg(r.srEff)}</small>` },
         { dt: 'Equivalent reversed', dd: `${g3(r.sar)} MPa <small>Goodman · ${g3(r.sar0)} MPa without the residual stress</small>` },
       );
       if (r.srEff !== i.sr) notes.push(['warn', `The residual stress relaxes from ${sg(i.sr)} to ${sg(r.srEff)} MPa on the first cycle: service plus residual cannot pass yield. Large cycles wash residual stress out, so it does most for high-cycle fatigue.`]);
-      if (i.sr < 0 && r.smEff < 0) notes.push(['', 'The residual compression more than cancels the mean stress. Compressive mean stress gets no credit here, as on the Fatigue page — some methods allow it, with test evidence.']);
-      if (i.sr > 0) notes.push(['bad', 'Tensile residual stress is extra mean stress the drawing does not show — from welding, abusive grinding, straightening or quenching.']);
-      notes.push(['', 'Residual stress also fades with cycling and at temperature, and machining removes peened layers — specify peening after the last machining.']);
+      if (i.sr < 0 && r.smEff < 0) notes.push(['', 'The residual compression more than cancels the mean stress. Compressive mean stress gets no credit here, as on the Fatigue page: some methods allow it, with test evidence.']);
+      if (i.sr > 0) notes.push(['bad', 'Tensile residual stress is extra mean stress the drawing does not show, from welding, abusive grinding, straightening or quenching.']);
+      notes.push(['', 'Residual stress also fades with cycling and at temperature, and machining removes peened layers: specify peening after the last machining.']);
       return () => {
         const x0 = -i.Fty, x1 = i.uts, top = Math.max(i.se, i.sa) * 1.35;
         const c = frame({ x0, x1, y0: 0, y1: top, xl: 'mean stress (MPa)', yl: 'alternating stress (MPa)' });
@@ -188,9 +188,9 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
       );
       if (i.KISCC) rows.push({ dt: 'Deepest flaw safe in storage', dd: `${Number.isFinite(r.aScc) ? `${g3(r.aScc)} mm` : 'any'} <small>before the residual stress alone reaches K<sub>ISCC</sub></small>` });
       else rows.push({ dt: 'Stress corrosion', dd: '<small>Enter K<sub>ISCC</sub> for your material, heat treatment and environment to see which flaws grow in storage.</small>' });
-      if (r.srEff < i.sr && i.proof) notes.push(['ok', `The proof test relaxed the residual stress from ${sg(i.sr)} to ${sg(r.srEff)} MPa: where proof plus residual reached yield, the excess yielded away — a mechanical stress relief.`]);
+      if (r.srEff < i.sr && i.proof) notes.push(['ok', `The proof test relaxed the residual stress from ${sg(i.sr)} to ${sg(r.srEff)} MPa: where proof plus residual reached yield, the excess yielded away: a mechanical stress relief.`]);
       if (i.KISCC && r.Kres >= i.KISCC) notes.push(['bad', `The residual stress alone takes a ${g3(i.a)} mm flaw past K<sub>ISCC</sub>: it can grow by stress corrosion in storage, with no load on the part.`]);
-      notes.push(['', 'Residual stress acts on every crack whether the part is loaded or not. Where it is not measured, fitness-for-service procedures such as BS 7910 and API 579-1 prescribe it — up to yield in as-welded joints.']);
+      notes.push(['', 'Residual stress acts on every crack whether the part is loaded or not. Where it is not measured, fitness-for-service procedures such as BS 7910 and API 579-1 prescribe it: up to yield in as-welded joints.']);
       return () => {
         const amax = Math.max(3 * i.a, 1.3 * Math.min(r.aCrit0, 10 * i.a)), as = Array.from({ length: 121 }, (_, k) => (amax * (k + 0.5)) / 121);
         const top = Math.max(i.KIC * 1.25, (i.KISCC ?? 0) * 1.3);
@@ -222,13 +222,13 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
       rows.push(
         { dt: 'Peak stress in service', dd: `${g3(tr(peak))} MPa <small>Tresca, at r = ${g3(peak)} mm · ${g3(plain.st - plain.sr)} MPa at the bore without autofrettage</small>`, primary: true, cls: tr(peak) >= Fty ? 'bad' : '' },
         { dt: 'Bore hoop in service', dd: `${sg(serviceStress(af, a, b, p, a).st)} MPa <small>${sg(plain.st)} MPa without autofrettage</small>` },
-        { dt: 'Residual at the bore', dd: `${sg(af.boreHoop)} MPa <small>hoop, with no pressure${af.reverse ? ' — beyond reverse yield' : ''}</small>`, cls: af.reverse ? 'bad' : '' },
+        { dt: 'Residual at the bore', dd: `${sg(af.boreHoop)} MPa <small>hoop, with no pressure${af.reverse ? ': beyond reverse yield' : ''}</small>`, cls: af.reverse ? 'bad' : '' },
         { dt: 'Overstrain', dd: `${f(100 * af.overstrain, 0)}% of the wall <small>yielded to r = ${g3(af.c)} mm · first yield at ${g3(af.pFirst)} MPa, full overstrain at ${g3(af.pFull)} MPa</small>` },
       );
       if (pA <= af.pFirst) notes.push(['warn', `The autofrettage pressure is below first yield (${g3(af.pFirst)} MPa): nothing yields, and no residual stress is left.`]);
       if (pA > af.pFull) notes.push(['warn', `Above ${g3(af.pFull)} MPa the whole wall has yielded: more pressure only bursts it.`]);
       if (af.reverse) notes.push(['bad', 'Unloading would yield the bore in reverse: the compression is capped at yield, and with the Bauschinger effect this happens sooner. Use less overstrain.']);
-      else notes.push(['', `Reverse yield needs ${g3(Fty)} MPa of compression here; after overstrain real steels yield in reverse sooner (the Bauschinger effect), so keep well clear — ASME VIII Division 3 and gun-tube practice use corrected methods.`]);
+      else notes.push(['', `Reverse yield needs ${g3(Fty)} MPa of compression here; after overstrain real steels yield in reverse sooner (the Bauschinger effect), so keep well clear: ASME VIII Division 3 and gun-tube practice use corrected methods.`]);
       if (p > af.pA) notes.push(['bad', 'The working pressure is above the autofrettage pressure: the wall yields again in service.']);
       if (af.overstrain > 0 && serviceStress(af, a, b, p, a).st < 0) notes.push(['ok', 'The bore stays in hoop compression even at working pressure: a crack at the bore barely opens. The peak stress has moved out to where the yielded zone ended.']);
       return () => {
@@ -247,7 +247,7 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
 
     const RUN: Record<string, typeof runFatigue> = { fatigue: runFatigue, fracture: runFracture, af: runAf };
     const CAPS: Record<string, string> = {
-      fatigue: 'The Goodman line for the endurance strength, with no credit for compressive mean. The grey dot is the service cycle; the residual stress moves it sideways to the coloured dot — towards the line if tensile, away if compressive.',
+      fatigue: 'The Goodman line for the endurance strength, with no credit for compressive mean. The grey dot is the service cycle; the residual stress moves it sideways to the coloured dot: towards the line if tensile, away if compressive.',
       fracture: 'Stress intensity against flaw depth: with the residual stress, without it, and from the residual stress alone. Each crosses KIC at its critical depth.',
       af: 'Hoop stress through the wall: the residual stress after autofrettage, the total at working pressure, and the plain cylinder at working pressure. The shaded zone yielded.',
     };

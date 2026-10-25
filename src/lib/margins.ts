@@ -30,7 +30,7 @@ export interface MarginRow {
   item: string; loadCase: string; failure: string;
   mode: Mode; // which basic factor applies
   applied: number; allowable: number; // limit-level applied value and allowable, same units
-  allowableBasis: string; // e.g. "A-basis yield, 100 °C" — must match the mode
+  allowableBasis: string; // e.g. "A-basis yield, 100 °C": must match the mode
   extra: number | null; // product of special factors (fitting, bearing, casting, weld, model), if any
   ref: string;
 }

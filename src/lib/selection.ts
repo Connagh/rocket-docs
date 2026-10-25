@@ -43,7 +43,7 @@ const pos = (v: number | undefined) => (v !== undefined && v > 0 ? v : undefined
 
 export const INDICES: Index[] = [
   { key: 'tie', name: 'Light, strong tie or pressure-vessel wall', tex: '\\sigma_y/\\rho', x: 'density', y: 'yield', slope: 1,
-    value: (m) => m.yield / m.density, use: 'Motor cases, tanks, tension members — mass for a given load or pressure.' },
+    value: (m) => m.yield / m.density, use: 'Motor cases, tanks, tension members: mass for a given load or pressure.' },
   { key: 'tieStiff', name: 'Light, stiff tie', tex: 'E/\\rho', x: 'density', y: 'E', slope: 1,
     value: (m) => pos(m.E) && m.E! / m.density, use: 'Stiffness-limited struts and rods in tension.' },
   { key: 'beamStiff', name: 'Light, stiff beam', tex: 'E^{1/2}/\\rho', x: 'density', y: 'E', slope: 2,

@@ -26,7 +26,7 @@ const PRESETS = {
             </>
           ))}
         </div>
-        <p class="hint">Life = time to reach your end-of-life criterion at that temperature — compression set reaching its limit, bond strength falling to its minimum. At least three temperatures. Defaults are illustrative, not data for any real compound.</p>
+        <p class="hint">Life = time to reach your end-of-life criterion at that temperature: compression set reaching its limit, bond strength falling to its minimum. At least three temperatures. Defaults are illustrative, not data for any real compound.</p>
         <label>Activation energy override (kJ/mol)<input name="ea" type="number" min="1" step="any" placeholder="from the fit" /></label>
       </fieldset>
       <fieldset>
@@ -34,7 +34,7 @@ const PRESETS = {
         <div class="ag-presets">
           {Object.entries(PRESETS).map(([k, p]) => <button type="button" class="chip" data-preset={k}>{p.label}</button>)}
         </div>
-        <label>Readings, °C — equal intervals, one per line
+        <label>Readings, °C: equal intervals, one per line
           <textarea name="log" rows="5">{PRESETS.hot.log.join('\n')}</textarea>
         </label>
       </fieldset>
@@ -161,9 +161,9 @@ const PRESETS = {
       const errFactor = Math.exp(0.1 * B * Math.abs(1 / kelvin(mkt) - 1 / kelvin(tLow)));
       out.push(['', `A 10% error in E<sub>a</sub> changes the predicted life by a factor of ${f(errFactor, 2)} over this ${f(tLow - mkt, 0)} K extrapolation. The further the coolest test is from the store, the more the answer rests on E<sub>a</sub>.`]);
       if (pts.length < 3) out.push(['warn', 'Two temperatures always fit a straight line. Three or more show whether one mechanism really governs.']);
-      else if (fit.r2 < 0.95) out.push(['warn', `The points do not line up well (r² = ${f(fit.r2, 3)}). The mechanism may change between test temperatures — the highest-temperature result is the usual suspect.`]);
+      else if (fit.r2 < 0.95) out.push(['warn', `The points do not line up well (r² = ${f(fit.r2, 3)}). The mechanism may change between test temperatures: the highest-temperature result is the usual suspect.`]);
       if (tt > Math.max(...pts.map((p) => p.t))) out.push(['warn', `The planned test at ${deg(tt, 0)} is hotter than any temperature the activation energy was measured at. Above that range a different mechanism may take over.`]);
-      if (td > 0) out.push(['', `${f(td, 0)} days at ${deg(tt, 0)} ≈ ${span(td * 24 * af)} in this store — if, and only if, the same mechanism governs at both temperatures.`]);
+      if (td > 0) out.push(['', `${f(td, 0)} days at ${deg(tt, 0)} ≈ ${span(td * 24 * af)} in this store, if, and only if, the same mechanism governs at both temperatures.`]);
       notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       arrPlot(pts, lifeAt, mkt, mean);
       logPlot(readings, mean, mkt);
@@ -194,7 +194,7 @@ const PRESETS = {
         svg.append(el('line', { x1: X(c), x2: X(c), y1: T, y2: H - B, stroke: 'var(--rd-line)' }));
         svg.append(el('text', { x: X(c), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, `${c}`));
       }
-      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'temperature, °C (1/T scale — colder to the right)'));
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'temperature, °C (1/T scale: colder to the right)'));
       svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, 'life'));
       const tLow = Math.min(...pts.map((p) => p.t)), tHi = Math.max(...pts.map((p) => p.t));
       svg.append(el('line', { x1: X(tHi), y1: Y(lifeAt(tHi)), x2: X(tLow), y2: Y(lifeAt(tLow)), stroke: 'var(--rd-ok)', 'stroke-width': 2.5 }));

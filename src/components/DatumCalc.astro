@@ -142,18 +142,18 @@ H30, 0.126, -0.091, 11.02`;
       if (holes.length < 1 || !(tol > 0) || !Number.isFinite(mmc)) { notes.push(['bad', 'Enter at least one hole as "name, Δx, Δy, size", the hole MMC and the position tolerance.']); return null; }
       const r = patternCheck({ holes, mmc, tol, bonus, shift: Number.isFinite(shift) ? shift : 0, lowerTol: low > 0 ? low : undefined, R, n: holes.length });
       const badNames = r.fixed.map((h, i) => (h.pos > h.allowed + 1e-12 ? esc(names[i]) : '')).filter(Boolean);
-      rows.push({ dt: 'Fixed frame', dd: `${r.failsFixed ? `${r.failsFixed} of ${holes.length} outside` : 'all inside'} <small>worst ${f(r.worstFixed, 3)} of allowed${badNames.length ? ` · ${badNames.join(', ')}` : ''} — holes held to the pilot's actual axis</small>`, cls: r.failsFixed ? 'bad' : 'ok' });
+      rows.push({ dt: 'Fixed frame', dd: `${r.failsFixed ? `${r.failsFixed} of ${holes.length} outside` : 'all inside'} <small>worst ${f(r.worstFixed, 3)} of allowed${badNames.length ? ` · ${badNames.join(', ')}` : ''}: holes held to the pilot's actual axis</small>`, cls: r.failsFixed ? 'bad' : 'ok' });
       if (mmb) {
-        rows.push({ dt: 'Datum shift available', dd: `⌀${f(shift)} <small>MMB ⌀${f(num('p_pmmc') + (num('p_ptol') || 0))} minus the actual pilot — up to ${f(shift / 2)} mm in any direction</small>` });
+        rows.push({ dt: 'Datum shift available', dd: `⌀${f(shift)} <small>MMB ⌀${f(num('p_pmmc') + (num('p_ptol') || 0))} minus the actual pilot: up to ${f(shift / 2)} mm in any direction</small>` });
         const ok = r.shifted.worst <= 1 + 1e-9;
         rows.push({ dt: 'With the datum shift', dd: `${ok ? 'all inside' : 'still outside'} <small>worst ${f(r.shifted.worst, 3)} of allowed · pattern moved (${f(r.shifted.s[0])}, ${f(r.shifted.s[1])}) mm</small>`, primary: true, cls: ok ? 'ok' : 'bad' });
         if (r.failsFixed && ok) notes.push(['ok', 'The part conforms: the drawing lets the pattern move with the pilot\'s departure from MMB, and a functional gauge would accept it. A CMM program that holds the pattern to the pilot\'s actual axis rejects it wrongly.']);
         if (!ok) notes.push(['bad', 'No move within the datum shift brings every hole into its zone: the part does not conform.']);
       } else {
-        rows.push({ dt: 'Datum shift', dd: 'none <small>pilot referenced regardless of material boundary — the pattern is held to its actual axis</small>', primary: true, cls: r.failsFixed ? 'bad' : 'ok' });
+        rows.push({ dt: 'Datum shift', dd: 'none <small>pilot referenced regardless of material boundary: the pattern is held to its actual axis</small>', primary: true, cls: r.failsFixed ? 'bad' : 'ok' });
       }
       if (r.lower) rows.push({ dt: 'Composite lower segment', dd: `${r.lower.worst <= 1 + 1e-9 ? 'inside' : 'outside'} <small>worst ${f(r.lower.worst, 3)} of allowed · holes to each other, free to shift and turn (${f(r.lower.theta * 1000, 3)} mrad)</small>`, cls: r.lower.worst <= 1 + 1e-9 ? 'ok' : 'bad' });
-      notes.push(['', 'The shift is free tolerance only if the assembly has the same freedom — the pilot\'s clearance in its mating bore at least as large as the shift. Otherwise reference the pilot regardless of material boundary.']);
+      notes.push(['', 'The shift is free tolerance only if the assembly has the same freedom: the pilot\'s clearance in its mating bore at least as large as the shift. Otherwise reference the pilot regardless of material boundary.']);
       return () => {
         svg.replaceChildren();
         const W = size(), H = 300; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -184,9 +184,9 @@ H30, 0.126, -0.091, 11.02`;
         { dt: 'Datum B ring', dd: `⌀${gt > 0 ? `${f(g.ringMin)}–` : ''}${f(g.ring)} <small>the pilot's MMB, MMC + its own tolerance at MMC</small>` },
         { dt: 'Datum A', dd: 'a flat plate <small>the seating face rests on it at its high points</small>' },
       );
-      if (gt > 0) rows.push({ dt: 'Taken from the part', dd: `up to ${f(g.gtPin)} mm <small>of each hole's tolerance, under an absolute policy — the gauge never accepts a bad part, and rejects some good ones</small>`, cls: 'warn' });
+      if (gt > 0) rows.push({ dt: 'Taken from the part', dd: `up to ${f(g.gtPin)} mm <small>of each hole's tolerance, under an absolute policy: the gauge never accepts a bad part, and rejects some good ones</small>`, cls: 'warn' });
       else rows.push({ dt: 'Gauge tolerance', dd: '<small>Enter your programme\'s gauge-tolerance policy to see how much part tolerance the gauge takes. Or press “Load worked example”.</small>' });
-      notes.push(['', 'A fixed gauge checks only MMC and MMB conditions. A datum or feature at RFS needs an expanding element — or a CMM.']);
+      notes.push(['', 'A fixed gauge checks only MMC and MMB conditions. A datum or feature at RFS needs an expanding element, or a CMM.']);
       notes.push(['', 'The gauge checks location, not size: hole and pilot sizes need their own go/no-go gauges or measurement.']);
       return () => {
         svg.replaceChildren();

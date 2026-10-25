@@ -1,6 +1,6 @@
 ---
 title: Allowables
-description: What a design allowable really is — A-, B- and S-basis, the statistics of one-sided tolerance limits behind them, the knockdowns for temperature, direction, thickness and environment, and how the allowable feeds a margin of safety.
+description: What a design allowable really is. A-basis, B-basis and S-basis, the statistics of the one-sided tolerance limits behind them, the knockdowns for temperature, direction, thickness and environment, and how the allowable gives data to a margin of safety.
 sidebar:
   order: 0
 ---
@@ -10,42 +10,42 @@ import Analogy from '../../../components/Analogy.astro';
 import AllowablesCalc from '../../../components/AllowablesCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>An allowable is a statistical statement with a basis, a temperature, a direction and a product form. A bare number is untraceable.</div>
+  <div><b>In one line</b>An allowable is a statistical statement with a basis, a temperature, a direction and a product form. You cannot trace a number without these data.</div>
   <div><b>Before this</b><a href="../selection/">Material selection</a> · <a href="../specification/">Specification</a></div>
-  <div><b>Used by</b>Every margin: <a href="../../motor/case-sizing/">case sizing</a>, <a href="../../verify/shell-buckling/">buckling</a>, <a href="../../fundamentals/fatigue/">fatigue</a></div>
+  <div><b>Used by</b>All margins: <a href="../../motor/case-sizing/">case sizing</a>, <a href="../../verify/shell-buckling/">buckling</a>, <a href="../../fundamentals/fatigue/">fatigue</a></div>
 </div>
 
 ## Why this matters
 
-A datasheet says the alloy has a yield strength of 460 MPa. That is a **typical** value — the middle of the test
-results — and about half of all production material is weaker. Put it into a margin calculation and the margin is
-fiction. A **design allowable** is a lower bound on the strength of the material that will actually be built, at the
-condition it will actually see. Quoting a typical value into a margin is the quiet way to lose a design review.
+A datasheet says that an alloy has a yield strength of 460 MPa. This is a **typical** value, the middle of the test
+results. Approximately half of all production material is weaker. If you use it in a margin calculation, the margin is
+not real. A **design allowable** is a lower limit on the strength of the material that will be built, at the condition
+that it will be in. If you use a typical value in a margin, the design review will find the error.
 
 ## The bases
 
-| Basis | Means | Used for |
+| Basis | Meaning | Used for |
 | --- | --- | --- |
-| **A-basis** | 99% of the population exceeds it, with 95% confidence | Single load paths, where one failure is not contained |
-| **B-basis** | 90% of the population exceeds it, with 95% confidence | Redundant structure, where load redistributes — if your rules allow it |
-| **S-basis** | The specification minimum, with no statistical backing of its own | Often treated like A-basis — check your programme's rules |
-| **Typical** | The mean of the test data | Comparing materials. Never a margin |
+| **A-basis** | 99% of the population is above it, with 95% confidence | Single load paths, where one failure is not contained |
+| **B-basis** | 90% of the population is above it, with 95% confidence | Redundant structure, where the load moves to other paths (if your rules permit it) |
+| **S-basis** | The minimum of the specification, with no statistical support of its own | Often treated as A-basis. Check the rules of your programme |
+| **Typical** | The mean of the test data | Comparison of materials. Never for a margin |
 
-The A- and B-basis definitions come from aerospace practice (MMPDS for metals, CMH-17 for composites), and civil
-aircraft rules (14 CFR 25.613) set when each may be used. Most space and defence programmes follow the same logic.
+The definitions of A-basis and B-basis come from aerospace practice (MMPDS for metals, CMH-17 for composites). Civil
+aircraft rules (14 CFR 25.613) tell when to use each. Most space and defence programmes use the same logic.
 
 ## The statistics behind them
 
-A basis value is a **one-sided tolerance limit**: the mean of the tests, less a multiple of their standard deviation,
+A basis value is a **one-sided tolerance limit**: the mean of the tests, minus a multiple of their standard deviation:
 
 $$
 x_\text{basis} = \bar{x} - k\,s
 $$
 
-There are two percentages in the definition. The **proportion** (99% or 90%) is how much of the population must lie
-above the value. The **confidence** (95%) covers the fact that $\bar{x}$ and $s$ are only estimates from a sample.
-With infinite data $k$ would just be the normal-distribution value — 2.326 for 99%, 1.282 for 90%. With a finite
-sample it is larger, and it comes from the noncentral $t$-distribution:
+There are two percentages in the definition. The **proportion** (99% or 90%) tells how much of the population must be
+above the value. The **confidence** (95%) covers the fact that $\bar{x}$ and $s$ are only estimates from a sample. With
+infinite data, $k$ would be the value of the normal distribution: 2.326 for 99% and 1.282 for 90%. With a finite sample,
+it is larger. It comes from the noncentral $t$-distribution:
 
 $$
 k = \frac{t'_{0.95}\!\left(n-1,\; z_p\sqrt{n}\right)}{\sqrt{n}}
@@ -56,38 +56,39 @@ $$
 | $k$, B-basis | 3.407 | 2.355 | 1.926 | 1.778 | 1.527 | 1.282 |
 | $k$, A-basis | 5.741 | 3.981 | 3.295 | 3.064 | 2.684 | 2.326 |
 
-The calculator computes these exactly; its tests check them against the published tables. CMH-17 also gives
-closed-form approximations that agree to within 1% for ten or more tests.
+The calculator calculates these values exactly. Its tests compare them with the published tables. CMH-17 also gives
+closed-form approximations, which agree within 1% for ten or more tests.
 
 <Analogy title="Sizing a doorway for a whole town">
-  You measure twenty people and want a doorway that 99 of every 100 townspeople fit through. The tallest of your
-  twenty is not enough — the town holds taller people you did not measure. So you add an allowance, and the fewer people
-  you measured, the bigger it must be. A basis value is the same idea turned upside down: a strength that almost all of
-  the material you have not tested will still exceed.
+  You measure twenty people, and you want a doorway that 99 of each 100 people in the town can go through. The tallest
+  of your twenty people is not sufficient, because the town has taller people that you did not measure. Thus you add an
+  allowance. The fewer people you measure, the larger the allowance must be. A basis value is the same idea in the
+  opposite direction: a strength that almost all of the material that you did not test will still be above.
 </Analogy>
 
-What the statistics assume, and where they go wrong:
+The statistics have assumptions, and these can be incorrect:
 
-- **A normal distribution.** Real data can be skewed. Handbook practice tests the fit and uses Weibull, lognormal or a
-  non-parametric method when normal does not fit.
-- **One population.** Strength varies between material lots (heats, batches) more than within one. Allowables come
-  from several lots, and data are pooled only where statistics allow. A single lot underestimates the scatter.
-- **Data that represent production** — the same specification, process, supplier, thickness and orientation as the
+- **A normal distribution.** Real data can be skewed. Handbook practice tests the fit, and uses Weibull, lognormal or a
+  non-parametric method when the normal distribution does not fit.
+- **One population.** Strength changes more between material lots (heats, batches) than within one lot. Allowables
+  come from several lots, and data are pooled only where the statistics permit it. One lot gives a scatter that is too
+  small.
+- **Data that represent production:** the same specification, process, supplier, thickness and orientation as the
   parts that will fly.
 
-## Knockdowns — before the allowable is yours
+## Knockdowns: before the allowable is yours
 
-A basis value applies to the condition it was tested at. To reach the design condition, it is multiplied by
-**knockdowns** — property ratios from data, not safety factors:
+A basis value applies to the condition of the test. To get to the design condition, multiply it by **knockdowns**.
+These are property ratios from data, not safety factors:
 
 | Knockdown | Why |
 | --- | --- |
-| Temperature, and time at temperature | Strength falls with temperature; short-time and long-exposure allowables are different curves |
-| Direction | In thick wrought products, short-transverse (through-thickness) strength and ductility can be well below longitudinal |
-| Thickness and product form | Quench rate falls with thickness, so heavy sections do not reach thin-section properties; plate, forging and extrusion differ |
+| Temperature, and time at temperature | Strength decreases with temperature; short-time and long-exposure allowables are different curves |
+| Direction | In thick wrought products, the short-transverse (through-thickness) strength and ductility can be much lower than longitudinal |
+| Thickness and product form | The quench rate decreases with thickness, so heavy sections do not get thin-section properties; plate, forging and extrusion are different |
 | Environment | Moisture and heat ("hot-wet") for composites; corrosion and stress corrosion for metals |
-| Joints and welds | Weld efficiency comes from the code and the procedure qualification, not the parent metal |
-| Process | Castings and additively manufactured parts carry allowables tied to the qualified process and supplier |
+| Joints and welds | The weld efficiency comes from the code and the procedure qualification, not from the parent metal |
+| Process | Castings and additively manufactured parts have allowables related to the qualified process and supplier |
 
 ## How the allowable feeds the margin
 
@@ -95,64 +96,66 @@ $$
 MS = \frac{\text{allowable}}{FS \times \text{applied stress}} - 1
 $$
 
-with the allowable on the right basis, at the design temperature, in the loaded direction, for the product form used.
-Yield and ultimate are checked separately, each against its own load level and factor. The factor of safety comes
-from your programme's requirements. Every margin report should say **which allowable, from which source, on which
-basis, at which condition** — "σ = 880 MPa" on its own will be queried at every review until someone finds where it
-came from.
+Use the allowable on the correct basis, at the design temperature, in the loaded direction, for the product form used.
+Check yield and ultimate separately, each against its own load level and factor. The factor of safety comes from the
+requirements of your programme. Each margin report must tell **which allowable, from which source, on which basis, at
+which condition**. A value such as "σ = 880 MPa" alone will get questions at each review until somebody finds its
+source.
 
 ## Calculator
 
 <AllowablesCalc />
 
-## Worked example — a plate lot on a single load path
+## Worked example: a plate lot on a single load path
 
-Illustrative data: twenty yield-strength tests from one lot of aluminium plate, longitudinal, at room temperature.
-Mean 460.0 MPa, standard deviation 9.0 MPa (2.0% scatter), lowest result 444 MPa. These are the calculator's starting
-values.
+The data are illustrative: twenty yield-strength tests from one lot of aluminium plate, longitudinal, at room
+temperature. The mean is 460.0 MPa, the standard deviation is 9.0 MPa (2.0% scatter), and the lowest result is
+444 MPa. These are the starting values of the calculator.
 
-1. **Factors for $n = 20$:** $k_B = 1.926$, $k_A = 3.295$.
-2. **Basis values:** B-basis $= 460.0 - 1.926 \times 9.0 = 442.6$ MPa; A-basis $= 460.0 - 3.295 \times 9.0 = 430.3$ MPa.
-   Both are below the lowest test — they bound the population, not the sample.
-3. **To the design condition:** 100 °C (0.90 from the aluminium screening curve) and loading in the short-transverse
-   direction, which in this example your own tests put at 88% of longitudinal. A-basis:
+1. **Factors for $n = 20$:** $k_B = 1.926$ and $k_A = 3.295$.
+2. **Basis values:** B-basis $= 460.0 - 1.926 \times 9.0 = 442.6$ MPa, and A-basis $= 460.0 - 3.295 \times 9.0 =
+   430.3$ MPa. The two values are below the lowest test, because they are limits for the population, not for the
+   sample.
+3. **To the design condition:** 100 °C (0.90 from the aluminium screening curve), and a load in the short-transverse
+   direction. In this example, your own tests give 88% of the longitudinal value for that direction. A-basis:
    $430.3 \times 0.90 \times 0.88 = 340.8$ MPa. The same knockdowns give 350.6 MPa on B-basis and 364.3 MPa on the
    typical value.
-4. **The check.** A single load path needs A-basis: against 300 MPa applied, the reserve is $340.8/300 = 1.14$. The
-   typical value would have shown 1.21. Any factor of safety between 1.14 and 1.21 passes on the typical value and
-   fails on the real allowable.
-5. **More tests buy allowable.** With only the first five of these tests, $k_A = 5.741$: the A-basis value falls to
-   412.6 MPa, the design allowable to 326.8 MPa, and the reserve to 1.09.
+4. **The check.** A single load path needs A-basis. Against an applied stress of 300 MPa, the reserve is
+   $340.8/300 = 1.14$. The typical value would give 1.21. Any factor of safety between 1.14 and 1.21 passes with the
+   typical value and fails with the real allowable.
+5. **More tests give a higher allowable.** With only the first five of these tests, $k_A = 5.741$. The A-basis value
+   decreases to 412.6 MPa, the design allowable to 326.8 MPa, and the reserve to 1.09.
 
 ## Where this stops
 
-- **Normal data from one population.** Real allowables use several material lots and test the distribution; the
+- **Normal data from one population.** Real allowables use several material lots and test the distribution. The
   calculator assumes a normal distribution and one sample.
-- **Knockdowns are inputs.** The temperature curve is a family-level screening estimate. Use handbook or test data for
-  the alloy, temper, product form and exposure time.
-- **Composites** follow CMH-17 practice, with environmental conditioning, lay-up and damage built in. Their allowables
-  are generated very differently.
+- **Knockdowns are inputs.** The temperature curve is a screening estimate for the family. Use handbook data or test
+  data for the alloy, temper, product form and exposure time.
+- **Composites** follow CMH-17 practice, which includes environmental conditioning, lay-up and damage. Their
+  allowables are made in a very different way.
 - **The factor of safety** comes from your programme, not from this page.
 
 ## On the drawing and in the reports
 
-- **Specify the material so the allowable applies:** specification, temper, product form and thickness range on the
-  drawing — see [Specification](../specification/). Change any of them and the allowable may no longer apply.
-- **Lot acceptance tests** prove each delivery meets its specification. They do not make an allowable.
-- **In every margin table:** allowable value, source, basis, temperature, direction and product form, next to the
-  margin.
+- **Specify the material so that the allowable applies:** the specification, temper, product form and thickness range
+  on the drawing. See [Specification](../specification/). If you change any of these, the allowable possibly does not
+  apply.
+- **Lot acceptance tests** show that each delivery meets its specification. They do not make an allowable.
+- **In each margin table,** give the allowable value, source, basis, temperature, direction and product form, adjacent
+  to the margin.
 
 ## References and further reading
 
-- *Metallic Materials Properties Development and Standardization* (MMPDS), Battelle / FAA — A-, B- and S-basis
-  allowables for metals, and the statistical procedures behind them.
-- *Composite Materials Handbook* (CMH-17), Volume 1 — statistical methods for composite allowables.
+- *Metallic Materials Properties Development and Standardization* (MMPDS), Battelle / FAA (A-basis, B-basis and S-basis
+  allowables for metals, and the statistical procedures behind them).
+- *Composite Materials Handbook* (CMH-17), Volume 1 (statistical methods for composite allowables).
 - R. E. Odeh & D. B. Owen, *Tables for Normal Tolerance Limits, Sampling Plans and Screening*, Marcel Dekker (1980).
 - M. G. Natrella, *Experimental Statistics*, NBS Handbook 91 (1963).
 - G. J. Hahn & W. Q. Meeker, *Statistical Intervals: A Guide for Practitioners*, Wiley (1991).
 - 14 CFR 25.613, *Material strength properties and material design values*.
 
 <Aside type="note">
-  Screening and teaching. Design allowables come from the governing handbook or your organisation's qualified data, at
-  the right condition, with the basis your programme requires.
+  This is screening and teaching material. Design allowables come from the applicable handbook or from the qualified
+  data of your organisation, at the correct condition, with the basis that your programme requires.
 </Aside>

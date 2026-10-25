@@ -26,7 +26,7 @@ const presets = [
             <option value="circular">Circular (tube)</option>
             <option value="star">Star</option>
             <option value="slots">Core + radial slots</option>
-            <option value="end">None — end burner</option>
+            <option value="end">None: end burner</option>
           </select>
         </label>
         <div data-show="circular"><label>Port diameter (mm)<input name="d" type="number" min="1" step="any" value="80" /></label></div>
@@ -49,7 +49,7 @@ const presets = [
           <label>Segment length (mm)<input name="length" type="number" min="1" step="any" value="600" /></label>
           <label>Segments<input name="segments" type="number" min="1" max="20" step="1" value="1" /></label>
           <label>Burning ends / segment
-            <select name="ends"><option value="0">0 — inhibited</option><option value="1">1</option><option value="2">2</option></select>
+            <select name="ends"><option value="0">0: inhibited</option><option value="1">1</option><option value="2">2</option></select>
           </label>
         </div>
       </fieldset>
@@ -254,7 +254,7 @@ const presets = [
 
       const notes: [string, string][] = [];
       const n = num('n');
-      notes.push(['', `Pressure swings by (A<sub>b</sub> max ÷ min)<sup>1/(1−n)</sup> = ${f(Math.pow(p.progressivity, 1 / (1 - n)), 2)}× over the main burn — the burning-area swing, amplified.`]);
+      notes.push(['', `Pressure swings by (A<sub>b</sub> max ÷ min)<sup>1/(1−n)</sup> = ${f(Math.pow(p.progressivity, 1 / (1 - n)), 2)}× over the main burn: the burning-area swing, amplified.`]);
       if (g.port.kind !== 'end' && p.portToThroat < 2)
         notes.push(['warn', `Port area is only ${f(p.portToThroat, 2)}× the throat area at ignition. Gas races down the bore: expect erosive burning and an ignition pressure spike that this model does not show. A common rule of thumb keeps this ratio above about 2.`]);
       if (b.sliverFraction > 0.08)

@@ -42,7 +42,7 @@ Root joint stiffness, 0.35, 50`;
         <div class="row2">
           <label>Acceptance band ± (%)<input name="s_band" type="number" min="0" step="any" placeholder="your criterion" autocomplete="off" /></label>
         </div>
-        <p class="hint">One gauge per line. Compare the model's strain averaged over the gauge length, on the gauged surface, in the gauge's direction — and preferably slopes of strain against load, which remove zero offsets.</p>
+        <p class="hint">One gauge per line. Compare the model's strain averaged over the gauge length, on the gauged surface, in the gauge's direction, and preferably slopes of strain against load, which remove zero offsets.</p>
       </fieldset>
 
       <fieldset data-panel="uncert" hidden>
@@ -101,7 +101,7 @@ Root joint stiffness, 0.35, 50`;
   </div>
   <div class="calc-foot">
     Ratios and least-squares statistics on paired readings. Gauge errors after Vishay TN-509 and TN-511, combined by root
-    sum of squares. MAC after Allemang and Brown — not mass-weighted, so not a cross-orthogonality check. Single-parameter
+    sum of squares. MAC after Allemang and Brown, not mass-weighted, so not a cross-orthogonality check. Single-parameter
     sensitivities only.
   </div>
 </div>
@@ -166,9 +166,9 @@ Root joint stiffness, 0.35, 50`;
       const med = (v: number[]) => { const a = [...v].sort((x, y) => x - y), m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
       const mid = med(s.each.map((x) => x.ratio)), mad = med(s.each.map((x) => Math.abs(x.ratio - mid)));
       const off = s.each.filter((x) => Math.abs(x.ratio - mid) > Math.max(2 * mad, 0.03));
-      if (Math.abs(s.mean - 1) > 0.05 && s.sd < 0.03) notes.push(['warn', 'Every gauge is off by about the same ratio: look for something global — the applied load or pressure calibration, the modulus, the wall thickness everywhere — before anything local.']);
+      if (Math.abs(s.mean - 1) > 0.05 && s.sd < 0.03) notes.push(['warn', 'Every gauge is off by about the same ratio: look for something global (the applied load or pressure calibration, the modulus, the wall thickness everywhere) before anything local.']);
       if (off.length >= 2) notes.push(['warn', `${off.map((x) => esc(x.name.split(/\s/)[0])).join(' and ')} stand apart from the rest. If they share a location and are off by the same ratio in both directions, suspect the local wall or material; if only one direction is off, suspect the gauge, its orientation or local bending.`]);
-      notes.push(['', 'An acceptance band must be wider than the gauges can resolve — see the Gauge uncertainty tab — and is set by your programme, not chosen after seeing the data.']);
+      notes.push(['', 'An acceptance band must be wider than the gauges can resolve (see the Gauge uncertainty tab) and is set by your programme, not chosen after seeing the data.']);
       return () => {
         svg.replaceChildren();
         const W = size(), H = 250, L = 64, R = 20, T = 30, B = 46;
@@ -196,7 +196,7 @@ Root joint stiffness, 0.35, 50`;
       if (!Number.isFinite(u.e1) || !Number.isFinite(u.e2)) { notes.push(['bad', 'Enter the two principal strains at the gauge site.']); return null; }
       const r = gaugeUncertainty(u);
       const names: Record<string, string> = { gaugeFactor: 'Gauge factor', transverse: 'Transverse sensitivity', misalignment: 'Misalignment', position: 'Position × gradient', instrument: 'Instrumentation' };
-      rows.push({ dt: 'Reading', dd: `${f(r.reading, 0)} µε <small>± ${f(r.total, 0)} µε, ${pc(r.fraction).replace('+', '')} — root sum of squares</small>`, primary: true });
+      rows.push({ dt: 'Reading', dd: `${f(r.reading, 0)} µε <small>± ${f(r.total, 0)} µε, ${pc(r.fraction).replace('+', '')}: root sum of squares</small>`, primary: true });
       const biggest = Object.entries(r.parts).reduce((a, b) => (b[1] > a[1] ? b : a));
       Object.entries(r.parts).forEach(([k, v]) => rows.push({ dt: names[k], dd: `${f(v, 1)} µε <small>${f((100 * v * v) / (r.total * r.total || 1), 0)}% of the variance</small>`, cls: k === biggest[0] && v > 0 ? 'warn' : '' }));
       if (biggest[0] === 'transverse') notes.push(['warn', `Transverse sensitivity dominates: the transverse strain (${f(r.trans, 0)} µε) is large against the reading. It is systematic, so correct for it with the rosette's own transverse reading rather than carrying it as uncertainty.`]);
@@ -220,7 +220,7 @@ Root joint stiffness, 0.35, 50`;
     // ---- modes and MAC ----
     function runModes(rows: Row[], notes: [string, string][]) {
       const ft = list('m_ft'), fm = list('m_fm'), st = parseModes(field('m_st').value), sm = parseModes(field('m_sm').value);
-      if (!st.length || !sm.length || st[0].length !== sm[0].length) { notes.push(['bad', 'Enter test and model shapes at the same measured points — the same number of rows in both.']); return null; }
+      if (!st.length || !sm.length || st[0].length !== sm[0].length) { notes.push(['bad', 'Enter test and model shapes at the same measured points: the same number of rows in both.']); return null; }
       if (ft.length < st.length || fm.length < sm.length) { notes.push(['bad', 'Give a frequency for every mode shape (one per column).']); return null; }
       const M = macMatrix(st, sm), pairs = pairModes(ft, fm, M), auto = macMatrix(st, st);
       const dfc = num('m_df') > 0 ? num('m_df') / 100 : NaN, macc = num('m_mac') > 0 ? num('m_mac') : NaN;
@@ -260,10 +260,10 @@ Root joint stiffness, 0.35, 50`;
       if (!(ft > 0 && fm > 0) || !params.length) { notes.push(['bad', 'Enter both frequencies and at least one parameter as "name, sensitivity, plausible ±%".']); return null; }
       const res = params.map((p) => ({ ...p, need: requiredChange(ft, fm, p.S) })).map((p) => ({ ...p, ok: Math.abs(p.need) <= p.plaus }));
       rows.push({ dt: 'Gap', dd: `${pc(fm / ft - 1)} <small>model ${g3(fm)} Hz against test ${g3(ft)} Hz</small>`, primary: true });
-      res.forEach((p) => rows.push({ dt: esc(p.name), dd: `${pc(p.need)} <small>needed alone, against ±${f(100 * p.plaus, 0)}% plausible — ${p.ok ? 'could explain it' : 'cannot, on its own'}</small>`, cls: p.ok ? 'ok' : 'bad' }));
+      res.forEach((p) => rows.push({ dt: esc(p.name), dd: `${pc(p.need)} <small>needed alone, against ±${f(100 * p.plaus, 0)}% plausible: ${p.ok ? 'could explain it' : 'cannot, on its own'}</small>`, cls: p.ok ? 'ok' : 'bad' }));
       const plausible = res.filter((p) => p.ok);
-      if (!plausible.length) notes.push(['bad', 'No single parameter can close the gap within what is known about it: the model is missing something — a joint, a mass, a boundary condition, a piece of physics. Find it rather than stretching a parameter.']);
-      else if (plausible.length === 1) notes.push(['ok', `Only ${esc(plausible[0].name.toLowerCase())} can close the gap within its uncertainty. Change it — once, with the reason recorded — then check the modes and gauges that were not used to make the change.`]);
+      if (!plausible.length) notes.push(['bad', 'No single parameter can close the gap within what is known about it: the model is missing something (a joint, a mass, a boundary condition, a piece of physics). Find it rather than stretching a parameter.']);
+      else if (plausible.length === 1) notes.push(['ok', `Only ${esc(plausible[0].name.toLowerCase())} can close the gap within its uncertainty. Change it (once, with the reason recorded), then check the modes and gauges that were not used to make the change.`]);
       else notes.push(['warn', 'Several parameters could each close the gap: one frequency cannot tell them apart. Use other modes, other tests or direct measurement to decide.']);
       notes.push(['', 'A change that fits one result is a hypothesis; one that also predicts results it was not fitted to is a correlation.']);
       return () => {

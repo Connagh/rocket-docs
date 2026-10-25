@@ -21,7 +21,7 @@ const cyl = (cx: number) =>
 ---
 
 <figure class="viz">
-  <p class="viz-title">Three ways a thin cylinder buckles — schematic, deformation exaggerated</p>
+  <p class="viz-title">Three ways a thin cylinder buckles: schematic, deformation exaggerated</p>
   <svg viewBox="0 0 840 330" role="img" aria-labelledby="bm-desc" class="bm-svg">
     <desc id="bm-desc">
       Left: a cylinder under axial compression buckles into a diamond pattern over its whole length. Centre: under
@@ -41,7 +41,7 @@ const cyl = (cx: number) =>
     {[95, 140, 185].map((x) => <line x1={x} y1="18" x2={x} y2="44" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></line>)}
     {[95, 140, 185].map((x) => <line x1={x} y1="290" x2={x} y2="262" stroke="var(--rd-accent)" stroke-width="2" marker-end="url(#bm-ah)"></line>)}
     <text x="140" y="314" text-anchor="middle" font-size="12" font-weight="600" fill="var(--rd-ink)">Axial compression</text>
-    <text x="140" y="328" text-anchor="middle" font-size="10" fill="var(--rd-muted)">diamonds, all over — most sensitive</text>
+    <text x="140" y="328" text-anchor="middle" font-size="10" fill="var(--rd-muted)">diamonds, all over: most sensitive</text>
 
     <!-- bending -->
     <path d={cyl(420)} fill="var(--rd-steel)" fill-opacity="0.18" stroke="var(--rd-ink)" stroke-width="1.5"></path>

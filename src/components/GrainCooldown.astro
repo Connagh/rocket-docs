@@ -8,14 +8,14 @@ const arrowsOut = (r1: number, r2: number, n = 8, off = 0) =>
     return { x1: cx + r1 * Math.cos(a), y1: cy + r1 * Math.sin(a), x2: cx + r2 * Math.cos(a), y2: cy + r2 * Math.sin(a) };
   });
 const panels = [
-  { x: 0, title: 'At cure — stress-free', bore: 34, bore0: null as number | null, caseR: case_ },
-  { x: 260, title: 'Cold soak — e.g. −40 °C', bore: 44, bore0: 34, caseR: case_ },
-  { x: 520, title: 'Ignition — pressurised', bore: 48, bore0: 34, caseR: case_ + 4 },
+  { x: 0, title: 'At cure: stress-free', bore: 34, bore0: null as number | null, caseR: case_ },
+  { x: 260, title: 'Cold soak: e.g. −40 °C', bore: 44, bore0: 34, caseR: case_ },
+  { x: 520, title: 'Ignition: pressurised', bore: 48, bore0: 34, caseR: case_ + 4 },
 ];
 ---
 
 <figure class="viz">
-  <p class="viz-title">What the grain feels — deformation exaggerated</p>
+  <p class="viz-title">What the grain feels: deformation exaggerated</p>
   <svg viewBox="0 0 780 330" role="img" aria-labelledby="gc-desc">
     <desc id="gc-desc">
       Three cross-sections of a case-bonded grain. At the cure temperature the grain is stress free. When cold, the

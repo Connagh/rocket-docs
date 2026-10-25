@@ -10,7 +10,7 @@ const circle = (r: number) => `M${C.x + r},${C.y} A${r},${r} 0 1 1 ${C.x - r},${
   <p class="viz-title">Six degrees of freedom, three datums</p>
   <div class="ddf-grid">
     <svg viewBox="0 0 200 150" role="img" aria-label="Primary datum A: the closure's seating face rests on a datum plane at its three highest points, fixing translation along the axis and the two tilts.">
-      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>A — the seating face</text>
+      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>A: the seating face</text>
       <rect x="30" y="54" width="140" height="26" rx="2" fill={blue} fill-opacity="0.25" stroke={blue}></rect>
       <rect x="80" y="80" width="40" height="10" fill={blue} fill-opacity="0.25" stroke={blue}></rect>
       {[42, 64, 154].map((x) => <path d={`M${x},80 l-4,8 l8,0 z`} fill={hot}></path>)}
@@ -21,7 +21,7 @@ const circle = (r: number) => `M${C.x + r},${C.y} A${r},${r} 0 1 1 ${C.x - r},${
     </svg>
 
     <svg viewBox="0 0 200 150" role="img" aria-label="Secondary datum B: the pilot diameter centred in a ring at its maximum material boundary, fixing the two translations across the axis.">
-      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>B — the pilot</text>
+      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>B: the pilot</text>
       <path d={circle(46)} fill={blue} fill-opacity="0.12" stroke={blue}></path>
       <path d={circle(20)} fill={blue} fill-opacity="0.25" stroke={blue}></path>
       <path d={circle(23)} fill="none" stroke={hot} stroke-width="2.2"></path>
@@ -31,7 +31,7 @@ const circle = (r: number) => `M${C.x + r},${C.y} A${r},${r} 0 1 1 ${C.x - r},${
     </svg>
 
     <svg viewBox="0 0 200 150" role="img" aria-label="Tertiary datum C: a dowel hole on a pin stops the closure rotating about its axis, fixing the last degree of freedom.">
-      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>C — the dowel</text>
+      <text x="8" y="16" font-size="12" font-weight="600" fill={ink}>C: the dowel</text>
       <path d={circle(46)} fill={blue} fill-opacity="0.12" stroke={blue}></path>
       <path d={circle(20)} fill={blue} fill-opacity="0.25" stroke={blue}></path>
       <circle cx={C.x + 34} cy={C.y} r="5" fill="var(--rd-panel)" stroke={blue}></circle>
@@ -40,12 +40,12 @@ const circle = (r: number) => `M${C.x + r},${C.y} A${r},${r} 0 1 1 ${C.x - r},${
       <path d={`M${C.x + 18},${C.y - 33} l-7,-1.5 l3,6 z`} fill={muted}></path>
       <path d={`M${C.x - 8},${C.y - 43} l16,16 M${C.x + 8},${C.y - 43} l-16,16`} stroke={hot} stroke-width="1.8"></path>
       <text x="8" y="127" font-size="11" fill={ink}>dowel hole on C's pin</text>
-      <text x="8" y="143" font-size="11" fill={hot}>fixes Rz — all six</text>
+      <text x="8" y="143" font-size="11" fill={hot}>fixes Rz: all six</text>
     </svg>
   </div>
   <figcaption>
     Datums in the order the assembly uses them: the closure seats on its face, centres on its pilot and is clocked by its
-    dowel. Change the order and you change what is measured — a pilot as primary datum would let the face tilt.
+    dowel. Change the order and you change what is measured: a pilot as primary datum would let the face tilt.
   </figcaption>
 </figure>
 

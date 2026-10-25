@@ -10,7 +10,7 @@ const VESSELS = [
 ---
 
 <div class="calc prcalc" data-prcalc>
-  <div class="calc-head"><span>Test rig — energy, expansion, hold drift</span><span>thin cylinder with hemispherical ends</span></div>
+  <div class="calc-head"><span>Test rig: energy, expansion, hold drift</span><span>thin cylinder with hemispherical ends</span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -66,7 +66,7 @@ const VESSELS = [
   </div>
   <div class="calc-foot">
     Stored energy: liquid compression p²V/2K, isentropic gas expansion to atmosphere, and elastic strain energy in the
-    wall (½p·ΔV). Membrane compliance of the cylinder only — domes, bosses and fittings add a little. Exclusion
+    wall (½p·ΔV). Membrane compliance of the cylinder only: domes, bosses and fittings add a little. Exclusion
     distances come from your site safety rules, not from this number.
   </div>
   <script type="application/json" data-data set:html={JSON.stringify({ VESSELS })}></script>
@@ -147,7 +147,7 @@ const VESSELS = [
         r('hold').innerHTML = `${unexplained >= 0 ? '+' : ''}${f(unexplained, 3)} <small>MPa</small>`;
         const holdOk = unexplained >= -num('tol');
         root.querySelector('[data-cls="hold"]')!.className = `readout ${holdOk ? 'ok' : 'bad'}`;
-        notes.push(['', `A 1 K change in liquid temperature moves the hold pressure by ${f(drift, 3)} MPa (${f((drift / p) * 100, 1)}% of proof). Most hold-pressure drift is temperature, not leakage — record the liquid temperature and correct for it.`]);
+        notes.push(['', `A 1 K change in liquid temperature moves the hold pressure by ${f(drift, 3)} MPa (${f((drift / p) * 100, 1)}% of proof). Most hold-pressure drift is temperature, not leakage: record the liquid temperature and correct for it.`]);
         if (!holdOk) notes.push(['bad', `After temperature correction, ${f(-unexplained, 3)} MPa of the pressure drop is unexplained. Look for a leak at fittings, seals or the vessel before accepting.`]);
         const vt = num('vt'), vp = num('vp');
         if (vt > 0 && field('vp').value !== '') {
@@ -155,7 +155,7 @@ const VESSELS = [
           r('perm').textContent = `${f(ratio, 1)} %`;
           root.querySelector('[data-cls="perm"]')!.className = `readout ${ratio <= num('lim') ? 'ok' : 'bad'}`;
           if (Math.abs(vt / (ex.vessel * 1000) - 1) > 0.2) notes.push(['warn', `Measured total expansion (${f(vt, 0)} mL) differs from the membrane estimate (${f(ex.vessel * 1000, 0)} mL) by more than 20%. Check the wall thickness, modulus and instrumentation before trusting either.`]);
-          if (ratio > num('lim')) notes.push(['bad', `Permanent expansion is ${f(ratio, 1)}% of total — above the ${f(num('lim'), 0)}% limit. The vessel yielded during proof.`]);
+          if (ratio > num('lim')) notes.push(['bad', `Permanent expansion is ${f(ratio, 1)}% of total: above the ${f(num('lim'), 0)}% limit. The vessel yielded during proof.`]);
         } else r('perm').textContent = 'enter measurements';
       } else {
         for (const k of ['dv', 'pump', 'drift', 'hold', 'perm']) r(k).textContent = '—';

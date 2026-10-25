@@ -11,12 +11,12 @@ export const SPECS_V2 = [
     composition: 'AMS 6431 (bar, forgings, tubing) · AMS 6439 (sheet, strip, plate)',
     forms: [
       { form: 'Bar', standard: 'AMS 6431', note: 'VAR melted. The machining stock for small fittings.' },
-      { form: 'Forgings', standard: 'AMS 6431', note: 'Order with grain flow following the part — closures, bosses, Y-rings.' },
+      { form: 'Forgings', standard: 'AMS 6431', note: 'Order with grain flow following the part: closures, bosses, Y-rings.' },
       { form: 'Mechanical tubing', standard: 'AMS 6431', note: '' },
       { form: 'Sheet, strip and plate', standard: 'AMS 6439', note: 'Rolled and welded cylinders for case bodies.' },
     ],
     tempers: [
-      { code: 'HARDENED AND DOUBLE TEMPERED, 1520 MPa MIN UTS', note: 'Austenitise, quench, then temper twice to the drawing strength — around 1520 MPa minimum UTS is typical for cases. Heat treat per AMS 2759/2 with pyrometry to AMS 2750.' },
+      { code: 'HARDENED AND DOUBLE TEMPERED, 1520 MPa MIN UTS', note: 'Austenitise, quench, then temper twice to the drawing strength: around 1520 MPa minimum UTS is typical for cases. Heat treat per AMS 2759/2 with pyrometry to AMS 2750.' },
       { code: 'ANNEALED', note: 'As supplied, for machining and forming.' },
       { code: 'NORMALISED AND TEMPERED', note: 'Intermediate condition before welding or final heat treatment.' },
     ],
@@ -34,7 +34,7 @@ FINISH:   PRIMER AND PAINT TO <COMPANY SPEC>. NO ELECTROPLATING`,
     tips: [
       'Weld in the annealed or normalised condition, then heat treat the whole case. D6AC loses strength in the heat-affected zone, which is why 15CDV6 and maraging steels exist.',
       'At this strength, plain water can drive stress-corrosion cracking: inhibited water for hydroproof, short holds, dry promptly (see Proof testing).',
-      'State the allowable decarburisation, or machine the surface after heat treatment — a decarburised skin is a soft, low-fatigue layer.',
+      'State the allowable decarburisation, or machine the surface after heat treatment: a decarburised skin is a soft, low-fatigue layer.',
       'Check that the material specification already invokes the cleanliness class you need (magnetic-particle cleanliness to AMS 2300 is typical for VAR steels).',
     ],
   },
@@ -54,7 +54,7 @@ FINISH:   PRIMER AND PAINT TO <COMPANY SPEC>. NO ELECTROPLATING`,
       { code: 'SOLUTION ANNEALED', note: 'Condition A: martensitic but soft. Machine, form and weld in this condition.' },
     ],
     finishes: [
-      { name: 'Primer and paint', spec: 'Company paint specification', note: 'Maraging steel is not stainless — protect it.' },
+      { name: 'Primer and paint', spec: 'Company paint specification', note: 'Maraging steel is not stainless: protect it.' },
       { name: 'Shot peen', spec: 'AMS 2430 / AMS 2432', note: 'After ageing, for fatigue and stress-corrosion resistance.' },
     ],
     callout: `MATERIAL: MARAGING STEEL 18Ni-250 (UNS K92890)
@@ -64,7 +64,7 @@ HEAT TREAT: AGE 480 °C (900 °F) PER AMS 2759/3 AFTER WELDING
 NDT:      MAGNETIC PARTICLE TO ASTM E1444 AFTER AGEING
 FINISH:   PRIMER AND PAINT TO <COMPANY SPEC>`,
     tips: [
-      'Weld in the annealed condition and age the whole part afterwards — weld strength then approaches the parent, which is maraging steel’s big advantage over D6AC.',
+      'Weld in the annealed condition and age the whole part afterwards: weld strength then approaches the parent, which is maraging steel’s big advantage over D6AC.',
       'Cobalt makes it expensive and exposes it to supply risk; check availability in the sections you need early.',
       'High strength means modest toughness and stress-corrosion sensitivity in water; the same proof-test precautions as D6AC apply.',
     ],

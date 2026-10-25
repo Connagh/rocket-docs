@@ -1,6 +1,6 @@
 ---
 title: Datums & position
-description: GD&T in practice — building datum reference frames from function, datum targets for castings, forgings and thin cases, pattern and composite position, datum shift at maximum material boundary, and how functional gauges and CMMs check it — and why they disagree.
+description: GD&T in practice. How to make datum reference frames from function, datum targets for castings, forgings and thin cases, pattern and composite position, datum shift at maximum material boundary, how functional gauges and CMMs check it, and why their results can be different.
 sidebar:
   order: 0
 ---
@@ -12,164 +12,172 @@ import CompositeZones from '../../../components/CompositeZones.astro';
 import DatumCalc from '../../../components/DatumCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Datums turn a drawing into a measurement: choose them from how the part is held in use, and the gauge and the CMM will both check what the assembly needs.</div>
+  <div><b>In one line</b>Datums change a drawing into a measurement. Select them from how the part is held in use. Then the gauge and the CMM both check what the assembly needs.</div>
   <div><b>Before this</b><a href="../gdt/">GD&T</a> · <a href="../../joints/bolted-joints/">Bolted joints</a></div>
   <div><b>Used by</b><a href="../tolerance-stack/">Tolerance stack</a> · <a href="../../legacy/?z=gauge">Gauging</a></div>
 </div>
 
 ## Why this matters
 
-The same part, measured by two inspectors with different datum set-ups, gives two different answers — and both can be
-measured correctly. The datums decide what the tolerances mean. Choose them from the machining set-up and the drawing
-controls what was easy to measure; choose them from the assembly and it controls what makes the part work.
+Two inspectors can measure the same part with different datum set-ups and get two different results. The two
+measurements can both be correct. The datums decide what the tolerances mean. If you select the datums from the
+machining set-up, the drawing controls what was easy to measure. If you select them from the assembly, the drawing
+controls what makes the part operate.
 
-Most disputes between a gauge and a coordinate-measuring machine (CMM), or between a supplier and a customer, come back
-to datums: their order, how they are simulated, and whether a datum feature at maximum material boundary was allowed to
-shift. Getting them right on the drawing, and making sure inspection does what the drawing says, is cheaper than any
-re-make.
+Most disagreements between a gauge and a coordinate-measuring machine (CMM), or between a supplier and a customer, come
+from the datums. The causes are their order, how they are simulated, and whether a datum feature at maximum material
+boundary could shift. It costs less to get the datums correct on the drawing, and to make sure that inspection does
+what the drawing says, than to make the part again.
 
 ## Building a datum reference frame from function
 
-A rigid part has six degrees of freedom: three translations and three rotations. A datum reference frame removes them in
-order of precedence, and the order should follow the way the part is assembled.
+A rigid part has six degrees of freedom: three translations and three rotations. A datum reference frame removes them
+in order of precedence. This order must follow the sequence in which the part is assembled.
 
 <DatumDof />
 
 | Datum | Closure feature | Simulated by | Removes |
 | --- | --- | --- | --- |
-| A, primary | Seating face on the case flange | A surface plate, contacting the high points | Tz, Rx, Ry |
-| B, secondary | Pilot that centres the closure in the case bore | A ring at the pilot's maximum material boundary | Tx, Ty |
+| A, primary | Seating face on the case flange | A surface plate that touches the high points | Tz, Rx, Ry |
+| B, secondary | Pilot that centres the closure in the case bore | A ring at the maximum material boundary of the pilot | Tx, Ty |
 | C, tertiary | Dowel hole that clocks it | A pin in the hole | Rz |
 
-- **Follow the assembly.** What touches first and holds most is primary; what centres is secondary; what clocks is
-  tertiary.
-- **Precedence changes the answer.** With the pilot primary and the face secondary, a face that is not square to the
-  pilot would make the part tilt on the gauge, and everything measured from it would move.
-- **Control the datum features themselves.** Flatness on A, perpendicularity of B to A, position of C to A and B. A
-  datum is only as good as the feature that makes it.
-- **Mirror the mating part.** The case flange's datums should correspond: its face, its bore, its clocking hole. Then
-  tolerances on the two parts can be compared directly in a [tolerance stack](../tolerance-stack/).
+- **Follow the assembly.** The feature that touches first and holds most is primary. The feature that centres is
+  secondary. The feature that clocks is tertiary.
+- **Precedence changes the result.** If the pilot is primary and the face is secondary, a face that is not square to
+  the pilot makes the part tilt on the gauge. All the measurements from it then move.
+- **Control the datum features.** Put flatness on A, perpendicularity of B to A, and position of C to A and B. A datum
+  is only as good as the feature that makes it.
+- **Use the same datums as the mating part.** The datums of the case flange must agree: its face, its bore and its
+  clocking hole. You can then compare the tolerances on the two parts directly in a
+  [tolerance stack](../tolerance-stack/).
 
 ## Datum targets
 
-Some surfaces cannot be datums as a whole: a cast or forged surface is too rough, a large one too uneven, a thin one too
-flexible. **Datum targets** — points, lines or small areas at basic locations — say exactly where the part is supported.
+Some surfaces cannot be datums as a whole. A cast or forged surface is too rough, a large surface is not sufficiently
+even, and a thin surface is too flexible. **Datum targets** are points, lines or small areas at basic locations. They
+tell exactly where the part is supported.
 
-- **Castings and forgings.** Targets on the raw surfaces hold the part for the first machining operation; the machined
-  features then become the datums for everything after. The drawing relates the two so that machined features end up
-  where the raw part has material.
-- **Thin and non-rigid parts.** A 1.4 mm case wall deflects under its own weight and under a gauge. Put targets at the
-  stiff places — flanges, skirt ends, bosses — and say how the part is restrained, so it is measured in the shape it has
-  in service.
-- **Movable targets** follow a feature that varies, such as a conical or curved surface, by sliding along a defined
+- **Castings and forgings.** Targets on the raw surfaces hold the part for the first machining operation. The machined
+  features then become the datums for all subsequent operations. The drawing relates the two, so that the machined
+  features are where the raw part has material.
+- **Thin and non-rigid parts.** A 1.4 mm case wall bends under its own weight and under a gauge. Put targets at the
+  stiff locations (flanges, skirt ends and bosses). Tell how to restrain the part, so that you measure it in the shape
+  that it has in service.
+- **Movable targets** follow a feature that changes, such as a conical or curved surface. They slide along a defined
   direction until they touch.
-- **Target areas** should match the size of the contact the fixture really makes; a point target on a rough surface
+- **Target areas** must have the same size as the real contact of the fixture. A point target on a rough surface
   measures the roughness.
 
 ## Pattern and composite position
 
-A pattern of holes has two jobs that may need different tolerances: the **pattern as a whole** must sit in the right
-place relative to the datums, and the **holes relative to each other** must match the mating pattern.
+A pattern of holes has two functions, which can need different tolerances. The **pattern as a whole** must be in the
+correct position relative to the datums. The **holes relative to each other** must agree with the mating pattern.
 
-- **Single-segment position** controls both at once with one tolerance.
-- **Simultaneous requirement.** Patterns referenced to the same datums, in the same order and with the same modifiers,
-  are one pattern by default in ASME Y14.5 — they are gauged together.
-- **Composite position** — a frame with two rows. The upper row locates the pattern to the datums with a larger
-  tolerance; the lower row holds the holes to each other with a smaller one, and its datums control only orientation.
-- **Two single-segment frames** — the lower row's datums also control location, so the pattern may move only as far as
-  the lower tolerance allows.
+- **Single-segment position** controls the two functions with one tolerance.
+- **Simultaneous requirement.** In ASME Y14.5, patterns that refer to the same datums, in the same order and with the
+  same modifiers, are one pattern by default. You gauge them together.
+- **Composite position.** The frame has two rows. The upper row locates the pattern to the datums with a larger
+  tolerance. The lower row holds the holes to each other with a smaller tolerance, and its datums control only
+  orientation.
+- **Two single-segment frames.** The datums of the lower row also control location. Thus the pattern can move only as
+  far as the lower tolerance permits.
 
 <CompositeZones />
 
-Composite tolerancing suits a pattern whose position matters less than its internal spacing — two mating parts both
-located by their own pilots and dowels, for example. It does **not** suit a bolted closure whose threaded holes are fixed
-to the case bore: there the pattern-to-pilot location is part of the fastener clearance (see the
-[fastener formulas](../gdt/#mmc-bonus-tolerance-and-virtual-condition)).
+Composite tolerancing is applicable to a pattern whose position is less important than its internal spacing. An
+example is two mating parts that each have their own pilots and dowels. It is **not** applicable to a bolted closure
+whose threaded holes are fixed to the case bore. There, the location of the pattern to the pilot is part of the
+fastener clearance (see the [fastener formulas](../gdt/#mmc-bonus-tolerance-and-virtual-condition)).
 
 ## Datum shift at MMB
 
-When a datum feature of size is referenced at **maximum material boundary (MMB)**, the datum is simulated at that fixed
-boundary, and as the actual feature departs from it, the part can move on the simulator. Everything referenced to it may
-move with it — as a group:
+When a datum feature of size is at **maximum material boundary (MMB)**, the simulator is at that fixed boundary. As the
+actual feature moves away from the boundary, the part can move on the simulator. All the features that refer to it can
+move with it, as a group:
 
 $$
 \text{shift available} = MMB - d_{actual}
 $$
 
-for an external feature such as a pilot, with $MMB = MMC +$ the feature's own orientation or position tolerance at MMC.
-The shift is diametral: the pattern may move half of it in any direction.
+This is for an external feature such as a pilot, where $MMB = MMC +$ the orientation or position tolerance of the
+feature at MMC. The shift is diametral: the pattern can move half of it in any direction.
 
-- **It moves the whole pattern, not each hole.** It is not added to each hole's tolerance like a bonus.
-- **It is free tolerance only if the assembly has it too.** If the pilot sits in its mating bore with at least that
-  much clearance, the assembled part can shift as far as the gauged one. If the fit is tight, reference the pilot
-  regardless of material boundary (RMB) instead.
-- **A functional gauge applies it automatically**; a CMM applies it only if it is programmed to.
+- **The shift moves the whole pattern, not each hole.** Do not add it to the tolerance of each hole as a bonus.
+- **The shift is only free tolerance if the assembly also has it.** If the pilot sits in its mating bore with at least
+  that clearance, the assembled part can shift as far as the gauged part. If the fit is tight, refer to the pilot
+  regardless of material boundary (RMB).
+- **A functional gauge applies the shift automatically.** A CMM applies it only if its program does so.
 
 ## Checking it: functional gauges and CMMs
 
-A **functional gauge** is the assembly in hardware: a plate for A, a ring at the pilot's MMB for B, a pin for C, and
-pins at the holes' virtual condition on the basic pattern. If the part fits, it conforms — bonus and datum shift
-included. It is fast and unambiguous, but gives no numbers, cannot check anything at RFS, and its own tolerance and wear
-come out of the part's under an absolute policy (ASME Y14.43).
+A **functional gauge** is the assembly in hardware: a plate for A, a ring at the MMB of the pilot for B, a pin for C,
+and pins at the virtual condition of the holes on the basic pattern. If the part fits, it conforms, with the bonus and
+the datum shift included. The gauge is fast and its result is clear. But it gives no numbers and it cannot check a
+feature at RFS. Under an absolute policy, the tolerance and wear of the gauge come out of the tolerance of the part
+(ASME Y14.43).
 
-A **CMM** measures points and computes. Two things decide whether it agrees with the gauge:
+A **CMM** measures points and calculates. Two things decide if it agrees with the gauge:
 
-- **How it builds the datums.** ASME Y14.5 datums come from the high points — a tangent plane, the largest inscribed or
-  smallest circumscribed cylinder. A least-squares fit sits inside the material and can pass or fail the same part
-  differently.
-- **Whether it uses the shift.** With a datum at MMB, the pattern must be fitted within the shift available. A program
-  that holds the pattern to the datum feature's actual axis rejects parts the drawing accepts.
+- **How it makes the datums.** ASME Y14.5 datums come from the high points: a tangent plane, or the largest inscribed
+  or smallest circumscribed cylinder. A least-squares fit is inside the material, and it can give a different result
+  for the same part.
+- **If it uses the shift.** With a datum at MMB, the pattern must be fitted within the available shift. A program that
+  holds the pattern to the actual axis of the datum feature rejects parts that the drawing accepts.
 
 | Disagreement | Usual cause |
 | --- | --- |
-| Gauge accepts, CMM rejects | Datum shift or bonus not applied; least-squares datums; the CMM evaluating to a different datum order |
-| CMM accepts, gauge rejects | Gauge tolerance or wear; burrs; form error the CMM fit ignored; datum not simulated at MMB |
-| Two CMMs disagree | Different datum fits, probing strategies or point densities — the method belongs in the report |
+| Gauge accepts, CMM rejects | Datum shift or bonus not applied; least-squares datums; the CMM uses a different datum order |
+| CMM accepts, gauge rejects | Gauge tolerance or wear; burrs; form error that the CMM fit ignored; datum not simulated at MMB |
+| Two CMMs disagree | Different datum fits, probing methods or point densities. Put the method in the report |
 
 ## Calculator
 
 <DatumCalc />
 
-## Worked example — the closure the CMM rejected
+## Worked example: the closure the CMM rejected
 
-The aft closure from the [GD&T page](../gdt/#worked-example--the-aft-closure-its-bolts-and-the-nozzle-seal-groove),
-with illustrative inspection data — the calculator's starting values. The gauge-tolerance policy of 5% is **for this
-example only**; press **Load worked example** to apply it in the gauge tab.
+This is the aft closure from the [GD&T page](../gdt/#worked-example-the-aft-closure-its-bolts-and-the-nozzle-seal-groove),
+with illustrative inspection data. These are the starting values of the calculator. The gauge-tolerance policy of 5% is
+**for this example only**. Push **Load worked example** to apply it in the gauge tab.
 
-1. **The frame.** A, the seating face; B, the pilot ⌀255.80–255.90, perpendicular to A within ⌀0.02 at MMC; C, the
-   dowel hole. Thirty ⌀11.0–11.2 holes on a basic ⌀285 circle: position ⌀0.5 at MMC to A, B at MMB, C.
-2. **The CMM report.** Holes 8, 10 and 27 measure ⌀0.529, 0.525 and 0.521 against the ⌀0.52, 0.51 and 0.52 their
-   sizes allow, bonus included. Rejected. The functional gauge accepts the same part.
-3. **Why.** The CMM program held the pattern to the pilot's actual axis. But B is at MMB: its boundary is
-   $255.90 + 0.02 = 255.92$, the pilot measures ⌀255.83, so the pattern may shift by ⌀0.09 — 0.045 mm in any
-   direction. Fitted within that, the best move is (0.042, −0.015) mm and the worst hole uses **87%** of its zone. The
-   part conforms. The gauge found the same answer by letting the pilot settle in its ⌀255.92 ring.
-4. **Is the shift honest?** The flange bore the pilot fits in service is ⌀256.00–256.05 (illustrative): at least 0.10
-   of clearance, more than the 0.09 shift. The closure moves as far on the case as on the gauge, and the threaded holes
-   are located to that bore, so the bolts still start. Had the pilot been a close fit, MMB would have granted tolerance
-   the assembly cannot use.
-5. **The gauge.** Pins ⌀10.500 at the holes' virtual condition; a ring ⌀255.920 at the pilot's MMB; a plate for A. C
-   at RFS cannot be gauged with a fixed pin — use an expanding pin, or reference C at MMB if its fit allows. With 5%
-   gauge tolerance, the pins are ⌀10.500–10.535: the gauge never accepts a bad part, and takes up to 0.035 mm from each
-   hole to guarantee it.
-6. **The fix is in the CMM program, not the part.** Construct A from the high points, simulate B at MMB with the shift
-   allowed, and fit the pattern within it. Report the method with the result.
+1. **The frame.** A is the seating face. B is the pilot, ⌀255.80–255.90, perpendicular to A within ⌀0.02 at MMC. C is
+   the dowel hole. There are thirty ⌀11.0–11.2 holes on a basic ⌀285 circle, with position ⌀0.5 at MMC to A, B at
+   MMB, C.
+2. **The CMM report.** Holes 8, 10 and 27 measure ⌀0.529, 0.525 and 0.521. Their sizes permit ⌀0.52, 0.51 and 0.52,
+   with the bonus included. The CMM rejects the part. The functional gauge accepts the same part.
+3. **The cause.** The CMM program held the pattern to the actual axis of the pilot. But B is at MMB. Its boundary is
+   $255.90 + 0.02 = 255.92$ and the pilot measures ⌀255.83, so the pattern can shift by ⌀0.09. This is 0.045 mm in any
+   direction. With the pattern fitted within this shift, the best movement is (0.042, −0.015) mm, and the worst hole
+   uses **87%** of its zone. The part conforms. The gauge got the same result, because the pilot moved into its
+   correct position in the ⌀255.92 ring.
+4. **Is the shift real?** In service, the pilot fits in a flange bore of ⌀256.00–256.05 (illustrative). This gives a
+   clearance of at least 0.10, which is more than the 0.09 shift. The closure moves as far on the case as on the gauge,
+   and the threaded holes are located to that bore, so the bolts still start. If the pilot were a close fit, MMB would
+   give tolerance that the assembly cannot use.
+5. **The gauge.** It has pins of ⌀10.500 at the virtual condition of the holes, a ring of ⌀255.920 at the MMB of the
+   pilot, and a plate for A. You cannot gauge C at RFS with a fixed pin. Use an expanding pin, or refer to C at MMB if
+   its fit permits. With a gauge tolerance of 5%, the pins are ⌀10.500–10.535. The gauge never accepts a bad part. To
+   make sure of this, it takes up to 0.035 mm from each hole.
+6. **Correct the CMM program, not the part.** Make A from the high points, simulate B at MMB with the shift permitted,
+   and fit the pattern within it. Put the method in the report with the result.
 
 ## Where this stops
 
 - **Translation-only datum shift** in the calculator, with C at RFS. A tertiary datum at MMB adds a rotational shift.
-- **Equally spaced patterns** for the composite rotation fit; uneven patterns need their own coordinates.
-- **A minimax search, not a certified CMM algorithm.** Inspection software must follow ASME Y14.5.1 and be verified
+- **Equally spaced patterns** for the composite rotation fit. Patterns with unequal spacing need their own coordinates.
+- **A minimax search, not a certified CMM algorithm.** Inspection software must follow ASME Y14.5.1 and must be verified
   (ISO 10360 for the machine).
-- **ASME conventions.** ISO's pattern and combined zones (ISO 5458) and datum rules (ISO 5459) differ in detail.
+- **ASME conventions.** The ISO rules for patterns and combined zones (ISO 5458) and datums (ISO 5459) are different in
+  some details.
 
 ## On the drawing
 
-- **Datums from the assembly**, in its order, each datum feature with its own form or orientation control.
-- **MMB only where the mating fit gives the same freedom** — otherwise RMB.
-- **Datum targets** for cast, forged and thin parts, with restraint notes for non-rigid ones.
-- **Composite frames** only where pattern location and spacing really differ in importance.
-- **Gauge and CMM methods** agreed with inspection: datum simulation, fitting, and whether shift is applied.
+- **Datums from the assembly,** in the assembly sequence, each datum feature with its own form or orientation control.
+- **MMB only where the mating fit gives the same freedom.** If it does not, use RMB.
+- **Datum targets** for cast, forged and thin parts, with restraint notes for non-rigid parts.
+- **Composite frames** only where the location of the pattern and its spacing really have different importance.
+- **Gauge and CMM methods** agreed with inspection: datum simulation, fitting, and if the shift is applied.
 
 ## References and further reading
 
@@ -183,6 +191,6 @@ example only**; press **Load worked example** to apply it in the gauge tab.
 - A. Krulikowski, *Fundamentals of Geometric Dimensioning and Tolerancing*, 3rd ed., Delmar (2012).
 
 <Aside type="note">
-  Guidance on method from general practice, with illustrative inspection data. Your drawing standard, inspection
-  procedures and gauge policy govern.
+  This is guidance on method from general practice, with illustrative inspection data. Your drawing standard,
+  inspection procedures and gauge policy apply.
 </Aside>

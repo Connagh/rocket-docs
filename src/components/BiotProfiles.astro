@@ -23,7 +23,7 @@ const Y = (v: number) => H - B - v * (H - T - B);
 ---
 
 <figure class="viz">
-  <p class="viz-title">The Biot number — same heat absorbed, different insides</p>
+  <p class="viz-title">The Biot number: same heat absorbed, different insides</p>
   <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="bp-desc" class="bp-svg">
     <desc id="bp-desc">
       Temperature through a slab heated on its left face, plotted from the heated face to the insulated back, for Biot
@@ -50,8 +50,8 @@ const Y = (v: number) => H - B - v * (H - T - B);
         <text x={W - R + 46} y={T + 26 + k * 24} font-size="11" fill={c.col}>{c.label}</text>
       </g>
     ))}
-    <text x={W - R + 18} y={T + 110} font-size="10.5" fill="var(--rd-muted)">dashed: the average —</text>
-    <text x={W - R + 18} y={T + 124} font-size="10.5" fill="var(--rd-muted)">all three are half-heated</text>
+    <text x={W - R + 18} y={T + 110} font-size="10.5" fill="var(--rd-muted)">dashed: the average.</text>
+    <text x={W - R + 18} y={T + 124} font-size="10.5" fill="var(--rd-muted)">All three are half-heated</text>
   </svg>
   <figcaption>
     Bi = hL/k compares how fast heat arrives at the surface with how fast it spreads inside. Below about 0.1 the inside

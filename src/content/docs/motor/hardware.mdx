@@ -1,6 +1,6 @@
 ---
 title: Rocket motor hardware
-description: Component by component — what each part of a solid rocket motor carries, how it fails, what it is made of and why that changed; propellant mass fraction, the number every part answers to; and designing the case to fail gently.
+description: Each component of a solid rocket motor. What it carries, how it fails, what it is made of and why that changed. Propellant mass fraction, the number that controls all the parts. And how to design the case so that it fails safely.
 sidebar:
   order: 0
 ---
@@ -12,46 +12,46 @@ import MassBudgetCalc from '../../../components/MassBudgetCalc.astro';
 import ImResponse from '../../../components/ImResponse.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Every part must survive its loads while weighing as little as possible — each kilogram of hardware is propellant the vehicle cannot carry.</div>
-  <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid motor works</a> — what the parts are</div>
+  <div><b>In one line</b>Each part must survive its loads with the minimum possible mass. Each kilogram of hardware is propellant that the vehicle cannot carry.</div>
+  <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid motor works</a> (what the parts are)</div>
   <div><b>After this</b><a href="../case-sizing/">Case sizing</a> · <a href="../insulation/">Insulation</a> · <a href="../../seals/o-ring-design/">O-ring design</a></div>
 </div>
 
 ## Why this matters
 
-A solid motor is a short list of parts: a case with two closures, insulation, the propellant grain, a nozzle, an
-igniter, and the joints and seals between them. When motors fail, it is usually one of those hardware parts — or the
-interface between two of them — not the propellant chemistry. The Space Shuttle *Challenger* was lost in January 1986
-to a booster field joint whose seals could not follow the joint as it opened under pressure (see
-[O-ring design](../../seals/o-ring-design/)). A Titan 34D was lost later that year after insulation came away from the
-case of one of its solid boosters and let the flame reach the steel.
+A solid motor has few parts: a case with two closures, insulation, the propellant grain, a nozzle, an igniter, and the
+joints and seals between them. When a motor fails, the cause is usually one of these hardware parts, or the interface
+between two of them. It is usually not the propellant chemistry. The Space Shuttle *Challenger* was lost in January
+1986 because the seals of a booster field joint could not follow the joint as it opened under pressure (see
+[O-ring design](../../seals/o-ring-design/)). Later that year, a Titan 34D was lost after insulation separated from the
+case of one of its solid boosters and let the flame get to the steel.
 
-And every one of those parts is dead weight once the propellant has burned. Hardware design is that tension: enough
-strength, temperature capability and margin to survive — and not a gram more.
+After the propellant has burned, all of these parts are dead weight. Hardware design must balance these two
+requirements: sufficient strength, temperature capability and margin to survive, and no more mass than necessary.
 
 ## Component by component
 
-The [primer's cutaway](../../fundamentals/how-a-solid-motor-works/) shows what each part *is*. This is the engineer's
-view: what each part carries, how it fails, what it used to be made of, what it is made of now, and what has to go on
-its drawing.
+The [cutaway on the primer page](../../fundamentals/how-a-solid-motor-works/) shows what each part *is*. This section
+gives the view of the engineer: what each part carries, how it fails, what it was made of before, what it is made of
+now, and what must go on its drawing.
 
 <HardwareAtlas />
 
 <Aside type="caution" title="Interfaces fail first">
-  Look down the *Fails by* rows: bosses, joints, bondlines and liner-to-housing gaps come up again and again. Parts are
-  analysed on their own; interfaces fall between two drawings and two analysts. Give every interface an owner, a load
-  path and an inspection.
+  Look at the *Fails by* rows. Bosses, joints, bondlines and liner-to-housing gaps occur many times. Engineers analyse
+  each part alone, but an interface is between two drawings and two analysts. Give each interface an owner, a load path
+  and an inspection.
 </Aside>
 
 ## The number every part answers to: mass fraction
 
-The motor's **propellant mass fraction** is the share of its mass that is propellant:
+The **propellant mass fraction** of the motor is the fraction of its mass that is propellant:
 
 $$
 \zeta = \frac{m_p}{m_p + m_\text{inert}}
 $$
 
-What that buys is set by the rocket equation. With $m_0$ the mass at ignition and $m_f$ the mass at burnout,
+The rocket equation tells what this gives. $m_0$ is the mass at ignition and $m_f$ is the mass at burnout:
 
 $$
 \Delta v = I_{sp}\,g_0 \ln\frac{m_0}{m_f}
@@ -61,160 +61,164 @@ m_0 = m_p + m_\text{inert} + m_\text{payload},
 m_f = m_\text{inert} + m_\text{payload}
 $$
 
-where $I_{sp}\,g_0$ is the effective exhaust velocity (for a solid motor, $C_F\,c^*$ — see the
-[primer](../../fundamentals/how-a-solid-motor-works/#from-pressure-to-thrust)). Inert mass sits in the denominator, so
-it hurts twice: it is pushed for the whole burn and it is still there at the end. Two results fall straight out:
+Here $I_{sp}\,g_0$ is the effective exhaust velocity. For a solid motor, it is $C_F\,c^*$ (see the
+[primer](../../fundamentals/how-a-solid-motor-works/#from-pressure-to-thrust)). The inert mass is in the denominator, so
+it has two bad effects: the motor pushes it for the full burn, and it is still there at the end. Two results follow
+directly:
 
-- **What one inert kilogram costs.** Differentiating,
+- **The cost of one inert kilogram.** By differentiation:
   $$
   \frac{\partial\,\Delta v}{\partial m_\text{inert}} = -\,I_{sp}\,g_0\,\frac{m_p}{m_0\,m_f}
   $$
-- **The exchange ratio.** To hold $\Delta v$ when inert mass grows by $\delta$, the mass ratio $m_0/m_f$ must stay the
-  same, so the propellant must grow by $(m_0/m_f - 1)\,\delta$. With a mass ratio of 2.5, each extra kilogram of
-  hardware needs 1.5 kg more propellant — which needs a longer case, more insulation, a bigger nozzle. That spiral is
-  why overweight motors are so hard to recover late in a design.
+- **The exchange ratio.** To keep the same $\Delta v$ when the inert mass increases by $\delta$, the mass ratio
+  $m_0/m_f$ must stay the same. Thus the propellant must increase by $(m_0/m_f - 1)\,\delta$. With a mass ratio of
+  2.5, each additional kilogram of hardware needs 1.5 kg more propellant. This needs a longer case, more insulation and
+  a larger nozzle. This chain is why it is very difficult to correct an overweight motor late in a design.
 
 <Analogy title="Packing for a long hike">
-  Every gram of tent, stove and pack frame is a gram of food you cannot carry, and you carry the tent all the way to
-  the end — long after the food is eaten. Ultralight hikers do not eat less; they weigh their hardware. A motor
-  designer does the same with the case, insulation and nozzle.
+  Each gram of tent, stove and pack frame is a gram of food that you cannot carry. You also carry the tent all the way
+  to the end, long after you have eaten the food. Ultralight hikers do not eat less. They weigh their equipment. A motor
+  designer does the same with the case, the insulation and the nozzle.
 </Analogy>
 
-Large motors with composite cases reach mass fractions above 0.9. Small motors fall well below that, because the
-igniter, nozzle throat, bosses and seals do not shrink in proportion to the propellant.
+Large motors with composite cases get mass fractions of more than 0.9. Small motors have much lower values, because
+the igniter, the nozzle throat, the bosses and the seals do not become smaller in proportion to the propellant.
 
-<Aside type="tip" title="A design order that works">
-  Fix MEOP and the proof and burst factors first. Then choose the case material class, size the wall, add the
-  insulation — and only then check what mass fraction is left. Choosing the material last, after the geometry is
-  frozen, is how motors end up overweight with no options remaining.
+<Aside type="tip" title="A design sequence that works">
+  First set the MEOP and the proof and burst factors. Then select the class of case material, size the wall and add the
+  insulation. Only then check the remaining mass fraction. If you select the material last, after the geometry is
+  frozen, the motor can be overweight with no remaining options.
 </Aside>
 
 ### Calculator
 
 <MassBudgetCalc />
 
-### Worked example — the 300 mm motor from the other pages
+### Worked example: the 300 mm motor from the other pages
 
-The same motor as the [case-sizing](../case-sizing/#worked-example),
-[propellant-grain](../propellant-grain/) and [insulation](../insulation/) examples. These are the calculator's
-starting values.
+This is the same motor as in the [case-sizing](../case-sizing/#worked-example),
+[propellant-grain](../propellant-grain/) and [insulation](../insulation/) examples. These are the starting values of
+the calculator.
 
-- **Case:** 11.77 kg — the 1.377 mm D6AC cylinder with hemispherical domes, from the case-sizing example.
+- **Case:** 11.77 kg. This is the 1.377 mm D6AC cylinder with hemispherical domes, from the case-sizing example.
 - **Propellant:** a 300 mm grain with a 100 mm bore, 1000 mm long, in the cylinder only:
   $\frac{\pi}{4}(0.300^2 - 0.100^2) \times 1.000 \times 1770 = 111.2$ kg.
 - **Insulation:** 2 mm of EPDM along the cylinder, where the grain covers it until tail-off
-  ($0.942\ \text{m}^2 \times 2\ \text{mm} \times 1100 = 2.07$ kg), and the 8.9 mm the insulation example needed in the
-  domes ($0.283\ \text{m}^2 \times 8.9\ \text{mm} \times 1100 = 2.77$ kg): 4.84 kg in all.
-- **Nozzle 6 kg and other hardware 4 kg** — round illustrative figures. **Payload** 50 kg.
-- **Exhaust velocity** from the grain page's illustrative values: $C_F\,c^* = 1.5 \times 1540 = 2310$ m/s, which is
-  $I_{sp} = 235.55$ s.
+  ($0.942\ \text{m}^2 \times 2\ \text{mm} \times 1100 = 2.07$ kg), and the 8.9 mm that the insulation example needed in
+  the domes ($0.283\ \text{m}^2 \times 8.9\ \text{mm} \times 1100 = 2.77$ kg). The total is 4.84 kg.
+- **Nozzle 6 kg and other hardware 4 kg:** round illustrative values. **Payload** 50 kg.
+- **Exhaust velocity** from the illustrative values of the grain page: $C_F\,c^* = 1.5 \times 1540 = 2310$ m/s, which
+  is $I_{sp} = 235.55$ s.
 
 1. **Inert mass** $= 11.77 + 4.84 + 6 + 4 = 26.61$ kg, so $\zeta = 111.2 / 137.81 = 0.807$.
-2. **Mass ratio:** $m_0 = 187.81$ kg, $m_f = 76.61$ kg, so $m_0/m_f = 2.452$.
+2. **Mass ratio:** $m_0 = 187.81$ kg and $m_f = 76.61$ kg, so $m_0/m_f = 2.452$.
 3. **Ideal $\Delta v$** $= 2310 \times \ln 2.452 = 2310 \times 0.897 = 2071$ m/s.
 4. **Cost of one inert kilogram** $= 2310 \times 111.2 / (187.81 \times 76.61) = 17.9$ m/s, or
-   $2.452 - 1 = 1.45$ kg of extra propellant to keep the same $\Delta v$.
-5. **What the dome insulation costs.** The 2.77 kg the bondline limit demanded costs about **51 m/s**. That is the
-   price of the insulation example's finding that the bondline, not the char, governs — and the reason a case with
-   more heat capacity or a better insulator is worth a look.
+   $2.452 - 1 = 1.45$ kg of additional propellant to keep the same $\Delta v$.
+5. **The cost of the dome insulation.** The 2.77 kg that the bondline limit needed costs approximately **51 m/s**. The
+   insulation example found that the bondline governs, not the char. This is the cost of that result, and the reason to
+   examine a case with more heat capacity or a better insulator.
 
-If a composite case did the case's job for 6 kg less — an assumption here, not a design — $\Delta v$ would rise by
-about 113 m/s. Try it in the calculator, then try the same 6 kg on the nozzle: a kilogram is a kilogram wherever it is.
+Assume that a composite case could do the work of the case with 6 kg less mass (an assumption, not a design). Then
+$\Delta v$ would increase by approximately 113 m/s. Try it in the calculator. Then try the same 6 kg on the nozzle. A
+kilogram has the same effect in all locations.
 
-## Then and now — why the materials changed
+## Then and now: why the materials changed
 
-| Part | Then | Now | What drove the change |
+| Part | Then | Now | Cause of the change |
 | --- | --- | --- | --- |
-| Case | Welded high-strength steel (D6AC, maraging); titanium on some upper stages | Filament-wound carbon/epoxy (aramid/epoxy before it) | Fibre laid exactly along the load paths: far higher strength per unit mass |
-| Insulation | Asbestos- and silica-filled nitrile rubber | Aramid- or silica-filled EPDM | Health (asbestos), lower density, better ageing |
+| Case | Welded high-strength steel (D6AC, maraging); titanium on some upper stages | Filament-wound carbon/epoxy (aramid/epoxy before it) | Fibre put exactly along the load paths: much higher strength for each unit of mass |
+| Insulation | Nitrile rubber filled with asbestos or silica | EPDM filled with aramid or silica | Health (asbestos), lower density, better ageing |
 | Throat | Bulk and pyrolytic graphite; tungsten on small motors | Carbon–carbon, often 3-D woven | Toughness under thermal shock, at lower mass |
-| Exit cone | Tape-wrapped carbon- and silica-phenolic over a metal shell | Thin radiation-cooled carbon–carbon; extendible cones on upper stages | Mass; more expansion ratio in the same stowed length |
-| Steering | Jet vanes, jetavators, liquid injection | Flexible-bearing movable nozzles, increasingly with electromechanical actuators | No thrust lost in the exhaust; no injectant tank or hydraulics |
+| Exit cone | Tape-wrapped carbon phenolic and silica phenolic over a metal shell | Thin radiation-cooled carbon–carbon; extendible cones on upper stages | Mass; more expansion ratio in the same stowed length |
+| Steering | Jet vanes, jetavators, liquid injection | Movable nozzles on flexible bearings, more and more with electromechanical actuators | No thrust lost in the exhaust; no injectant tank or hydraulics |
 | Nozzle housing | Steel | Aluminium, titanium, composite | Mass |
 
-Read the last column again. Most of these changes rode on a **manufacturing process** — filament winding, 3-D weaving,
-tape wrapping and laminated bearings — as much as on a new material. When you select a material, ask what process it
-makes possible; that is usually where the real gain is.
+Look at the last column again. Most of these changes came from a **manufacturing process** (filament winding, 3-D
+weaving, tape wrapping and laminated bearings) as much as from a new material. When you select a material, ask which
+process it makes possible. That is usually where the real improvement is.
 
 ## Designing the case to fail gently
 
-A motor caught in a fuel fire, or hit by a fragment, may well ignite whatever the designer does. What the hardware
-decides is **what happens next**. If the case keeps holding pressure, the burning propellant pressurises it until it
-bursts — an explosion. If the case opens early and stays open, the propellant burns at low pressure — a fire.
-Insensitive-munitions (IM) design, from the hardware side, is about guaranteeing the second outcome.
+If a motor is in a fuel fire, or if a fragment hits it, it can ignite whatever the designer does. The hardware decides
+**what occurs next**. If the case continues to hold pressure, the burning propellant pressurises it until it bursts.
+This is an explosion. If the case opens early and stays open, the propellant burns at low pressure. This is a fire.
+From the hardware side, insensitive-munitions (IM) design makes sure of the second result.
 
 <ImResponse />
 
-The threats a design is assessed against are **fast heating** (a fuel fire engulfing the item), **slow heating** (a
-gradual rise, such as a fire in a neighbouring store), **bullet impact**, **fragment impact**, **sympathetic reaction**
-(a neighbouring munition reacting) and **shaped-charge jet**. NATO policy is STANAG 4439; AOP-39 gives the assessment
-approach and the required response for each threat. As with every factor on this site, take those requirements from
-the current editions, not from a page like this.
+A design is assessed against these threats: **fast heating** (a fuel fire around the item), **slow heating** (a slow
+increase, for example from a fire in an adjacent store), **bullet impact**, **fragment impact**, **sympathetic
+reaction** (a reaction of an adjacent munition) and **shaped-charge jet**. The NATO policy is STANAG 4439. AOP-39 gives
+the assessment method and the necessary response for each threat. As with all factors on this site, get these
+requirements from the current editions, not from a page such as this one.
 
 What the hardware designer controls:
 
-- **Composite cases tend to vent themselves in a fast fire** — the resin softens and the case loses strength early.
-- **Metal cases need help** — a feature that weakens or releases the case or a closure at a temperature below the
-  point where the propellant reacts violently.
-- **Slow heating is the hard case.** Fast heating cooks the case before the propellant; slow heating brings the whole
-  item up together, so the propellant can reach its reaction temperature while the case is still cold-strong and
-  intact. Most deliberate venting features exist because of slow heating.
-- **A venting feature is structure with two jobs.** It must hold MEOP with margin through every storage temperature
-  and the whole service life, and still open when it should. It goes through the same proof, ageing and
-  qualification evidence as the rest of the case.
+- **Composite cases usually vent themselves in a fast fire.** The resin becomes soft and the case loses strength
+  early.
+- **Metal cases need a special feature.** The feature makes the case or a closure weaker, or releases it, at a
+  temperature below the temperature where the propellant reacts violently.
+- **Slow heating is the difficult case.** Fast heating heats the case before the propellant. Slow heating heats the
+  full item together. Thus the propellant can get to its reaction temperature while the case is still cool, strong and
+  intact. Most venting features exist because of slow heating.
+- **A venting feature is structure with two functions.** It must hold MEOP with margin at all storage temperatures and
+  for the full service life, and it must still open when necessary. It needs the same proof, ageing and qualification
+  evidence as the remainder of the case.
 
 <Aside type="note">
-  IM qualification is a specialist and safety-authority activity. This section is the hardware designer's view of it;
-  propellant choice and reaction behaviour belong to the energetics specialists.
+  IM qualification is a specialist activity and a safety-authority activity. This section gives the view of the
+  hardware designer. The propellant selection and the reaction behaviour are the responsibility of the energetics
+  specialists.
 </Aside>
 
 ## Where this stops
 
-- The atlas is descriptive. Each part is designed to your programme's requirements — and several have their own pages
-  here: [case](../case-sizing/), [insulation](../insulation/), [seals](../../seals/o-ring-design/),
+- The atlas is descriptive. Each part is designed to the requirements of your programme. Several parts have their own
+  pages on this site: [case](../case-sizing/), [insulation](../insulation/), [seals](../../seals/o-ring-design/) and
   [proof test](../../verify/proof-testing/).
-- The $\Delta v$ is ideal: vacuum, no gravity or drag losses, one stage. It is right for comparing designs, not for
-  predicting a trajectory.
-- The igniter's charge and the propellant itself are energetics, outside this site's scope. Only the hardware around
-  them is covered.
+- The $\Delta v$ is ideal: in vacuum, with no gravity or drag losses, and one stage. It is correct for the comparison
+  of designs, not for the prediction of a trajectory.
+- The igniter charge and the propellant are energetics, which are outside the scope of this site. The site covers only
+  the hardware around them.
 
 ## Defining motor hardware on the drawing
 
-- **Say more than the alloy.** Alloy, condition, product form, governing specification and melt practice — see the
-  [specification builder](../../materials/specification/). *"D6AC bar per AMS 6431, VAR, heat treated to 1520 MPa min
-  UTS, double temper"* is a specification; *"D6AC"* is a wish.
+- **Give more than the alloy.** Give the alloy, condition, product form, applicable specification and melt practice.
+  See the [specification builder](../../materials/specification/). *"D6AC bar per AMS 6431, VAR, heat treated to
+  1520 MPa min UTS, double temper"* is a specification. *"D6AC"* is not.
 - **Special processes get their own callouts.** Heat treatment (with pyrometry to AMS 2750), welding procedure, NDT
-  method and acceptance class, coatings and cleanliness each need a note and a specification. If it cannot be verified
-  by measuring the finished part, it needs an approved process and a certificate.
-- **Fracture-critical parts change the rules.** Once a part is classified fracture-critical, its drawing carries the
-  flaw-size and NDE requirements, and its material comes from a controlled quality class. Agree the classification
-  before finalising tolerances — it drives surface finish, radii and inspection access.
-- **Traceability is a drawing requirement.** State the batch or heat marking, its location and its method. Stamping is
-  a stress raiser and is banned on many fracture-critical surfaces; etching usually is not.
+  method and acceptance class, coatings and cleanliness each need a note and a specification. If you cannot verify a
+  property by a measurement of the finished part, it needs an approved process and a certificate.
+- **Fracture-critical parts have different rules.** When a part is classified as fracture-critical, its drawing gives
+  the flaw-size and NDE requirements, and its material comes from a controlled quality class. Agree the classification
+  before you finalise the tolerances, because it controls surface finish, radii and inspection access.
+- **Traceability is a drawing requirement.** Give the batch or heat marking, its location and its method. Stamping is
+  a stress raiser and is not permitted on many fracture-critical surfaces. Etching usually is permitted.
 - **Dissimilar metals.** A steel case with an aluminium closure, or carbon fibre against any metal, makes a galvanic
-  cell. Specify isolation (sealant, primer, isolating film) *and* an electrical bonding path deliberately — they pull in
-  opposite directions.
-- **Differential expansion.** A carbon throat insert in a metal housing sees large temperature swings across materials
-  with very different expansion. If a fit depends on temperature, state the assembly temperature on the drawing.
-- **Seals in hot environments.** Confirm the seal compound against the real fluids and temperatures, and check whether
-  your programme mandates approved seal materials — many do.
-- **Bondlines are structure.** Insulation-to-case and liner bonds carry load and are the usual failure path. Define
-  surface preparation, adhesive, bondline thickness, cure and the NDT that verifies the bond. A bond with no
-  inspection requirement is an unverified joint.
+  cell. Specify isolation (sealant, primer, isolating film) *and* an electrical bonding path on purpose. These two
+  requirements are in opposite directions.
+- **Differential expansion.** A carbon throat insert in a metal housing has large temperature changes across materials
+  with very different expansion. If a fit depends on temperature, give the assembly temperature on the drawing.
+- **Seals in hot environments.** Confirm the seal compound against the real fluids and temperatures. Check if your
+  programme requires approved seal materials. Many programmes do.
+- **Bondlines are structure.** Bonds between insulation and case, and liner bonds, carry load and are the usual failure
+  path. Define the surface preparation, adhesive, bondline thickness, cure and the NDT that verifies the bond. A bond
+  without an inspection requirement is a joint that nobody has verified.
 
 ## References and further reading
 
-- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — solid motor components, nozzles
-  and thrust vector control.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) (solid motor components, nozzles and
+  thrust vector control).
 - A. Davenas (ed.), *Solid Rocket Propulsion Technology*, Pergamon (1993).
 - NASA SP-8025, *Solid Rocket Motor Metal Cases* (1970); NASA SP-8093, *Solid Rocket Motor Internal Insulation*
   (1976); NASA SP-8114, *Solid Rocket Thrust Vector Control* (1974); NASA SP-8115, *Solid Rocket Motor Nozzles*
-  (1975) — open NASA design monographs.
+  (1975). These are open NASA design monographs.
 - *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (1986).
-- NATO STANAG 4439, *Policy for Introduction and Assessment of Insensitive Munitions*, and AOP-39 — current editions.
+- NATO STANAG 4439, *Policy for Introduction and Assessment of Insensitive Munitions*, and AOP-39 (current editions).
 
 <Aside type="note">
-  A design-office reference for structural hardware. It does not replace your programme's design rules, the
-  governing standards, or your safety authority. Anything touching energetics, initiation or motor performance goes
+  This is a design-office reference for structural hardware. It does not replace the design rules of your programme,
+  the applicable standards, or your safety authority. All work on energetics, initiation or motor performance goes
   through the responsible specialists.
 </Aside>

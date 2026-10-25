@@ -34,7 +34,7 @@ const v2Count = items.filter((z) => !z.primer && z.slug !== null).length;
   </div>
 
   <figure class="rail-orbit" aria-label="Workflow phases">
-    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Eight workflow phases — select one to jump to it in the list">
+    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Eight workflow phases. Select one to go to it in the list">
       <defs>
         <radialGradient id="railSun"><stop offset="0" stop-color="#fff6d8"></stop><stop offset=".45" stop-color="#ffb347"></stop><stop offset="1" stop-color="#ff6a00" stop-opacity="0"></stop></radialGradient>
         {PHASES.map((p) => (
@@ -50,7 +50,7 @@ const v2Count = items.filter((z) => !z.primer && z.slug !== null).length;
         const r = p.here ? 10 : 7.5;
         return (
           <a href={`#rail-${p.k}`} class:list={['orb-p', { here: p.here }]} data-phase={p.k}
-            aria-label={`${p.n} — ${p.sub}, ${p.v2} of ${p.total} zones rebuilt${p.here ? ', current phase' : ''}`}>
+            aria-label={`${p.n}: ${p.sub}, ${p.v2} of ${p.total} zones rebuilt${p.here ? ', current phase' : ''}`}>
             <title>{`${p.n} · ${p.sub} · ${p.v2}/${p.total} rebuilt`}</title>
             {p.here && <circle class="orb-ring" cx={p.x} cy={p.y} r={r + 5} stroke={`var(--ph-${p.k})`}></circle>}
             <circle cx={p.x} cy={p.y} r={r} fill={`url(#railP_${p.k})`}></circle>
@@ -84,7 +84,7 @@ const v2Count = items.filter((z) => !z.primer && z.slug !== null).length;
               <li>
                 <a href={hrefOf(z, base)} class:list={['rail-z', z.slug !== null ? 'v2' : 'v1', { primer: z.primer, here: isHere }]}
                   aria-current={isHere ? 'page' : undefined}
-                  title={z.slug === null ? `${z.tag} ${z.label} — opens in the v1 archive` : undefined}>
+                  title={z.slug === null ? `${z.tag} ${z.label}: opens in the v1 archive` : undefined}>
                   <span class="zn">{z.tag}</span>
                   <span class="zi" aria-hidden="true">{z.ico}</span>
                   <span class="zl">{z.label}</span>

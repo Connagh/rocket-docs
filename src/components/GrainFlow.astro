@@ -11,7 +11,7 @@ const plate = grains(40, 90, 230, 60, 7, 26);
 ---
 
 <figure class="viz">
-  <p class="viz-title">Product form sets the grain — and the weak direction</p>
+  <p class="viz-title">Product form sets the grain, and the weak direction</p>
   <svg viewBox="0 0 800 300" role="img" aria-labelledby="gf-desc">
     <desc id="gf-desc">
       Left: a block of rolled plate with grains elongated in the rolling direction, labelled L (longitudinal), LT (long
@@ -31,11 +31,11 @@ const plate = grains(40, 90, 230, 60, 7, 26);
     <rect x="40" y="90" width="230" height="60" fill="var(--rd-steel)" fill-opacity="0.85"></rect>
     {plate.map((g) => <line x1={g.x} y1={g.y} x2={g.x + g.len} y2={g.y} stroke="var(--hud-plate)" stroke-width="2" opacity="0.55"></line>)}
     <line x1="60" y1="190" x2="200" y2="190" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
-    <text x="130" y="210" text-anchor="middle" font-size="12" fill="var(--rd-blue)">L — rolling direction: strongest</text>
+    <text x="130" y="210" text-anchor="middle" font-size="12" fill="var(--rd-blue)">L, rolling direction: strongest</text>
     <line x1="285" y1="160" x2="312" y2="132" stroke="var(--rd-blue)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
     <text x="318" y="140" font-size="12" fill="var(--rd-blue)">LT</text>
     <line x1="25" y1="150" x2="25" y2="95" stroke="var(--sl-color-accent)" stroke-width="2.5" marker-end="url(#gf-ah)"></line>
-    <text x="22" y="240" font-size="12" fill="var(--sl-color-accent)">ST — through thickness:</text>
+    <text x="22" y="240" font-size="12" fill="var(--sl-color-accent)">ST, through thickness:</text>
     <text x="22" y="256" font-size="12" fill="var(--sl-color-accent)">lowest ductility, toughness</text>
     <text x="22" y="272" font-size="12" fill="var(--sl-color-accent)">and stress-corrosion resistance</text>
 

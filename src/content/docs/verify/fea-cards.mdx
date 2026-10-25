@@ -1,6 +1,6 @@
 ---
 title: FEA material cards
-description: Material cards for finite-element models of a solid motor — elastic, plastic, orthotropic, hyperelastic, viscoelastic and temperature-dependent data for the metals, composites, rubbers and propellant; where the numbers come from; and how to check a card before trusting what it produces.
+description: Material cards for finite-element models of a solid motor. Elastic, plastic, orthotropic, hyperelastic, viscoelastic and temperature-dependent data for the metals, composites, rubbers and propellant, where the numbers come from, and how to check a card before you trust its results.
 sidebar:
   order: 0
 ---
@@ -11,45 +11,46 @@ import CardTraps from '../../../components/CardTraps.astro';
 import CardCalc from '../../../components/CardCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A material card is an engineering input like a drawing: a wrong one runs, converges and gives smooth contours — so check it before trusting anything it produces.</div>
+  <div><b>In one line</b>A material card is an engineering input, like a drawing. An incorrect card runs, converges and gives smooth contours. Check it before you trust its results.</div>
   <div><b>Before this</b><a href="../../fundamentals/hand-calcs/">Hand calcs</a> · <a href="../../materials/allowables/">Allowables</a></div>
   <div><b>Used by</b><a href="../fea-and-test/">FEA & test</a> · <a href="../random-vibration/">Random vibration</a></div>
 </div>
 
 ## Why this matters
 
-A bad mesh shows. A bad material card does not. A density in the wrong units, a Poisson's ratio of 0.49 for propellant,
-an engineering stress–strain curve entered as true, a temperature table that stops below the operating temperature —
-each of these runs, converges and produces smooth, plausible contours. Card errors are among the commonest in
-finite-element work, and among the cheapest to catch.
+You can see a bad mesh. You cannot see a bad material card. Some examples are a density in incorrect units, a Poisson's
+ratio of 0.49 for propellant, an engineering stress–strain curve entered as true values, or a temperature table that
+stops below the operating temperature. Each of these runs, converges and gives smooth, plausible contours. Card errors
+are some of the most frequent errors in finite-element work, and some of the easiest to find.
 
-Every card is also a set of decisions: which data, on what basis (typical or minimum), at what temperature and rate,
-in which form — elastic, plastic, orthotropic, hyperelastic, viscoelastic. A motor model needs all of them: steel or
-composite case, aluminium and titanium hardware, rubber insulation and seals, and a propellant grain that is nothing
-like any of the others.
+Each card is also a set of decisions. Which data? On which basis (typical or minimum)? At which temperature and rate?
+In which form (elastic, plastic, orthotropic, hyperelastic or viscoelastic)? A motor model needs all of them: a steel
+or composite case, aluminium and titanium hardware, rubber insulation and seals, and a propellant grain that is very
+different from all the other materials.
 
 <CardTraps />
 
 ## What goes on a card
 
-| Material | On the motor | Model form | Watch for |
+| Material | On the motor | Model form | Possible errors |
 | --- | --- | --- | --- |
 | Metals | Case, closures, skirts, bolts | Isotropic elastic; true-stress plastic table; all against temperature | Units; engineering against true; typical against minimum |
-| Fibre composites | Wound case, skirts | Orthotropic, per ply or laminate | Material axes; major and minor Poisson's ratios; moisture and temperature |
-| Rubbers | Insulation, O-rings, flex bearing | Hyperelastic on a bulk modulus; viscoelastic where rate matters | Poisson's ratio; the cold end near the glass transition |
+| Fibre composites | Wound case, skirts | Orthotropic, for each ply or for the laminate | Material axes; major and minor Poisson's ratios; moisture and temperature |
+| Rubbers | Insulation, O-rings, flex bearing | Hyperelastic on a bulk modulus; viscoelastic where rate is important | Poisson's ratio; the cold end near the glass transition |
 | Propellant and liner | The grain | Viscoelastic on a bulk modulus, with time–temperature shift | Rate and temperature of the load case; stress-free temperature |
-| Carbon, graphite, phenolics | Nozzle | Orthotropic and strongly temperature-dependent | Data at the temperatures the part reaches |
+| Carbon, graphite, phenolics | Nozzle | Orthotropic, with a strong temperature dependence | Data at the temperatures that the part gets to |
 
-Thermal models need conductivity, specific heat and density for every material too — see
-[Transient thermal](../../motor/transient-thermal/). Strength is not on the elastic card: margins come from the
-results, checked against [allowables](../../materials/allowables/).
+Thermal models also need conductivity, specific heat and density for each material. See
+[Transient thermal](../../motor/transient-thermal/). Strength is not on the elastic card. Margins come from the results,
+checked against [allowables](../../materials/allowables/).
 
 ## Metals
 
-**Elastic.** Young's modulus $E$ and Poisson's ratio $\nu$, with $G = E/2(1+\nu)$ implied — give a solver two of the
-three, never three that disagree. Stiffness is always typical; there is no "minimum modulus".
+**Elastic.** Use Young's modulus $E$ and Poisson's ratio $\nu$. These give $G = E/2(1+\nu)$. Give a solver two of the
+three values. Never give three values that do not agree. Stiffness is always a typical value. There is no "minimum
+modulus".
 
-**Plastic.** Solvers want **true stress against true plastic strain**, starting at zero plastic strain. From an
+**Plastic.** Solvers need **true stress against true plastic strain**, which starts at zero plastic strain. From an
 engineering curve, up to necking:
 
 $$
@@ -60,24 +61,25 @@ $$
 \varepsilon_p = \varepsilon_t - \sigma_t/E
 $$
 
-With only tensile properties, a Ramberg–Osgood curve $\varepsilon = \sigma/E + 0.002\,(\sigma/F_{ty})^n$ through the
-0.2% yield and through the ultimate at the uniform elongation $e_u$ gives the shape:
+If you have only the tensile properties, use a Ramberg–Osgood curve $\varepsilon = \sigma/E + 0.002\,(\sigma/F_{ty})^n$.
+Put it through the 0.2% yield, and through the ultimate at the uniform elongation $e_u$. This gives the shape:
 
 $$
 n = \frac{\ln\!\left[(e_u - F_{tu}/E)/0.002\right]}{\ln(F_{tu}/F_{ty})}
 $$
 
-- **Typical or minimum?** Typical curves for stiffness and for correlating with tests; minimum (A- or B-basis) curves
-  when the plastic analysis is itself the strength check. Do not mix them in one model.
-- **Beyond the last row** many solvers hold the stress flat — Abaqus does. The true curve keeps rising after necking,
-  so a table that ends at the ultimate is conservative for load but says nothing about failure.
+- **Typical or minimum?** Use typical curves for stiffness and to correlate with tests. Use minimum (A- or B-basis)
+  curves when the plastic analysis is the strength check. Do not use the two in one model.
+- **After the last row,** many solvers keep the stress constant (Abaqus does this). The true curve continues to
+  increase after necking. Thus a table that stops at the ultimate is conservative for load, but it tells nothing about
+  failure.
 
-**Temperature.** Every property that changes over the model's range needs a table against temperature, and the table
-must cover the range: outside it, most solvers hold the end values rather than extend them.
+**Temperature.** Each property that changes over the range of the model needs a table against temperature. The table
+must cover the full range. Outside the range, most solvers keep the end values. They do not extrapolate.
 
-**Thermal expansion.** Handbooks give either the **instantaneous** coefficient — the slope of the expansion curve at a
-temperature — or the **secant** (mean) coefficient from a reference temperature. Solvers want secant values and the
-reference they are measured from (Abaqus ZERO, the Ansys reference temperature, Nastran TREF):
+**Thermal expansion.** Handbooks give the **instantaneous** coefficient (the slope of the expansion curve at a
+temperature) or the **secant** (mean) coefficient from a reference temperature. Solvers need secant values and the
+reference temperature for them (Abaqus ZERO, the Ansys reference temperature, Nastran TREF):
 
 $$
 \bar\alpha(T) = \frac{1}{T - T_{ref}}\int_{T_{ref}}^{T} \alpha\,dT
@@ -86,10 +88,10 @@ $$
 ## Composites
 
 An orthotropic card has nine constants: $E_1, E_2, E_3$, $\nu_{12}, \nu_{13}, \nu_{23}$, $G_{12}, G_{13}, G_{23}$.
-Symmetry links the major and minor Poisson's ratios, $\nu_{ji} = \nu_{ij}E_j/E_i$, and the constants describe a real
-material only if (Lempriere):
+Symmetry relates the major and minor Poisson's ratios, $\nu_{ji} = \nu_{ij}E_j/E_i$. The constants describe a real
+material only if these conditions are true (Lempriere):
 
-- every modulus is positive, and $|\nu_{ij}| < \sqrt{E_i/E_j}$;
+- each modulus is positive, and $|\nu_{ij}| < \sqrt{E_i/E_j}$;
 - the compliance determinant is positive:
 
 $$
@@ -99,142 +101,146 @@ $$
 \end{aligned}
 $$
 
-- **Conventions differ.** Some sources and solvers tabulate $\nu_{21}$ where others mean $\nu_{12}$. Typing the minor
-  ratio where the major one belongs passes every check above and is still wrong.
-- **For a unidirectional ply** the 2–3 plane is usually isotropic: $E_3 = E_2$ and $G_{23} = E_2/2(1+\nu_{23})$.
-- **Orientation.** The right constants on the wrong material axes pass every check too. Plot the axes in the model.
-- **Ply or laminate.** A wound case is built from ply data and winding angles; a smeared laminate card hides
-  bending–stretching coupling and through-thickness behaviour.
+- **Conventions are different.** Some sources and solvers give $\nu_{21}$ where others mean $\nu_{12}$. If you type the
+  minor ratio in place of the major ratio, all the checks above pass, but the card is incorrect.
+- **For a unidirectional ply,** the 2–3 plane is usually isotropic: $E_3 = E_2$ and $G_{23} = E_2/2(1+\nu_{23})$.
+- **Orientation.** The correct constants on incorrect material axes also pass all the checks. Plot the axes in the
+  model.
+- **Ply or laminate.** A wound case is made from ply data and winding angles. A smeared laminate card hides the
+  bending–stretching coupling and the through-thickness behaviour.
 
 ## Rubbers and propellant
 
-Rubber and propellant change shape easily but hardly change volume: their bulk modulus $K$ is thousands of times their
-shear modulus. Poisson's ratio is then a derived quantity, sensitive in its fourth decimal place:
+It is easy to change the shape of rubber and propellant, but it is very difficult to change their volume. Their bulk
+modulus $K$ is thousands of times their shear modulus. Poisson's ratio is then a derived value, and its fourth decimal
+place is important:
 
 $$
 \nu = \frac{3K - E}{6K}
 $$
 
 <Analogy title="A water balloon">
-  Squeeze a water balloon and it bulges somewhere else — easy to reshape, almost impossible to make smaller. Give it a
-  Poisson's ratio of 0.49 in a model and it becomes a sponge: still soft in shape, but now soft in volume too, sixty
-  times too soft for propellant. Every result that depends on squeezing it — pressure on a bonded grain, a seal in its
-  groove — goes wrong.
+  When you squeeze a water balloon, it bulges in a different location. It is easy to change its shape, but almost
+  impossible to make it smaller. If you give it a Poisson's ratio of 0.49 in a model, it becomes a sponge. It is still
+  soft in shape, but now it is also soft in volume: sixty times too soft for propellant. All the results that depend on
+  its volume change are then incorrect, for example the pressure on a bonded grain, or a seal in its groove.
 </Analogy>
 
-- **Take $K$ from a volumetric test** and derive $\nu$; never round to 0.49 or 0.5.
-- **Hyperelastic forms** — neo-Hookean ($C_{10} = G/2$, $D_1 = 2/K$), Mooney–Rivlin, Ogden — are fitted to uniaxial,
-  planar and equibiaxial tests together. A fit to one test alone can go unstable in another mode; check stability over
-  the strain range the model reaches.
-- **Viscoelastic.** Stiffness depends on rate and temperature, so a card belongs to a load case. Time-dependent loads
-  need a Prony series and a shift function — see [Viscoelasticity](../../fundamentals/viscoelasticity/) — and
-  thermal loads need the stress-free temperature ([Propellant grain](../../motor/propellant-grain/)).
-- **Use hybrid (mixed) elements.** Ordinary elements lock when the material is nearly incompressible and come out far
+- **Get $K$ from a volumetric test,** and calculate $\nu$ from it. Never round to 0.49 or 0.5.
+- **Hyperelastic forms** (neo-Hookean with $C_{10} = G/2$ and $D_1 = 2/K$, Mooney–Rivlin, Ogden) are fitted to
+  uniaxial, planar and equibiaxial tests together. A fit to one test only can become unstable in a different mode.
+  Check the stability over the strain range of the model.
+- **Viscoelastic.** Stiffness depends on rate and temperature, thus a card is for one load case. Time-dependent loads
+  need a Prony series and a shift function (see [Viscoelasticity](../../fundamentals/viscoelasticity/)). Thermal loads
+  need the stress-free temperature ([Propellant grain](../../motor/propellant-grain/)).
+- **Use hybrid (mixed) elements.** Usual elements lock when the material is almost incompressible, and they are much
   too stiff.
 
 ## Where the numbers come from
 
 | Material | Sources | Note |
 | --- | --- | --- |
-| Metals | MMPDS; material specification minimums; certificates for the lot | MMPDS gives design allowables, typical moduli, stress–strain curves and temperature effects |
-| Composites | CMH-17; supplier data; tests (ASTM D3039, D6641, D7078) | Datasheet values are typical, usually room temperature and dry |
-| Rubbers | Tests: uniaxial (ASTM D412), planar, equibiaxial, volumetric | Hardness gives only a rough modulus |
-| Propellant | Tests to the ICRPG/JANNAF mechanical behaviour manual: tension over rates and temperatures, stress relaxation, bulk modulus | Aged as well as fresh; the grain's capability comes from the same programme |
+| Metals | MMPDS; minimums of the material specification; certificates for the lot | MMPDS gives design allowables, typical moduli, stress–strain curves and temperature effects |
+| Composites | CMH-17; supplier data; tests (ASTM D3039, D6641, D7078) | Datasheet values are typical, usually at room temperature and dry |
+| Rubbers | Tests: uniaxial (ASTM D412), planar, equibiaxial, volumetric | Hardness gives only an approximate modulus |
+| Propellant | Tests to the ICRPG/JANNAF mechanical behaviour manual: tension over rates and temperatures, stress relaxation, bulk modulus | Aged and fresh; the capability of the grain comes from the same programme |
 
-A supplier's "typical" value is not an allowable, and a handbook value at room temperature says nothing about 150 °C.
-The source, its basis, the temperature and the material condition go on the card with the numbers.
+A "typical" value from a supplier is not an allowable. A handbook value at room temperature tells nothing about 150 °C.
+Put the source, its basis, the temperature and the material condition on the card with the numbers.
 
 ## Checking a card before you trust it
 
-1. **Units.** One consistent system. Check the density through the wave speed $\sqrt{E/\rho}$ — a few thousand m/s
-   for any metal — and the model's total mass against the CAD or the scales. A static model will not show a density
-   error; the first vibration or acceleration case will.
-2. **Consistency.** Isotropic: $E$, $\nu$ and $G$ agree. Orthotropic: symmetry, the bounds and the determinant.
-   Nearly incompressible: $\nu$ from a measured $K$.
-3. **Basis and purpose.** Typical or minimum, matched to how the margins will be calculated.
-4. **Plastic tables.** True values, first row at zero plastic strain, rising, ending at necking — and known behaviour
-   beyond.
-5. **Temperature and rate.** Tables cover the model's range; rubber and propellant data match the load case;
-   expansion is secant, with its reference temperature.
+1. **Units.** Use one consistent system. Check the density with the wave speed $\sqrt{E/\rho}$, which is some
+   thousands of m/s for all metals. Compare the total mass of the model with the CAD or the scales. A static model does
+   not show a density error. The first vibration or acceleration case shows it.
+2. **Consistency.** Isotropic: $E$, $\nu$ and $G$ agree. Orthotropic: symmetry, the limits and the determinant.
+   Almost incompressible: $\nu$ from a measured $K$.
+3. **Basis and purpose.** Typical or minimum, as necessary for the margin calculation.
+4. **Plastic tables.** True values, the first row at zero plastic strain, increasing values, the last row at necking,
+   and known behaviour after it.
+5. **Temperature and rate.** The tables cover the range of the model. Rubber and propellant data agree with the load
+   case. Expansion is secant, with its reference temperature.
 6. **Orientation** of orthotropic materials in the model.
-7. **Single-element tests.** Load one element and compare with the card:
+7. **Single-element tests.** Load one element and compare the result with the card:
 
-| Test | Load | Must reproduce |
+| Test | Load | Must give |
 | --- | --- | --- |
 | Uniaxial stress | Stretch, sides free | $E$; $\nu$ from the lateral strain; the plastic curve |
 | Pure shear | Shear | $G$ |
-| Hydrostatic | Pressure on every face | $K$ |
+| Hydrostatic | Pressure on all faces | $K$ |
 | Free heating | Uniform temperature change, no restraint | Thermal strain, $\bar\alpha\,\Delta T$ |
 | Mass | Gravity or a frequency | Density |
 
-8. **Traceability.** Source, basis, temperature, condition, revision and owner. A card is a controlled input, like a
-   drawing.
+8. **Traceability.** Record the source, basis, temperature, condition, revision and owner. A card is a controlled
+   input, like a drawing.
 
 ## Calculator
 
 <CardCalc />
 
-## Worked example — cards for the 300 mm motor's model
+## Worked example: cards for the 300 mm motor's model
 
-The starting values in each tab of the calculator are this example's. The uniform elongation, the ply constants and the
-expansion coefficients are illustrative.
+The starting values in each tab of the calculator are the values of this example. The uniform elongation, the ply
+constants and the expansion coefficients are illustrative.
 
-1. **D6AC case, elastic and units.** In mm, N, tonne and seconds: $E = 205\,000$ MPa, $\nu = 0.29$, so
-   $G = 79\,457$ MPa; density $7.85 \times 10^{-9}$ t/mm³. The wave speed is $\sqrt{205\,000/7.85\times10^{-9}}$ mm/s
-   $= 5110$ m/s — right for steel. Type the density as 7850 instead and the wave speed falls to 5 mm/s: the
-   10.2 kg cylinder now weighs $1.02 \times 10^{10}$ t. A static pressure analysis is unaffected — the error waits for
-   the first vibration load.
-2. **D6AC case, plastic.** $F_{ty} = 1450$ MPa, $F_{tu} = 1520$ MPa and, for this example, 5% uniform elongation
-   give $n = 64.9$ — very little hardening, as in most high-strength steels. The table runs from 1394 MPa at zero
-   plastic strain to **1596 MPa at 4.10% true plastic strain**: true stress at necking is 5% above the engineering
-   ultimate. One element stretched in the model must retrace the table, then hold 1596 MPa flat.
-3. **Carbon-fibre skirt, orthotropic.** A typical carbon/epoxy ply — $E_1 = 160$ GPa, $E_2 = E_3 = 9$ GPa,
-   $\nu_{12} = 0.32$, $\nu_{23} = 0.45$, $G_{12} = 5$ GPa, $G_{23} = 3.1$ GPa — passes: determinant 0.781,
-   $\nu_{21} = 0.018$, and $G_{23}$ matches $E_2/2(1+\nu_{23}) = 3.10$ GPa. Swap $E_1$ and $E_2$ but keep the Poisson's
-   ratios, and $\nu_{21}$ becomes 5.7 and the determinant −1.03: **not a material**. Type the minor ratio 0.018 as
-   $\nu_{12}$ instead, and every check passes while the ply's sideways contraction is 18 times too small. Only the
-   source can catch that one.
-4. **Propellant.** The grain's relaxed modulus is 3.6 MPa and its bulk modulus 3.5 GPa
-   ([Propellant grain](../../motor/propellant-grain/)), so $\nu = 0.499829$, $G = 1.20$ MPa, $C_{10} = 0.600$ MPa and
-   $D_1 = 5.7 \times 10^{-4}$ MPa⁻¹. A guessed $\nu = 0.49$ gives $K = 60$ MPa — **58 times too soft** in volume. Under
-   10 MPa the grain's volume would shrink 16.7% instead of 0.29%. The ignition-strain term that uses $p/K$ on the grain
-   page would read $10/60$ instead of $10/3500$, and the predicted bore strain would jump from 5.6% to 71%. Round the
-   other way, to 0.4999, and $K$ is 1.7 times too stiff.
-5. **Aluminium closure, thermal.** After burnout, heat soaks back into an aluminium closure to 150 °C. Take
-   instantaneous $\alpha$ rising from $21 \times 10^{-6}$/K at −50 °C to $25 \times 10^{-6}$/K at 150 °C, assembled
-   and referenced at 20 °C. The secant coefficient to 150 °C is $23.7 \times 10^{-6}$/K, and the thermal strain
-   3081 µε. Enter the instantaneous 25 as if it were secant and the closure grows **5.5% too much**. And if the card's
-   tables stopped at 100 °C, the solver would use 100 °C stiffness, strength and expansion all the way to 150 °C.
+1. **D6AC case, elastic values and units.** In mm, N, tonne and seconds: $E = 205\,000$ MPa and $\nu = 0.29$, so
+   $G = 79\,457$ MPa. The density is $7.85 \times 10^{-9}$ t/mm³. The wave speed is
+   $\sqrt{205\,000/7.85\times10^{-9}}$ mm/s $= 5110$ m/s, which is correct for steel. If you type the density as 7850,
+   the wave speed decreases to 5 mm/s, and the 10.2 kg cylinder has a mass of $1.02 \times 10^{10}$ t. A static
+   pressure analysis does not show this error. It shows at the first vibration load.
+2. **D6AC case, plastic values.** $F_{ty} = 1450$ MPa, $F_{tu} = 1520$ MPa and, for this example, 5% uniform
+   elongation give $n = 64.9$. This is very little hardening, as in most high-strength steels. The table goes from
+   1394 MPa at zero plastic strain to **1596 MPa at 4.10% true plastic strain**. The true stress at necking is 5% more
+   than the engineering ultimate. One stretched element in the model must follow the table, and then keep 1596 MPa
+   constant.
+3. **Carbon-fibre skirt, orthotropic values.** A typical carbon/epoxy ply has $E_1 = 160$ GPa, $E_2 = E_3 = 9$ GPa,
+   $\nu_{12} = 0.32$, $\nu_{23} = 0.45$, $G_{12} = 5$ GPa and $G_{23} = 3.1$ GPa. It passes: the determinant is 0.781,
+   $\nu_{21} = 0.018$, and $G_{23}$ agrees with $E_2/2(1+\nu_{23}) = 3.10$ GPa. If you change $E_1$ and $E_2$ but keep
+   the Poisson's ratios, $\nu_{21}$ becomes 5.7 and the determinant becomes −1.03: **this is not a material**. If you
+   type the minor ratio 0.018 as $\nu_{12}$, all the checks pass, but the sideways contraction of the ply is 18 times
+   too small. Only the source can show this error.
+4. **Propellant.** The relaxed modulus of the grain is 3.6 MPa and its bulk modulus is 3.5 GPa
+   ([Propellant grain](../../motor/propellant-grain/)). Thus $\nu = 0.499829$, $G = 1.20$ MPa, $C_{10} = 0.600$ MPa and
+   $D_1 = 5.7 \times 10^{-4}$ MPa⁻¹. An estimated $\nu = 0.49$ gives $K = 60$ MPa, which is **58 times too soft** in
+   volume. At 10 MPa, the volume of the grain would decrease by 16.7%, not 0.29%. The ignition-strain term that uses
+   $p/K$ on the grain page would be $10/60$, not $10/3500$, and the predicted bore strain would increase from 5.6% to
+   71%. If you round in the other direction, to 0.4999, $K$ is 1.7 times too stiff.
+5. **Aluminium closure, thermal values.** After burnout, heat goes back into an aluminium closure and it gets to
+   150 °C. The instantaneous $\alpha$ increases from $21 \times 10^{-6}$/K at −50 °C to $25 \times 10^{-6}$/K at
+   150 °C. The closure is assembled at 20 °C, and this is the reference temperature. The secant coefficient to 150 °C
+   is $23.7 \times 10^{-6}$/K, and the thermal strain is 3081 µε. If you enter the instantaneous value of 25 as a
+   secant value, the closure grows **5.5% too much**. If the tables of the card stopped at 100 °C, the solver would use
+   the stiffness, strength and expansion at 100 °C for all temperatures up to 150 °C.
 
 ## Where this stops
 
-- **Cards, not data.** Every number on this page is an example; design values come from your sources and tests.
-- **Simple forms.** Plasticity here is isotropic hardening from a monotonic curve. Cyclic loading, kinematic hardening,
-  rate dependence of metals, damage and failure need more.
-- **Linear expansion data.** Real coefficients are curves; the calculator takes a straight line between two points.
-- **Composites** need failure criteria, through-thickness and process data that the elastic card does not carry.
+- **Cards, not data.** All the numbers on this page are examples. Design values come from your sources and tests.
+- **Simple forms.** The plasticity here is isotropic hardening from a monotonic curve. Cyclic loads, kinematic
+  hardening, rate dependence of metals, damage and failure need more.
+- **Linear expansion data.** Real coefficients are curves. The calculator uses a straight line between two points.
+- **Composites** need failure criteria, through-thickness data and process data that the elastic card does not have.
 
 ## On the drawing
 
-The card is not on the drawing, but they must agree:
+The card is not on the drawing, but the two must agree:
 
-- **Material and condition** — specification, temper or heat treatment — match the card's source.
-- **Process-dependent properties** — fibre volume, winding angle, cure, propellant batch and age — are controlled on
-  the drawing or its process specifications if the model relies on them.
-- **The analysis report** lists each card with its source, basis, temperature range and revision.
+- **Material and condition** (specification, temper or heat treatment) are the same as the source of the card.
+- **Process-dependent properties** (fibre volume, winding angle, cure, propellant batch and age) are controlled on the
+  drawing or its process specifications if the model uses them.
+- **The analysis report** gives each card with its source, basis, temperature range and revision.
 
 ## References and further reading
 
-- MMPDS, *Metallic Materials Properties Development and Standardization* — current edition.
+- MMPDS, *Metallic Materials Properties Development and Standardization*, current edition.
 - CMH-17, *Composite Materials Handbook*.
 - W. Ramberg and W. R. Osgood, "Description of stress–strain curves by three parameters", NACA TN 902 (1943).
 - B. M. Lempriere, "Poisson's ratio in orthotropic materials", *AIAA Journal* 6 (1968).
 - R. M. Jones, *Mechanics of Composite Materials*, 2nd ed., Taylor & Francis (1999).
 - A. N. Gent (ed.), *Engineering with Rubber*, 3rd ed., Hanser (2012).
 - *ICRPG/JANNAF Solid Propellant Mechanical Behavior Manual*, CPIA Publication 21.
-- Your solver's documentation on thermal expansion, hyperelastic stability and behaviour outside tabulated data.
+- The documentation of your solver on thermal expansion, hyperelastic stability and behaviour outside tabulated data.
 
 <Aside type="note">
-  Guidance on method from general practice, with illustrative values. Material data for design come from your
-  programme's approved sources and tests.
+  This is guidance on method from general practice, with illustrative values. Material data for design come from the
+  approved sources and tests of your programme.
 </Aside>

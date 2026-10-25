@@ -65,7 +65,7 @@ const TABS = [
           <label>Uniform elongation (%)<input name="p_eu" type="number" min="0.1" step="any" value="5" /></label>
           <label>Rows<input name="p_n" type="number" min="3" max="20" step="1" value="8" /></label>
         </div>
-        <p class="hint">Uniform elongation is the engineering strain at the ultimate — where necking starts — not the elongation at break.</p>
+        <p class="hint">Uniform elongation is the engineering strain at the ultimate (where necking starts), not the elongation at break.</p>
       </fieldset>
 
       <fieldset data-panel="cte" hidden>
@@ -79,13 +79,13 @@ const TABS = [
           <label>Stress-free temperature (°C)<input name="c_T0" type="number" step="any" value="20" /></label>
           <label>Hottest in the model (°C)<input name="c_Tm" type="number" step="any" value="150" /></label>
         </div>
-        <p class="hint">Instantaneous α is the slope of the expansion curve at a temperature; handbooks give either kind — check which. Linear between the two points.</p>
+        <p class="hint">Instantaneous α is the slope of the expansion curve at a temperature; handbooks give either kind: check which. Linear between the two points.</p>
       </fieldset>
     </form>
     <div>
       <dl class="readouts" data-out></dl>
       <div class="cd-table" data-table hidden>
-        <div class="cd-table-head"><span>Plastic table — true stress (MPa), true plastic strain</span><button type="button" class="chip" data-copy>Copy</button></div>
+        <div class="cd-table-head"><span>Plastic table: true stress (MPa), true plastic strain</span><button type="button" class="chip" data-copy>Copy</button></div>
         <textarea readonly rows="8" data-csv aria-label="Plastic table as comma-separated values"></textarea>
       </div>
       <figure class="hc-fig">
@@ -203,17 +203,17 @@ const TABS = [
       const c = cardUnits(sys.key as UnitKey, E, rho);
       const metalish = c.wave >= 2500 && c.wave <= 13000, plausible = c.wave >= 10 && c.wave <= 20000;
       rows.push(
-        { dt: 'Wave speed <span class="nc">√(E/ρ)</span>', dd: `${g3(c.wave)} m/s <small>${metalish ? 'about right for a metal or a stiff composite' : plausible ? 'plausible for a polymer, rubber or foam — not for a metal' : 'not a real material: check the density units'}</small>`, primary: true, cls: plausible ? 'ok' : 'bad' },
+        { dt: 'Wave speed <span class="nc">√(E/ρ)</span>', dd: `${g3(c.wave)} m/s <small>${metalish ? 'about right for a metal or a stiff composite' : plausible ? 'plausible for a polymer, rubber or foam, not for a metal' : 'not a real material: check the density units'}</small>`, primary: true, cls: plausible ? 'ok' : 'bad' },
         { dt: 'Density, in SI', dd: `${sci(c.rhoSI)} kg/m³ <small>${c.densityPlausible ? 'a real material' : 'no solid has this density'}</small>`, cls: c.densityPlausible ? '' : 'bad' },
         { dt: 'Modulus, in SI', dd: `${sci(c.EMPa)} MPa <small>${g3(c.EMPa / 1000)} GPa</small>` },
-        { dt: 'Shear modulus', dd: `${sci(shearModulus(E, nu))} ${sys.stress} <small>E/2(1 + ν) — implied by E and ν</small>` },
+        { dt: 'Shear modulus', dd: `${sci(shearModulus(E, nu))} ${sys.stress} <small>E/2(1 + ν): implied by E and ν</small>` },
         { dt: 'Bulk modulus', dd: `${sci(bulkModulus(E, nu))} ${sys.stress} <small>E/3(1 − 2ν)</small>` },
       );
       if (G > 0) {
         const nuG = poissonFromEG(E, G), off = Math.abs(nuG - nu);
-        rows.push({ dt: '<span class="nc">ν</span> implied by E and G', dd: `${f(nuG, 3)} <small>${off < 0.01 ? 'consistent with the ν entered' : `the card says ${f(nu, 3)} — an isotropic solver uses two of the three and ignores the third`}</small>`, cls: off < 0.01 ? 'ok' : 'warn' });
+        rows.push({ dt: '<span class="nc">ν</span> implied by E and G', dd: `${f(nuG, 3)} <small>${off < 0.01 ? 'consistent with the ν entered' : `the card says ${f(nu, 3)}: an isotropic solver uses two of the three and ignores the third`}</small>`, cls: off < 0.01 ? 'ok' : 'warn' });
       }
-      if (!c.densityPlausible) notes.push(['bad', `The density reads as ${sci(c.rhoSI)} kg/m³. In ${sys.name} a density of ${sci(7850 / sys.toKgM3)} ${sys.density} is steel — every mass, inertia load, natural frequency and explicit time step is wrong by the same factor.`]);
+      if (!c.densityPlausible) notes.push(['bad', `The density reads as ${sci(c.rhoSI)} kg/m³. In ${sys.name} a density of ${sci(7850 / sys.toKgM3)} ${sys.density} is steel: every mass, inertia load, natural frequency and explicit time step is wrong by the same factor.`]);
       notes.push(['', 'Check the model\'s total mass against the CAD or the scales before anything else: it tests the density and the units of every part at once.']);
       return () => {
         // a log strip of wave speeds, with typical material bands
@@ -236,13 +236,13 @@ const TABS = [
       if (Object.values(c).some((v) => !Number.isFinite(v))) { notes.push(['bad', 'Enter all nine constants.']); return null; }
       const o = orthotropic(c);
       rows.push(
-        { dt: 'Stability', dd: `${o.stable ? 'passes' : 'fails'} <small>determinant ${f(o.det, 4)} — must be positive, with every modulus positive and each |ν<sub>ij</sub>| below √(E<sub>i</sub>/E<sub>j</sub>)</small>`, primary: true, cls: o.stable ? 'ok' : 'bad' },
-        { dt: 'Minor ratios', dd: `ν<sub>21</sub> ${f(o.n21, 4)} <small>ν<sub>31</sub> ${f(o.n31, 4)} · ν<sub>32</sub> ${f(o.n32, 4)} — from ν<sub>ji</sub> = ν<sub>ij</sub>E<sub>j</sub>/E<sub>i</sub></small>` },
+        { dt: 'Stability', dd: `${o.stable ? 'passes' : 'fails'} <small>determinant ${f(o.det, 4)}: must be positive, with every modulus positive and each |ν<sub>ij</sub>| below √(E<sub>i</sub>/E<sub>j</sub>)</small>`, primary: true, cls: o.stable ? 'ok' : 'bad' },
+        { dt: 'Minor ratios', dd: `ν<sub>21</sub> ${f(o.n21, 4)} <small>ν<sub>31</sub> ${f(o.n31, 4)} · ν<sub>32</sub> ${f(o.n32, 4)}, from ν<sub>ji</sub> = ν<sub>ij</sub>E<sub>j</sub>/E<sub>i</sub></small>` },
         ...o.bounds.map((b) => ({ dt: `<span class="nc">${b.name}</span> bound`, dd: `${f(b.v, 3)} of ${f(b.max, 3)} <small>|${b.name}| < √(E<sub>i</sub>/E<sub>j</sub>)</small>`, cls: b.v < b.max ? '' : 'bad' })),
       );
       if (Number.isFinite(o.G23iso)) rows.push({ dt: 'G23 for E2 = E3', dd: `${g3(o.G23iso)} <small>E<sub>2</sub>/2(1 + ν<sub>23</sub>) · entered ${g3(c.G23)}</small>`, cls: Math.abs(c.G23 / o.G23iso - 1) < 0.05 ? 'ok' : 'warn' });
-      if (!o.stable) notes.push(['bad', 'Not a material: no real solid has these constants. The usual cause is swapped axes — E1 and E2 exchanged while the Poisson\'s ratios stayed — or minor ratios typed where major ones belong.']);
-      if (c.E1 > 3 * c.E2 && c.n12 < 0.1) notes.push(['warn', `ν12 = ${f(c.n12, 3)} with E1 ${f(c.E1 / c.E2, 0)} times E2: that looks like the minor ratio ν21. The card would still be stable — and wrong. Check which convention the source and the solver use.`]);
+      if (!o.stable) notes.push(['bad', 'Not a material: no real solid has these constants. The usual cause is swapped axes: E1 and E2 exchanged while the Poisson\'s ratios stayed, or minor ratios typed where major ones belong.']);
+      if (c.E1 > 3 * c.E2 && c.n12 < 0.1) notes.push(['warn', `ν12 = ${f(c.n12, 3)} with E1 ${f(c.E1 / c.E2, 0)} times E2: that looks like the minor ratio ν21. The card would still be stable, and wrong. Check which convention the source and the solver use.`]);
       if (Number.isFinite(o.G23iso) && Math.abs(c.G23 / o.G23iso - 1) >= 0.05) notes.push(['warn', 'With E2 = E3 the 2–3 plane is usually isotropic, so G23 should be close to E2/2(1 + ν23).']);
       notes.push(['', 'Check the material orientation in the model too: the right constants on the wrong axes pass every test on this tab.']);
       return () => bars([...o.bounds.map((b) => ({ name: b.name, u: b.v / b.max })), { name: 'det', u: o.det > 0 ? 0 : Infinity }], 'share of each bound');
@@ -254,9 +254,9 @@ const TABS = [
       if (!(E > 0 && K > E / 3)) { notes.push(['bad', 'Enter E and a bulk modulus K larger than E/3.']); return null; }
       const nu = poissonFromEK(E, K), G = shearModulus(E, nu), nh = neoHookean(G, K);
       rows.push(
-        { dt: "Poisson's ratio from K", dd: `${f(nu, 6)} <small>(3K − E)/6K — enter it to this precision</small>`, primary: true },
+        { dt: "Poisson's ratio from K", dd: `${f(nu, 6)} <small>(3K − E)/6K: enter it to this precision</small>`, primary: true },
         { dt: 'Shear modulus', dd: `${g3(G)} MPa <small>K/G = ${f(K / G, 0)}</small>` },
-        { dt: 'Neo-Hookean', dd: `C10 ${f(nh.C10, 4)} MPa <small>D1 ${sci(nh.D1)} MPa⁻¹ — μ = 2C10, K = 2/D1</small>` },
+        { dt: 'Neo-Hookean', dd: `C10 ${f(nh.C10, 4)} MPa <small>D1 ${sci(nh.D1)} MPa⁻¹: μ = 2C10, K = 2/D1</small>` },
       );
       if (nuG > 0 && nuG < 0.5) {
         const Kg = bulkModulus(E, nuG), r = Kg / K;
@@ -265,7 +265,7 @@ const TABS = [
       }
       notes.push(['', 'Near ν = 0.5 the bulk modulus depends on the fourth decimal place. Take K from a volumetric test and derive ν; never round it to 0.49 or 0.5.']);
       notes.push(['', 'Use the solver\'s hybrid (mixed) elements for nearly incompressible solids; ordinary elements lock up and come out too stiff.']);
-      notes.push(['', 'E for rubber and propellant depends on rate and temperature: the card belongs to a load case. For time-dependent loads use the viscoelastic form — see <a href="../../fundamentals/viscoelasticity/">Viscoelasticity</a>.']);
+      notes.push(['', 'E for rubber and propellant depends on rate and temperature: the card belongs to a load case. For time-dependent loads use the viscoelastic form. See <a href="../../fundamentals/viscoelasticity/">Viscoelasticity</a>.']);
       return () => {
         const kg = (v: number) => (2 * (1 + v)) / (3 * (1 - 2 * v));
         const c = frame({ x0: 0.3, x1: 0.5, y0: 0, y1: 4.5, xl: "Poisson's ratio ν", yl: 'log₁₀(K/G)', sy: 1 });
@@ -287,11 +287,11 @@ const TABS = [
         { dt: 'Hardening exponent <span class="nc">n</span>', dd: `${f(pt.n, 1)} <small>Ramberg–Osgood, through ${g3(Fty)} MPa at 0.2% and ${g3(Ftu)} MPa at ${f(100 * eu, 1)}%</small>`, primary: true },
         { dt: 'True stress at necking', dd: `${g3(last.trueStress)} MPa <small>${f(100 * (last.trueStress / Ftu - 1), 1)}% above the engineering ultimate</small>` },
         { dt: 'True plastic strain at necking', dd: `${f(100 * last.truePlastic, 2)}% <small>the last row; beyond it many solvers hold the stress flat</small>` },
-        { dt: 'First row', dd: `${g3(pt.table[0].trueStress)} MPa <small>at zero plastic strain — the proportional limit, where the fitted plastic strain is 0.01%</small>` },
+        { dt: 'First row', dd: `${g3(pt.table[0].trueStress)} MPa <small>at zero plastic strain: the proportional limit, where the fitted plastic strain is 0.01%</small>` },
       );
       tableBox.hidden = false;
       csv.value = pt.table.map((r) => `${r.trueStress.toFixed(1)}, ${r.truePlastic.toFixed(5)}`).join('\n');
-      if (pt.n > 30) notes.push(['', `n = ${f(pt.n, 0)}: very little hardening — typical of high-strength steels, whose yield is close to their ultimate. The part has little reserve once it yields.`]);
+      if (pt.n > 30) notes.push(['', `n = ${f(pt.n, 0)}: very little hardening, typical of high-strength steels, whose yield is close to their ultimate. The part has little reserve once it yields.`]);
       notes.push(['', 'Typical properties for stiffness and correlation; minimum (A- or B-basis) curves when the plastic analysis itself is the strength check. Do not mix the two in one model.']);
       notes.push(['', 'Run one element in uniaxial tension with this table: the output must retrace the curve. Past necking the true curve keeps rising, and failure needs its own criterion.']);
       return () => {
@@ -323,7 +323,7 @@ const TABS = [
         { dt: 'Card: secant <span class="nc">α</span> from the reference', dd: temps.map((T) => `${deg(T)} °C: ${Math.abs(T - Tr) < 1e-9 ? f(x.inst(Tr) * 1e6, 2) : f(x.secant(Tr, T) * 1e6, 2)}`).join(' · ') + ' <small>×10⁻⁶/K</small>' },
       );
       if (Tm > Math.max(T1, T2) || Math.min(T0, Tm) < Math.min(T1, T2)) notes.push(['warn', `The model runs outside the data (${deg(Math.min(T1, T2))} to ${deg(Math.max(T1, T2))} °C). Most solvers hold the end values flat outside a table; this tab extends the straight line, which is only a guess either way.`]);
-      notes.push(['', 'Give the solver secant coefficients and the reference temperature they are measured from — Abaqus ZERO, the Ansys reference temperature, Nastran TREF. A wrong reference shifts every thermal strain.']);
+      notes.push(['', 'Give the solver secant coefficients and the reference temperature they are measured from: Abaqus ZERO, the Ansys reference temperature, Nastran TREF. A wrong reference shifts every thermal strain.']);
       notes.push(['', 'Every other property in a temperature-dependent card has the same trap: if the table stops at 100 °C and the part reaches 150 °C, the solver uses the 100 °C values.']);
       return () => {
         const lo = Math.min(T0, Tm, T1), hi = Math.max(T0, Tm, T2), Ts = Array.from({ length: 81 }, (_, i) => lo + ((hi - lo) * i) / 80);

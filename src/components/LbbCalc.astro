@@ -11,7 +11,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yi
 ---
 
 <div class="calc lbbcalc" data-lbbcalc>
-  <div class="calc-head"><span>Leak before break — axial surface flaw</span><span>Newman–Raju · Paris growth · Folias bulging</span></div>
+  <div class="calc-head"><span>Leak before break: axial surface flaw</span><span>Newman–Raju · Paris growth · Folias bulging</span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -123,7 +123,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yi
       field('k').value = String(m.kic); field('y').value = String(m.y); field('u').value = String(m.u);
       field('paris').value = m.fam === 'steel' ? (m.u > 1100 ? 'mart' : 'fp') : m.fam === 'ss' ? (m.u > 900 ? 'mart' : 'aus') : m.fam === 'ni' ? 'aus' : m.fam;
       root.querySelector('[data-mathint]')!.textContent =
-        `Database K_IC ${m.kic} MPa√m${m.def ? ' (family default)' : ''} — indicative. Use measured toughness for the orientation, thickness and lowest temperature that matter.`;
+        `Database K_IC ${m.kic} MPa√m${m.def ? ' (family default)' : ''}: indicative. Use measured toughness for the orientation, thickness and lowest temperature that matter.`;
     };
 
     function run() {
@@ -155,11 +155,11 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yi
       else if (!leak)
         out.push(['bad', `The flaw breaks through ${f(2 * g.c, 2)} mm long, but the longest through crack that holds at this stress is ${f(2 * g.cCrit, 2)} mm. It runs the moment it breaks through: a burst with no warning.`]);
       else
-        out.push(['', `The flaw breaks through ${f(2 * g.c, 2)} mm long, and a through crack holds up to ${f(2 * g.cCrit, 2)} mm. It would leak first — ${f(ratio, 2)}× margin on length.`]);
-      out.push(['', `Irwin's simple screen (a flat-plate through crack with c = t) gives c<sub>crit</sub>/t = ${f(g.irwin / t, 2)} — ${g.irwin >= t ? 'leak' : 'break'} — the check on the case-sizing page.`]);
+        out.push(['', `The flaw breaks through ${f(2 * g.c, 2)} mm long, and a through crack holds up to ${f(2 * g.cCrit, 2)} mm. It would leak first: ${f(ratio, 2)}× margin on length.`]);
+      out.push(['', `Irwin's simple screen (a flat-plate through crack with c = t) gives c<sub>crit</sub>/t = ${f(g.irwin / t, 2)}: ${g.irwin >= t ? 'leak' : 'break'}. This is the check on the case-sizing page.`]);
       if (g.a / t > 0.8) out.push(['', `Beyond a/t = 0.8 the Newman–Raju fit is extrapolated; the last ${f((1 - 0.8) * 100, 0)}% of the wall is approximate.`]);
       if (g.critMode === 'collapse') out.push(['', 'The through crack is limited by plastic collapse, not fracture: this material is tough enough that the ligament yields before it tears.']);
-      if (leak) out.push(['warn', 'A leak only helps if it is harmless and noticed. In a burning motor, hot gas through the wall usually is the failure — leak-before-break earns its keep on the proof-test stand and in long-life pressure vessels.']);
+      if (leak) out.push(['warn', 'A leak only helps if it is harmless and noticed. In a burning motor, hot gas through the wall usually is the failure: leak-before-break earns its keep on the proof-test stand and in long-life pressure vessels.']);
       notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       drawWall(g, t, leak);
       drawFail(i, g, leak);
@@ -172,7 +172,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yi
       const X = Math.max(g.cCrit, g.c) * 1.15;
       const sx = (x1 - x0) / (2 * X), sy = (yBot - yTop) / t, cx = (x0 + x1) / 2;
       svg.append(el('rect', { x: x0, y: yTop, width: x1 - x0, height: yBot - yTop, fill: 'var(--rd-steel)', 'fill-opacity': 0.35 }));
-      svg.append(el('text', { x: x0, y: yTop - 8, 'font-size': 10, fill: 'var(--rd-muted)' }, 'inner surface — pressure side'));
+      svg.append(el('text', { x: x0, y: yTop - 8, 'font-size': 10, fill: 'var(--rd-muted)' }, 'inner surface: pressure side'));
       svg.append(el('text', { x: x0, y: yBot + 16, 'font-size': 10, fill: 'var(--rd-muted)' }, 'outer surface'));
       const k = sy / sx;
       svg.append(el('text', { x: x1, y: yBot + 16, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' },

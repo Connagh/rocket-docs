@@ -30,7 +30,7 @@ export default defineConfig({
     starlight({
       title: 'REF·DB',
       description:
-        'Solid rocket motor and mechanical design reference — learn the concepts, then use the tools.',
+        'Solid rocket motor and mechanical design reference. Learn the concepts, then use the tools.',
       favicon: '/favicon.svg',
       customCss: [
         '@fontsource/ibm-plex-sans/400.css',

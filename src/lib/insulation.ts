@@ -78,7 +78,7 @@ export const LINER_MATERIALS: LinerMaterial[] = [
   { key: 'cc', name: 'Carbon-carbon', role: 'nozzle', k: 35, rho: 1750, cp: 1200, tPyro: null, erosion: 0.02,
     note: 'Very low recession and light, but conducts heat readily: protects the surface, not the structure behind it.' },
   { key: 'gr', name: 'Bulk graphite', role: 'nozzle', k: 85, rho: 1800, cp: 1000, tPyro: null, erosion: 0.05,
-    note: 'Cheap throat inserts for small motors. Thermal-shock sensitive and highly conductive — always needs an insulator behind it.' },
+    note: 'Cheap throat inserts for small motors. Thermal-shock sensitive and highly conductive: always needs an insulator behind it.' },
 ];
 
 export interface BackupMaterial { key: string; name: string; k: number; rho: number; cp: number; tLimit: number; }

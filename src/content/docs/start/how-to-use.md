@@ -1,57 +1,58 @@
 ---
 title: How to use this site
-description: How topic pages are laid out, how to search, and how to read the numbers.
+description: How topic pages are arranged, how to search, and how to read the numbers.
 ---
 
 ## Two ways in
 
-- **Learning a topic?** Start at the top of a page and read down. Every topic is written in the same order, so once
-  you have read one you know where everything is in the rest.
-- **Need a number or a tool?** Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, or jump straight to the
-  calculator from the page's table of contents.
+- **Do you want to learn a topic?** Start at the top of a page and read down. All topics are written in the same
+  sequence. When you have read one page, you know where to find all the items on the other pages.
+- **Do you need a number or a tool?** Push <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, or go directly to
+  the calculator from the table of contents of the page.
 
 ## Finding your way
 
-- **The mission rail** (left; the ☰ menu on a phone) lists every one of the 64 zones in workflow order, grouped into
-  eight phases, each with its own colour. Bright entries are rebuilt v2 pages. Entries tagged **v1** open the original
-  reference directly at that zone, so nothing is ever missing.
-- **The orbit map** at the top of the rail shows the eight phases as planets, with the zone you are on in the sun.
-  Select a planet to jump to that phase in the list.
-- **The zone banner** at the top of each page tells you where you are — *PHASE 3 OF 8 · SIZE · STEP 5 OF 10 · Z25* —
-  with a dot for every zone in the phase (filled = v2, dashed = v1) and **PREV / NEXT** through the rebuilt pages. The
-  same route continues at the foot of every page.
-- **Zone numbers** match REF·DB v1 exactly, so a number on an old note still points at the same topic. Primer pages
-  such as *How a solid motor works* are marked **P** and don't take a number.
-- **MODE** switches between the dark mission view (default) and a light drawing-office view. **PAUSE MOTION** stops the
-  background and every animation; it remembers your choice, and your system's reduced-motion setting is always obeyed.
+- **The mission rail** (on the left; the ☰ menu on a phone) shows all 64 zones in workflow sequence, in eight phases.
+  Each phase has its own colour. Bright entries are rebuilt v2 pages. Entries with the tag **v1** open the original
+  reference at that zone, so no content is missing.
+- **The orbit map** at the top of the rail shows the eight phases as planets, with your current zone in the sun. Select
+  a planet to go to that phase in the list.
+- **The zone banner** at the top of each page shows your location, for example *PHASE 3 OF 8 · SIZE · STEP 5 OF 10 ·
+  Z25*. It has a dot for each zone in the phase (filled = v2, dashed = v1), and **PREV / NEXT** links through the
+  rebuilt pages. The same links are also at the bottom of each page.
+- **Zone numbers** are the same as in REF·DB v1. Thus a number on an old note still refers to the same topic. Primer
+  pages such as *How a solid motor works* have the mark **P** and no number.
+- **MODE** changes between the dark mission view (the default) and a light drawing-office view. **PAUSE MOTION** stops
+  the background and all animations. The site remembers your selection, and it always obeys the reduced-motion setting
+  of your system.
 
 ## How every topic page is laid out
 
-1. **At a glance** — the idea in one line and what to read first.
-2. **Why it matters** — what goes wrong on real hardware if you get this wrong.
-3. **Intuition** — an everyday analogy (the blue *Think of it like…* boxes) and a diagram.
-4. **The physics** — the equations, each one explained in words.
-5. **The tool** — an interactive calculator built on the same equations. *Copy link* shares your exact inputs.
-6. **Worked example** — the tool's answer done by hand, step by step, so you can check both.
-7. **Where this stops** — the limits of the method and the traps experienced engineers watch for.
-8. **On the drawing** — how the result is specified and verified.
-9. **References** — open literature and the standards that govern the real design.
+1. **At a glance:** the idea in one line, and what to read first.
+2. **Why it matters:** what goes wrong on real hardware if this is incorrect.
+3. **Intuition:** an analogy from daily life (the blue *Think of it like…* boxes) and a diagram.
+4. **The physics:** the equations, each one explained in words.
+5. **The tool:** an interactive calculator that uses the same equations. *Copy link* shares your exact inputs.
+6. **Worked example:** the result of the tool calculated by hand, step by step, so that you can check the two.
+7. **Where this stops:** the limits of the method, and the errors that experienced engineers look for.
+8. **On the drawing:** how to specify and verify the result.
+9. **References:** open literature and the standards that control the real design.
 
 ## Reading the numbers
 
-- **Units.** SI throughout: MPa, mm, kg, °C. Pressures can be shown in bar or psi where it helps.
-- **Margin of safety.** $MS = \dfrac{\text{allowable}}{\text{applied}} - 1$. Zero means exactly at the limit;
-  negative means it fails the requirement.
-- **Factors are yours to enter.** Safety, proof, burst and life factors come from your programme's governing
-  requirement, so the calculators start with them blank and show everything that doesn't need them. **Load worked
-  example** fills in the page's example — including its factors, which are there only to reproduce the hand
-  calculation.
-- **Material data** is typical or minimum published data for early design, shared with REF·DB v1. Fracture toughness
-  ($K_{IC}$) varies strongly with heat treatment, orientation, thickness and temperature, and is always flagged as
-  indicative.
+- **Units.** SI on all pages: MPa, mm, kg, °C. Some pages also show pressures in bar or psi.
+- **Margin of safety.** $MS = \dfrac{\text{allowable}}{\text{applied}} - 1$. Zero means exactly at the limit. A
+  negative value means that it does not meet the requirement.
+- **You enter the factors.** Safety, proof, burst and life factors come from the requirements of your programme. Thus
+  the calculators start with these fields empty, and show all the results that do not need them. **Load worked
+  example** enters the example of the page, with its factors. These factors are there only to give the same result as
+  the hand calculation.
+- **Material data** are typical or minimum published data for early design, the same as in REF·DB v1. Fracture
+  toughness ($K_{IC}$) changes much with heat treatment, orientation, thickness and temperature. The site always shows
+  it as indicative.
 
 :::caution[Screening values, not design allowables]
-Everything here is for learning and early sizing. Before anything is built, verify against the current issue of the
-governing standard, your organisation's design rules, and approved allowables, and get the analysis signed off by the
-responsible authority.
+All the content is for learning and early sizing. Before you build anything, verify against the current issue of the
+applicable standard, the design rules of your organisation and approved allowables. The responsible authority must
+approve the analysis.
 :::

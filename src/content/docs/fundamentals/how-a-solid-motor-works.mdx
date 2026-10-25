@@ -1,6 +1,6 @@
 ---
 title: How a solid rocket motor works
-description: The anatomy of a solid rocket motor, why it settles at one chamber pressure, and what that means for the hardware designer.
+description: The parts of a solid rocket motor, why it operates at one chamber pressure, and what this means for the hardware designer.
 sidebar:
   order: 1
 ---
@@ -11,53 +11,55 @@ import MotorCutaway from '../../../components/MotorCutaway.astro';
 import PressureEquilibrium from '../../../components/PressureEquilibrium.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A solid motor is a pressure vessel full of fuel with one carefully sized hole in it.</div>
-  <div><b>You'll learn</b>What each part does, why chamber pressure is self-regulating, and why small changes become big ones.</div>
+  <div><b>In one line</b>A solid motor is a pressure vessel full of fuel, with one carefully sized hole in it.</div>
+  <div><b>You'll learn</b>What each part does, why the chamber pressure controls itself, and why small changes become large changes.</div>
   <div><b>Leads to</b><a href="../../motor/case-sizing/">Case &amp; pressure vessel sizing</a></div>
 </div>
 
 ## The whole idea in one picture
 
-A solid rocket motor has no pumps, valves or moving parts. Fuel and oxidiser are premixed into a solid rubbery
-**grain** that is cast directly into the **case**. Once lit, the exposed surface burns and makes hot gas, the gas
-pressurises the case, and the only way out is through the **nozzle**. Everything about the motor follows from that
-arrangement.
+A solid rocket motor has no pumps, valves or moving parts. The fuel and the oxidiser are mixed into a solid,
+rubber-like **grain**, which is cast directly into the **case**. After ignition, the exposed surface burns and makes hot
+gas. The gas pressurises the case, and it can go out only through the **nozzle**. All the properties of the motor come
+from this arrangement.
 
 <MotorCutaway />
 
 <Analogy title="A pressure cooker that is also the stove">
-  The case is a pressure cooker, the grain is the fuel burning inside it, and the nozzle throat is the valve on the lid.
-  The difference from a kitchen pressure cooker is that here the "stove" burns *faster* the higher the pressure
-  gets. Whether that ends in a steady hiss or an explosion depends on one number, which the rest of this page is about.
+  The case is a pressure cooker, the grain is the fuel that burns inside it, and the nozzle throat is the valve on the
+  lid. The difference from a kitchen pressure cooker is that here the "stove" burns *faster* as the pressure increases.
+  The result can be a steady hiss or an explosion. One number decides which, and the remainder of this page is about
+  that number.
 </Analogy>
 
 ## How the propellant burns
 
-Composite propellant burns only at its exposed surface, and that surface recedes **perpendicular to itself** at the
-**burn rate** $r$, typically 5–20 mm/s for tactical and booster propellants. The burn rate depends strongly on chamber
-pressure, and over a useful range it follows Saint-Robert's (Vieille's) law:
+Composite propellant burns only at its exposed surface. That surface moves back **perpendicular to itself** at the
+**burn rate** $r$, which is usually 5–20 mm/s for tactical and booster propellants. The burn rate depends strongly on
+the chamber pressure. Over a useful range, it follows the law of Saint-Robert (Vieille):
 
 $$
 r = a\,p_c^{\,n}
 $$
 
-- $a$ — burn-rate coefficient, set by the propellant formulation and its initial temperature.
-- $n$ — pressure exponent, usually about 0.3–0.5 for AP/HTPB propellants.
+- $a$ is the burn-rate coefficient, set by the propellant formulation and its initial temperature.
+- $n$ is the pressure exponent, usually approximately 0.3–0.5 for AP/HTPB propellants.
 
 <Analogy title="Toast under a grill">
-  Burning propellant is like bread under a grill: only the surface facing the heat changes, and it works its way in
-  layer by layer. Turn the grill up (raise the pressure) and it browns faster — but not proportionally faster. That
-  "not proportionally" is the exponent $n < 1$.
+  Burning propellant is similar to bread under a grill. Only the surface that faces the heat changes, and it moves in
+  layer by layer. If you make the grill hotter (increase the pressure), the bread becomes brown faster, but not
+  proportionally faster. The exponent $n < 1$ gives this "not proportionally".
 </Analogy>
 
-Because the surface recedes everywhere at once, the **shape** of the bore decides how the burning area $A_b$ changes as
-the grain burns back. A plain circular bore grows in area as it opens up (progressive thrust); a star or slotted bore can
-be shaped to keep the area nearly constant (neutral thrust). Grain design is how the motor's thrust–time curve is set.
+The surface moves back everywhere at the same time. Thus the **shape** of the bore decides how the burning area $A_b$
+changes as the grain burns. A plain circular bore increases in area as it opens (progressive thrust). A star bore or a
+slotted bore can be shaped to keep the area almost constant (neutral thrust). Grain design sets the thrust–time curve of
+the motor.
 
 ## Why chamber pressure settles at one value
 
-Gas is made at a rate set by the burning area and burn rate, and leaves through the choked throat at a rate set by the
-throat area and the chamber pressure. Pressure rises until the two are equal:
+The burning area and the burn rate set the rate at which gas is made. The throat area and the chamber pressure set the
+rate at which gas goes out through the choked throat. The pressure increases until the two rates are equal:
 
 $$
 \underbrace{\rho_p\,A_b\,a\,p_c^{\,n}}_{\text{gas made}}
@@ -67,73 +69,74 @@ $$
 p_c = \left(\rho_p\, a\, c^*\, \frac{A_b}{A_t}\right)^{\frac{1}{1-n}}
 $$
 
-where $\rho_p$ is propellant density, $A_t$ is throat area and $c^*$ is the characteristic velocity — a measure of how
-much hot gas the propellant makes per unit of throat flow. The ratio $K_n = A_b/A_t$ is the designer's main lever.
+Here $\rho_p$ is the propellant density, $A_t$ is the throat area, and $c^*$ is the characteristic velocity. $c^*$
+measures how much hot gas the propellant makes for each unit of throat flow. The ratio $K_n = A_b/A_t$ is the main
+design parameter.
 
 <Analogy title="A bath with the tap on and the plug out">
-  Water flows in from the tap and out through the plug hole. The level rises until the outflow — which grows with depth —
-  matches the inflow. A solid motor does the same thing with pressure instead of water level. The twist: in a motor the
-  tap opens further as the level rises ($p^n$). As long as the plug hole "wins" ($n<1$), the level still settles. If
-  the tap ever won ($n \geq 1$), the bath would overflow, however big the plug hole.
+  Water flows in from the tap and out through the plug hole. The level increases until the outflow, which increases
+  with depth, is equal to the inflow. A solid motor does the same with pressure in place of water level. The difference
+  is that in a motor, the tap opens more as the level increases ($p^n$). While the plug hole "wins" ($n<1$), the level
+  still becomes stable. If the tap won ($n \geq 1$), the bath would overflow, for any size of plug hole.
 </Analogy>
 
-Try it. The orange curve is gas made, the blue line is gas leaving; where they cross is the operating pressure.
+Try it. The orange curve is the gas made, and the blue line is the gas that goes out. The operating pressure is where
+they cross.
 
 <PressureEquilibrium />
 
 ## The consequence for hardware: small changes are amplified
 
-Rearranging the balance shows how a fractional change in burning area, burn rate or throat area turns into a change in
-pressure:
+The balance shows how a fractional change in burning area, burn rate or throat area becomes a change in pressure:
 
 $$
 \frac{\Delta p_c}{p_c} \approx \frac{1}{1-n}\,\frac{\Delta K_n}{K_n}
 $$
 
-With $n = 0.4$, a 1% change in burning area moves pressure by about 1.7%. That amplification is why the **maximum
-expected operating pressure (MEOP)** that the case is designed to sits well above the nominal pressure. It has to
-cover, all at once:
+With $n = 0.4$, a 1% change in burning area changes the pressure by approximately 1.7%. Because of this amplification,
+the **maximum expected operating pressure (MEOP)**, which is the design pressure of the case, is well above the nominal
+pressure. It must cover all of these items together:
 
-- **Hot propellant.** Burn rate rises with initial grain temperature. The pressure sensitivity
-  $\pi_K = \left(\partial \ln p_c / \partial T\right)_{K_n}$ is typically around 0.1–0.3 %/°C, so the spread between a
-  cold-soaked and a hot-soaked motor can be tens of percent.
-- **Manufacturing spread** in burn rate, grain geometry and throat diameter.
-- **Ignition spike** and any **erosive burning** early in the burn, when gas speeds along the bore are highest.
+- **Hot propellant.** The burn rate increases with the initial grain temperature. The pressure sensitivity
+  $\pi_K = \left(\partial \ln p_c / \partial T\right)_{K_n}$ is usually approximately 0.1–0.3 %/°C. Thus the difference
+  between a cold-soaked motor and a hot-soaked motor can be tens of per cent.
+- **Manufacturing variation** in burn rate, grain geometry and throat diameter.
+- **The ignition spike** and any **erosive burning** early in the burn, when the gas speeds along the bore are highest.
 
-<Aside type="caution" title="Hardware designers inherit MEOP — they do not set it">
-  MEOP is a ballistics output that already includes these effects. Sizing a case on the nominal pressure and finding
-  out later that the hot-day value is 15–25% higher is a classic and expensive mistake.
+<Aside type="caution" title="Hardware designers get MEOP, they do not set it">
+  MEOP is a ballistics output that already includes these effects. A frequent and expensive error is to size a case
+  for the nominal pressure, and to find later that the hot-day value is 15–25% higher.
 </Aside>
 
 ## From pressure to thrust
 
-Thrust is chamber pressure acting over the throat, multiplied by the nozzle's thrust coefficient $C_F$:
+The thrust is the chamber pressure on the throat area, multiplied by the thrust coefficient $C_F$ of the nozzle:
 
 $$
 F = C_F\, p_c\, A_t
 $$
 
-$C_F$ is typically about 1.3–1.8, depending on the nozzle expansion ratio and the ambient pressure — it measures how well
-the nozzle turns pressure into exhaust momentum. Thrust therefore follows the chamber pressure trace, which follows the
-burning area, which follows the grain shape.
+$C_F$ is usually approximately 1.3–1.8. It depends on the expansion ratio of the nozzle and on the ambient pressure. It
+measures how well the nozzle changes pressure into exhaust momentum. Thus the thrust follows the chamber pressure trace,
+which follows the burning area, which follows the grain shape.
 
 ## What to take away
 
-1. **Pressure is self-regulating** only because $n < 1$. Propellants are chosen for low, stable $n$.
-2. **$K_n$ sets pressure.** Grain geometry sets $A_b$ through the burn; throat erosion slowly increases $A_t$.
-3. **Changes are amplified by $1/(1-n)$** — so temperature, tolerances and transients must all be inside MEOP.
-4. **The case sees MEOP, proof and burst** — which is where
-   [case &amp; pressure vessel sizing](../../motor/case-sizing/) picks up. For what each hardware part carries, how it
-   fails and what it weighs, see [rocket motor hardware](../../motor/hardware/).
+1. **The pressure controls itself** only because $n < 1$. Propellants are selected for a low, stable $n$.
+2. **$K_n$ sets the pressure.** The grain geometry sets $A_b$ during the burn. Throat erosion slowly increases $A_t$.
+3. **Changes are amplified by $1/(1-n)$.** Thus temperature, tolerances and transients must all be within MEOP.
+4. **The case must withstand MEOP, proof and burst.** The page
+   [case &amp; pressure vessel sizing](../../motor/case-sizing/) continues from here. For what each hardware part
+   carries, how it fails and what its mass is, see [rocket motor hardware](../../motor/hardware/).
 
 ## Further reading
 
-- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — chapters on solid propellant
-  rocket fundamentals and motor components.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) (chapters on solid propellant rocket
+  fundamentals and motor components).
 - A. Davenas (ed.), *Solid Rocket Propulsion Technology*, Pergamon (1993).
-- NASA SP-8039, *Solid Rocket Motor Performance Analysis and Prediction* (1971) — open NASA design monograph.
+- NASA SP-8039, *Solid Rocket Motor Performance Analysis and Prediction* (1971) (open NASA design monograph).
 
 <Aside type="note">
   This page is descriptive and educational. Propellant formulation, ballistic design and energetics work are specialist
-  disciplines governed by your programme's safety case and qualified personnel.
+  disciplines. The safety case of your programme and qualified personnel control them.
 </Aside>

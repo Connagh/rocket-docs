@@ -1,6 +1,6 @@
 ---
 title: Hand calcs
-description: The quick closed-form checks a mechanical designer makes before a finite-element model and uses to check it — beams, flat plates, thin shells and their edge zones, lugs and pins, and columns — with how to bound boundary conditions, sanity-check results and turn assumptions into drawing requirements.
+description: The quick closed-form checks that a mechanical designer makes before a finite-element model, and uses to check it. Beams, flat plates, thin shells and their edge zones, lugs and pins, and columns. How to put limits on boundary conditions, check results, and change assumptions into drawing requirements.
 sidebar:
   order: 0
 ---
@@ -11,57 +11,59 @@ import HandCalcSketches from '../../../components/HandCalcSketches.astro';
 import HandCalc from '../../../components/HandCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A hand calc is a model small enough to check in your head: it sizes the part before the finite-element model, finds the failure mode that governs, and tells you whether the model is right.</div>
+  <div><b>In one line</b>A hand calc is a model that is small enough to check in your head. It sizes the part before the finite-element model, finds the failure mode that governs, and tells you if the model is correct.</div>
   <div><b>Before this</b><a href="../../materials/allowables/">Allowables</a> · <a href="../../verify/margin-policy/">Margin policy</a></div>
   <div><b>Used by</b><a href="../../joints/load-paths/">Load paths & joints</a> · <a href="../../verify/shell-buckling/">Shell buckling</a></div>
 </div>
 
 ## Why this matters
 
-A finite-element model gives an answer for whatever you build into it — wrong loads, wrong units, wrong boundary
-conditions and all. A hand calc is how you know what answer to expect. It is used three times:
+A finite-element model gives a result for all the data that you put into it, also incorrect loads, incorrect units and
+incorrect boundary conditions. A hand calc tells you what result to expect. You use it three times:
 
-- **Before the model, to size the part.** Thickness, section and pin size come from closed-form solutions; the model
-  then refines a design that is already close.
-- **To find what governs.** Five quick checks often show that four failure modes do not matter and one does — and that
-  one tells you where the model needs its detail.
-- **After the model, to check it.** Reactions, far-field stresses and deflections should match the hand calc where its
-  idealisation holds. When they do not, something is wrong, and it is cheaper to find out now.
+- **Before the model, to size the part.** The thickness, section and pin size come from closed-form solutions. The
+  model then refines a design that is already almost correct.
+- **To find the failure mode that governs.** Five quick checks often show that four failure modes are not important and
+  one is. That one tells you where the model needs detail.
+- **After the model, to check it.** Reactions, far-field stresses and deflections must agree with the hand calc where
+  its idealisation is valid. If they do not agree, there is an error. It costs less to find it now.
 
-Reviewers expect it too: a margin that rests only on a contour plot is hard to check, and a hand calc is something
-another engineer can follow line by line.
+Reviewers also expect hand calcs. It is difficult to check a margin that comes only from a contour plot. A different
+engineer can follow a hand calc line by line.
 
 ## How to make one
 
-1. **Draw the free body.** Every load, every reaction, and check that they balance.
-2. **Decide what the part is** — a beam, a plate, a shell, a lug or a column — and which part of it the idealisation
-   describes. Most real parts are several of these at once.
-3. **Bound the boundary conditions.** A bolted edge is neither simply supported nor clamped, so run both. If the
-   design passes both, the edge does not matter; if not, it needs a better model.
-4. **Calculate in one consistent set of units** — N, mm and MPa on this site — and compare with the
-   [allowables](../../materials/allowables/) and your programme's factors ([Margin policy](../../verify/margin-policy/)).
-5. **Sanity-check.** Order of magnitude, limiting cases, the direction things should move when you change an input.
-6. **Write down the assumptions.** Each one is either a requirement on the drawing or a question for the detailed model.
+1. **Draw the free body.** Show all loads and all reactions, and check that they balance.
+2. **Decide what the part is:** a beam, a plate, a shell, a lug or a column. Also decide which region of the part the
+   idealisation describes. Most real parts are several of these together.
+3. **Put limits on the boundary conditions.** A bolted edge is not simply supported and not clamped, so calculate the
+   two cases. If the design passes the two cases, the edge condition is not important. If it does not, the edge needs a
+   better model.
+4. **Calculate in one consistent set of units** (N, mm and MPa on this site). Compare with the
+   [allowables](../../materials/allowables/) and the factors of your programme ([Margin policy](../../verify/margin-policy/)).
+5. **Check the result.** Check the order of magnitude, the limiting cases, and the direction of change when you change
+   an input.
+6. **Write the assumptions.** Each one is a requirement on the drawing or a question for the detailed model.
 
 <Analogy title="Checking the bill">
-  You do not recompute a restaurant bill to the penny. You round, add it up in your head, and if the total is twice
-  your estimate you look closer. A hand calc is that estimate for a finite-element model: rough, quick, and very good at
-  catching the answer that is ten times wrong.
+  You do not calculate a restaurant bill again to the penny. You round the values and add them in your head. If the
+  total is two times your estimate, you look more carefully. A hand calc is that estimate for a finite-element model.
+  It is approximate and quick, and it is very good at finding a result that is ten times incorrect.
 </Analogy>
 
 <HandCalcSketches />
 
 ## Beams
 
-Bending stress and peak shear stress, with $Z = I/c$ the section modulus and $Q$ the first moment of area above the
-neutral axis:
+The bending stress and the peak shear stress are as follows. $Z = I/c$ is the section modulus, and $Q$ is the first
+moment of area above the neutral axis:
 
 $$
 \sigma = \frac{M}{Z}, \qquad \tau_{max} = \frac{VQ}{Ib}
 $$
 
-The peak shear is 1.5 times the mean shear $V/A$ for a rectangle, 4/3 for a solid round and about 2 for a thin tube.
-For a load $W$ (a point load, or the total of a uniform load) on a span $L$:
+The peak shear is 1.5 times the mean shear $V/A$ for a rectangle, 4/3 times for a solid round, and approximately 2 times
+for a thin tube. For a load $W$ (a point load, or the total of a uniform load) on a span $L$:
 
 | Supports and load | Peak moment | Peak deflection |
 | --- | --- | --- |
@@ -72,16 +74,17 @@ For a load $W$ (a point load, or the total of a uniform load) on a span $L$:
 | Fixed both ends, central load | $WL/8$ | $WL^3/192EI$ |
 | Fixed both ends, uniform load | $WL/12$ | $WL^3/384EI$ |
 
-- **Deflection goes as $L^3$**, so span matters far more than section: halve the span and the deflection falls
-  eightfold.
-- **Short, deep beams** (span under about five depths) also deflect in shear, and beam theory becomes approximate.
-- **Thin-walled sections** fail locally — flanges and walls buckle or cripple — before the beam's bending stress
-  reaches yield. A thin tube in bending is a [shell-buckling](../../verify/shell-buckling/) problem.
+- **Deflection changes as $L^3$.** Thus the span is much more important than the section. If you halve the span, the
+  deflection decreases by eight times.
+- **Short, deep beams** (span less than approximately five depths) also deflect in shear, and beam theory is then only
+  approximate.
+- **Thin-walled sections fail locally.** Flanges and walls buckle or cripple before the bending stress of the beam gets
+  to yield. A thin tube in bending is a [shell-buckling](../../verify/shell-buckling/) problem.
 
 ## Flat plates
 
-A plate carries pressure by bending alone, which makes it far less efficient than a shell. For a solid circular plate of
-radius $a$ and thickness $t$ under uniform pressure $q$ (Roark):
+A plate carries pressure only by bending. Thus it is much less efficient than a shell. For a solid circular plate of
+radius $a$ and thickness $t$, under a uniform pressure $q$ (Roark):
 
 $$
 \sigma_{SS} = \frac{3(3+\nu)\,q a^2}{8t^2} \;\text{at the centre}
@@ -91,8 +94,8 @@ $$
 \sigma_{clamped} = \frac{3\,q a^2}{4t^2} \;\text{at the edge}
 $$
 
-with centre deflections $\frac{(5+\nu)\,q a^4}{64(1+\nu)D}$ and $\frac{q a^4}{64D}$, and $D = Et^3/12(1-\nu^2)$. A
-rectangular plate with short side $b$ follows the same pattern, $\sigma = \beta\,q b^2/t^2$ and
+The centre deflections are $\frac{(5+\nu)\,q a^4}{64(1+\nu)D}$ and $\frac{q a^4}{64D}$, where $D = Et^3/12(1-\nu^2)$.
+A rectangular plate with a short side $b$ follows the same pattern, $\sigma = \beta\,q b^2/t^2$ and
 $w = \alpha\,q b^4/Et^3$:
 
 | Long side / short side | 1.0 | 1.5 | 2.0 | 3.0 | ∞ |
@@ -100,55 +103,57 @@ $w = \alpha\,q b^4/Et^3$:
 | $\beta$, simply supported (centre) | 0.287 | 0.487 | 0.610 | 0.713 | 0.750 |
 | $\beta$, clamped (mid long edge) | 0.308 | 0.453 | 0.497 | 0.498 | 0.500 |
 
-- **Stress goes as $1/t^2$** and deflection as $1/t^3$. A flat closure needs ten or twenty times the thickness of a
-  dome doing the same job — which is why pressure vessels have domed heads.
-- **These are small-deflection solutions**, good while the deflection is under about half the thickness. Beyond that
-  the plate also stretches like a membrane, gets stiffer, and these formulas over-predict the stress.
-- **A long plate is a beam strip**: by an aspect ratio of three it is within a few per cent of the strip.
+- **Stress changes as $1/t^2$,** and deflection as $1/t^3$. A flat closure needs ten or twenty times the thickness of a
+  dome that does the same work. This is why pressure vessels have domed heads.
+- **These are small-deflection solutions.** They are valid while the deflection is less than approximately half the
+  thickness. At larger deflections, the plate also stretches as a membrane and becomes stiffer, and these formulas give
+  a stress that is too high.
+- **A long plate is a beam strip.** At an aspect ratio of three, it is within a few per cent of the strip.
 
 ## Thin shells
 
-A thin shell carries pressure in membrane tension, and the familiar results follow from equilibrium alone:
+A thin shell carries pressure as membrane tension. The usual results come from equilibrium only:
 
 $$
 \sigma_\theta = \frac{pr}{t}, \qquad \sigma_x = \frac{pr}{2t}
 $$
 
-with $r$ the mean radius; a sphere carries $pr/2t$ in every direction. The cylinder grows radially by $\frac{pr^2}{Et}\left(1 - \tfrac{\nu}{2}\right)$ with closed
-ends. These hold **away from edges**. Where something stops the wall growing — a stiff flange, a ring, a closure of
-different stiffness — the wall bends, over an edge zone set by
+Here $r$ is the mean radius. A sphere has $pr/2t$ in all directions. With closed ends, the cylinder grows radially by
+$\frac{pr^2}{Et}\left(1 - \tfrac{\nu}{2}\right)$. These results are valid **away from edges**. Where something stops
+the growth of the wall (a stiff flange, a ring, or a closure of different stiffness), the wall bends. The edge zone has
+the parameter:
 
 $$
 \beta = \frac{\left[3(1-\nu^2)\right]^{1/4}}{\sqrt{rt}}
 $$
 
-The bending dies away within about $\pi/\beta \approx 2.4\sqrt{rt}$ — 35 mm on the 300 mm case. At a fully clamped
-edge the axial bending stress at the surface is
+The bending decreases to almost zero within approximately $\pi/\beta \approx 2.4\sqrt{rt}$, which is 35 mm on the
+300 mm case. At a fully clamped edge, the axial bending stress at the surface is:
 
 $$
 \sigma_b = \frac{E\,w}{r}\sqrt{\frac{3}{1-\nu^2}}
 $$
 
-with $w$ the free radial growth: 1.82 times the hoop stress with open ends, 1.55 times with closed ends, before the
-axial membrane stress is added. So:
+Here $w$ is the free radial growth. This is 1.82 times the hoop stress with open ends, and 1.55 times with closed ends,
+before you add the axial membrane stress. Thus:
 
-- **A wall that meets a stiff flange must thicken** into a land, blended into the shell — the edge bending is too large
-  for the membrane wall.
-- **Check $r/t$.** Below about 10 the wall is thick and the membrane formula under-predicts the inner-surface stress;
-  use Lamé's solution ([Case sizing](../../motor/case-sizing/)).
-- **Compression is different.** Under external pressure or axial load a thin shell buckles long before it yields — see
+- **A wall that meets a stiff flange must become thicker** at a land, blended into the shell. The edge bending is too
+  large for the membrane wall.
+- **Check $r/t$.** Below approximately 10, the wall is thick, and the membrane formula gives an inner-surface stress
+  that is too low. Use the Lamé solution ([Case sizing](../../motor/case-sizing/)).
+- **Compression is different.** Under external pressure or axial load, a thin shell buckles long before it yields. See
   [Shell buckling](../../verify/shell-buckling/).
 
 ## Lugs and pins
 
-A lug carrying a load $P$ along its axis on a pin in a double-shear clevis has five first-cut checks:
+A lug with a load $P$ along its axis, on a pin in a double-shear clevis, has five first checks:
 
 - **Net tension** across the hole: $P/\big((W-D)\,t\big)$ against $F_{tu}$.
-- **Shear-out** of the end on two planes: $P/\big(2(e - D/2)\,t\big)$ against $F_{su}$ — conservative.
+- **Shear-out** of the end on two planes: $P/\big(2(e - D/2)\,t\big)$ against $F_{su}$. This is conservative.
 - **Bearing** on the hole: $P/(d\,t)$ against $F_{bru}$, which depends on the edge distance $e/D$.
-- **Pin shear**, in double shear: $P/(2\cdot\pi d^2/4)$.
-- **Pin bending**, with the lug's load spread over its thickness $t$ and the clevis plates (each $t_2$) reacting at
-  their mid-thickness across a gap $g$:
+- **Pin shear,** in double shear: $P/(2\cdot\pi d^2/4)$.
+- **Pin bending.** The load of the lug spreads over its thickness $t$. The clevis plates (each $t_2$) react at their
+  mid-thickness, across a gap $g$:
 
 $$
 M = \frac{P}{2}\left(\frac{t}{4} + g + \frac{t_2}{2}\right)
@@ -158,13 +163,14 @@ $$
 \sigma = \frac{32M}{\pi d^3}
 $$
 
-Pin bending usually governs, and it grows with every millimetre of gap. Real lugs need more than this: oblique and
-transverse loads, the stress concentration at the hole for fatigue, and the efficiency factors of the Melcon–Hoblit
-method or ASME BTH-1. The first cut tells you whether the lug is roughly the right size and which check to refine.
+Pin bending usually governs, and it increases with each millimetre of gap. Real lugs need more checks than these:
+oblique and transverse loads, the stress concentration at the hole for fatigue, and the efficiency factors of the
+Melcon–Hoblit method or ASME BTH-1. The first checks tell you if the size of the lug is approximately correct, and which
+check to refine.
 
 ## Columns
 
-A slender column buckles at the Euler load, with $K$ the effective-length factor and $r = \sqrt{I/A}$:
+A slender column buckles at the Euler load. $K$ is the effective-length factor and $r = \sqrt{I/A}$:
 
 $$
 P_{cr} = \frac{\pi^2 EI}{(KL)^2}
@@ -177,14 +183,15 @@ $$
 | Fixed–pinned | 0.7 | 0.8 |
 | Fixed–fixed | 0.5 | 0.65 |
 
-Design values are larger because real "fixed" ends rotate. A short column yields as it buckles, and Euler over-predicts
-it. Below the transition slenderness $KL/r = \pi\sqrt{2E/F_{ty}}$, use the Johnson parabola:
+The design values are larger because real "fixed" ends turn. A short column yields while it buckles, and Euler gives a
+load that is too high. Below the transition slenderness $KL/r = \pi\sqrt{2E/F_{ty}}$, use the Johnson parabola:
 
 $$
 \sigma_{cr} = F_{ty} - \frac{F_{ty}^2}{4\pi^2 E}\left(\frac{KL}{r}\right)^2
 $$
 
-Real columns are crooked and loaded off-centre. With an eccentricity $e$, the secant formula gives the peak stress:
+Real columns are not straight, and their loads are off-centre. With an eccentricity $e$, the secant formula gives the
+peak stress:
 
 $$
 \sigma_{max} = \frac{P}{A}\left[1 + \frac{ec}{r^2}\sec\theta\right]
@@ -194,102 +201,107 @@ $$
 \theta = \frac{KL}{2r}\sqrt{\frac{P}{EA}}
 $$
 
-It is not linear in $P$, so apply the factor to the load before using it. Thin-walled tubes can also buckle locally,
-in the wall, before the column buckles as a whole.
+This stress is not linear in $P$. Thus apply the factor to the load before you use the formula. Thin-walled tubes can
+also buckle locally, in the wall, before the full column buckles.
 
 ## Hand calcs and the finite-element model
 
-- **Before meshing**, the hand calc says where the detail is needed: several elements across each edge zone
-  ($\pi/\beta$), several through the thickness where a solid part bends.
-- **Material cards first.** Units, constants and tables checked before anything else — see
+- **Before meshing,** the hand calc tells where detail is necessary: several elements across each edge zone
+  ($\pi/\beta$), and several through the thickness where a solid part bends.
+- **Check the material cards first.** Check the units, constants and tables before all other items. See
   [FEA material cards](../../verify/fea-cards/).
-- **Reactions next.** The model's reactions must equal the applied loads. If they do not, nothing else in it can be
-  trusted.
-- **Then the far field.** Away from details, the model's membrane stresses and deflections should match the hand calc.
-  Deflections should sit between the simply supported and clamped bounds.
-- **Then the peaks.** They should be where the hand calc says — at the edge, the hole, the root — and of the right
-  order. A peak far above it at a single node is often a singularity at a sharp corner or a point load, not a stress.
-- **When they disagree** where the hand calc should be good, find out why before trusting either: the model, its loads
-  or units, or the hand calc's idealisation. The full set of checks is on [FEA & test](../../verify/fea-and-test/).
+- **Then check the reactions.** The reactions of the model must be equal to the applied loads. If they are not, you
+  cannot trust any other result from the model.
+- **Then check the far field.** Away from details, the membrane stresses and deflections of the model must agree with
+  the hand calc. Deflections must be between the simply supported limit and the clamped limit.
+- **Then check the peaks.** They must be where the hand calc puts them (at the edge, the hole or the root), and of the
+  correct order. A peak at one node that is much higher is frequently a singularity at a sharp corner or a point load,
+  not a stress.
+- **If they do not agree** where the hand calc must be good, find the cause before you trust either result. The cause
+  can be the model, its loads or units, or the idealisation of the hand calc. The full set of checks is on
+  [FEA & test](../../verify/fea-and-test/).
 
 ## Calculator
 
 <HandCalc />
 
-## Worked example — hand checks for the 300 mm motor's test campaign
+## Worked example: hand checks for the 300 mm motor's test campaign
 
-Five quick checks on the motor and the hardware that tests it. The yield factor of 1.10 and ultimate factor of 1.25
-are **for this example only** — press **Load worked example** and use the tabs.
+These are five quick checks on the motor and on the hardware that tests it. The yield factor of 1.10 and the ultimate
+factor of 1.25 are **for this example only**. Push **Load worked example** and use the tabs.
 
-1. **The case as a beam.** In transport the loaded motor, 137.81 kg, sits in two cradles 1000 mm apart. Take 3 g
-   vertical, for this example: 4.05 kN along the span. As a simply supported ⌀302.75 × 1.377 mm tube,
-   $M = WL/8 = 0.51$ kN·m, so the bending stress is **5.2 MPa**, the shear 3.1 MPa and the deflection 0.017 mm. The
-   margins are over +200: the case as a beam does not matter. At 3.3 diameters between supports it is a short, deep
-   beam, so the numbers are only approximate — but they are two hundred times too small to matter. What does matter is
-   the concentrated load at each cradle on a 1.4 mm wall — a shell problem, so the cradles must be wide or ringed.
-2. **The case wall.** At MEOP, 10 MPa, the hoop stress is $10 \times 150.69 / 1.377 = 1094$ MPa and the axial 547 MPa
-   — the [case sizing](../../motor/case-sizing/#worked-example) numbers — with margins of +0.20 on yield and +0.11 on
-   ultimate before any weld efficiency. The edge zone is $\pi/\beta = 35$ mm. If the aft flange held the wall rigidly,
-   the inner surface would see $547 + 1.55 \times 1094 = 2241$ MPa — above the ultimate strength. The wall must
-   thicken into a land of about $2.05 \times 1.377 = 2.8$ mm where it meets the flange. The hand calc sets that before
-   any model exists.
-3. **The proof-test blanking plate.** For the [proof test](../../verify/proof-testing/) at 11 MPa, the aft closure is
-   replaced by a flat steel plate on an illustrative 285 mm bolt circle. Take it as simply supported at the bolt circle
-   and loaded over its whole area — conservative, since the pressure stops at the 260 mm seal. With a quenched and
-   tempered steel at $F_{ty} = 655$ and $F_{tu} = 860$ MPa (typical values), it needs 21.5 mm. A 25 mm plate sees
-   **441 MPa** at the centre (MS +0.35 yield, +0.56 ultimate) and deflects 1.0 mm — 0.04 of its thickness, so the
-   formula holds. Its edge rotates 0.61°, which a face seal must follow ([Sealing strategy](../../seals/sealing-strategy/)).
-   A hemispherical head of the same radius would need 1.3 mm.
-4. **The test stand's thrust rod.** The motor's 29.5 kN thrust at MEOP ([Load paths](../../joints/load-paths/#worked-example--the-300-mm-motors-load-path))
-   goes to the load cell through a 25 × 2.5 mm S355 tube, 600 mm pin to pin. $r = 8.0$ mm, so $KL/r = 75$ — below the
-   transition at 107. Johnson gives **47.3 kN**, MS +0.28 at 1.25 × the thrust. Euler would have said 63.6 kN and
-   +0.73 — 35% unconservative. With 0.6 mm (L/1000) of crookedness, the secant formula gives 233 MPa at 1.10 × the
-   thrust: +0.53 to first yield.
-5. **The rod's clevis ends.** Each end is a 10 mm S355 lug, 36 mm wide, with a 12.2 mm hole 18 mm from the end, on a
-   12 mm alloy-steel pin between two 6 mm clevis plates with 0.5 mm gaps. Typical allowables: lug $F_{tu} = 470$,
-   $F_{su} = 282$, $F_{bru} = 705$ MPa; pin $F_{tu} = 1000$, $F_{su} = 600$ MPa. At 1.25 × 29.5 = 36.8 kN: net tension
-   +2.04, shear-out +0.82, bearing +1.30, pin shear +2.69 — and **pin bending +0.54**, which governs, as it usually
-   does. Doubling the gaps to 1 mm cuts it to +0.42.
+1. **The case as a beam.** During transport, the loaded motor (137.81 kg) sits in two cradles 1000 mm apart. Use 3 g
+   vertical for this example: 4.05 kN along the span. As a simply supported ⌀302.75 × 1.377 mm tube,
+   $M = WL/8 = 0.51$ kN·m. Thus the bending stress is **5.2 MPa**, the shear stress is 3.1 MPa and the deflection is
+   0.017 mm. The margins are more than +200, so the case as a beam is not important. At 3.3 diameters between supports
+   it is a short, deep beam, so the numbers are only approximate. But they are two hundred times too small to be
+   important. The important load is the concentrated load at each cradle on a 1.4 mm wall. This is a shell problem,
+   thus the cradles must be wide or have rings.
+2. **The case wall.** At MEOP (10 MPa), the hoop stress is $10 \times 150.69 / 1.377 = 1094$ MPa and the axial stress
+   is 547 MPa. These are the [case sizing](../../motor/case-sizing/#worked-example) numbers. The margins are +0.20 on
+   yield and +0.11 on ultimate, before any weld efficiency. The edge zone is $\pi/\beta = 35$ mm. If the aft flange
+   held the wall rigidly, the inner surface would have $547 + 1.55 \times 1094 = 2241$ MPa, which is more than the
+   ultimate strength. The wall must become thicker, with a land of approximately $2.05 \times 1.377 = 2.8$ mm where it
+   meets the flange. The hand calc sets this before there is a model.
+3. **The proof-test blanking plate.** For the [proof test](../../verify/proof-testing/) at 11 MPa, a flat steel plate
+   replaces the aft closure, on an illustrative 285 mm bolt circle. Assume that it is simply supported at the bolt
+   circle and loaded over its full area. This is conservative, because the pressure stops at the 260 mm seal. With a
+   quenched and tempered steel at $F_{ty} = 655$ and $F_{tu} = 860$ MPa (typical values), it needs 21.5 mm. A 25 mm
+   plate has **441 MPa** at the centre (MS +0.35 yield, +0.56 ultimate) and deflects 1.0 mm. This is 0.04 of its
+   thickness, so the formula is valid. Its edge turns 0.61°, and a face seal must follow this
+   ([Sealing strategy](../../seals/sealing-strategy/)). A hemispherical head of the same radius would need only 1.3 mm.
+4. **The thrust rod of the test stand.** The 29.5 kN thrust of the motor at MEOP
+   ([Load paths](../../joints/load-paths/#worked-example-the-300-mm-motors-load-path)) goes to the load cell through a
+   25 × 2.5 mm S355 tube, 600 mm from pin to pin. $r = 8.0$ mm, so $KL/r = 75$, which is below the transition at 107.
+   Johnson gives **47.3 kN**, MS +0.28 at 1.25 × the thrust. Euler would give 63.6 kN and +0.73, which is 35%
+   unconservative. With 0.6 mm (L/1000) of crookedness, the secant formula gives 233 MPa at 1.10 × the thrust: +0.53 to
+   first yield.
+5. **The clevis ends of the rod.** Each end is a 10 mm S355 lug, 36 mm wide, with a 12.2 mm hole 18 mm from the end. It
+   is on a 12 mm alloy-steel pin between two 6 mm clevis plates, with 0.5 mm gaps. Typical allowables: lug
+   $F_{tu} = 470$, $F_{su} = 282$, $F_{bru} = 705$ MPa; pin $F_{tu} = 1000$, $F_{su} = 600$ MPa. At 1.25 × 29.5 =
+   36.8 kN, the margins are: net tension +2.04, shear-out +0.82, bearing +1.30, pin shear +2.69, and **pin bending
+   +0.54**. Pin bending governs, as it usually does. If the gaps increase to 1 mm, it decreases to +0.42.
 
-Five checks and a page of arithmetic. Each one either clears a part or tells the detailed model exactly where to look:
-the cradles, the flange land and the seal at the plate's edge.
+These are five checks on one page of arithmetic. Each check clears a part, or tells the detailed model exactly where
+to look: the cradles, the flange land, and the seal at the edge of the plate.
 
 ## Where this stops
 
-- **Idealisations.** Real parts are part beam, part plate, part shell. The hand calc describes the regions where one
-  idealisation holds, and bounds the rest.
-- **Linear elastic, small deflection.** No plasticity, no large-deflection membrane action in plates, no contact.
-- **Static.** Dynamic loads, fatigue and fracture need their own checks — [Fatigue](../fatigue/),
+- **Idealisations.** Real parts are partly beam, partly plate and partly shell. The hand calc describes the regions
+  where one idealisation is valid, and puts limits on the other regions.
+- **Linear elastic, small deflection.** No plasticity, no large-deflection membrane action in plates, and no contact.
+- **Static loads only.** Dynamic loads, fatigue and fracture need their own checks. See [Fatigue](../fatigue/) and
   [Random vibration](../../verify/random-vibration/).
-- **Lugs:** axial load and first-cut allowables only. **Columns:** no local wall buckling, no lateral–torsional
+- **Lugs:** axial load and first-check allowables only. **Columns:** no local wall buckling, and no lateral–torsional
   buckling of open sections.
-- **Rectangular plates** use coefficients for ν = 0.3 and uniform pressure with all four edges alike.
+- **Rectangular plates** use coefficients for ν = 0.3, and uniform pressure with all four edges the same.
 
 ## On the drawing
 
-A hand calc's assumptions become requirements:
+The assumptions of a hand calc become requirements:
 
-- **The dimensions it sized**, as minimums where they matter — the plate thickness, the flange land and its blend.
-- **Material and condition** behind the allowables — specification, heat treatment, the properties it assumed.
-- **Straightness** of struts when the column check assumed it, and **pin fit and clevis gaps** when pin bending was
-  checked with them.
+- **The dimensions that it sized,** as minimums where they are important: the plate thickness, the flange land and its
+  blend.
+- **The material and condition** of the allowables: the specification, the heat treatment and the assumed properties.
+- **Straightness** of struts if the column check assumed it, and **pin fit and clevis gaps** if the pin bending check
+  used them.
 - **Edge distances** of lugs and holes.
-- **Supports** the beam check pointed to — cradle width, saddle or ring.
+- **The supports** that the beam check found necessary: cradle width, saddle or ring.
 
 ## References and further reading
 
-- W. C. Young, R. G. Budynas and A. M. Sadegh, *Roark's Formulas for Stress and Strain*, 9th ed., McGraw-Hill (2020) —
-  beams, circular and rectangular plates, shells.
+- W. C. Young, R. G. Budynas and A. M. Sadegh, *Roark's Formulas for Stress and Strain*, 9th ed., McGraw-Hill (2020)
+  (beams, circular and rectangular plates, shells).
 - S. Timoshenko and S. Woinowsky-Krieger, *Theory of Plates and Shells*, 2nd ed., McGraw-Hill (1959).
-- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs (1973) — lugs, columns and crippling.
+- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs (1973) (lugs, columns and crippling).
 - M. A. Melcon and F. M. Hoblit, "Developments in the analysis of lugs and shear pins", *Product Engineering* 24 (1953).
-- ASME BTH-1, *Design of Below-the-Hook Lifting Devices* — pinned connections.
-- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill — columns: Euler, Johnson and
-  the secant formula.
+- ASME BTH-1, *Design of Below-the-Hook Lifting Devices* (pinned connections).
+- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill (columns: Euler, Johnson and
+  the secant formula).
 - NASA SP-8007, *Buckling of Thin-Walled Circular Cylinders* (1965, revised 1968).
-- MMPDS — allowables, including bearing at e/D of 1.5 and 2.0.
+- MMPDS (allowables, including bearing at e/D of 1.5 and 2.0).
 
 <Aside type="note">
-  Guidance on method from general practice, with typical material values for illustration. Use allowables from your
-  own data, and loads and factors from your programme's requirements.
+  This is guidance on method from general practice, with typical material values as illustrations. Use allowables from
+  your own data, and loads and factors from the requirements of your programme.
 </Aside>

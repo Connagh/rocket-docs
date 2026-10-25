@@ -1,6 +1,6 @@
 ---
 title: Locking and retention
-description: Why preloaded fasteners self-loosen under vibration (Junker's transverse-slip mechanism), how to stop the slip that causes it, which locking features work and which do not, safety wire and staking, and the NASA-STD-5020B requirements for spaceflight hardware.
+description: Why preloaded fasteners become loose under vibration (the transverse-slip mechanism of Junker), how to stop the slip that causes it, which locking features work and which do not, safety wire and staking, and the NASA-STD-5020B requirements for spaceflight hardware.
 sidebar:
   order: 0
 ---
@@ -12,62 +12,64 @@ import JunkerCurves from '../../../components/JunkerCurves.astro';
 import LockCalc from '../../../components/LockCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Preloaded fasteners loosen because the joint slips sideways; enough clamp force to stop the slip is the real lock, and the locking feature is the backstop that keeps the parts from coming off.</div>
+  <div><b>In one line</b>Preloaded fasteners become loose because the joint slips sideways. A clamp force that is sufficient to stop the slip is the real lock. The locking feature is the backup that keeps the parts from coming off.</div>
   <div><b>Before this</b><a href="../bolted-joints/">Bolted joints</a> · <a href="../../verify/random-vibration/">Random vibration</a></div>
 </div>
 
 ## Why this matters
 
-A fastener that backs off does damage twice: the joint loses its clamp — a closure leaks, a bracket rattles and
-fatigues — and the loose part becomes debris that can jam a mechanism or puncture something downstream. Motors and
-their hardware are shaken in transport, on the vehicle and by their own burn, and NASA-STD-5020B notes that previous
-missions have been affected by fasteners that loosened and came free.
+A fastener that becomes loose causes two types of damage. First, the joint loses its clamp: a closure leaks, or a
+bracket rattles and fatigues. Second, the loose part becomes debris that can jam a mechanism or puncture a different
+part. Motors and their hardware are shaken during transport, on the vehicle and by their own burn. NASA-STD-5020B
+records that fasteners that became loose and came free have had an effect on previous missions.
 
 There are two ways to lose preload:
 
-- **Non-rotational** — embedding, relaxation, creep and temperature. Covered on the
-  [Bolted joints](../bolted-joints/) page.
-- **Rotational self-loosening** — the nut actually turns back. This page.
+- **Non-rotational:** embedding, relaxation, creep and temperature. The [Bolted joints](../bolted-joints/) page gives
+  these.
+- **Rotational self-loosening:** the nut turns back. This page gives this mechanism.
 
 ## Why a tight nut turns back
 
 <ThreadRamp />
 
-While nothing slips, a tightened thread is self-locking: the friction on the thread and under the head resists turning
-several times harder than the thread's ramp pushes the nut off. Gerhard Junker showed in 1969 that **sideways (transverse)
-slip** of the joint is what breaks this. Each time the clamped parts slide relative to each other, the friction is used
-up resisting the slip, and for that moment only the ramp acts on the nut:
+While there is no slip, a tightened thread locks itself. The friction on the thread and under the head resists
+rotation several times more than the ramp of the thread pushes the nut off. In 1969, Gerhard Junker showed that
+**sideways (transverse) slip** of the joint stops this lock. Each time the clamped parts slide relative to each other,
+the friction resists the slip. At that moment, only the ramp acts on the nut:
 
 $$
 T_\text{ramp} = \frac{F_i\,P}{2\pi}
 $$
 
-A tiny rotation per cycle is enough: at vibration frequencies of tens to hundreds of hertz, it adds up quickly. Axial vibration
-loosens far less readily than transverse vibration, and localised slip at the thread or under the head can start the
-process before the whole joint slides.
+A very small rotation in each cycle is sufficient. At vibration frequencies of tens to hundreds of hertz, the rotation
+adds up quickly. Axial vibration causes much less loosening than transverse vibration. Local slip at the thread or under
+the head can start the process before the full joint slides.
 
 <Analogy title="A book on a tilted board">
-  A book rests on a slightly tilted board: friction holds it. Now slide the board quickly from side to side. The book
-  slips sideways each time, and while it is slipping, friction can't also stop it sliding down the tilt — so it creeps
-  downhill, a little with every shake. The thread's ramp is the tilt; the joint's sideways slip is the shaking.
+  A book is on a board with a small tilt, and friction holds it. Now move the board quickly from side to side. The book
+  slips sideways each time. While it slips, the friction cannot also stop it from sliding down the tilt. Thus it moves
+  down a little with each shake. The ramp of the thread is the tilt. The sideways slip of the joint is the shake.
 </Analogy>
 
 ## The first lock is preload
 
-Stop the slip and the nut cannot loosen. The joint grips sideways with the interface friction times the clamp force:
+If you stop the slip, the nut cannot become loose. The joint grips sideways with the interface friction times the clamp
+force:
 
 $$
 F_{Q,\text{slip}} = \mu_T \; q \; \big(F_{i,min} - (1-\Phi)P\big) \;\ge\; k \, F_Q
 $$
 
-with the minimum preload (scatter, losses and temperature from the [Bolted joints](../bolted-joints/) page), the axial
-load's share $(1-\Phi)P$ taken off, $q$ slip planes, and your programme's factor $k$ on the transverse load $F_Q$. This
-is why NASA-STD-5020B calls preload the **primary locking feature**. When the slip check fails, a locking feature only
-limits the damage:
+Here $F_{i,min}$ is the minimum preload (with scatter, losses and temperature from the [Bolted joints](../bolted-joints/)
+page). The share of the axial load, $(1-\Phi)P$, is subtracted. $q$ is the number of slip planes, and $k$ is the factor
+of your programme on the transverse load $F_Q$. This is why NASA-STD-5020B calls preload the **primary locking
+feature**. If the slip check fails, a locking feature only limits the damage. To prevent the slip:
 
-- **Raise the clamp** — more torque, a larger or stronger bolt, more bolts.
-- **Add friction or slip planes** — surface condition matters; coatings, lubricant and contamination on the faying surfaces lower the grip.
-- **Take the shear elsewhere** — dowels, shoulder bolts or a spigot, so the bolts only clamp.
+- **Increase the clamp force:** more torque, a larger or stronger bolt, or more bolts.
+- **Add friction or slip planes.** The surface condition is important. Coatings, lubricant and contamination on the
+  faying surfaces decrease the grip.
+- **Carry the shear with other parts:** dowels, shoulder bolts or a spigot. Then the bolts only clamp.
 
 ## What locking features actually do
 
@@ -75,110 +77,113 @@ limits the damage:
 
 | Feature | What it does | Without preload? | Verify by (NASA-STD-5020B Table 4) |
 | --- | --- | --- | --- |
-| Safety wire, cable, cotter pin | Positive: rotation only until taut, then the part cannot come off | Yes — mechanical | Visual inspection after installation |
-| Adhesive thread locker, cured | Holds preload comparatively well even in severe vibration | Yes | Torque test on witness samples |
-| Prevailing torque — deformed thread, insert, patch | Keeps the fastener captive; does not hold preload once the joint slips | Yes | Running torque measured during installation |
-| Serrated bearing face | Works well, but only while preload lasts; can damage the bearing surface | No | — |
-| Jam nut | Relies on its own preload | No | — |
-| Split or tooth lock washer | Flattens at a small fraction of preload: minimal, if any, locking | No | Not to be used as a secondary lock |
+| Safety wire, cable, cotter pin | Positive: the part turns only until the wire is tight, then it cannot come off | Yes, mechanical | Visual inspection after installation |
+| Adhesive thread locker, cured | Holds preload better than the other features, also in severe vibration | Yes | Torque test on witness samples |
+| Prevailing torque: deformed thread, insert, patch | Keeps the fastener captive; does not hold preload after the joint slips | Yes | Running torque measured during installation |
+| Serrated bearing face | Works well, but only while preload stays; can damage the bearing surface | No | (none) |
+| Jam nut | Uses its own preload | No | (none) |
+| Split or tooth lock washer | Becomes flat at a small fraction of preload: little or no locking | No | Do not use as a secondary lock |
 
-A prevailing-torque feature's running torque is a fraction of a newton-metre on small fasteners, while the
-self-loosening moment of a slipping joint is several times larger. The standard gives $F_i P/2$ as an estimate, after
-Hess (2017) — larger than the bare ramp torque $F_i P/2\pi$. So the feature cannot stop rotation: it stops the fastener
-falling out.
+On small fasteners, the running torque of a prevailing-torque feature is a fraction of a newton-metre. The
+self-loosening moment of a slipping joint is several times larger. The standard gives $F_i P/2$ as an estimate (after
+Hess, 2017), which is larger than the ramp torque $F_i P/2\pi$. Thus the feature cannot stop rotation. It stops the
+fastener from falling out.
 
 ## Safety wire, cotter pins and staking
 
-- **Safety wire and cable** — routed so that tension in the wire pulls each fastener in the **tightening** direction.
-  Practice is set by NASM 33540 and SAE AS567. On a bolt that turns in operation, wire the nut and bolt to each other
-  only, not to the structure.
-- **Cotter pins** — through a castellated nut and drilled bolt; the standard choice for clevis and pivot bolts.
-- **Adhesive thread lockers** — anaerobic adhesives that cure between the threads. They only perform if the process
-  is right: clean, primed where needed, the correct gap, and fully cured. NASA-STD-5020B requires the process to be
-  developed and validated first. Pre-applied coatings that dry without bonding the threads are not adhesives and are not
-  for critical joints.
-- **Epoxy staking** — a fillet bridging the fastener head and the part. It is mostly used on small fasteners, up to about
-  M4 or #8, and on electronics, where NASA-STD-8739.1 applies.
+- **Safety wire and cable.** Install the wire so that its tension pulls each fastener in the **tightening** direction.
+  NASM 33540 and SAE AS567 give the practice. On a bolt that turns in operation, connect the nut and bolt only to each
+  other, not to the structure.
+- **Cotter pins.** These go through a castellated nut and a drilled bolt. They are the usual choice for clevis bolts
+  and pivot bolts.
+- **Adhesive thread lockers.** These are anaerobic adhesives that cure between the threads. They work only if the
+  process is correct: clean parts, primer where necessary, the correct gap, and a full cure. NASA-STD-5020B requires
+  that the process is developed and validated first. Pre-applied coatings that dry without bonding the threads are not
+  adhesives. Do not use them for critical joints.
+- **Epoxy staking.** A fillet of epoxy connects the fastener head and the part. It is mostly used on small fasteners, up
+  to approximately M4 or #8, and on electronics, where NASA-STD-8739.1 applies.
 
 ## Requirements for spaceflight hardware
 
-NASA-STD-5020B §4.6 sets the rules for NASA spaceflight hardware; other programmes have equivalents:
+NASA-STD-5020B §4.6 gives the rules for NASA spaceflight hardware. Other programmes have equivalent rules:
 
-- **At least one locking feature that does not depend on preload**, on every threaded fastening system, regardless of
-  preload (§4.6.1). Jam nuts and serrated faces may not qualify, because they depend on preload. A redundant feature may
-  be advisable for some joints (FAA AC 20-71).
-- **A mechanical locking feature** — safety wire or a cotter pin — on any bolt that is an axis of rotation in operation
+- **At least one locking feature that does not depend on preload,** on each threaded fastening system, for all preloads
+  (§4.6.1). Jam nuts and serrated faces possibly do not qualify, because they depend on preload. A redundant feature
+  can be advisable for some joints (FAA AC 20-71).
+- **A mechanical locking feature** (safety wire or a cotter pin) on each bolt that is an axis of rotation in operation
   (§4.6.2).
 - **A validated process** for adhesive lockers and staking (§4.6.3).
 - **Verification of presence and performance** (§4.6.4): inspection for mechanical features, running-torque measurement
   at installation for prevailing torque, and witness samples for adhesives.
-- **Running torque and preload**: unless the torque is specified "above running torque", the maximum running torque
-  comes off the minimum specified torque, and the minimum breakaway torque off the maximum, before preload is
-  calculated (Appendix A.2, Eqs. 27–30).
-- **Thread engagement**: the fastener must be long enough for fully formed threads to engage a prevailing-torque
+- **Running torque and preload.** If the torque is not specified as "above running torque", subtract the maximum
+  running torque from the minimum specified torque, and the minimum breakaway torque from the maximum specified torque,
+  before you calculate the preload (Appendix A.2, Eqs. 27–30).
+- **Thread engagement.** The fastener must be sufficiently long for fully formed threads to engage a prevailing-torque
   feature (§4.7.4).
 
 ## Calculator
 
 <LockCalc />
 
-## Worked example — the electronics unit on the aft skirt
+## Worked example: the electronics unit on the aft skirt
 
-The 4 kg unit from the [Random vibration](../../verify/random-vibration/#worked-example--a-4-kg-unit-on-an-aft-skirt-bracket)
-page sees 29.0 g at 3σ — 1137 N — in its lateral test axis. It is held by four M6 class 10.9 screws in
-prevailing-torque inserts. The maximum running torque is 0.4 N·m (an example, from the insert's part standard), and
-the screws are tightened to 10 ± 0.5 N·m, not specified above running torque, with friction 0.12. The preload scatter
-of ±25% and the slip factor of 1.25 are **for this example only** — press **Load worked example**.
+The 4 kg unit from the [Random vibration](../../verify/random-vibration/#worked-example-a-4-kg-unit-on-an-aft-skirt-bracket)
+page has 29.0 g at 3σ (1137 N) in its lateral test axis. Four M6 class 10.9 screws in prevailing-torque inserts hold
+it. The maximum running torque is 0.4 N·m (an example, from the part standard of the insert). The screws are tightened
+to 10 ± 0.5 N·m, not specified as above running torque, with a friction of 0.12. The preload scatter of ±25% and the
+slip factor of 1.25 are **for this example only**. Push **Load worked example**.
 
-1. **Load per screw:** $1137/4 = 284$ N sideways, shared evenly, ignoring the unit's overturning moment.
-2. **Effective torque:** the running torque comes off the minimum, giving 9.1–10.5 N·m.
+1. **Load for each screw:** $1137/4 = 284$ N sideways, shared equally. This ignores the overturning moment of the unit.
+2. **Effective torque:** subtract the running torque from the minimum. This gives 9.1–10.5 N·m.
 3. **Preload:** 9.5 kN at mid-range torque, and 6.6 kN at the minimum torque with −25% scatter.
-4. **Slip:** with an interface friction of 0.15, the joint grips $0.15 \times 6.6 = 1.0$ kN per screw, against
-   $1.25 \times 284 = 355$ N: **MS = +1.81**. It does not slip, so it will not self-loosen — preload is doing the
+4. **Slip:** with an interface friction of 0.15, the joint grips $0.15 \times 6.6 = 1.0$ kN for each screw, against
+   $1.25 \times 284 = 355$ N. **MS = +1.81**. The joint does not slip, so it does not self-loosen. The preload does the
    locking.
-5. **The insert:** preload-independent, so it meets §4.6.1, verified by measuring running torque at installation. But
-   its 0.4 N·m is well below the 1.5 N·m ramp torque (4.8 N·m by the standard's estimate): it keeps the screws captive;
-   it would not hold their preload if the joint slipped.
+5. **The insert:** it does not depend on preload, so it meets §4.6.1. Measure the running torque at installation to
+   verify it. But its 0.4 N·m is much less than the 1.5 N·m ramp torque (4.8 N·m with the estimate of the standard). It
+   keeps the screws captive. It would not hold their preload if the joint slipped.
 
-**Snug-tight at 2 N·m** — a common shortcut on a "light" bracket — gives only 1.5 kN of minimum preload and a grip of
-219 N, below the factored 355 N: **MS = −0.38**. The joint slips on every large cycle of the qualification test, the
-screws walk back to the inserts' running torque, and the unit rattles: a test failure, even though no screw falls out.
+**Snug-tight at 2 N·m** is a frequent shortcut on a "light" bracket. It gives only 1.5 kN of minimum preload and a grip
+of 219 N, which is less than the factored 355 N: **MS = −0.38**. The joint slips on each large cycle of the
+qualification test. The screws turn back to the running torque of the inserts, and the unit rattles. This is a test
+failure, but no screw falls out.
 
 ## Where this stops
 
-- **Evenly shared shear.** Overturning moments, prying and uneven bolt spacing load some bolts more than others — check
-  the worst one.
-- **3σ is not the largest peak.** Random vibration has occasional peaks above 3σ (see Random vibration); a slip margin at
-  3σ does not rule out rare micro-slip, which is one reason the locking feature is still required.
-- **Localised slip** under the head or in the threads can start loosening before the whole joint slides; bending and
-  thermal cycling can drive it too.
-- **Interface friction** varies with finish, coating, contamination and wear — use measured or specified values.
+- **Equally shared shear.** Overturning moments, prying and unequal bolt spacing put more load on some bolts than on
+  others. Check the worst bolt.
+- **3σ is not the largest peak.** Random vibration has occasional peaks above 3σ (see Random vibration). A slip margin
+  at 3σ does not prevent rare micro-slip. This is one reason why the locking feature is still necessary.
+- **Local slip** under the head or in the threads can start the loosening before the full joint slides. Bending and
+  thermal cycling can also cause it.
+- **Interface friction** changes with finish, coating, contamination and wear. Use measured or specified values.
 
 ## On the drawing
 
-- **The locking feature, by specification** — insert or nut part number, adhesive and its cure, or safety wire per
+- **The locking feature, by specification:** insert or nut part number, adhesive and its cure, or safety wire to
   NASM 33540 with wire material and diameter.
-- **The torque, and how running torque is handled** — "above running torque", or a measured running-torque range to
+- **The torque, and how to use the running torque:** "above running torque", or a measured running-torque range to
   subtract.
-- **Verification** — running torque recorded at installation, witness samples for adhesive, inspection of wire and
+- **Verification:** running torque recorded at installation, witness samples for adhesive, and inspection of wire and
   pins.
-- **Reuse limits** — prevailing-torque features lose torque with each use; state whether fasteners may be reused.
+- **Reuse limits.** Prevailing-torque features lose torque with each use. Tell if fasteners can be used again.
 
 ## References and further reading
 
-- NASA-STD-5020B, *Requirements for Threaded Fastening Systems in Spaceflight Hardware* (2021, revalidated 2026) —
+- NASA-STD-5020B, *Requirements for Threaded Fastening Systems in Spaceflight Hardware* (2021, revalidated 2026),
   §4.6 and Appendix B, *Best practices for locking features*.
 - G. H. Junker, "New criteria for self-loosening of fasteners under vibration", SAE Transactions 78 (1969), paper 690055.
 - N. G. Pai and D. P. Hess, "Experimental study of loosening of threaded fasteners due to dynamic shear loads",
   *Journal of Sound and Vibration* 253(3) (2002).
 - D. P. Hess, "Threaded fastener secondary locking requirements", *Journal of Failure Analysis and Prevention* 17(4)
   (2017).
-- DIN 65151 and ISO 16130 — transverse vibration (Junker) testing of fasteners.
+- DIN 65151 and ISO 16130 (transverse vibration (Junker) testing of fasteners).
 - NASM 33540, *Safety wiring, safety cabling, cotter pinning, general practices for*; SAE AS567, *Safety cable, safety
   wire, key washers, and cotter pins for propulsion systems*.
 - VDI 2230 Part 1 (2015); J. H. Bickford, *An Introduction to the Design and Behavior of Bolted Joints*, CRC Press.
 
 <Aside type="note">
-  Guidance on method from general practice and the cited public standard. Locking requirements, factors and
-  verification methods for your hardware come from your programme's requirements and your organisation's procedures.
+  This is guidance on method from general practice and the cited public standard. Locking requirements, factors and
+  verification methods for your hardware come from the requirements of your programme and the procedures of your
+  organisation.
 </Aside>

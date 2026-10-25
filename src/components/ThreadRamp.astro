@@ -16,7 +16,7 @@ const mid = { x: rx(bs + bw / 2) + (bh / 2) * sin, y: ry(bs + bw / 2) - (bh / 2)
 ---
 
 <figure class="viz tr">
-  <p class="viz-title">Why a tight nut stays put — and why it walks off</p>
+  <p class="viz-title">Why a tight nut stays put, and why it walks off</p>
   <div class="tr-grid">
     {panels.map((p) => (
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.title}: ${p.lines.join(' ')}`}>
@@ -55,7 +55,7 @@ const mid = { x: rx(bs + bw / 2) + (bh / 2) * sin, y: ry(bs + bw / 2) - (bh / 2)
   <figcaption>
     Unrolled, a thread is a ramp. Preload pushes the nut down it; friction on the thread and under the nut holds it,
     several times harder than the ramp pushes. When the joint slips sideways, that friction is spent resisting the slip
-    instead — and with nothing left to oppose it, the ramp turns the nut a little on every cycle. That is Junker's
+    instead, and with nothing left to oppose it, the ramp turns the nut a little on every cycle. That is Junker's
     mechanism of self-loosening.
   </figcaption>
 </figure>

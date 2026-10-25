@@ -8,7 +8,7 @@ const fams = [...new Set(data.rows.map((r) => r.family))];
 <div class="calc xref" data-xref>
   <div class="calc-head"><span>Designation cross-reference</span><span data-count></span></div>
   <div class="xr-controls">
-    <input type="search" placeholder="Search any name or number — 6082, 1.4404, K24728, HE30, AMS 4911…" aria-label="Search designations" data-q />
+    <input type="search" placeholder="Search any name or number: 6082, 1.4404, K24728, HE30, AMS 4911…" aria-label="Search designations" data-q />
     <div class="xr-fams">
       <button type="button" class="chip on" data-fam="">All</button>
       {fams.map((f) => <button type="button" class="chip" data-fam={f}>{FAM[f] ?? f}</button>)}

@@ -10,12 +10,12 @@ const items = route();
 // v1 HOME_TASKS, verbatim questions; each lands on its zone (v2 page or v1 archive).
 const TASKS = [
   { q: 'Which alloy should I use?', z: 'materials', d: '156 materials on a property chart, ranked by what the part actually needs' },
-  { q: 'How thick does the case wall have to be?', z: 'pv', d: 'Thin wall, Lamé, proof and burst — and the failure mode that governs' },
+  { q: 'How thick does the case wall have to be?', z: 'pv', d: 'Thin wall, Lamé, proof and burst, and the failure mode that governs' },
   { q: 'Will the grain survive cold soak?', z: 'grain', d: 'Bore strain and bond stress against capability at temperature' },
   { q: 'How thick does the insulation need to be?', z: 'ablative', d: 'Erosion, char and soak-back, with the bondline limit' },
   { q: 'What does the proof test actually buy me?', z: 'proof', d: 'Screened flaw size, life to critical, and the test-rig energy' },
   { q: 'Will this O-ring seal at −40 °C?', z: 'oring', d: 'Squeeze and fill at the worst tolerance corner, cold, with the joint open' },
-  { q: 'How do I call this material up on a drawing?', z: 'matspec', d: 'Form standard, condition, finish — a copy-ready callout' },
+  { q: 'How do I call this material up on a drawing?', z: 'matspec', d: 'Form standard, condition, finish: a copy-ready callout' },
   { q: 'Does it leak or does it burst?', z: 'lbb', d: 'Critical flaw against the wall you just sized' },
   { q: 'Will it survive the ride?', z: 'vibration', d: 'Miles, and where the damage actually accumulates' },
   { q: 'How tight do I torque this bolt?', z: 'bolts', d: 'VDI 2230, and what the joint does with the load' },
@@ -30,7 +30,7 @@ const firstOf = (k: string) => items.find((i) => i.phase === k && i.slug !== nul
   <button type="button" class="mh-way" data-open-search>
     <span class="mh-way-k">01 · SEARCH</span>
     <span class="mh-way-t">You know the word</span>
-    <span class="mh-way-d">Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> and type it — alloys, standards, equations, tools.</span>
+    <span class="mh-way-d">Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> and type it: alloys, standards, equations, tools.</span>
   </button>
   <a class="mh-way" href="#start-a-task">
     <span class="mh-way-k">02 · START A TASK</span>

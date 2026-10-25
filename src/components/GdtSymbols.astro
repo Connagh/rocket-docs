@@ -7,7 +7,7 @@ const GROUPS: { name: string; datum: string; items: { key: string; name: string;
   { name: 'Form', datum: 'never uses a datum', items: [
     { key: 'straightness', name: 'Straightness', controls: 'A line on a surface, or an axis, within a zone.', motor: 'The axis of a long case cylinder.' },
     { key: 'flatness', name: 'Flatness', controls: 'A surface between two parallel planes.', motor: 'A face-seal land on a closure.' },
-    { key: 'circularity', name: 'Circularity', controls: 'Each cross-section between two concentric circles.', motor: 'A case bore at a seal — often in the restrained condition.' },
+    { key: 'circularity', name: 'Circularity', controls: 'Each cross-section between two concentric circles.', motor: 'A case bore at a seal: often in the restrained condition.' },
     { key: 'cylindricity', name: 'Cylindricity', controls: 'The whole surface between two coaxial cylinders.', motor: 'A pilot that fits the case bore.' },
   ] },
   { name: 'Orientation', datum: 'needs a datum', items: [
@@ -17,12 +17,12 @@ const GROUPS: { name: string; datum: string; items: { key: string; name: string;
   ] },
   { name: 'Location', datum: 'needs datums', items: [
     { key: 'position', name: 'Position', controls: 'An axis or centre plane within a zone around its true position, set by basic dimensions.', motor: 'Bolt holes, bosses, ports, dowels.' },
-    { key: 'concentricity', name: 'Concentricity', controls: 'Median points about a datum axis.', motor: 'Removed from ASME Y14.5 in 2018 — use position, runout or profile.', gone: true },
+    { key: 'concentricity', name: 'Concentricity', controls: 'Median points about a datum axis.', motor: 'Removed from ASME Y14.5 in 2018: use position, runout or profile.', gone: true },
     { key: 'symmetry', name: 'Symmetry', controls: 'Median points about a datum centre plane.', motor: 'Removed from ASME Y14.5 in 2018; still in ISO.', gone: true },
   ] },
   { name: 'Profile', datum: 'with or without datums', items: [
     { key: 'profileLine', name: 'Profile of a line', controls: 'Each line element of a surface within a zone about its true profile.', motor: 'A groove section, a contour checked by sections.' },
-    { key: 'profileSurface', name: 'Profile of a surface', controls: 'Every point of a surface within a zone about its true profile — size, form, orientation and location at once.', motor: 'Dome and nozzle contours, any complex surface.' },
+    { key: 'profileSurface', name: 'Profile of a surface', controls: 'Every point of a surface within a zone about its true profile: size, form, orientation and location at once.', motor: 'Dome and nozzle contours, any complex surface.' },
   ] },
   { name: 'Runout', datum: 'needs a datum axis', items: [
     { key: 'runout', name: 'Circular runout', controls: 'Each circular element as the part turns about the datum axis.', motor: 'A seal-groove root relative to its pilot.' },
@@ -55,7 +55,7 @@ const GROUPS: { name: string; datum: string; items: { key: string; name: string;
   ))}
   <figcaption>
     Form controls a feature on its own; orientation, location and runout control it relative to datums; profile can do
-    either. Each has a tolerance zone of a particular shape — the frame says which.
+    either. Each has a tolerance zone of a particular shape: the frame says which.
   </figcaption>
 </figure>
 

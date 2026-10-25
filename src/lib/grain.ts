@@ -71,7 +71,7 @@ export function inPort(port: Port, x: number, y: number): boolean {
 // area at ignition.
 // ---------------------------------------------------------------------------
 
-const FAR = 1e12; // "no port here" — finite so the parabola algebra stays exact
+const FAR = 1e12; // "no port here": finite so the parabola algebra stays exact
 
 /** 1-D squared distance transform with argmin (Felzenszwalb & Huttenlocher 2012). */
 function edt1d(f: Float64Array, n: number, d: Float64Array, arg: Int32Array, v: Int32Array, z: Float64Array) {

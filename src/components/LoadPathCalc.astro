@@ -29,7 +29,7 @@
           <label>Mass ahead of the skirt (kg)<input name="ma" type="number" min="0" step="any" value="50" /></label>
           <label>Grain bond length (mm)<input name="lg" type="number" min="1" step="any" value="1000" /></label>
         </div>
-        <p class="hint">Mass ahead of the skirt is everything the motor pushes through it — payload, upper stages. Thrust alone: no drag or weight.</p>
+        <p class="hint">Mass ahead of the skirt is everything the motor pushes through it: payload, upper stages. Thrust alone: no drag or weight.</p>
       </fieldset>
       <fieldset>
         <legend>Skirt and attach ring</legend>
@@ -104,7 +104,7 @@
       const ok = [p, D, dt, cf, dn, ds, m0, m1, ma, lg, M, dk, tk, db].every(Number.isFinite) && nc >= 1 && nb >= 3 && m0 + ma > 0 && m1 + ma > 0;
       if (!ok) {
         for (const k of ['end', 'thr', 'noz', 'clo', 'acc', 'skirt', 'line', 'bolt', 'bond']) r(k).textContent = '—';
-        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Enter every value — masses and diameters above zero, at least three attach bolts.</li>';
+        root.querySelector('[data-notes]')!.innerHTML = '<li class="bad">Enter every value: masses and diameters above zero, at least three attach bolts.</li>';
         chart(null);
         return;
       }
@@ -114,7 +114,7 @@
       r('thr').innerHTML = `${kN(pl.F)} kN <small>C<sub>F</sub>·p·A<sub>t</sub> · the aft end is pushed back by ${kN(pl.aft)} kN</small>`;
       r('noz').innerHTML = pl.nozzle >= 0
         ? `${kN(pl.nozzle)} kN <small>pushing the nozzle off its attachment</small>`
-        : `${kN(-pl.nozzle)} kN <small>pulling the nozzle into the motor — thrust exceeds the pressure over its attachment</small>`;
+        : `${kN(-pl.nozzle)} kN <small>pulling the nozzle into the motor: thrust exceeds the pressure over its attachment</small>`;
       r('clo').innerHTML = `${kN(pl.closureStatic)} kN <small>in a static pressure test, ${kN(pl.closureStatic / nc)} kN per bolt · ${kN(pl.closureFiring)} kN firing, ${kN(pl.closureFiring / nc)} kN per bolt</small>`;
 
       const ig = flightLoads(pl.F, m0, ma), bo = flightLoads(pl.F, m1, ma);
@@ -134,12 +134,12 @@
       const tau = bondInertiaShear(m0 - m1, ig.a, D, lg);
       r('bond').innerHTML = `${f(tau * 1000, 1)} kPa <small>mean, from the grain's inertia at ignition</small>`;
 
-      notes.push(['', `The pressure end load is ${f(pl.ratio, 0)} times the thrust, but it closes inside the case: the closures, their joints and the case wall carry it — the attachments to the vehicle never see it.`]);
-      if (pl.closureStatic > pl.closureFiring) notes.push(['', `A static pressure test loads the aft closure with the full ${kN(pl.closureStatic)} kN — no flow, so no thrust to relieve it. Size the closure joint for the test as well as for firing.`]);
+      notes.push(['', `The pressure end load is ${f(pl.ratio, 0)} times the thrust, but it closes inside the case. The closures, their joints and the case wall carry it. The attachments to the vehicle never carry it.`]);
+      if (pl.closureStatic > pl.closureFiring) notes.push(['', `A static pressure test loads the aft closure with the full ${kN(pl.closureStatic)} kN: no flow, so no thrust to relieve it. Size the closure joint for the test as well as for firing.`]);
       if (bo.skirt > ig.skirt) notes.push(['', `The forward skirt load rises from ${kN(ig.skirt)} kN at ignition to ${kN(bo.skirt)} kN at burnout: as the propellant burns away, the same thrust pushes less motor and more payload.`]);
-      notes.push(['', `Bending with no thrust — coast, handling, or before ignition — puts ${kN(b0.maxTension)} kN into the most loaded bolt. Take the largest bolt tension of all load cases to <a href="../bolted-joints/">Bolted joints</a> as the external load per bolt.`]);
+      notes.push(['', `Bending with no thrust (coast, handling, or before ignition) puts ${kN(b0.maxTension)} kN into the most loaded bolt. Take the largest bolt tension of all load cases to <a href="../bolted-joints/">Bolted joints</a> as the external load per bolt.`]);
       if (l0.maxComp > 0) notes.push(['', `The skirt's peak running load in compression goes to the <a href="../../verify/shell-buckling/">shell-buckling</a> check wherever the skirt or case is unpressurised.`]);
-      if (m1 > m0) notes.push(['bad', 'The burnout mass is larger than the ignition mass — check the masses.']);
+      if (m1 > m0) notes.push(['bad', 'The burnout mass is larger than the ignition mass: check the masses.']);
 
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       chart({ I: bI, B: bB, Z: b0 });

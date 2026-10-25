@@ -7,7 +7,7 @@ import { FEATURES } from '../lib/locking';
 ---
 
 <div class="calc lkcalc" data-lkcalc>
-  <div class="calc-head"><span>Locking and slip — one bolt</span><span class="head-btns"><span>slip · self-loosening · feature</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-head"><span>Locking and slip: one bolt</span><span class="head-btns"><span>slip · self-loosening · feature</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -39,7 +39,7 @@ import { FEATURES } from '../lib/locking';
           <label>Load factor Φ<input name="phi" type="number" min="0" max="1" step="0.01" value="0.15" /></label>
           <label>Slip factor<input name="fs" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
         </div>
-        <p class="hint">Φ from the <a href="../bolted-joints/">Bolted joints</a> calculator. Interface friction depends strongly on the surfaces and any coating — use a measured or specified value.</p>
+        <p class="hint">Φ from the <a href="../bolted-joints/">Bolted joints</a> calculator. Interface friction depends strongly on the surfaces and any coating: use a measured or specified value.</p>
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
       <fieldset>
@@ -120,7 +120,7 @@ import { FEATURES } from '../lib/locking';
       const P = (T: number) => torquePreload(T, t, mut, muh, dw, dh).F;
       const gamRaw = field('gam').value.trim(), gam = gamRaw === '' ? null : Math.min(0.8, Math.max(0, +gamRaw / 100));
       const Fnom = P((eff.min + eff.max) / 2), Fmin = P(eff.min) * (1 - (gam ?? 0)), Fmax = P(eff.max) * (1 + (gam ?? 0));
-      r('pre').innerHTML = `${f(Fnom / 1000, 2)} kN <small>${gam === null ? 'nominal — enter the scatter for the range' : `${f(Fmin / 1000, 2)}–${f(Fmax / 1000, 2)} kN with scatter`}</small>`;
+      r('pre').innerHTML = `${f(Fnom / 1000, 2)} kN <small>${gam === null ? 'nominal: enter the scatter for the range' : `${f(Fmin / 1000, 2)}–${f(Fmax / 1000, 2)} kN with scatter`}</small>`;
 
       // slip
       const phi = Math.min(1, Math.max(0, num('phi') || 0)), clamp = Fmin - (1 - phi) * Math.max(0, num('pa') || 0);
@@ -138,7 +138,7 @@ import { FEATURES } from '../lib/locking';
 
       // static hold and the self-loosening moment
       const hold = holdingTorque(Fnom, t, mut, muh, dw, dh), ramp = rampTorque(Fnom, t), est = standardLooseningEstimate(Fnom, t);
-      r('hold').innerHTML = `${f(hold / ramp, 1)}× <small>friction ${f(hold / 1000, 1)} N·m holds against a ramp of ${f(ramp / 1000, 1)} N·m — while nothing slips</small>`;
+      r('hold').innerHTML = `${f(hold / ramp, 1)}× <small>friction ${f(hold / 1000, 1)} N·m holds against a ramp of ${f(ramp / 1000, 1)} N·m, while nothing slips</small>`;
 
       // the locking feature
       const key = field('ft').value as FeatureKey, F = FEATURES[key], rot = checked('rot');
@@ -152,7 +152,7 @@ import { FEATURES } from '../lib/locking';
         notes.push(['', `The feature's running torque, ${f(run, 1)} N·m, is far below the self-loosening moment once the joint slips (${f(ramp / 1000, 1)} N·m from the ramp, ${f(est / 1000, 1)} N·m by the standard's estimate): it keeps the fastener captive, while the preload depends on the joint never slipping. Fully formed threads must engage the feature (§4.7.4).`]);
         if (!above && run === 0) notes.push(['warn', 'A prevailing-torque feature with no running torque entered: measure it at installation, and either specify torque above running torque or subtract it (§4.6.4, Table 4).']);
       }
-      if (key === 'adhesive') notes.push(['', '§4.6.3: develop and validate the installation process — cleaning, primer, cure — before use, and verify by torque tests on witness samples made alongside the hardware.']);
+      if (key === 'adhesive') notes.push(['', '§4.6.3: develop and validate the installation process (cleaning, primer, cure) before use, and verify by torque tests on witness samples made alongside the hardware.']);
       if (key === 'wire') notes.push(['', 'Wire so that tension in the wire pulls the fastener in the tightening direction (NASM 33540, SAE AS567); check by inspection after installation.']);
       say();
       chart(FQ * (fs ?? 1), cap, ramp, est, key === 'prevailing' ? run * 1000 : NaN);

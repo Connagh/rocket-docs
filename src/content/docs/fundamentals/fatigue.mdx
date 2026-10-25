@@ -1,6 +1,6 @@
 ---
 title: Fatigue
-description: Why parts fail at loads they survived thousands of times — S-N curves and the endurance limit, correcting a laboratory value for your part, notches, mean stress (Goodman and friends), Miner's rule for a load spectrum, and what makes fatigue worse or better.
+description: Why parts fail at loads that they survived thousands of times. S-N curves and the endurance limit, correction of a laboratory value for your part, notches, mean stress (Goodman and other criteria), Miner's rule for a load spectrum, and what makes fatigue worse or better.
 sidebar:
   order: 0
 ---
@@ -11,54 +11,55 @@ import FatigueStages from '../../../components/FatigueStages.astro';
 import FatigueCalc from '../../../components/FatigueCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Fatigue is damage from repetition, not magnitude: a part can pass every static check and still crack at a fraction of the load it survived on day one.</div>
-  <div><b>Then</b><a href="../../verify/proof-testing/">Proof testing</a> and <a href="../../verify/leak-before-break/">Leak before break</a> — once a crack exists</div>
-  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> — brackets, joints, handling</div>
+  <div><b>In one line</b>Fatigue is damage from repetition, not from magnitude. A part can pass all static checks and still crack at a fraction of the load that it survived on the first day.</div>
+  <div><b>Then</b><a href="../../verify/proof-testing/">Proof testing</a> and <a href="../../verify/leak-before-break/">Leak before break</a> (when a crack is present)</div>
+  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> (brackets, joints, handling)</div>
 </div>
 
 ## Why this matters
 
-A static margin cannot see fatigue coming. A bracket that carries ten times its working load once can crack after a
-few million cycles at a third of it. Fatigue is the most common way that mechanical hardware fails in service.
+A static margin cannot predict fatigue. A bracket that carries ten times its working load one time can crack after a
+few million cycles at one third of that load. Fatigue is the most frequent cause of failure of mechanical hardware in
+service.
 
-A solid motor case sees only a handful of pressure cycles — proof, leak check, one firing — so it is rarely
-fatigue-critical. Much of the hardware around it is:
+A solid motor case has only a few pressure cycles (proof, leak check and one firing), so fatigue is seldom critical for
+it. But fatigue is critical for much of the hardware around it:
 
-- handling and transport equipment, lifting points and the motor's own attachment points;
-- thrust-vector actuator brackets and linkages, and the bolts in every joint;
-- brackets and mounts loaded by vibration in transport and in flight;
-- test-stand hardware and reusable test cases, cycled many times.
+- handling and transport equipment, lifting points, and the attachment points of the motor;
+- the brackets and linkages of thrust-vector actuators, and the bolts in each joint;
+- brackets and mounts that vibration loads during transport and flight;
+- test-stand hardware and reusable test cases, which have many cycles.
 
 <Analogy title="Bending a paperclip">
-  Bend a paperclip once and nothing happens. Bend it back and forth twenty times and it snaps — at a load it had
-  already survived nineteen times. Each cycle did a little damage you could not see. Hardware fatigue works the same
-  way, with smaller strains and millions of cycles.
+  Bend a paperclip one time and nothing occurs. Bend it back and forth twenty times and it breaks, at a load that it
+  survived nineteen times. Each cycle caused a little damage that you could not see. Fatigue in hardware works in the
+  same way, with smaller strains and millions of cycles.
 </Analogy>
 
 <FatigueStages />
 
-This page covers **initiation** — stress-life, for a part with no known flaw. Once a crack exists, switch to fracture
-mechanics: [Proof testing](../../verify/proof-testing/) grows a known flaw with the Paris law. Using the wrong one is
-a common and expensive mistake.
+This page covers **initiation**: stress-life, for a part with no known flaw. When a crack is present, use fracture
+mechanics. [Proof testing](../../verify/proof-testing/) grows a known flaw with the Paris law. If you use the incorrect
+method, the error is frequent and expensive.
 
 ## The S-N curve
 
-Fatigue strength is measured on polished coupons cycled at constant amplitude, fully reversed, and plotted as stress
-against cycles to failure on log scales.
+Fatigue strength is measured on polished coupons, cycled at constant amplitude and fully reversed. The results are
+plotted as stress against cycles to failure, on log scales.
 
-- **Steels and titanium have an endurance limit** at around $10^6$–$10^7$ cycles: below it, clean coupons at room
-  temperature do not fail. For steels, a common estimate is $S'_e \approx 0.5\,S_{ut}$, levelling off at about
-  700 MPa above $S_{ut} = 1400$ MPa.
-- **Aluminium alloys have no endurance limit.** Their fatigue strength is quoted at $5 \times 10^8$ cycles —
-  roughly $0.4\,S_{ut}$, but no more than about 130 MPa — and the curve keeps falling.
-- **Between $10^3$ cycles and the endurance limit** the curve is close to a straight line on log scales (Basquin's
-  law), from about $0.9\,S_{ut}$ at $10^3$ down to $S_e$.
-- **A life is a distribution, not a number.** At one stress, coupon lives typically scatter by a factor of ten.
+- **Steels and titanium have an endurance limit** at approximately $10^6$–$10^7$ cycles. Below this limit, clean coupons
+  at room temperature do not fail. For steels, a usual estimate is $S'_e \approx 0.5\,S_{ut}$. Above
+  $S_{ut} = 1400$ MPa, it stays at approximately 700 MPa.
+- **Aluminium alloys have no endurance limit.** Their fatigue strength is given at $5 \times 10^8$ cycles. It is
+  approximately $0.4\,S_{ut}$, but not more than approximately 130 MPa, and the curve continues to decrease.
+- **Between $10^3$ cycles and the endurance limit,** the curve is almost a straight line on log scales (Basquin's law).
+  It goes from approximately $0.9\,S_{ut}$ at $10^3$ down to $S_e$.
+- **A life is a distribution, not a number.** At one stress, coupon lives usually have a scatter of a factor of ten.
 
 ## From a laboratory coupon to your part
 
-The coupon is small, polished, bent and tested in a laboratory. Your part is none of those. Marin's factors correct
-for the differences:
+The coupon is small and polished, loaded in bending, and tested in a laboratory. Your part has none of these
+properties. The Marin factors correct for the differences:
 
 $$
 S_e = k_a\,k_b\,k_c\,k_d\,k_e\;S'_e
@@ -66,20 +67,20 @@ $$
 
 | Factor | Corrects for | Typical effect |
 | --- | --- | --- |
-| $k_a$ surface | Roughness — cracks start at the surface | Machined 1280 MPa steel 0.68; ground 0.86; as-forged 0.22 |
-| $k_b$ size | A bigger section has more surface and more inclusions to start from | 0.88 at 25 mm in bending; 1 in axial loading |
+| $k_a$ surface | Roughness: cracks start at the surface | Machined 1280 MPa steel 0.68; ground 0.86; as-forged 0.22 |
+| $k_b$ size | A larger section has more surface and more inclusions where cracks can start | 0.88 at 25 mm in bending; 1 in axial loading |
 | $k_c$ loading | Axial loading has no gradient to slow an early crack | 1 bending, 0.85 axial |
 | $k_d$ temperature | Strength loss and oxidation when hot | 1 at room temperature |
 | $k_e$ reliability | From the median coupon life to a survival probability | 0.81 for 99%, 0.75 for 99.9% |
 
-The surface factor falls fastest for **high-strength steels**: the stronger the steel, the more a rough surface costs
-it. That is why fatigue-critical features on strong parts are ground, polished or peened.
+The surface factor decreases fastest for **high-strength steels**. The stronger the steel, the more a rough surface
+decreases its fatigue strength. This is why fatigue-critical features on strong parts are ground, polished or peened.
 
 ## Notches
 
-A hole, fillet or thread raises the local stress by the elastic stress-concentration factor $K_t$, read from charts
-such as Peterson's. Fatigue sees a little less than $K_t$, because a small notch also has a steep stress gradient.
-Peterson's notch sensitivity gives the fatigue factor:
+A hole, a fillet or a thread increases the local stress by the elastic stress-concentration factor $K_t$. Get $K_t$
+from charts such as those of Peterson. The fatigue effect is a little less than $K_t$, because a small notch also has a
+steep stress gradient. The notch sensitivity of Peterson gives the fatigue factor:
 
 $$
 K_f = 1 + q\,(K_t - 1),
@@ -87,32 +88,31 @@ K_f = 1 + q\,(K_t - 1),
 q = \frac{1}{1 + a/r}
 $$
 
-with $r$ the notch radius and $a$ a material length: about $0.0254\,(2070/S_{ut})^{1.8}$ mm for steels, about 0.64 mm
-for aluminium alloys. Stronger steels have a smaller $a$, so they feel almost the full $K_t$. The design rules
-follow: generous radii, notches kept apart, and nothing stacked on a fillet — no thread run-out, cross-hole or
-marking.
+Here $r$ is the notch radius, and $a$ is a material length: approximately $0.0254\,(2070/S_{ut})^{1.8}$ mm for steels,
+and approximately 0.64 mm for aluminium alloys. Stronger steels have a smaller $a$, thus they have almost the full
+$K_t$. This gives the design rules: large radii, notches kept apart, and nothing added on a fillet (no thread run-out,
+no cross-hole and no marking).
 
 ## Mean stress
 
-A tensile mean stress shortens life; a compressive one helps. The common criteria convert a cycle with amplitude
-$\sigma_a$ and mean $\sigma_m$ into an equivalent fully reversed amplitude $\sigma_{ar}$:
+A tensile mean stress decreases the life. A compressive mean stress increases it. The usual criteria change a cycle
+with an amplitude $\sigma_a$ and a mean $\sigma_m$ into an equivalent fully reversed amplitude $\sigma_{ar}$:
 
 | Criterion | $\sigma_{ar}$ | Character |
 | --- | --- | --- |
 | Goodman | $\sigma_a / (1 - \sigma_m/S_{ut})$ | Standard; conservative for ductile metals |
-| Gerber | $\sigma_a / \left(1 - (\sigma_m/S_{ut})^2\right)$ | A parabola, closer to test data for ductile metals |
+| Gerber | $\sigma_a / \left(1 - (\sigma_m/S_{ut})^2\right)$ | A parabola, nearer to test data for ductile metals |
 | Soderberg | $\sigma_a / (1 - \sigma_m/S_y)$ | To yield; the most conservative |
-| Smith–Watson–Topper | $\sqrt{\sigma_\text{max}\,\sigma_a}$ | Widely used with strain-life methods and for aluminium |
+| Smith–Watson–Topper | $\sqrt{\sigma_\text{max}\,\sigma_a}$ | Frequently used with strain-life methods and for aluminium |
 
-Common practice gives **no credit for compressive mean stress**. **Residual stress acts as a mean stress**: shot
-peening and rolling leave the surface in compression and extend life, while welding leaves it in tension and shortens
-it — see [Residual stress](../../materials/residual-stress/).
+Usual practice gives **no credit for compressive mean stress**. **Residual stress acts as a mean stress.** Shot peening
+and rolling put the surface in compression and increase the life. Welding puts it in tension and decreases the life.
+See [Residual stress](../../materials/residual-stress/).
 
 ## Variable loads: Miner's rule
 
-Real parts see a spectrum. Count the cycles into blocks of similar amplitude and mean — rainflow counting
-(ASTM E1049) is the standard way to do this from a measured load history — then add up the fraction of life each
-block uses:
+Real parts have a spectrum of loads. Count the cycles into blocks of similar amplitude and mean. Rainflow counting
+(ASTM E1049) is the standard method for a measured load history. Then add the fraction of life that each block uses:
 
 $$
 D = \sum_i \frac{n_i}{N_i},
@@ -120,82 +120,85 @@ D = \sum_i \frac{n_i}{N_i},
 \text{failure predicted at } D = 1
 $$
 
-It is simple and widely used, but measured damage sums at failure scatter roughly between 0.3 and 3, and the order of
-loading matters, which the rule ignores. Programmes apply a factor on life for this reason. With an endurance limit,
-blocks below $S_e$ do no damage in the rule, but occasional large cycles can lower the endurance limit in reality.
-Haibach's modification continues the S-N line below $S_e$ at a shallower slope to cover this.
+The rule is simple and frequently used. But measured damage sums at failure have a scatter of approximately 0.3 to 3,
+and the sequence of the loads is important, which the rule does not consider. For this reason, programmes apply a
+factor on life. With an endurance limit, the rule gives no damage for blocks below $S_e$. But in reality, occasional
+large cycles can decrease the endurance limit. The Haibach modification continues the S-N line below $S_e$ with a
+smaller slope to cover this.
 
 ## Calculator
 
 <FatigueCalc />
 
-## Worked example — an actuator bracket
+## Worked example: an actuator bracket
 
-A machined 4340 steel bracket for a thrust-vector actuator, 25 mm section in bending, with a fillet of $K_t = 1.8$ and
-radius 2 mm, at 99% reliability. Per service life it sees transport vibration (90 MPa amplitude on a 50 MPa mean,
-5 million cycles), handling (zero to 500 MPa, so 250 on 250, 2000 times) and firings (180 on 60 MPa, 20,000 cycles).
-These are the calculator's starting values.
+This is a machined 4340 steel bracket for a thrust-vector actuator. It has a 25 mm section in bending, with a fillet of
+$K_t = 1.8$ and a radius of 2 mm, at 99% reliability. For each service life, it has transport vibration (90 MPa
+amplitude on a 50 MPa mean, 5 million cycles), handling (zero to 500 MPa, thus 250 on 250, 2000 times) and firings
+(180 on 60 MPa, 20,000 cycles). These are the starting values of the calculator.
 
 1. **Coupon strength.** $S'_e = 0.5 \times 1280 = 640$ MPa.
-2. **To the part.** $k_a = 4.51 \times 1280^{-0.265} = 0.677$, $k_b = 1.24 \times 25^{-0.107} = 0.879$,
-   $k_e = 0.814$, so $S_e = 640 \times 0.677 \times 0.879 \times 0.814 = 310$ MPa — under half the coupon's
-   strength.
+2. **To the part.** $k_a = 4.51 \times 1280^{-0.265} = 0.677$, $k_b = 1.24 \times 25^{-0.107} = 0.879$ and
+   $k_e = 0.814$. Thus $S_e = 640 \times 0.677 \times 0.879 \times 0.814 = 310$ MPa, which is less than half the
+   strength of the coupon.
 3. **The notch.** $a = 0.0254 \times (2070/1280)^{1.8} = 0.060$ mm, so $q = 1/(1 + 0.060/2) = 0.971$ and
    $K_f = 1 + 0.971 \times 0.8 = 1.78$.
-4. **The S-N line** runs from $0.9 \times 1280 = 1152$ MPa at $10^3$ cycles to 310 MPa at $10^6$: slope
+4. **The S-N line** goes from $0.9 \times 1280 = 1152$ MPa at $10^3$ cycles to 310 MPa at $10^6$. The slope is
    $b = \log(310/1152)/3 = -0.190$.
-5. **Each block** (Goodman, with $K_f$ on both amplitude and mean):
+5. **Each block** (Goodman, with $K_f$ on the amplitude and on the mean):
    - Transport: local 160 on 89 MPa → $\sigma_{ar} = 172$ MPa, below $S_e$: **no damage**.
    - Handling: local 444 on 444 → $\sigma_{ar} = 444/(1 - 444/1280) = 680$ MPa →
      $N = 10^3 (680/1152)^{-1/0.190} = 16{,}000$ → $D = 0.125$.
    - Firings: local 320 on 107 → $\sigma_{ar} = 349$ MPa → $N = 538{,}000$ → $D = 0.037$.
-6. **Total** $D = 0.162$: the bracket lasts about **6.2 service lives** in the median — before your programme's factor
-   on life.
+6. **Total** $D = 0.162$. The median life of the bracket is approximately **6.2 service lives**, before the factor on
+   life of your programme.
 
-Two lessons come out of it. The 2,000 handling cycles do **77%** of the damage; the 5 million vibration cycles do
-none. And **grinding the fillet** raises $k_a$ to 0.86 and $S_e$ to 394 MPa: the firing loads drop below the endurance
-limit, and the life rises to **14.8 service lives** — 2.4 times, from the surface alone.
+This example has two lessons. First, the 2,000 handling cycles cause **77%** of the damage, and the 5 million vibration
+cycles cause no damage. Second, if you **grind the fillet**, $k_a$ increases to 0.86 and $S_e$ to 394 MPa. The firing
+loads are then below the endurance limit, and the life increases to **14.8 service lives**. This is 2.4 times longer,
+only from the surface.
 
-To see the other side, try 7075-T6 with every stress divided by three (an aluminium bracket would be sized for lower
-stresses). With no endurance limit, the 5 million vibration cycles now do about a quarter of the damage.
+For a different case, try 7075-T6 with all stresses divided by three (an aluminium bracket would be sized for lower
+stresses). There is no endurance limit, so the 5 million vibration cycles now cause approximately a quarter of the
+damage.
 
-## What makes fatigue worse — and better
+## What makes fatigue worse or better
 
 | Worse | Better |
 | --- | --- |
-| Tensile residual stress — welds, abusive grinding | Compressive residual stress — shot peening, cold rolling |
-| Corrosion and corrosion pits; corrosive environments remove the endurance limit | Protective finishes chosen for fatigue as well as corrosion |
-| Fretting at clamped and bolted interfaces | Preloaded bolts — the bolt then sees only part of the alternating load |
-| Hard chromium plating on steel; hard anodising on aluminium | Generous radii, notches kept apart |
-| Handling damage, transverse tool marks, stamped markings | Fine finish along the load direction; etched, not stamped, marks |
-| High temperature, hydrogen embrittlement | Welds kept out of the highest-stress regions |
+| Tensile residual stress: welds, abusive grinding | Compressive residual stress: shot peening, cold rolling |
+| Corrosion and corrosion pits; corrosive environments remove the endurance limit | Protective finishes selected for fatigue as well as corrosion |
+| Fretting at clamped and bolted interfaces | Preloaded bolts: the bolt then gets only part of the alternating load |
+| Hard chromium plating on steel; hard anodising on aluminium | Large radii, notches kept apart |
+| Handling damage, transverse tool marks, stamped markings | Fine finish along the load direction; etched marks, not stamped marks |
+| High temperature, hydrogen embrittlement | Welds kept out of the regions with the highest stress |
 
 ## Where this stops
 
-- **High-cycle, stress-life** only. Below about $10^3$–$10^4$ cycles, or wherever the notch yields, use strain-life
-  (Coffin–Manson) methods — see [stress- and strain-based failure](../../verify/random-vibration/#stress-based-and-strain-based-failure).
-- **Once there is a crack**, use crack growth — the Paris law on the [proof-testing page](../../verify/proof-testing/).
-- **Multiaxial and non-proportional loading** need dedicated criteria; this page uses one equivalent stress.
-- **Random vibration** is turned into cycles through a spectral method; see [Random vibration](../../verify/random-vibration/).
+- **High-cycle, stress-life only.** Below approximately $10^3$–$10^4$ cycles, or where the notch yields, use strain-life
+  (Coffin–Manson) methods. See [stress- and strain-based failure](../../verify/random-vibration/#stress-based-and-strain-based-failure).
+- **When there is a crack,** use crack growth: the Paris law on the [proof-testing page](../../verify/proof-testing/).
+- **Multiaxial and non-proportional loading** need special criteria. This page uses one equivalent stress.
+- **Random vibration** is changed into cycles with a spectral method. See [Random vibration](../../verify/random-vibration/).
 - **Welded joints** are assessed with detail categories (for example BS 7608), not with Marin factors.
-- **Everything here is an estimate.** Fatigue punishes optimism: a fatigue-critical part is substantiated by coupon and
-  full-scale testing.
+- **All the results here are estimates.** Optimism in fatigue causes failures. Coupon tests and full-scale tests must
+  substantiate a fatigue-critical part.
 
 ## On the drawing
 
-- **Surface finish on fatigue-critical features**, as an Ra limit and, where it matters, a lay direction along the
-  load.
-- **Minimum fillet radii**, dimensioned — not left to "break sharp edges".
-- **Shot peening** to a specification (for example AMS 2430 or AMS 2432), with intensity and coverage stated.
-- **Bolt preload** specified as a tension or a controlled torque, not left to the fitter.
-- **Fatigue-critical features identified**, with their inspection (penetrant or magnetic particle) and no marking or
-  stamping on them.
+- **Surface finish on fatigue-critical features,** as an Ra limit and, where it is important, a lay direction along
+  the load.
+- **Minimum fillet radii,** with dimensions. Do not leave them to "break sharp edges".
+- **Shot peening** to a specification (for example AMS 2430 or AMS 2432), with the intensity and the coverage.
+- **Bolt preload,** specified as a tension or a controlled torque. Do not leave it to the fitter.
+- **Identification of fatigue-critical features,** with their inspection (penetrant or magnetic particle), and with no
+  marking or stamping on them.
 
 ## References and further reading
 
-- R. G. Budynas & J. K. Nisbett, *Shigley's Mechanical Engineering Design*, 11th ed., McGraw-Hill (2019) — Marin
-  factors, S-N estimates, mean-stress criteria.
-- R. L. Norton, *Machine Design: An Integrated Approach*, Pearson — fatigue strength estimates for aluminium.
+- R. G. Budynas & J. K. Nisbett, *Shigley's Mechanical Engineering Design*, 11th ed., McGraw-Hill (2019) (Marin
+  factors, S-N estimates, mean-stress criteria).
+- R. L. Norton, *Machine Design: An Integrated Approach*, Pearson (fatigue strength estimates for aluminium).
 - W. D. Pilkey & D. F. Pilkey, *Peterson's Stress Concentration Factors*, 3rd ed., Wiley (2008).
 - J. A. Bannantine, J. J. Comer & J. L. Handrock, *Fundamentals of Metal Fatigue Analysis*, Prentice Hall (1990).
 - M. A. Miner, "Cumulative damage in fatigue", *Journal of Applied Mechanics* 12 (1945) A159–A164.
@@ -203,6 +206,7 @@ stresses). With no endurance limit, the 5 million vibration cycles now do about 
   assessment of steel products*; MMPDS for aerospace S-N data.
 
 <Aside type="note">
-  Teaching and screening. Fatigue substantiation uses material-specific S-N or strain-life data at the right stress
-  ratio, environment and temperature, a validated damage model, and test evidence at component level.
+  This is teaching and screening material. Fatigue substantiation uses S-N or strain-life data for the specific
+  material at the correct stress ratio, environment and temperature, a validated damage model, and test evidence at
+  component level.
 </Aside>

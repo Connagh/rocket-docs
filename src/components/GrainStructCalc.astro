@@ -16,7 +16,7 @@ const CASES = [
 ---
 
 <div class="calc gscalc" data-gscalc>
-  <div class="calc-head"><span>Case-bonded grain — structural screen</span><span class="head-btns"><span>long cylinder · incompressible propellant</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-head"><span>Case-bonded grain: structural screen</span><span class="head-btns"><span>long cylinder · incompressible propellant</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -60,7 +60,7 @@ const CASES = [
           <label>Safety factor<input name="sf" type="number" min="1" step="0.1" placeholder="your value" autocomplete="off" /></label>
         </div>
         <p class="hint" data-caphint></p>
-        <p class="hint">Enter your programme's safety factor — it comes from the governing requirement, not from this site.</p>
+        <p class="hint">Enter your programme's safety factor: it comes from the governing requirement, not from this site.</p>
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
     </form>
@@ -190,7 +190,7 @@ const CASES = [
       if (sf === null) notes.push(['warn', `Strains are shown. ${awaitingMessage(['safety factor'], 'the margins')}`]);
       if (num('tlow') >= num('tsf')) notes.push(['', 'The service temperature is not below the stress-free temperature, so cool-down puts the bore in compression, not tension.']);
       if (msCo < 0) notes.push(['bad', `Cold ignition fails the screen: ${f(s.combined * 100, 1)}% × SF ${f(sf!, 1)} exceeds ${f(capF * 100, 1)}% capability. Options: a smaller web (larger bore), a propellant with more low-temperature strain capability, a stiffer case, a higher minimum firing temperature, or stress-relief features.`]);
-      if (msBd < 0) notes.push(['bad', 'Bond tension exceeds the bond strength with this safety factor. Debonds usually start at the grain ends, where the stress is far higher than this long-cylinder value — that is what stress-relief flaps are for.']);
+      if (msBd < 0) notes.push(['bad', 'Bond tension exceeds the bond strength with this safety factor. Debonds usually start at the grain ends, where the stress is far higher than this long-cylinder value: that is what stress-relief flaps are for.']);
       if (num('kt') === 1) notes.push(['', 'Circular bore assumed. A star or slotted bore concentrates strain at its points: try a concentration factor of 2–3 to see what that does.']);
       if (s.pressure > 0 && s.caseHoop > 0) notes.push(['', `The case stretches ${f(s.caseHoop * 100, 2)}% at MEOP; the bore stretches ${f(s.pressure / s.caseHoop, 1)}× that. A stiffer or thicker case directly lowers ignition strain.`]);
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');

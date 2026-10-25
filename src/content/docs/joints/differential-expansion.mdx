@@ -1,6 +1,6 @@
 ---
 title: Differential expansion
-description: Thermal mismatch between dissimilar materials — free and constrained expansion, interference and clearance fits that change with temperature, stresses in bonded and bolted joints, transients, and what it means for a solid motor across its temperature range.
+description: Thermal mismatch between dissimilar materials. Free and constrained expansion, interference and clearance fits that change with temperature, stresses in bonded and bolted joints, transients, and what these mean for a solid motor across its temperature range.
 sidebar:
   order: 0
 ---
@@ -11,24 +11,25 @@ import ExpansionBars from '../../../components/ExpansionBars.astro';
 import ExpCalc from '../../../components/ExpCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Two materials that grow differently either push on each other, pull apart or slide — design every joint so the whole temperature range does one of those harmlessly.</div>
+  <div><b>In one line</b>Two materials that grow differently push on each other, pull apart or slide. Design each joint so that this causes no damage over the full temperature range.</div>
   <div><b>Before this</b><a href="../bolted-joints/">Bolted joints</a> · <a href="../../motor/propellant-grain/">Propellant grain</a></div>
   <div><b>Used by</b><a href="../../seals/sealing-strategy/">Sealing strategy</a> · <a href="../../motor/transient-thermal/">Transient thermal</a></div>
 </div>
 
 ## Why this matters
 
-A motor is assembled at room temperature and then stored, transported and fired anywhere across its qualified range.
-It is built from materials that grow very differently with temperature: a steel or composite case, aluminium skirts and
-closures, titanium fittings, rubbery insulation, carbon nozzle parts — and a propellant grain that expands about eight
-times as much as steel. Every interface between them is a joint that is squeezed, opened or slid by temperature:
-skirts that come loose, bonds that peel at the edges, seal glands that open, bolts that lose preload, grains that crack.
+A motor is assembled at room temperature. It is then stored, transported and fired anywhere in its qualified range. It
+is made of materials that grow very differently with temperature: a steel or composite case, aluminium skirts and
+closures, titanium fittings, rubber insulation, carbon nozzle parts, and a propellant grain that expands approximately
+eight times as much as steel. Temperature squeezes, opens or slides each interface between these materials. Examples
+are skirts that become loose, bonds that peel at the edges, seal glands that open, bolts that lose preload, and grains
+that crack.
 
 <ExpansionBars />
 
 ## Free and constrained expansion
 
-A free part simply grows, by $\varepsilon = \alpha\,\Delta T$. Stop it, and the same strain turns into stress:
+A free part grows by $\varepsilon = \alpha\,\Delta T$. If you stop it, the same strain becomes stress:
 
 $$
 \sigma = E\,\alpha\,\Delta T \quad \text{held in one direction}
@@ -38,44 +39,44 @@ $$
 \sigma = \frac{E\,\alpha\,\Delta T}{1-\nu} \quad \text{held in a plane}
 $$
 
-For steel over 100 °C, held in one direction, that is $205\,000 \times 12\times10^{-6} \times 100 = 246$ MPa — from
-temperature alone. Between two joined parts, what matters is the **mismatch**, $(\alpha_1 - \alpha_2)\,\Delta T$, and
-how stiffly the joint makes them share it.
+For steel over 100 °C, held in one direction, this is $205\,000 \times 12\times10^{-6} \times 100 = 246$ MPa, from
+temperature only. Between two joined parts, the important values are the **mismatch**, $(\alpha_1 - \alpha_2)\,\Delta T$,
+and the stiffness with which the joint makes them share it.
 
 <Analogy title="A kettle thermostat">
-  A bimetal strip is two metals bonded face to face. Heat it, and the one that grows more cannot get away from the other,
-  so the strip bends. Every bonded or tightly joined pair of materials in a motor is a bimetal strip: the mismatch has to
-  go somewhere — into bending, into stress, or into slip.
+  A bimetal strip is two metals bonded face to face. When you heat it, the metal that grows more cannot move away from
+  the other metal, so the strip bends. Each bonded or tightly joined pair of materials in a motor is a bimetal strip. The
+  mismatch must go somewhere: into bending, into stress or into slip.
 </Analogy>
 
 ## Fits that change with temperature
 
-An inner part of diameter $d$ in an outer part changes its diametral fit by
+An inner part of diameter $d$ in an outer part changes its diametral fit by:
 
 $$
 \Delta\delta = d\,(\alpha_{inner} - \alpha_{outer})\,\Delta T
 $$
 
-If the outer part expands more — aluminium round steel — the fit loosens when hot and tightens when cold. The contact
-pressure for an interference $\delta$ follows Lamé's thick-cylinder solution:
+If the outer part expands more (aluminium around steel), the fit becomes looser when hot and tighter when cold. The
+contact pressure for an interference $\delta$ follows the Lamé thick-cylinder solution:
 
 $$
 p = \frac{\delta}{\dfrac{d}{E_o}\left(\dfrac{D^2 + d^2}{D^2 - d^2} + \nu_o\right) + \dfrac{d}{E_i}\left(\dfrac{d^2 + d_i^2}{d^2 - d_i^2} - \nu_i\right)}
 $$
 
-with the outer part's diameter $D$ and the inner part's bore $d_i$. So:
+Here $D$ is the diameter of the outer part and $d_i$ is the bore of the inner part. Thus:
 
-- **Check both ends.** The interference must survive the loosening extreme, and the outer part must not yield at the
-  tightening one.
-- **Do not rely on friction across dissimilar metals** to locate or carry load if the range takes the fit to zero. Pin,
-  key, bolt or shoulder the part, and let the fit only centre it.
-- **Match the expansion where you can** — titanium inside steel tightens when hot rather than loosening.
+- **Check the two ends.** The interference must stay at the loose extreme, and the outer part must not yield at the
+  tight extreme.
+- **Do not use friction across dissimilar metals** to locate a part or carry load if the fit becomes zero in the range.
+  Use a pin, a key, a bolt or a shoulder, and let the fit only centre the part.
+- **Use materials with similar expansion where possible.** Titanium inside steel becomes tighter when hot, not looser.
 
 ## Bonded joints
 
 A thin layer bonded to a thick part takes the full mismatch as an equal-biaxial stress,
 $\sigma = \tfrac{E}{1-\nu}(\alpha_{sub} - \alpha_{layer})\,\Delta T$. Between two adherends of similar thickness, the
-adhesive transfers the mismatch by shear, and the shear piles up at the **ends** of the overlap (shear lag):
+adhesive transfers the mismatch by shear. The shear is highest at the **ends** of the overlap (shear lag):
 
 $$
 \tau_{max} = \frac{G}{t_a}\,\frac{\Delta\alpha\,\Delta T}{\beta}\tanh\frac{\beta L}{2}
@@ -85,100 +86,103 @@ $$
 \beta^2 = \frac{G}{t_a}\left(\frac{1}{E_1 t_1} + \frac{1}{E_2 t_2}\right)
 $$
 
-- **The peak does not fall with longer overlap** once $L$ is a few times $1/\beta$. The middle of a long bond carries no
-  shear at all.
-- **A thicker or softer bondline lowers it** — for a long overlap the peak goes as $\sqrt{G/t_a}$ — as do tapered
-  ends and closer-matched adherends.
-- **Adhesives are viscoelastic.** A slow cool-down relaxes some of the stress; a fast thermal shock does not, which is
-  why cold shock is the hard case. See [Viscoelasticity](../../fundamentals/viscoelasticity/).
-- **The grain-to-case bond** is the largest bonded mismatch on a motor — worked on the
-  [Propellant grain](../../motor/propellant-grain/) page.
+- **A longer overlap does not decrease the peak** when $L$ is more than a few times $1/\beta$. The middle of a long bond
+  carries no shear.
+- **A thicker or softer bondline decreases the peak.** For a long overlap, the peak changes as $\sqrt{G/t_a}$. Tapered
+  ends and adherends with closer expansion also decrease it.
+- **Adhesives are viscoelastic.** A slow cool-down relaxes some of the stress. A fast thermal shock does not. This is
+  why cold shock is the difficult case. See [Viscoelasticity](../../fundamentals/viscoelasticity/).
+- **The bond between the grain and the case** is the largest bonded mismatch on a motor. The
+  [Propellant grain](../../motor/propellant-grain/) page analyses it.
 
 ## Bolted joints
 
-- **Preload changes with temperature** when the bolt and the clamped parts expand differently — steel bolts in an
+- **Preload changes with temperature** when the bolt and the clamped parts expand differently. Steel bolts in an
   aluminium flange lose preload when cold. See the temperature section of [Bolted joints](../bolted-joints/#temperature).
 - **Plates slide against each other.** Two plates of different materials bolted together move relative to each other by
-  $\Delta\alpha\,\Delta T\,R$ at a distance $R$ from their common fixed point. Within the hole clearance, friction stores
-  that as shear until the joint slips — a source of preload loss and fretting. Beyond it, the outer bolts bear and are
-  sheared on every cycle. Use one fixed hole with radially slotted others, or flexures.
+  $\Delta\alpha\,\Delta T\,R$, at a distance $R$ from their common fixed point. Within the hole clearance, friction
+  stores this movement as shear until the joint slips. This causes preload loss and fretting. After the clearance is
+  closed, the outer bolts bear, and each cycle shears them. Use one fixed hole with radially slotted holes for the
+  others, or use flexures.
 
 ## Transients
 
-Uniform temperature is the easy case. During firing, the inner parts of the nozzle and the insulation heat by hundreds of
-degrees in seconds while the outer shells stay cool. The hot inner part then grows against a cold outer one —
-compression on heating, gaps on cooling. Nozzle throat inserts sit in their housings with designed gaps and compliant
-layers for this reason. Use [Transient thermal](../../motor/transient-thermal/) for the temperatures, then this page's
-methods for the fit at each moment.
+A uniform temperature is the easy case. During firing, the inner parts of the nozzle and the insulation heat by
+hundreds of degrees in seconds, while the outer shells stay cool. The hot inner part then grows against a cold outer
+part. This causes compression during heating and gaps during cooling. For this reason, nozzle throat inserts are
+installed in their housings with designed gaps and compliant layers. Use [Transient thermal](../../motor/transient-thermal/)
+for the temperatures, and then the methods of this page for the fit at each moment.
 
 ## What it means for a motor
 
 | Interface | Cold | Hot | Design response |
 | --- | --- | --- | --- |
-| Propellant grain on the case | Grain shrinks: bore strain, bond tension | Grain grows: compression | Stress-free temperature, bore shape, stress-relief flaps — [Propellant grain](../../motor/propellant-grain/) |
-| Aluminium skirt or closure on a steel case | Grips harder | Loosens | Pin or bolt; the fit only centres |
-| Steel or titanium fitting in an aluminium part | Tightens | Loosens | Size the fit for the hot end; inserts |
-| Metal ring bonded to a composite case | Ring shrinks onto the composite: edge shear | The reverse | Tapered ends, compliant adhesive, check both extremes |
+| Propellant grain on the case | Grain shrinks: bore strain, bond tension | Grain grows: compression | Stress-free temperature, bore shape, stress-relief flaps ([Propellant grain](../../motor/propellant-grain/)) |
+| Aluminium skirt or closure on a steel case | Grips harder | Becomes loose | Pin or bolt; the fit only centres |
+| Steel or titanium fitting in an aluminium part | Becomes tighter | Becomes loose | Size the fit for the hot end; inserts |
+| Metal ring bonded to a composite case | Ring shrinks onto the composite: edge shear | The opposite | Tapered ends, compliant adhesive, check the two extremes |
 | Carbon or graphite throat in a steel housing | Housing grips the throat | Throat heats and grows during firing | Designed gaps, compliant layers |
-| Seal gland across two materials | Gap shrinks or grows | The opposite | Check squeeze at both ends — [Sealing strategy](../../seals/sealing-strategy/) |
-| Bolted flange, aluminium on steel | Preload falls; plates slide | Preload rises | Preload margin at the cold end; slotted holes |
+| Seal gland across two materials | Gap decreases or increases | The opposite | Check the squeeze at the two ends ([Sealing strategy](../../seals/sealing-strategy/)) |
+| Bolted flange, aluminium on steel | Preload decreases; plates slide | Preload increases | Preload margin at the cold end; slotted holes |
 
 ## Calculator
 
 <ExpCalc />
 
-## Worked example — the 300 mm motor from −40 to +60 °C
+## Worked example: the 300 mm motor from −40 to +60 °C
 
-Assembled at 20 °C, so the cold end is 60 °C below assembly and the hot end 40 °C above.
+The motor is assembled at 20 °C. Thus the cold end is 60 °C below assembly and the hot end is 40 °C above.
 
-1. **Aluminium skirt ring on the steel attach ring.** Interface ⌀310 mm, ring OD 330 mm, attach-ring bore 290 mm, 0.10 mm
-   interference at assembly, 30 mm long, friction 0.15. The mismatch is $310 \times (12.0 - 23.4)\times10^{-6} =
-   -3.5$ μm per degree:
-   - **at −40 °C** the interference grows to 0.31 mm — 3.4 MPa of contact pressure, 54 MPa in the aluminium, and the
-     fit holds 14.7 kN;
-   - **at +60 °C** it becomes a **0.04 mm clearance**: the skirt is loose.
+1. **Aluminium skirt ring on the steel attach ring.** The interface is ⌀310 mm, the ring OD is 330 mm, the attach-ring
+   bore is 290 mm, the interference at assembly is 0.10 mm, the length is 30 mm and the friction is 0.15. The mismatch
+   is $310 \times (12.0 - 23.4)\times10^{-6} = -3.5$ μm for each degree:
+   - **at −40 °C,** the interference increases to 0.31 mm. This gives 3.4 MPa of contact pressure and 54 MPa in the
+     aluminium, and the fit holds 14.7 kN;
+   - **at +60 °C,** it becomes a **0.04 mm clearance**: the skirt is loose.
 
-   The interference alone cannot carry the skirt: it must be pinned or bolted. A titanium ring would tighten when hot
-   instead, and stays at 0.04 mm interference cold.
-2. **Carbon-fibre skirt bonded to the steel case.** CFRP 3 mm thick on the 1.37 mm case wall, an epoxy with a 0.2 mm
-   bondline and shear modulus 800 MPa, 50 mm overlap. At −40 °C the adhesive shear peaks at **11.9 MPa** at each end,
-   all within about 15 mm of the ends. Doubling the overlap changes nothing; doubling the bondline to 0.4 mm cuts the
-   peak by √2, to about 8.4 MPa. Compare with the adhesive's allowable at −40 °C, in cold shock.
-3. **Aluminium closure plate bolted to a steel flange.** At the 140 mm bolt circle the plates slide **0.096 mm** relative
-   to each other at −40 °C — inside the 0.5 mm hole clearance, but with close-fit holes the outer bolts would bear.
-4. **The grain.** Propellant at $100\times10^{-6}$/K on the steel case shrinks 2.6 mm more on diameter than the case
-   between its stress-free 60 °C and −40 °C. The [Propellant grain](../../motor/propellant-grain/) page turns that into
-   bore strain and bond stress.
+   The interference alone cannot carry the skirt. It must have pins or bolts. A titanium ring would become tighter when
+   hot, and it keeps 0.04 mm of interference when cold.
+2. **Carbon-fibre skirt bonded to the steel case.** CFRP 3 mm thick on the 1.37 mm case wall, with an epoxy bondline of
+   0.2 mm, a shear modulus of 800 MPa and a 50 mm overlap. At −40 °C, the peak adhesive shear is **11.9 MPa** at each
+   end. All of the shear is within approximately 15 mm of the ends. If you double the overlap, nothing changes. If you
+   double the bondline to 0.4 mm, the peak decreases by √2, to approximately 8.4 MPa. Compare with the allowable of the
+   adhesive at −40 °C, in cold shock.
+3. **Aluminium closure plate bolted to a steel flange.** At the 140 mm bolt circle, the plates slide **0.096 mm**
+   relative to each other at −40 °C. This is within the 0.5 mm hole clearance. But with close-fit holes, the outer bolts
+   would bear.
+4. **The grain.** Propellant at $100\times10^{-6}$/K on the steel case shrinks 2.6 mm more on diameter than the case,
+   between its stress-free temperature of 60 °C and −40 °C. The [Propellant grain](../../motor/propellant-grain/) page
+   changes this into bore strain and bond stress.
 
 ## Where this stops
 
-- **Uniform temperature and room-temperature properties.** Modulus, yield and expansion all change across the range,
-  and transients need the temperature field from [Transient thermal](../../motor/transient-thermal/).
-- **Elastic.** Plastic yielding at a tight fit, creep and adhesive relaxation change the result after the first cycle.
-- **One-dimensional bond model.** Real bond ends also see peel stress and a stress singularity; a finite-element model
-  or test is needed for allowables.
-- **Composites are anisotropic.** Hoop and axial expansion of a filament-wound case differ; use the laminate's values in
-  each direction.
+- **Uniform temperature and room-temperature properties.** Modulus, yield and expansion all change across the range.
+  Transients need the temperature field from [Transient thermal](../../motor/transient-thermal/).
+- **Elastic.** Yield at a tight fit, creep and adhesive relaxation change the result after the first cycle.
+- **One-dimensional bond model.** Real bond ends also have peel stress and a stress singularity. You need a
+  finite-element model or a test for allowables.
+- **Composites are anisotropic.** The hoop expansion and the axial expansion of a filament-wound case are different.
+  Use the values of the laminate in each direction.
 
 ## On the drawing
 
-- **Fits at a stated temperature** — the interference or clearance and the temperature it applies at.
-- **The positive feature that carries load** — pins, keys, bolts — when the fit can go to zero.
+- **Fits at a stated temperature:** the interference or clearance, and the temperature at which it applies.
+- **The positive feature that carries load** (pins, keys, bolts) when the fit can become zero.
 - **Slotted holes and the fixed point** for bolt patterns across dissimilar materials.
-- **Bond details** — adhesive, bondline thickness (controlled with spacers or scrim), end taper, surface preparation.
-- **The temperature range** the design was checked over.
+- **Bond details:** adhesive, bondline thickness (controlled with spacers or scrim), end taper and surface preparation.
+- **The temperature range** for which the design was checked.
 
 ## References and further reading
 
 - S. Timoshenko, "Analysis of bi-metal thermostats", *Journal of the Optical Society of America* 11 (1925).
 - O. Volkersen, "Die Nietkraftverteilung in zugbeanspruchten Nietverbindungen mit konstanten Laschenquerschnitten",
-  *Luftfahrtforschung* 15 (1938) — the shear-lag model of bonded and riveted joints.
-- W. C. Young and R. G. Budynas, *Roark's Formulas for Stress and Strain*, McGraw-Hill — thick cylinders and thermal
-  stresses.
-- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill — press and shrink fits.
-- MMPDS — expansion coefficients and properties of metallic materials across temperature.
+  *Luftfahrtforschung* 15 (1938) (the shear-lag model of bonded and riveted joints).
+- W. C. Young and R. G. Budynas, *Roark's Formulas for Stress and Strain*, McGraw-Hill (thick cylinders and thermal
+  stresses).
+- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill (press fits and shrink fits).
+- MMPDS (expansion coefficients and properties of metallic materials across temperature).
 
 <Aside type="note">
-  Guidance on method from general practice, with typical material properties. Use your own material data across
+  This is guidance on method from general practice, with typical material properties. Use your own material data across
   temperature, and the temperature range and requirements of your programme.
 </Aside>

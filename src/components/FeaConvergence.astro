@@ -44,9 +44,9 @@ const pct = (v: number) => `${v < 1 ? '−' : '+'}${Math.abs(100 * (v - 1)).toFi
     </svg>
   </div>
   <figcaption>
-    Left: this page's model of the case wall clamped at a stiff flange — the peak converges, and once there are about
-    eight elements across the {Math.round(zone)} mm edge zone it is within 2%. Right: at a sharp internal corner the
-    elastic stress is infinite, so the peak just keeps growing as the mesh is refined. A convergence study tells them apart.
+    Left: the model on this page, of the case wall clamped at a stiff flange. The peak converges. With approximately
+    eight elements across the {Math.round(zone)} mm edge zone, it is within 2%. Right: at a sharp internal corner the
+    elastic stress is infinite, so the peak continues to increase as the mesh is refined. A convergence study shows the difference.
   </figcaption>
 </figure>
 

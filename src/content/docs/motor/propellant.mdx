@@ -1,6 +1,6 @@
 ---
 title: Propellant properties
-description: Solid propellant as an engineering material for hardware designers — the ballistic properties that set MEOP, the viscoelastic stiffness and strength that load the grain and bondline, how they age, which materials may touch it, and the data to ask for. No formulation.
+description: Solid propellant as an engineering material for hardware designers. The ballistic properties that set MEOP, the viscoelastic stiffness and strength that load the grain and bondline, how they age, which materials can touch the propellant, and the data to ask for. No formulation.
 sidebar:
   order: 0
 ---
@@ -11,51 +11,52 @@ import MeopBuildUp from '../../../components/MeopBuildUp.astro';
 import MasterCurve from '../../../components/MasterCurve.astro';
 
 <div class="glance">
-  <div><b>In one line</b>You do not choose the propellant, but you inherit its numbers — and every one of them moves with temperature.</div>
-  <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid motor works</a> — burn rate and the pressure balance</div>
+  <div><b>In one line</b>You do not select the propellant, but you must use its numbers. All of these numbers change with temperature.</div>
+  <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid motor works</a> (burn rate and the pressure balance)</div>
   <div><b>Used by</b><a href="../case-sizing/">Case sizing</a> (MEOP) · <a href="../propellant-grain/">Propellant grain</a> (strain capability)</div>
 </div>
 
-<Aside type="note" title="What this page covers — and what it does not">
-  Propellant here is a material with properties: how it burns, how stiff and strong it is, how it ages, and what it
-  may touch. There are no formulations, proportions, processing or burn-rate tailoring. Those belong to your
-  energetics and propulsion specialists and their safety authority.
+<Aside type="note" title="What this page covers, and what it does not cover">
+  On this page, propellant is a material with properties: how it burns, how stiff and strong it is, how it ages, and
+  which materials can touch it. There are no formulations, proportions, processing or burn-rate tailoring. These are
+  the responsibility of your energetics and propulsion specialists and their safety authority.
 </Aside>
 
 ## Why this matters
 
-Two of the numbers that size motor hardware come from the propellant: the **MEOP** that the case, joints and proof
-test are designed to, and the **strain capability** that decides whether the bore cracks on a cold night. Both move
-with temperature far more than any metal property does. Between −40 °C and +60 °C, the illustrative propellant on this
-page changes its chamber pressure by about 22% and its stiffness by more than ten times, depending on how quickly it
-is loaded.
+Two of the numbers that size motor hardware come from the propellant. The first is the **MEOP**, which is the design
+pressure of the case, the joints and the proof test. The second is the **strain capability**, which decides if the
+bore cracks on a cold night. Both change with temperature much more than the properties of a metal. Between −40 °C and
++60 °C, the illustrative propellant on this page changes its chamber pressure by approximately 22%. Its stiffness
+changes by more than ten times, as a function of the loading rate.
 
-The hardware designer does not pick these numbers. But you do need to know where they come from, what they depend on,
-and exactly which ones to ask for.
+The hardware designer does not select these numbers. But you must know where they come from, what they depend on, and
+exactly which numbers to ask for.
 
-## Part 1 — Ballistic properties
+## Part 1: Ballistic properties
 
 ### The numbers you inherit
 
-| Property | Symbol | What it means | Where you meet it |
+| Property | Symbol | What it means | Where you use it |
 | --- | --- | --- | --- |
 | Burn-rate coefficient | $a$ | Burn rate at unit pressure, at a reference temperature | The pressure balance ([primer](../../fundamentals/how-a-solid-motor-works/#why-chamber-pressure-settles-at-one-value)) |
-| Pressure exponent | $n$ | How strongly the burn rate rises with pressure: $r = a\,p^n$ | Amplifies every variation by $1/(1-n)$ |
-| Temperature sensitivity of burn rate | $\sigma_p$ | % change in burn rate per kelvin of grain temperature, at constant pressure | Hot-day MEOP — below |
-| Temperature sensitivity of pressure | $\pi_K$ | % change in chamber pressure per kelvin, at constant $K_n$ | MEOP and burn time — below |
-| Density, characteristic velocity | $\rho_p$, $c^*$ | Mass per volume; gas made per unit of throat flow | Pressure, thrust, mass fraction |
+| Pressure exponent | $n$ | How much the burn rate increases with pressure: $r = a\,p^n$ | Increases each variation by $1/(1-n)$ |
+| Temperature sensitivity of burn rate | $\sigma_p$ | % change in burn rate for each kelvin of grain temperature, at constant pressure | Hot-day MEOP (below) |
+| Temperature sensitivity of pressure | $\pi_K$ | % change in chamber pressure for each kelvin, at constant $K_n$ | MEOP and burn time (below) |
+| Density, characteristic velocity | $\rho_p$, $c^*$ | Mass for each volume; gas made for each unit of throat flow | Pressure, thrust, mass fraction |
 
 ### Temperature: why the hot day sets MEOP
 
-A propellant grain that starts warm burns faster. Over a firing-temperature range the effect is well described by an
-exponential:
+A propellant grain that starts warm burns faster. Over a firing-temperature range, an exponential describes this effect
+well:
 
 $$
 a(T) = a_0\,e^{\,\sigma_p (T - T_0)}
 $$
 
 The [pressure balance](../../fundamentals/how-a-solid-motor-works/#why-chamber-pressure-settles-at-one-value) gives
-$p_c \propto a^{1/(1-n)}$, so at constant $K_n$ the chamber pressure follows the same law, amplified:
+$p_c \propto a^{1/(1-n)}$. Thus at constant $K_n$, the chamber pressure follows the same law, with a larger
+coefficient:
 
 $$
 p_c(T) = p_c(T_0)\,e^{\,\pi_K (T - T_0)},
@@ -63,78 +64,78 @@ p_c(T) = p_c(T_0)\,e^{\,\pi_K (T - T_0)},
 \pi_K = \frac{\sigma_p}{1 - n}
 $$
 
-The burn rate at constant $K_n$ rises by the same factor, so **burn time falls** as $e^{-\pi_K (T-T_0)}$. A hot motor
-pushes harder for less time. Total impulse barely changes — the same propellant is burned with nearly the same $c^*$ —
-so the hot and cold pressure traces enclose almost the same area.
+At constant $K_n$, the burn rate increases by the same factor. Thus the **burn time decreases** as
+$e^{-\pi_K (T-T_0)}$. A hot motor pushes harder for a shorter time. The total impulse almost does not change, because
+the same propellant burns with almost the same $c^*$. Thus the hot and cold pressure traces have almost the same area.
 
 <Analogy title="Kindling from a sunny windowsill">
-  Kindling that has been sitting in the sun catches and burns faster than kindling from a cold shed. The flame spends
-  less of its heat bringing the fuel up to burning temperature, so it moves on sooner. Warm propellant is the same.
-  In a motor there is a second step: faster burning raises the pressure, which raises the burn rate again — the
-  $1/(1-n)$ amplification — until the throat catches up.
+  Kindling that was in the sun catches fire and burns faster than kindling from a cold shed. The flame uses less of its
+  heat to bring the fuel to its burning temperature, so it moves on sooner. Warm propellant is the same. In a motor
+  there is a second step. Faster burning increases the pressure, which increases the burn rate again (the $1/(1-n)$
+  amplification), until the throat flow balances it.
 </Analogy>
 
 ### Building MEOP
 
-MEOP is the nominal pressure carried up to the worst condition the motor will be fired in, plus the manufacturing
-spread:
+MEOP is the nominal pressure taken to the worst firing condition of the motor, plus the manufacturing variation:
 
-1. **Hot day.** The nominal peak pressure at the reference temperature, taken to the hottest firing temperature with
+1. **Hot day.** Take the nominal peak pressure at the reference temperature to the hottest firing temperature with
    $\pi_K$.
-2. **Manufacturing variation**, each amplified by $1/(1-n)$:
-   - **burn rate** — the batch-to-batch scatter in $a$;
-   - **burning area** — grain dimensions and bore tolerances;
-   - **throat area** — a smaller throat means a higher pressure.
-3. **Combining them.** Independent variations are usually combined root-sum-square (RSS); a worst-case stack puts
-   every one at its limit at once and is more conservative. Which method applies, and at what probability level, is
-   set by your programme — not by this page.
-4. **Transients from firings** — ignition spike, erosive burning early in the burn on long, narrow bores, and grain
-   deformation under pressure. These come from test data and are added on top.
+2. **Manufacturing variation.** Each variation is amplified by $1/(1-n)$:
+   - **burn rate:** the scatter in $a$ from batch to batch;
+   - **burning area:** grain dimensions and bore tolerances;
+   - **throat area:** a smaller throat gives a higher pressure.
+3. **Combining them.** Independent variations are usually combined by root-sum-square (RSS). A worst-case stack puts
+   each variation at its limit at the same time, and it is more conservative. Your programme sets the method and the
+   probability level. This page does not.
+4. **Transients from firings.** These are the ignition spike, erosive burning early in the burn in long, narrow bores,
+   and grain deformation under pressure. They come from test data, and you add them to the result.
 
-<Aside type="caution" title="Ask for the build-up, not just the number">
-  A MEOP without its temperature range means little. Ask your ballistics team for the build-up: the hottest firing
-  temperature, the variations included, the combination method, and whether transients are in. If the operating
-  temperature range grows later in the programme, MEOP grows with it — and so does the case wall.
+<Aside type="caution" title="Ask for the build-up, not only the number">
+  A MEOP without its temperature range has little meaning. Ask your ballistics team for the build-up: the hottest
+  firing temperature, the variations included, the combination method, and if the transients are included. If the
+  operating temperature range increases later in the programme, MEOP also increases, and so does the case wall.
 </Aside>
 
 ### Calculator
 
 <MeopBuildUp />
 
-### Worked example — building the 10 MPa MEOP
+### Worked example: building the 10 MPa MEOP
 
-Illustrative AP/HTPB-like values: nominal peak pressure 8.8 MPa at 20 °C, $n = 0.35$, $\sigma_p = 0.13$ %/K. Firing
-range −40 °C to +60 °C. Variations: burn rate ±3%, burning area ±1%, throat area ±1%. These are the calculator's
-starting values.
+The values are illustrative and similar to AP/HTPB: a nominal peak pressure of 8.8 MPa at 20 °C, $n = 0.35$ and
+$\sigma_p = 0.13$ %/K. The firing range is −40 °C to +60 °C. The variations are burn rate ±3%, burning area ±1% and
+throat area ±1%. These are the starting values of the calculator.
 
-1. **Sensitivity.** $\pi_K = 0.0013 / 0.65 = 0.0020$ /K (0.20 %/K, within the 0.1–0.3 %/K the primer quotes).
-   Amplification $1/(1-n) = 1.54$.
+1. **Sensitivity.** $\pi_K = 0.0013 / 0.65 = 0.0020$ /K (0.20 %/K, within the 0.1–0.3 %/K that the primer gives). The
+   amplification is $1/(1-n) = 1.54$.
 2. **Hot day.** $8.8 \times e^{\,0.0020 \times 40} = 8.8 \times 1.083 = 9.53$ MPa.
 3. **Variations.** Burn rate $1.03^{1.54} - 1 = 4.65\%$; burning area $1.01^{1.54} - 1 = 1.54\%$; throat area
    $(1/0.99)^{1.54} - 1 = 1.56\%$.
-4. **Combined (RSS).** $\sqrt{4.65^2 + 1.54^2 + 1.56^2} = 5.14\%$, so MEOP $= 9.53 \times 1.0514 = 10.02$ MPa — the
-   10 MPa the [case-sizing example](../case-sizing/#worked-example) was designed to.
-5. **Worst-case stack.** $1.0465 \times 1.0154 \times 1.0156 - 1 = 7.92\%$, giving 10.29 MPa — 2.6% higher. Which one
-   applies is your programme's decision.
-6. **The cold end.** $8.8 \times e^{-0.0020 \times 60} = 7.80$ MPa nominal, 7.41 MPa on the low side. The cold motor
-   burns 12.7% longer and the hot one 7.7% shorter. Minimum pressure matters too: it sets the lowest thrust and must
-   stay above the pressure the propellant needs to burn steadily — another number for your ballistics team.
+4. **Combined (RSS).** $\sqrt{4.65^2 + 1.54^2 + 1.56^2} = 5.14\%$, so MEOP $= 9.53 \times 1.0514 = 10.02$ MPa. This is
+   the 10 MPa design pressure of the [case-sizing example](../case-sizing/#worked-example).
+5. **Worst-case stack.** $1.0465 \times 1.0154 \times 1.0156 - 1 = 7.92\%$, which gives 10.29 MPa (2.6% higher). Your
+   programme decides which method to use.
+6. **The cold end.** The nominal pressure is $8.8 \times e^{-0.0020 \times 60} = 7.80$ MPa, and 7.41 MPa on the low
+   side. The cold motor burns 12.7% longer and the hot motor 7.7% shorter. The minimum pressure is also important. It
+   sets the lowest thrust, and it must stay above the pressure that the propellant needs to burn steadily. Get this
+   number from your ballistics team.
 
-Of the 1.22 MPa between nominal and MEOP, the hot day is 0.73 MPa — 60%. Temperature, not manufacturing, is usually
-the biggest single term.
+The difference between nominal and MEOP is 1.22 MPa. Of this, the hot day gives 0.73 MPa (60%). Usually, temperature
+is the largest single term, not manufacturing.
 
-## Part 2 — Mechanical properties
+## Part 2: Mechanical properties
 
 ### Stiffness depends on the clock and the thermometer
 
-Composite propellant is a highly filled rubber, and like [Silly Putty](../propellant-grain/#the-material-a-filled-rubber-with-a-memory)
-its stiffness depends on how fast it is loaded and how cold it is. **Cold behaves like fast.** That equivalence —
-time–temperature superposition — means one set of laboratory tests can describe both years of storage and milliseconds
-of ignition.
+Composite propellant is a highly filled rubber. As with [Silly Putty](../propellant-grain/#the-material-a-filled-rubber-with-a-memory),
+its stiffness depends on how fast you load it and how cold it is. **Cold has the same effect as fast.** This
+equivalence is time–temperature superposition. It lets one set of laboratory tests describe years of storage and also
+milliseconds of ignition.
 
-The link between the two is the **shift factor** $a_T$: how many times slower every relaxation process runs at
-temperature $T$ than at a reference temperature $T_s$. For many polymers, propellant binders included, it follows the
-Williams–Landel–Ferry (WLF) equation:
+The **shift factor** $a_T$ connects the two. It tells how many times slower all relaxation processes are at the
+temperature $T$ than at a reference temperature $T_s$. For many polymers, which include propellant binders, it follows
+the Williams–Landel–Ferry (WLF) equation:
 
 $$
 \log_{10} a_T = \frac{-C_1\,(T - T_s)}{C_2 + T - T_s}
@@ -142,9 +143,9 @@ $$
 \xi = \frac{t}{a_T}
 $$
 
-A load applied for time $t$ at temperature $T$ acts like a load applied for the **reduced time** $\xi$ at $T_s$. Read
-the stiffness for that $\xi$ off the propellant's **master curve** — its relaxation modulus measured over many decades
-of time, shifted onto one temperature.
+A load applied for a time $t$ at a temperature $T$ has the same effect as a load applied for the **reduced time** $\xi$
+at $T_s$. Read the stiffness for that $\xi$ from the **master curve** of the propellant. This is its relaxation modulus,
+measured over many decades of time and shifted to one temperature.
 
 ### Explorer
 
@@ -152,106 +153,107 @@ of time, shifted onto one temperature.
 
 ### What the explorer shows
 
-With the illustrative constants ($T_s = -20$ °C, the general WLF constants, a power-law master curve):
+With the illustrative constants ($T_s = -20$ °C, the general WLF constants, and a power-law master curve):
 
-- **Cool-down to −40 °C over 8 hours.** $a_T \approx 148$, so 8 hours at −40 °C acts like 194 s at −20 °C. The
-  propellant is almost fully relaxed: $E \approx 4.0$ MPa.
-- **Ignition at −40 °C**, pressurising in about 50 ms. The same $a_T$ turns 50 ms into 0.34 ms. $E \approx 58$ MPa —
-  **14 times stiffer**, in the same grain at the same temperature.
-- **Storage for 10 years at 20 °C** is far out on the relaxed end of the curve: about 3 MPa, the equilibrium value.
+- **Cool-down to −40 °C over 8 hours.** $a_T \approx 148$, so 8 hours at −40 °C has the same effect as 194 s at
+  −20 °C. The propellant is almost fully relaxed: $E \approx 4.0$ MPa.
+- **Ignition at −40 °C,** with pressurisation in approximately 50 ms. The same $a_T$ changes 50 ms into 0.34 ms.
+  $E \approx 58$ MPa, which is **14 times stiffer**, in the same grain at the same temperature.
+- **Storage for 10 years at 20 °C** is far out on the relaxed end of the curve: approximately 3 MPa, the equilibrium
+  value.
 
-Three consequences for hardware:
+There are three results for hardware:
 
-1. **Thermal strain analyses use the relaxed modulus**; ignition analyses use the stiff, short-time modulus. The
-   [grain page](../propellant-grain/) does exactly this.
-2. **Bond stress at a cold ignition** is high, because the grain is stiff just when the case stretches.
-3. **Capability must be measured at the rate and temperature of each load case** — there is no single strength.
+1. **Thermal strain analyses use the relaxed modulus,** and ignition analyses use the stiff, short-time modulus. The
+   [grain page](../propellant-grain/) does this.
+2. **The bond stress at a cold ignition is high,** because the grain is stiff at the time when the case stretches.
+3. **Measure the capability at the rate and temperature of each load case.** There is no single strength.
 
 ### Strength and strain capability
 
 Strength is measured on dog-bone tensile specimens across a matrix of temperatures and strain rates. Each test gives
 the **maximum stress** $\sigma_m$, the **strain at maximum stress** $\varepsilon_m$ and the **strain at break**
-$\varepsilon_b$. Design margins usually use $\varepsilon_m$ or $\varepsilon_b$, depending on the programme.
+$\varepsilon_b$. Design margins usually use $\varepsilon_m$ or $\varepsilon_b$, as the programme specifies.
 
-- **Dewetting.** At higher strains the binder pulls away from the filler particles, small voids open, the material's
-  volume grows and the stress–strain curve bends over. That is where $\varepsilon_m$ comes from.
-- **Pressure helps.** A superimposed pressure — as at ignition — suppresses dewetting and raises strain capability.
-  Capability measured at atmospheric pressure is therefore conservative for ignition. Programmes either test under
-  pressure or accept the conservatism.
-- **Biaxial is worse than uniaxial.** The bore surface is strained in two directions at once, and biaxial capability is
-  usually lower than uniaxial. It is measured on biaxial specimens or covered by the programme's analysis rules.
-- **Rate and temperature collapse onto one curve.** Plotted as stress at break against strain at break, results from
-  all rates and temperatures fall on a single **failure envelope** (Smith, 1963) — the strength counterpart of the
-  master curve.
-- **Damage accumulates.** Each thermal cycle uses up part of the capability. Long-life motors are assessed with
+- **Dewetting.** At higher strains, the binder pulls away from the filler particles. Small voids open, the volume of the
+  material increases, and the stress–strain curve bends over. This sets $\varepsilon_m$.
+- **Pressure helps.** A superimposed pressure (as at ignition) prevents dewetting and increases the strain capability.
+  Thus capability measured at atmospheric pressure is conservative for ignition. Programmes test under pressure, or
+  they accept the conservatism.
+- **Biaxial is worse than uniaxial.** The bore surface has strain in two directions at the same time, and the biaxial
+  capability is usually lower than the uniaxial capability. It is measured on biaxial specimens, or the analysis rules
+  of the programme include it.
+- **Rate and temperature collapse onto one curve.** If you plot stress at break against strain at break, the results
+  from all rates and temperatures are on a single **failure envelope** (Smith, 1963). This is the strength equivalent
+  of the master curve.
+- **Damage accumulates.** Each thermal cycle uses part of the capability. Long-life motors are assessed with
   cumulative-damage methods, not one load case at a time.
 
 ### Ageing
 
-Propellant properties keep changing in storage, and the hardware margins have to hold at **end of life**, not on
-delivery day.
+Propellant properties continue to change in storage. The hardware margins must be sufficient at the **end of life**,
+not only on the delivery day.
 
-- **Composite propellants** typically harden: the binder keeps cross-linking, so the modulus rises and strain
-  capability falls. Plasticiser can migrate into the liner and insulation, and moisture is absorbed where the oxidiser
-  is hygroscopic.
-- **Nitrate-ester propellants** also have a chemical clock: the stabiliser is used up over time, which sets a safe life
-  separate from the mechanical one.
-- **What it means for hardware.** Grain and bondline margins are computed with aged properties. The ageing evidence
-  comes from accelerated and real-time ageing and from surveillance motors taken from the stockpile — see
+- **Composite propellants** usually become harder. The binder continues to cross-link, so the modulus increases and
+  the strain capability decreases. Plasticiser can migrate into the liner and insulation. Where the oxidiser is
+  hygroscopic, the propellant absorbs moisture.
+- **Nitrate-ester propellants** also have a chemical limit. The stabiliser is used up over time, and this sets a safe
+  life that is separate from the mechanical life.
+- **What this means for hardware.** Grain and bondline margins are calculated with aged properties. The ageing evidence
+  comes from accelerated and real-time ageing, and from surveillance motors taken from the stockpile. See
   [Storage & ageing](../../verify/storage-ageing/).
 
 ## Propellant families as engineering materials
 
-The family matters to hardware because stiffness, temperature range, ageing and — above all — compatibility differ
-between families.
+The family is important for hardware, because stiffness, temperature range, ageing and, most of all, compatibility are
+different between families.
 
-| Family | Mechanically | Temperature range | Exhaust and performance | Ages mainly by | Hardware watch-points |
+| Family | Mechanically | Temperature range | Exhaust and performance | Ages mainly by | Hardware points to check |
 | --- | --- | --- | --- | --- | --- |
-| Double-base (DB) | Stiff, glassy-polymer-like; one phase | Narrow; brittle when cold | Low smoke; lower $I_{sp}$ than composites | Stabiliser depletion; plasticiser migration | The copper rule; cold cracking |
+| Double-base (DB) | Stiff, similar to a glassy polymer; one phase | Narrow; brittle when cold | Low smoke; lower $I_{sp}$ than composites | Stabiliser depletion; plasticiser migration | The copper rule; cold cracking |
 | Elastomer-modified cast double-base (EMCDB) | Tougher than DB | Wider than DB | Low smoke | As DB, plus elastomer migration | Copper rule in full |
-| Composite-modified double-base (CMDB) | Filled; partly composite-like | Moderate | Higher $I_{sp}$ than DB; smoky once metallised | Both families' mechanisms; filler debonding | Both sets of compatibility rules |
+| Composite-modified double-base (CMDB) | Filled; partly similar to a composite | Moderate | Higher $I_{sp}$ than DB; smoky when metallised | The mechanisms of the two families; filler debonding | The compatibility rules of the two families |
 | AP composite | Highly filled rubber, viscoelastic | Wide | High $I_{sp}$; visible exhaust when metallised | Binder hardening; migration; bondline ageing; moisture | Bondline integrity; humidity control |
-| AN composite | Filled rubber | Limited by oxidiser phase changes on cycling | Lower $I_{sp}$; low signature, chlorine-free | Moisture; phase changes | Moisture ingress and corrosion |
+| AN composite | Filled rubber | Limited by oxidiser phase changes during cycling | Lower $I_{sp}$; low signature, no chlorine | Moisture; phase changes | Moisture ingress and corrosion |
 
-## What may touch it — materials compatibility
+## What may touch it: materials compatibility
 
-A material is not "compatible with propellant" in the abstract. Nitrate-ester and composite propellants degrade by
-different mechanisms, so the same metal can be excluded next to one and merely controlled next to the other. **Read
-across the row.** Compatibility is shown by test, not asserted from a datasheet: STANAG 4147 is the governing
-agreement, using methods such as vacuum stability, heat-flow calorimetry and — for nitrocellulose-based propellants
-only — stabiliser depletion.
+A material is not "compatible with propellant" in general. Nitrate-ester propellants and composite propellants degrade
+by different mechanisms. Thus the same metal can be excluded near one and only controlled near the other. **Read across
+the row.** A test shows compatibility. A datasheet does not. STANAG 4147 is the applicable agreement. It uses methods
+such as vacuum stability, heat-flow calorimetry and, for nitrocellulose-based propellants only, stabiliser depletion.
 
-<Aside type="caution" title="Two rules worth remembering">
-  **The copper rule.** Copper and copper alloys are excluded around nitrate-ester (double-base) propellant: no brass
-  fittings, bronze bushes, beryllium-copper tools, copper-bearing solder or copper plating — in the hardware, the
-  tooling, the handling equipment or the store. It is easy to break through a bought-in part.
+<Aside type="caution" title="Two important rules">
+  **The copper rule.** Copper and copper alloys are excluded near nitrate-ester (double-base) propellant. Do not use
+  brass fittings, bronze bushes, beryllium-copper tools, solder that contains copper, or copper plating. This applies
+  to the hardware, the tooling, the handling equipment and the store. A bought-in part can easily break this rule.
 
-  **The silicone rule.** Silicone is banned from most propellant and bond areas — not because it reacts, but because it
+  **The silicone rule.** Silicone is not permitted in most propellant areas and bond areas. It does not react, but it
   migrates, transfers on contact and destroys adhesive bonds. Bondlines are structure, so a silicone fingerprint can
-  fail a motor. That includes release agents, sealants, lubricants and hand creams.
+  cause a motor to fail. This includes release agents, sealants, lubricants and hand creams.
 </Aside>
 
 | Material | Nitrate-ester | AP composite | AN composite | Why |
 | --- | --- | --- | --- | --- |
-| Copper and copper alloys | **Excluded** | Approval | Approval | Copper catalyses nitrate-ester decomposition; elsewhere, corrosion and contamination |
-| Lead and lead alloys | **Excluded** | Approval | Approval | Often hidden in free-machining brass and steel, and in solders |
-| Silver (plating, brazing) | **Excluded** | Approval | Approval | Same class of concern as copper near nitrate esters |
-| Zinc and cadmium (plating, galvanising) | **Excluded** | Approval | Approval | Corrosion products at bondlines; cadmium is being phased out anyway |
-| Aluminium | OK | OK | Approval | Well behaved; with a hygroscopic oxidiser, corrosion is the live concern |
-| Stainless steel | OK | OK | OK | The usual contact choice; passivate after machining |
-| Carbon and low-alloy steel | Approval | Approval | Approval | Corrodes; the finish is where incompatibilities hide |
-| Titanium | OK | OK | OK | Do not carry over liquid-oxidiser assumptions |
+| Copper and copper alloys | **Excluded** | Approval | Approval | Copper accelerates nitrate-ester decomposition; with other propellants, corrosion and contamination |
+| Lead and lead alloys | **Excluded** | Approval | Approval | Often present without notice in free-machining brass and steel, and in solders |
+| Silver (plating, brazing) | **Excluded** | Approval | Approval | The same type of problem as copper near nitrate esters |
+| Zinc and cadmium (plating, galvanising) | **Excluded** | Approval | Approval | Corrosion products at bondlines; cadmium is also being removed from use |
+| Aluminium | OK | OK | Approval | Good behaviour; with a hygroscopic oxidiser, corrosion is the problem |
+| Stainless steel | OK | OK | OK | The usual contact material; passivate after machining |
+| Carbon and low-alloy steel | Approval | Approval | Approval | Corrodes; incompatibilities are often in the finish |
+| Titanium | OK | OK | OK | Do not use assumptions from liquid oxidisers |
 | Magnesium alloys | Approval | Approval | Approval | Corrosion and galvanic behaviour |
 | EPDM | Approval | OK | OK | Plasticiser migration with nitrate esters |
 | Nitrile (NBR) | Approval | Approval | Approval | Check against the specific propellant and its plasticisers |
 | Silicone | **Excluded** | **Excluded** | **Excluded** | Contamination: destroys bonds |
 | PTFE and fluoropolymers | OK | OK | OK | Cold flow; assess filled grades separately |
-| Polyamide, PMMA | Approval | OK | OK | Published results belong to that pairing, not the polymer family |
-| Plasticised PVC, soft plastics | **Excluded** | Approval | Approval | Plasticiser migration both ways — even as temporary covers |
-| Amine-cured epoxies and adhesives | **Excluded** | Approval | Approval | Free amines attack nitrate esters; every adhesive needs its own approval |
+| Polyamide, PMMA | Approval | OK | OK | Published results apply to that pair only, not to the polymer family |
+| Plasticised PVC, soft plastics | **Excluded** | Approval | Approval | Plasticiser migration in the two directions, also as temporary covers |
+| Amine-cured epoxies and adhesives | **Excluded** | Approval | Approval | Free amines attack nitrate esters; each adhesive needs its own approval |
 
-*OK* means generally acceptable; *Approval* means it needs specific evidence for your propellant. Your programme's
-approved list governs either way.
+*OK* means generally acceptable. *Approval* means that it needs specific evidence for your propellant. In all cases,
+the approved list of your programme applies.
 
 ## The data to ask for
 
@@ -259,44 +261,44 @@ approved list governs either way.
 | --- | --- | --- |
 | Burn-rate law $a$, $n$, over the pressure range | Strand burners and small ballistic test motors | Pressure balance, $K_n$ |
 | Temperature sensitivity $\sigma_p$, $\pi_K$ | The same, at several conditioning temperatures | Hot-day MEOP, burn time |
-| Batch-to-batch burn-rate scatter | Acceptance tests on every batch | MEOP build-up |
+| Batch-to-batch burn-rate scatter | Acceptance tests on each batch | MEOP build-up |
 | Density $\rho_p$, characteristic velocity $c^*$ | Measurement; firing data | Mass, pressure, thrust |
 | Thermal expansion $\alpha_p$ | Dilatometry | Cool-down strain ([grain](../propellant-grain/)) |
 | Relaxation modulus $E(t, T)$ and shift factors | Stress-relaxation tests across temperatures | Grain and bondline stress |
 | Bulk modulus, Poisson's ratio | Dilatation (pressure–volume) tests | Ignition strain; near-incompressibility |
 | Strength and strain capability $\sigma_m$, $\varepsilon_m$, $\varepsilon_b$ | Uniaxial, biaxial and pressurised tensile tests across rates and temperatures | Grain margins |
 | Bond strength, propellant–liner–insulation | Bond tension, peel and shear specimens | Bondline margin |
-| Thermal conductivity, specific heat | Laboratory measurement | Thermal analysis ([Transient thermal, v1](../../legacy/?z=thermal)) |
+| Thermal conductivity, specific heat | Laboratory measurement | Thermal analysis ([Transient thermal](../transient-thermal/)) |
 | Glass transition temperature $T_g$ | Dynamic mechanical analysis, dilatometry | The lowest usable temperature |
 | How all of these change with age | Accelerated and real-time ageing; surveillance motors | End-of-life margins |
 
 ## Where this stops
 
-- $r = a\,p^n$ is a fit over a pressure range. Some propellants change exponent within their operating range; use the
-  law only over the range it was fitted.
-- The exponential temperature law is also a fit, valid over the conditioning range it came from.
-- The MEOP build-up shows the mechanism. The real derivation follows your programme's statistical method and includes
-  transients measured on firings.
+- $r = a\,p^n$ is a fit over a pressure range. Some propellants change their exponent within their operating range.
+  Use the law only over the range of the fit.
+- The exponential temperature law is also a fit. It is valid over the conditioning range that it came from.
+- The MEOP build-up shows the mechanism. The real calculation follows the statistical method of your programme and
+  includes transients measured on firings.
 - The master curve and its constants are illustrative. Real analyses use measured relaxation data and fitted shift
   factors, and treat dewetting, pressure and ageing separately.
-- What is in the propellant and how it is made are out of scope here.
+- The contents of the propellant and how it is made are outside the scope of this page.
 
 ## On the drawing
 
-- **Call the propellant up by its specification or designation**, never by a description of what is in it. Batch
-  acceptance — burn rate at reference conditions within a band, density, mechanical properties — belongs to the
-  propellant specification, which the motor drawing references.
-- **State the operating and storage temperature limits** on the motor drawing or interface document. MEOP and every
-  grain margin are valid only inside them.
-- **Name every material that may touch propellant** — metal, finish, seal, adhesive, release agent, even temporary
-  covers — from the approved list. Never "or equivalent", and never the shop's choice.
-- **Define the bondlines** — surface preparation, liner, cure and inspection — as structure. See
+- **Specify the propellant by its specification or designation,** never by a description of its contents. Batch
+  acceptance (burn rate at reference conditions within a band, density and mechanical properties) is in the propellant
+  specification. The motor drawing refers to this specification.
+- **Give the operating and storage temperature limits** on the motor drawing or interface document. MEOP and all grain
+  margins are valid only within these limits.
+- **Name each material that can touch propellant** (metal, finish, seal, adhesive, release agent, and also temporary
+  covers) from the approved list. Never write "or equivalent", and never let the shop select.
+- **Define the bondlines as structure:** surface preparation, liner, cure and inspection. See
   [Insulation](../insulation/#on-the-drawing).
 
 ## References and further reading
 
-- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — burning rate, temperature
-  sensitivity and propellant mechanical properties.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) (burning rate, temperature sensitivity
+  and propellant mechanical properties).
 - NASA SP-8064, *Solid Propellant Selection and Characterization* (1971).
 - NASA SP-8073, *Solid Propellant Grain Structural Integrity Analysis* (1973).
 - NASA SP-8039, *Solid Rocket Motor Performance Analysis and Prediction* (1971).
@@ -306,10 +308,10 @@ approved list governs either way.
 - T. L. Smith, "Ultimate tensile properties of elastomers. I. Characterization by a time and temperature independent
   failure envelope", *J. Polymer Science A* 1 (1963) 3597–3615.
 - A. Davenas (ed.), *Solid Rocket Propulsion Technology*, Pergamon (1993).
-- NATO STANAG 4147 — chemical compatibility of ammunition components with explosives and propellants.
+- NATO STANAG 4147 (chemical compatibility of ammunition components with explosives and propellants).
 
 <Aside type="note">
-  A descriptive reference for hardware design. Anything involving energetic materials — selection, processing,
-  handling, storage, disposal or test — is governed by your programme's safety case and is the responsibility of the
-  qualified specialists and safety authority.
+  This is a descriptive reference for hardware design. All work with energetic materials (selection, processing,
+  handling, storage, disposal or test) is controlled by the safety case of your programme. It is the responsibility of
+  the qualified specialists and the safety authority.
 </Aside>

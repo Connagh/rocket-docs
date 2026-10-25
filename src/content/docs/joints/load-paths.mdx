@@ -1,6 +1,6 @@
 ---
 title: Load paths & joints
-description: Tracing load through a solid motor — pressure end loads that balance inside the case, the thrust and inertia that leave through the skirts and attach rings, bending and running loads, how stiffness decides load sharing between parallel paths, redundant attachments that fight the case's growth, and the joint types that carry it all.
+description: How to follow the load through a solid motor. Pressure end loads that balance inside the case, the thrust and inertia that go out through the skirts and attach rings, bending and running loads, how stiffness decides load sharing between parallel paths, redundant attachments that resist the growth of the case, and the joint types that carry these loads.
 sidebar:
   order: 0
 ---
@@ -12,249 +12,257 @@ import LoadPathCalc from '../../../components/LoadPathCalc.astro';
 import LoadShareCalc from '../../../components/LoadShareCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>The pressure loads are huge but stay inside the case; thrust, inertia and bending leave through the skirts — and between any two attachments, load goes where the stiffness is.</div>
+  <div><b>In one line</b>The pressure loads are very large, but they stay inside the case. Thrust, inertia and bending go out through the skirts. Between two attachments, the load goes to the stiffer path.</div>
   <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> · <a href="../../motor/hardware/">Rocket motor hardware</a></div>
   <div><b>Used by</b><a href="../bolted-joints/">Bolted joints</a> · <a href="../../verify/shell-buckling/">Shell buckling</a></div>
 </div>
 
 ## Why this matters
 
-A motor is a pressure vessel and a structure at the same time. The pressure loads are enormous — over 700 kN on each
-end of the 300 mm case on this site — but they balance inside the case. The loads that actually leave the motor, thrust,
-inertia and bending, are an order of magnitude smaller, and they travel through whatever is stiffest, not necessarily
-what was designed to carry them.
+A motor is a pressure vessel and a structure at the same time. The pressure loads are very large: more than 700 kN on
+each end of the 300 mm case on this site. But they balance inside the case. The loads that go out of the motor (thrust,
+inertia and bending) are ten times smaller. They go through the stiffest path, which is not always the path that was
+designed to carry them.
 
-Tracing the load path — what carries what, from where to where — is how you find:
+When you follow the load path (which part carries which load, from where to where), you find:
 
-- **the joints that carry the pressure**, and the ones that never see it;
-- **the attachment that takes the thrust**, and the one that should be left free;
-- **the redundant path that fights the case** as it grows under pressure and temperature — often a bigger load than the
-  thrust itself.
+- **the joints that carry the pressure,** and the joints that never carry it;
+- **the attachment that takes the thrust,** and the attachment that must be free;
+- **the redundant path that resists the case** as it grows under pressure and temperature. This load is often larger
+  than the thrust.
 
 ## Follow the pressure
 
-Pressure pushes on every inside surface of the case. Over a closure, the end load is the pressure times the area inside
-its seal:
+Pressure pushes on all the inside surfaces of the case. On a closure, the end load is the pressure times the area
+inside its seal:
 
 $$
 F_{end} = p\,\frac{\pi D^2}{4}
 $$
 
-The forward dome is pushed forward by $p\,\pi D^2/4$ over the case bore, and the aft closure and nozzle are pushed back
-by almost as much. The case wall holds the two ends together in tension — the axial stress
-[case sizing](../../motor/case-sizing/) sizes for. Almost all of the pressure load closes inside the case and never
-reaches the vehicle.
+The pressure pushes the forward dome forward with $p\,\pi D^2/4$ over the case bore. It pushes the aft closure and the
+nozzle back with almost the same force. The case wall holds the two ends together in tension. This is the axial stress
+that [case sizing](../../motor/case-sizing/) uses. Almost all of the pressure load closes inside the case and never gets
+to the vehicle.
 
-The exception is the throat. Nothing faces it, so the forward dome is pushed harder than the aft end. The difference is
-the thrust:
+The throat is different. There is no surface opposite to it, so the pressure pushes the forward dome more than the aft
+end. The difference is the thrust:
 
 $$
 F = C_F\, p\, A_t
 $$
 
-with $C_F$ the nozzle's thrust coefficient, which also counts the pressure on the divergent cone. The ratio of end load
-to thrust is $D^2 / (C_F\,d_t^2)$: 24 for the motor in the worked example.
+Here $C_F$ is the thrust coefficient of the nozzle. It includes the pressure on the divergent cone. The ratio of end
+load to thrust is $D^2 / (C_F\,d_t^2)$, which is 24 for the motor in the worked example.
 
 <Analogy title="You cannot push a car from inside it">
-  Sit in a car and push on the dashboard as hard as you like: it does not move. Your hands push the car forward, your
-  back pushes the seat back, and the two cancel inside the car. Pressure in a motor does the same thing to every wall.
-  Only where there is a hole — the throat — is there nothing to push back, and that unbalanced patch is the thrust.
+  Sit in a car and push on the dashboard with all your force. The car does not move. Your hands push the car forward,
+  your back pushes the seat back, and the two forces cancel inside the car. Pressure in a motor does the same to each
+  wall. Only at a hole (the throat) is there nothing to push back. That unbalanced area gives the thrust.
 </Analogy>
 
-The same bookkeeping gives the loads on the aft end's joints:
+The same method gives the loads on the joints of the aft end:
 
-- **The nozzle** attached over a seal diameter $d_n$ is pushed off by $p\,\pi d_n^2/4$, less the thrust it produces:
-  $F_{noz} = p\,\pi d_n^2/4 - F$. That blow-off load goes into its attachment.
-- **The aft closure** sealed at $D_s$ carries $p\,\pi D_s^2/4 - F$ while firing, but the full $p\,\pi D_s^2/4$ in a
-  static pressure test, which has no flow and so no thrust to relieve it. Size its joint for the test as well as firing.
+- **The nozzle,** attached over a seal diameter $d_n$, has a push-off force of $p\,\pi d_n^2/4$, minus the thrust that
+  it makes: $F_{noz} = p\,\pi d_n^2/4 - F$. This blow-off load goes into its attachment.
+- **The aft closure,** sealed at $D_s$, carries $p\,\pi D_s^2/4 - F$ during firing. In a static pressure test it
+  carries the full $p\,\pi D_s^2/4$, because there is no flow and thus no thrust to decrease it. Size its joint for the
+  test as well as for firing.
 
 <LoadPathDiagram />
 
 ## Through the skirts to the vehicle
 
-The thrust accelerates the motor and everything it pushes. With thrust alone, the acceleration is
-$a = F / (m_{motor} + m_{ahead})$, and the forward skirt passes on only what the mass ahead of it needs,
+The thrust accelerates the motor and all that it pushes. With thrust only, the acceleration is
+$a = F / (m_{motor} + m_{ahead})$. The forward skirt passes on only the force that the mass ahead of it needs,
 $m_{ahead}\,a$:
 
 $$
 F_{skirt} = F\,\frac{m_{ahead}}{m_{motor} + m_{ahead}}
 $$
 
-The rest accelerates the motor itself and is shed along the way: the case and closures through their own walls, the
-grain through its bond — a mean shear of $m_{grain}\,a / (\pi D L)$. So:
+The remaining force accelerates the motor. The case and closures take their share through their walls, and the grain
+takes its share through its bond, with a mean shear of $m_{grain}\,a / (\pi D L)$. Thus:
 
-- **The skirt load rises through the burn.** As propellant burns away, the same thrust pushes less motor and more
-  payload; the peak comes near burnout, not at ignition.
-- **The thrust compresses the case wall** between the aft end and the forward skirt. In a firing motor that only
-  reduces the pressure tension a little. In an unpressurised one — an upper stage carrying the thrust of the stage
-  below, or any motor during handling and transport — the case and skirts are thin shells in compression; see
-  [Shell buckling](../../verify/shell-buckling/).
-- **The aft skirt** carries the motor on the ground, or ties it to an interstage, fins or steering actuators. Whichever
-  skirt is the thrust takeout, the other should be designed knowing it is not.
+- **The skirt load increases during the burn.** As the propellant burns, the same thrust pushes less motor and more
+  payload. The peak is near burnout, not at ignition.
+- **The thrust compresses the case wall** between the aft end and the forward skirt. In a firing motor, this only
+  decreases the pressure tension a little. In a motor without pressure, the case and skirts are thin shells in
+  compression. Examples are an upper stage that carries the thrust of the stage below, and any motor during handling
+  and transport. See [Shell buckling](../../verify/shell-buckling/).
+- **The aft skirt** carries the motor on the ground, or connects it to an interstage, fins or steering actuators. One
+  skirt is the thrust takeout. Design the other skirt with the knowledge that it is not.
 
-Bending from flight loads and steering adds to the axial load. Thin shells are checked in **running load** — force per
-unit length of circumference:
+Bending from flight loads and steering adds to the axial load. Thin shells are checked with the **running load**, which
+is the force for each unit length of circumference:
 
 $$
 N = \frac{P}{\pi D} \pm \frac{4M}{\pi D^2}
 $$
 
 At the attach ring, the bolts share the same loads. For $n$ equally spaced bolts on a bolt circle $D_b$, with the joint
-closed and its neutral axis at the centre, the most loaded bolt carries
+closed and its neutral axis at the centre, the bolt with the most load carries:
 
 $$
 F_{bolt} = \frac{4M}{n\,D_b} - \frac{P}{n}
 $$
 
-with $P$ the axial compression. Compression from thrust relieves the bolts, so the worst bolt tension is often with
-bending and **no** thrust: coast, handling, or before ignition. That bolt load is the external load for
-[Bolted joints](../bolted-joints/).
+Here $P$ is the axial compression. Compression from thrust decreases the bolt loads. Thus the worst bolt tension often
+occurs with bending and **no** thrust: during coast, handling, or before ignition. That bolt load is the external load
+for [Bolted joints](../bolted-joints/).
 
 ## Stiffness and load sharing
 
-When two paths join the same two points, they share one displacement, so they share load **by stiffness** — for a bar or
-tube, $k = EA/L$:
+When two paths connect the same two points, they have the same displacement. Thus they share the load **by
+stiffness**. For a bar or tube, $k = EA/L$:
 
 $$
 P_1 = P\,\frac{k_1}{k_1 + k_2}
 $$
 
-Paths in series add their flexibilities; paths in parallel add their stiffnesses. Three consequences catch designers out:
+For paths in series, add the flexibilities. For paths in parallel, add the stiffnesses. Three results are frequent
+causes of design errors:
 
-- **Gaps decide who goes first.** A path with clearance carries nothing until the joint has moved through it. In a
-  shear joint with clearance holes, the first bolt to bear takes the load; in a long bolted or riveted lap, the end
-  fasteners take the most.
-- **Capacities do not add.** In a bonded and bolted joint the bond is far stiffer, takes nearly all the load, and fails
-  at a displacement too small for the bolts to notice. The joint fails when its first path does — the bolts then carry
-  everything alone, so they are a fail-safe, not extra strength.
-- **Redundant paths fight each other.** If one path would grow more than the other — pressure growth, thermal
-  expansion, a tolerance — joining them forces a load through both, with nothing applied:
+- **Gaps decide which path takes the load first.** A path with clearance carries no load until the joint has moved
+  through the clearance. In a shear joint with clearance holes, the first bolt that touches takes the load. In a long
+  bolted or riveted lap, the end fasteners take the most load.
+- **Capacities do not add.** In a bonded and bolted joint, the bond is much stiffer. It takes almost all the load, and
+  it fails at a displacement that is too small for the bolts to carry load. The joint fails when its first path fails.
+  The bolts then carry all the load alone. Thus they are a fail-safe, not additional strength.
+- **Redundant paths resist each other.** If one path grows more than the other (from pressure growth, thermal expansion
+  or a tolerance), a connection between them causes a load in the two paths, with no applied load:
 
 $$
 F = \delta\,\frac{k_1 k_2}{k_1 + k_2}
 $$
 
-A motor case grows axially under pressure by $\delta = p\,r\,L\,(1 - 2\nu)/(2E\,t)$, and radially by more. Attach it
-rigidly at both skirts to a structure that does not grow, and the attachments carry that growth. The cure is the
-classic one: **fix one end and let the other slide** — an axial slip joint with more travel than the growth, or a
-flexure — while it still carries the radial and shear loads.
+A motor case grows axially under pressure by $\delta = p\,r\,L\,(1 - 2\nu)/(2E\,t)$, and it grows more radially. If you
+attach it rigidly at the two skirts to a structure that does not grow, the attachments carry that growth. The usual
+solution is to **fix one end and let the other end slide**. Use an axial slip joint with more travel than the growth,
+or a flexure, which still carries the radial loads and shear loads.
 
-Radial growth loads the skirt itself. At MEOP the 300 mm case grows 0.68 mm on radius. An integral skirt has to follow
-at its root: forced to follow fully, a steel skirt there would carry the case's 0.45% hoop strain — about 930 MPa, with
-no pressure inside to justify it — fading within a few times $\sqrt{rt} \approx 14$ mm of the joint. In practice the
-skirt also holds the case back locally, and the junction needs a shell or finite-element analysis. Composite cases strain
-several times more, so their skirts are bonded on through a rubber shear ply that lets the case grow underneath.
+Radial growth also loads the skirt. At MEOP, the radius of the 300 mm case grows by 0.68 mm. An integral skirt must
+follow this growth at its root. If a steel skirt followed it fully, it would have the 0.45% hoop strain of the case,
+approximately 930 MPa, with no pressure inside it. This stress decreases within a few times $\sqrt{rt} \approx 14$ mm of
+the joint. In practice, the skirt also holds the case back locally, and the junction needs a shell analysis or a
+finite-element analysis. Composite cases have several times more strain. Thus their skirts are bonded through a rubber
+shear ply, which lets the case grow under the skirt.
 
 <Analogy title="A four-legged table">
-  A three-legged stool stands evenly on any floor. A four-legged table on an uneven floor rocks until one leg is
-  shimmed — and then the stiffest, longest legs carry most of the weight. Redundant load paths behave like the table:
-  they share by stiffness and fit, not by intention, and a small misfit can load a leg more than the weight does.
+  A three-legged stool stands evenly on any floor. A four-legged table on an uneven floor moves until you put a shim
+  under one leg. Then the stiffest and longest legs carry most of the weight. Redundant load paths are the same as the
+  table. They share load by stiffness and fit, not by design intent. A small misfit can put more load on a leg than the
+  weight does.
 </Analogy>
 
 ## Joint types
 
-| Joint | Where on a motor | How it carries load | Watch for |
+| Joint | Where on a motor | How it carries load | Possible problems |
 | --- | --- | --- | --- |
 | Integral or welded skirt (Y-joint) | Skirts on metal cases | Skirt machined, forged or welded on at the dome–cylinder junction | Discontinuity stress as the case grows and the skirt does not; weld quality at the junction |
-| Bonded skirt with shear ply | Composite cases | Shear through a rubber ply that lets the case grow underneath | Peel at the ends; bond verification; the temperature range — [Differential expansion](../differential-expansion/) |
-| Bolted flange, axial bolts | Closures, nozzles, attach rings | Preloaded bolts in tension; flange contact takes compression | Separation, prying, flange rotation — [Bolted joints](../bolted-joints/) |
-| Radial bolts or pins in shear | Skirt to vehicle; closures of small motors | Fasteners through overlapping rings, in bearing and shear | Bearing, shear-out and net-section failure; hole clearance — the first fastener to bear |
-| Tang-and-clevis pinned joint | Segmented case joints | Pins in double shear through a tang and clevis | Joint rotation opening the seal gap as the case dilates (Challenger, 1986) |
-| Lock ring or segmented key | Closures of metal cases | A ring seated in matching grooves, in shear and bearing | Stress concentration at the grooves; the ring rolling out; assembly clearance |
-| Threaded closure | Small motors | The thread carries the whole end load | Stripping — [Threads](../threads/); galling; seal compression |
-| Clamp band | Stage and payload interfaces | A wedge-section band squeezes two flanges together | Band preload; gapping under bending. Any release device is outside this site's scope |
+| Bonded skirt with shear ply | Composite cases | Shear through a rubber ply that lets the case grow under the skirt | Peel at the ends; bond verification; the temperature range ([Differential expansion](../differential-expansion/)) |
+| Bolted flange, axial bolts | Closures, nozzles, attach rings | Preloaded bolts in tension; flange contact takes compression | Separation, prying, flange rotation ([Bolted joints](../bolted-joints/)) |
+| Radial bolts or pins in shear | Skirt to vehicle; closures of small motors | Fasteners through overlapping rings, in bearing and shear | Bearing, shear-out and net-section failure; hole clearance (the first fastener that touches) |
+| Tang-and-clevis pinned joint | Segmented case joints | Pins in double shear through a tang and clevis | Joint rotation that opens the seal gap as the case expands (Challenger, 1986) |
+| Lock ring or segmented key | Closures of metal cases | A ring in matching grooves, in shear and bearing | Stress concentration at the grooves; the ring rolls out; assembly clearance |
+| Threaded closure | Small motors | The thread carries the full end load | Stripping ([Threads](../threads/)); galling; seal compression |
+| Clamp band | Stage and payload interfaces | A wedge-section band squeezes two flanges together | Band preload; gapping under bending. Release devices are outside the scope of this site |
 
-For the shear joints, each fastener's share $V$ (the load divided among the fasteners, plus any bending) is checked
+For shear joints, check the share $V$ of each fastener (the load divided among the fasteners, plus any bending) in
 several ways against your allowables and factors:
 
-- **Fastener shear** — $\tau = V / (m\,A)$ with $m$ shear planes: one in a lap, two in a clevis.
-- **Bearing** — $\sigma_{br} = V / (d\,t)$ on the hole in each part, usually the thinnest or softest.
-- **Shear-out and net section** — the part tearing out to the edge, or failing across the row of holes. Edge distance
-  and pitch set these. Pinned lugs and clevises have their own first-cut checks on
+- **Fastener shear:** $\tau = V / (m\,A)$, with $m$ shear planes (one in a lap, two in a clevis).
+- **Bearing:** $\sigma_{br} = V / (d\,t)$ on the hole in each part. Usually the thinnest or softest part governs.
+- **Shear-out and net section:** the part tears out to the edge, or fails across the row of holes. The edge distance
+  and the pitch set these. Pinned lugs and clevises have their own first checks on
   [Hand calcs](../../fundamentals/hand-calcs/#lugs-and-pins).
 
-Every joint also needs its sealing and stiffness thought through together: a joint that is strong enough but rotates or
-opens under pressure is a leak path — see [Sealing strategy](../../seals/sealing-strategy/).
+Also think about the sealing and the stiffness of each joint together. A joint that is sufficiently strong but turns
+or opens under pressure is a leak path. See [Sealing strategy](../../seals/sealing-strategy/).
 
 ## Calculator
 
-The first calculator traces a motor's loads at an instant: pressure, thrust, the nozzle and closure, the skirt and its
-attach ring. The second shares a load between two paths, with gaps and a mismatch.
+The first calculator follows the loads of a motor at one instant: pressure, thrust, the nozzle and closure, and the
+skirt and its attach ring. The second calculator shares a load between two paths, with gaps and a mismatch.
 
 <LoadPathCalc />
 
 <LoadShareCalc />
 
-## Worked example — the 300 mm motor's load path
+## Worked example: the 300 mm motor's load path
 
-The 300 mm D6AC case at its MEOP of 10 MPa ([case sizing](../../motor/case-sizing/#worked-example)), with an
-illustrative 50 mm throat and the grain page's $C_F = 1.5$. The aft closure seals at 260 mm with 30 bolts
-([Bolted joints](../bolted-joints/#worked-example--the-aft-closure)); the nozzle seals into it at an illustrative 110 mm.
-Masses are from the [hardware page](../../motor/hardware/): 137.81 kg at ignition, 26.61 kg at burnout, and a 50 kg
-payload on the forward skirt. Thrust is held at MEOP to burnout, which bounds the loads.
+This is the 300 mm D6AC case at its MEOP of 10 MPa ([case sizing](../../motor/case-sizing/#worked-example)), with an
+illustrative 50 mm throat and $C_F = 1.5$ from the grain page. The aft closure seals at 260 mm with 30 bolts
+([Bolted joints](../bolted-joints/#worked-example-the-aft-closure)). The nozzle seals into it at an illustrative 110 mm.
+The masses are from the [hardware page](../../motor/hardware/): 137.81 kg at ignition, 26.61 kg at burnout, and a 50 kg
+payload on the forward skirt. The thrust stays at its MEOP value until burnout, which gives the maximum loads.
 
-1. **Pressure.** The forward dome is pushed forward by $10 \times \pi \times 150^2 = 707$ kN, the aft end back by
-   677 kN. The 29.5 kN difference is the thrust — **24 times smaller** than the end loads, which close inside the case.
-2. **Nozzle and closure.** The nozzle is pushed off by $10 \times \pi \times 55^2 = 95.0$ kN, less its thrust: a
-   **65.6 kN** blow-off load into its attachment. The aft closure carries 501 kN firing (16.7 kN per bolt) but 531 kN in
-   a static pressure test (17.7 kN) — the value the bolted-joints example rightly used.
-3. **Acceleration.** $29.5 / (137.81 + 50) = 157$ m/s², **16.0 g** at ignition, rising to **39.2 g** at burnout.
-4. **Into the payload.** The forward skirt passes on $29.5 \times 50 / 187.81 = 7.84$ kN at ignition and
-   **19.2 kN** at burnout. The motor's own inertia takes the rest: 21.6 kN, then 10.2 kN. The grain's 17.4 kN at
-   ignition is spread over its 0.94 m² bond as 18.5 kPa of shear — tiny.
-5. **Bending.** With 3 kN·m at the forward skirt (the flight load the [shell-buckling](../../verify/shell-buckling/#worked-example--the-300-mm-case-unpressurised)
-   example used), the skirt's running load is $20.3 + 42.0 = 62.3$ N/mm in compression at burnout — 31 MPa in a 2 mm
-   wall.
+1. **Pressure.** The pressure pushes the forward dome forward with $10 \times \pi \times 150^2 = 707$ kN, and the aft end
+   back with 677 kN. The 29.5 kN difference is the thrust. It is **24 times smaller** than the end loads, which close
+   inside the case.
+2. **Nozzle and closure.** The push-off force on the nozzle is $10 \times \pi \times 55^2 = 95.0$ kN, minus its thrust.
+   This gives a **65.6 kN** blow-off load into its attachment. The aft closure carries 501 kN during firing (16.7 kN for
+   each bolt), but 531 kN in a static pressure test (17.7 kN). The bolted-joints example correctly used the test value.
+3. **Acceleration.** $29.5 / (137.81 + 50) = 157$ m/s², which is **16.0 g** at ignition. It increases to **39.2 g** at
+   burnout.
+4. **Into the payload.** The forward skirt passes on $29.5 \times 50 / 187.81 = 7.84$ kN at ignition and **19.2 kN** at
+   burnout. The inertia of the motor takes the remaining force: 21.6 kN, then 10.2 kN. At ignition, the 17.4 kN of the
+   grain is spread over its 0.94 m² bond, which gives a shear of 18.5 kPa. This is very small.
+5. **Bending.** With 3 kN·m at the forward skirt (the flight load that the
+   [shell-buckling](../../verify/shell-buckling/#worked-example-the-300-mm-case-unpressurised) example used), the
+   running load of the skirt is $20.3 + 42.0 = 62.3$ N/mm in compression at burnout. This is 31 MPa in a 2 mm wall.
 6. **Attach ring.** Sixteen bolts on a 280 mm circle each take $4M/(nD_b) = 2.68$ kN from the bending. The thrust
-   relieves them: 2.19 kN at ignition, 1.48 kN at burnout. The worst case is bending **without** thrust, 2.68 kN — the
-   external load per bolt to take to [Bolted joints](../bolted-joints/).
-7. **A redundant attachment.** Now suppose the motor is also fixed at its aft skirt to an aluminium airframe tube
-   (⌀330 × 2 mm, 1000 mm between the skirts). The case is $205\,000 \times \pi \times 301.4 \times 1.377 / 1000 =
-   267$ kN/mm stiff axially, the airframe 149 kN/mm; in series against a mismatch, 95.5 kN/mm.
-   - **At MEOP** the case grows $10 \times 150 \times 1000 \times (1 - 0.58) / (2 \times 205\,000 \times 1.377) =
-     1.12$ mm, forcing **107 kN** through both attachments.
-   - **At −40 °C**, 60 °C below assembly, the aluminium has also shrunk 0.68 mm more than the steel: 1.80 mm in all,
-     **172 kN** — almost six times the thrust, and nine times what the forward skirt passes to the payload.
-   - Against an aft attachment good for 120 kN, with an ultimate factor of 1.25 — both **for this example only**;
-     press **Load worked example** in the second calculator — **MS = −0.44**.
-   - **The fix:** let the aft skirt slide axially with 2 mm of travel. The mismatch never closes the gap and the force
-     is zero; the forward skirt alone takes the thrust.
+   decreases this: 2.19 kN at ignition and 1.48 kN at burnout. The worst case is bending **without** thrust, 2.68 kN.
+   This is the external load for each bolt in [Bolted joints](../bolted-joints/).
+7. **A redundant attachment.** Now assume that the motor is also fixed at its aft skirt to an aluminium airframe tube
+   (⌀330 × 2 mm, 1000 mm between the skirts). The axial stiffness of the case is
+   $205\,000 \times \pi \times 301.4 \times 1.377 / 1000 = 267$ kN/mm, and the airframe stiffness is 149 kN/mm. In
+   series against a mismatch, the stiffness is 95.5 kN/mm.
+   - **At MEOP,** the case grows $10 \times 150 \times 1000 \times (1 - 0.58) / (2 \times 205\,000 \times 1.377) =
+     1.12$ mm. This causes **107 kN** in the two attachments.
+   - **At −40 °C,** 60 °C below the assembly temperature, the aluminium has also shrunk 0.68 mm more than the steel. The
+     total is 1.80 mm, which gives **172 kN**. This is almost six times the thrust, and nine times the force that the
+     forward skirt passes to the payload.
+   - The aft attachment has a capacity of 120 kN, and the ultimate factor is 1.25. These two values are **for this
+     example only**. Push **Load worked example** in the second calculator. The result is **MS = −0.44**.
+   - **The solution:** let the aft skirt slide axially, with 2 mm of travel. The mismatch never closes the gap, and the
+     force is zero. The forward skirt alone takes the thrust.
 
 ## Where this stops
 
 - **Quasi-static, thrust only.** Drag, weight, steering side loads, the ignition transient, thrust oscillation and
-  vibration ([Random vibration](../../verify/random-vibration/)) come from the vehicle's loads analysis. The thrust here
-  is held at MEOP, which bounds a real thrust trace.
+  vibration ([Random vibration](../../verify/random-vibration/)) come from the loads analysis of the vehicle. Here the
+  thrust stays at its MEOP value, which is an upper limit of a real thrust trace.
 - **Beam theory and an elastic bolt ring.** Local load introduction, prying, flange contact and a joint that opens on
-  the tension side need detail analysis.
-- **Two paths.** Real structures have many, with stiffnesses that need a finite-element model to find.
-- **The nozzle attach plane is taken at chamber pressure.** The flow at the nozzle entrance lowers it slightly.
-- **Elastic, room temperature.** Stiffness and capacity change across the temperature range; joints with gaps also
+  the tension side need a detailed analysis.
+- **Two paths.** Real structures have many paths, and you need a finite-element model to find their stiffnesses.
+- **The nozzle attach plane is at chamber pressure.** The flow at the nozzle entrance decreases the pressure a little.
+- **Elastic, room temperature.** Stiffness and capacity change across the temperature range. Joints with gaps also
   slip and fret.
 
 ## On the drawing
 
-- **The interface** — hole pattern, bolt circle, datums and mating surfaces, from the vehicle's interface control
-  document, and which interface is the thrust takeout.
-- **The fixed end and the sliding end** — the axial travel the slip joint allows, and what it still carries.
-- **Interface limit loads** — axial, shear and bending at each attachment, usually in the interface control document.
-- **Fastener torques and preload** at the attach rings and closures — [Bolted joints](../bolted-joints/).
-- **Bond and shear-ply details** for bonded skirts — adhesive, ply thickness, surface preparation, the inspection that
-  verifies it.
+- **The interface:** hole pattern, bolt circle, datums and mating surfaces, from the interface control document of the
+  vehicle. Also tell which interface is the thrust takeout.
+- **The fixed end and the sliding end:** the axial travel of the slip joint, and the loads that it still carries.
+- **Interface limit loads:** axial, shear and bending at each attachment, usually in the interface control document.
+- **Fastener torques and preload** at the attach rings and closures. See [Bolted joints](../bolted-joints/).
+- **Bond and shear-ply details** for bonded skirts: adhesive, ply thickness, surface preparation, and the inspection
+  that verifies the bond.
 
 ## References and further reading
 
 - NASA SP-8025, *Solid Rocket Motor Metal Cases* (1970).
 - NASA SP-8007, *Buckling of Thin-Walled Circular Cylinders* (1965, revised 1968).
 - NASA SP-8099, *Combining Ascent Loads* (1972).
-- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs (1973) — load paths, bolt groups, lugs.
-- M. C. Y. Niu, *Airframe Structural Design*, Conmilit Press (1988) — joints and load paths.
+- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs (1973) (load paths, bolt groups, lugs).
+- M. C. Y. Niu, *Airframe Structural Design*, Conmilit Press (1988) (joints and load paths).
 - L. J. Hart-Smith, "Bonded-bolted composite joints", *Journal of Aircraft* 22 (1985).
-- G. P. Sutton and O. Biblarz, *Rocket Propulsion Elements*, Wiley — thrust and nozzle forces.
-- *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (1986) — joint rotation in a
-  tang-and-clevis field joint.
+- G. P. Sutton and O. Biblarz, *Rocket Propulsion Elements*, Wiley (thrust and nozzle forces).
+- *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (1986) (joint rotation in a
+  tang-and-clevis field joint).
 
 <Aside type="note">
-  Guidance on method from general practice. Loads come from your vehicle's loads analysis and interface control
-  documents; allowables, factors and fail-safe rules come from your programme's requirements.
+  This is guidance on method from general practice. Loads come from the loads analysis and interface control documents
+  of your vehicle. Allowables, factors and fail-safe rules come from the requirements of your programme.
 </Aside>

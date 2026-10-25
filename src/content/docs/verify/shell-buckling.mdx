@@ -1,6 +1,6 @@
 ---
 title: Shell buckling
-description: Why a thin motor case that is not pressurised buckles far below its theoretical strength — axial compression, bending and external pressure; the NASA SP-8007 knockdowns; combined loads; and what to do when buckling governs.
+description: Why a thin motor case without pressure buckles at a load much lower than its theoretical strength. Axial compression, bending and external pressure, the NASA SP-8007 knockdowns, combined loads, and what to do when buckling governs.
 sidebar:
   order: 0
 ---
@@ -11,54 +11,57 @@ import BucklingModes from '../../../components/BucklingModes.astro';
 import BucklingCalc from '../../../components/BucklingCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A case that shrugs off 12 MPa from inside can collapse under one atmosphere from outside. Unpressurised, a thin shell is limited by stability, not strength.</div>
-  <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> — where the thin wall comes from</div>
-  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> — skirts, joints and load paths</div>
+  <div><b>In one line</b>A case that easily holds 12 MPa from inside can collapse under one atmosphere from outside. Without pressure, stability limits a thin shell, not strength.</div>
+  <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> (where the thin wall comes from)</div>
+  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> (skirts, joints and load paths)</div>
 </div>
 
 ## Why this matters
 
-Pressurised, a motor case is a tension structure, and tension structures do not buckle. But a case spends most of
-its life **unpressurised**: in storage and transport, on the launcher, sitting on top of a booster that is already
-firing, after burnout, and during manufacture and test. Then it is a thin shell in compression — and thin shells fail
-by **buckling**: suddenly, elastically, at stresses far below yield, and far below what classical theory predicts.
+With pressure inside it, a motor case is a tension structure, and tension structures do not buckle. But a case is
+**without pressure** for most of its life: in storage and transport, on the launcher, on top of a booster that is
+already firing, after burnout, and during manufacture and test. In these conditions it is a thin shell in compression.
+Thin shells fail by **buckling**. They fail suddenly and elastically, at stresses much lower than yield, and much lower
+than the prediction of classical theory.
 
-When an unpressurised case gets loaded:
+These are the loads on a case without pressure:
 
-- **Axial compression** — an upper-stage motor carrying the inertia of everything above it while the stage below
-  fires; stacking and handling; thrust passed through a motor that is not yet burning.
-- **Bending** — ground winds on a vehicle on the launcher, lifting and transport, flight loads before ignition.
-- **External pressure** — a case evacuated inside, for a vacuum leak check or processing; a sealed case cooling down;
-  submerged launch; pressure differences across closures.
+- **Axial compression:** an upper-stage motor that carries the inertia of all the items above it while the stage below
+  fires; stacking and handling; thrust that goes through a motor that is not yet burning.
+- **Bending:** ground winds on a vehicle on the launcher, lifting and transport, and flight loads before ignition.
+- **External pressure:** a case with a vacuum inside, for a vacuum leak check or for processing; a sealed case that
+  cools down; submerged launch; pressure differences across closures.
 
-Buckling is a **stiffness** problem. The critical stress depends on Young's modulus and on $t/r$, not on yield
-strength, so a stronger alloy buys nothing unless it is also stiffer — or the wall gets thicker.
+Buckling is a **stiffness** problem. The critical stress depends on Young's modulus and on $t/r$, not on the yield
+strength. Thus a stronger alloy gives no benefit unless it is also stiffer, or unless the wall becomes thicker.
 
 <BucklingModes />
 
 ## Why thin shells buckle early
 
-For a perfect cylinder, classical theory gives the axial buckling stress
+For a perfect cylinder, classical theory gives the axial buckling stress:
 
 $$
 \sigma_\text{cl} = \frac{E\,t}{r\sqrt{3\,(1-\nu^2)}} \;\approx\; 0.605\,\frac{E\,t}{r} \qquad (\nu = 0.3)
 $$
 
-Real cylinders in axial compression buckle well below this — thin ones at a quarter of it or less. The cause is
-**imperfections**: out-of-roundness, weld shrinkage, thickness variation, small dents, load eccentricity and imperfect
-end supports. Axial compression is the worst case because the perfect shell's buckling is *unstable*: the moment it
-starts, the load it can carry drops sharply. A small initial dent puts the shell straight onto that falling path.
+Real cylinders in axial compression buckle much below this value. Thin cylinders buckle at a quarter of it or less. The
+cause is **imperfections**: out-of-roundness, weld shrinkage, thickness variation, small dents, load eccentricity and
+imperfect end supports. Axial compression is the worst case, because the buckling of the perfect shell is *unstable*.
+When it starts, the load that the shell can carry decreases quickly. A small initial dent puts the shell directly onto
+that decreasing path.
 
 <Analogy title="Standing on an empty drinks can">
-  Stand carefully on an empty aluminium can and it holds your weight. Tap its side with a pencil and it crumples
-  instantly. Nothing about the material changed — the tap made a dent, and a thin shell in compression is enormously
+  Stand carefully on an empty aluminium can and it holds your weight. Hit its side lightly with a pencil and it
+  collapses immediately. The material did not change. The pencil made a dent, and a thin shell in compression is very
   sensitive to dents. A motor case is a very large, very strong drinks can.
 </Analogy>
 
 ### The SP-8007 knockdown
 
-Designers do not try to predict each shell's imperfections. They multiply the classical answer by an empirical
-**knockdown factor** $\gamma$, drawn beneath decades of test results. NASA SP-8007 gives, for unstiffened cylinders,
+Designers do not try to predict the imperfections of each shell. They multiply the classical result by an empirical
+**knockdown factor** $\gamma$, which is a lower limit of many years of test results. For unstiffened cylinders, NASA
+SP-8007 gives:
 
 $$
 \gamma_\text{axial} = 1 - 0.901\,(1 - e^{-\phi}),
@@ -73,15 +76,15 @@ $$
 | $\gamma$, axial compression | 0.68 | 0.58 | 0.40 | 0.22 |
 | $\gamma$, bending | 0.74 | 0.66 | 0.52 | 0.37 |
 
-The thinner the shell, the more it is knocked down. These are **lower bounds**, fitted to tests from the 1930s to the
-1960s, many on shells made to looser standards than a modern case. They are safe and often very conservative.
-Programmes that can afford it measure their real imperfections and use non-linear analysis and test instead — NASA's
-Shell Buckling Knockdown Factor project is developing less conservative factors this way.
+The thinner the shell, the larger the decrease. These are **lower limits**, fitted to tests from the 1930s to the
+1960s. Many of those shells were made to less accurate standards than a modern case. The factors are safe and often
+very conservative. Programmes that have the budget measure their real imperfections and use non-linear analysis and
+test. The NASA Shell Buckling Knockdown Factor project develops less conservative factors with this method.
 
 ### Bending is gentler
 
-In bending, only a narrow strip of the shell carries the peak compression, so the worst imperfection is less likely to
-sit exactly there. The knockdown is milder, and the bending stress is
+In bending, only a narrow strip of the shell carries the peak compression. Thus it is less probable that the worst
+imperfection is exactly there. The knockdown is smaller, and the bending stress is:
 
 $$
 \sigma_b = \frac{M}{\pi r^2 t}
@@ -89,7 +92,7 @@ $$
 
 ### External pressure is a different problem
 
-Under external pressure the shell collapses into lobes around its circumference. For a cylinder of moderate length
+Under external pressure, the shell collapses into lobes around its circumference. For a cylinder of moderate length
 with its ends held round (Batdorf):
 
 $$
@@ -98,25 +101,25 @@ p_\text{cl} = \frac{1.04\sqrt{Z}\;\pi^2 E\,t^3}{12\,(1-\nu^2)\,r\,L^2},
 Z = \frac{L^2}{r\,t}\sqrt{1-\nu^2}
 $$
 
-which works out to $p_\text{cl} \propto E\,t^{2.5} / (L\,r^{1.5})$. A very long tube goes oval, with the limit
-$p_\text{cl} = E\,(t/r)^3 / \left(4(1-\nu^2)\right)$. Three things follow:
+This gives $p_\text{cl} \propto E\,t^{2.5} / (L\,r^{1.5})$. A very long tube becomes oval, with the limit
+$p_\text{cl} = E\,(t/r)^3 / \left(4(1-\nu^2)\right)$. There are three results:
 
-- **Wall thickness dominates** — buckling pressure grows as $t^{2.5}$ to $t^3$, not as $t$.
-- **Length matters** — halve the distance between the features holding the shell round and the buckling pressure
-  doubles. That is what a stiffening ring does.
-- **It is less imperfection-sensitive** than axial compression. SP-8007 applies a single correlation factor, 0.56,
-  to lateral pressure.
+- **The wall thickness has the largest effect.** The buckling pressure increases as $t^{2.5}$ to $t^3$, not as $t$.
+- **The length is important.** If you halve the distance between the features that hold the shell round, the buckling
+  pressure doubles. A stiffening ring does this.
+- **It is less sensitive to imperfections** than axial compression. SP-8007 applies one correlation factor, 0.56, to
+  lateral pressure.
 
 <Analogy title="The crushed tank car">
-  A steel rail tank car, steam-cleaned and sealed while still hot, can be crushed flat as the steam inside condenses.
-  Nothing pushed on it but the atmosphere — about 0.1 MPa. A shell designed to hold pressure from inside can have very
-  little resistance to the same pressure from outside.
+  A steel rail tank car that is cleaned with steam and sealed while it is still hot can collapse when the steam inside
+  condenses. Only the atmosphere pushed on it, approximately 0.1 MPa. A shell designed to hold pressure from inside can
+  have very little resistance to the same pressure from outside.
 </Analogy>
 
 ### Combined loads
 
 SP-8007 recommends straight-line interactions for axial compression with bending, and for axial compression with
-lateral pressure. Summing all three is a simple screening check:
+lateral pressure. The sum of all three is a simple screening check:
 
 $$
 R_a + R_b + R_p \le 1,
@@ -124,91 +127,92 @@ R_a + R_b + R_p \le 1,
 R = \frac{\text{applied}}{\text{allowable}}
 $$
 
-With your programme's buckling factor of safety $FS$, the requirement becomes $FS\,(R_a + R_b + R_p) \le 1$. A pressure
-acting on the end closures of a sealed case adds axial compression too: $q\,\pi r^2$.
+With the buckling factor of safety $FS$ of your programme, the requirement becomes $FS\,(R_a + R_b + R_p) \le 1$. A
+pressure on the end closures of a sealed case also adds axial compression: $q\,\pi r^2$.
 
 ### Does buckling govern at all?
 
-If $\gamma\,\sigma_\text{cl}$ comes out above yield, the wall yields first and buckling is not the problem. Between the
-two, as the buckling stress approaches the material's proportional limit, the elastic formula over-predicts and a
-plasticity correction is needed. The calculator tells you which regime you are in.
+If $\gamma\,\sigma_\text{cl}$ is more than yield, the wall yields first, and buckling is not the problem. Between the
+two, as the buckling stress approaches the proportional limit of the material, the elastic formula gives a value that
+is too high, and a plasticity correction is necessary. The calculator tells you in which regime you are.
 
 <Aside type="tip" title="Internal pressure is a stiffener">
-  Even modest internal pressure pre-tensions the wall, pulls imperfections out and offsets compression. The early Atlas
-  rocket's stainless-steel "balloon" tanks were so thin that they had to be kept pressurised even on the ground, or they
-  would collapse under their own weight. Liquid-propellant tanks use this deliberately. A solid motor normally sits at
-  ambient pressure until ignition, so its unpressurised load cases have to be carried by the wall itself.
+  Even a small internal pressure puts the wall in tension, removes imperfections and cancels compression. The
+  stainless-steel "balloon" tanks of the early Atlas rocket were so thin that they had to stay pressurised, also on the
+  ground. Without pressure, they would collapse under their own weight. Liquid-propellant tanks use this effect on
+  purpose. A solid motor is usually at ambient pressure until ignition. Thus the wall itself must carry the load cases
+  without pressure.
 </Aside>
 
 ## Calculator
 
 <BucklingCalc />
 
-## Worked example — the 300 mm case, unpressurised
+## Worked example: the 300 mm case, unpressurised
 
-The D6AC case from [case sizing](../../motor/case-sizing/#worked-example): 300 mm internal diameter, 1.377 mm wall,
-1000 mm of cylinder between the domes that hold it round. $E = 205$ GPa, $\nu = 0.3$, yield 1450 MPa. Mean radius
-$r = 150 + 1.377/2 = 150.69$ mm.
+This is the D6AC case from [case sizing](../../motor/case-sizing/#worked-example): 300 mm internal diameter, 1.377 mm
+wall, and 1000 mm of cylinder between the domes that hold it round. $E = 205$ GPa, $\nu = 0.3$ and the yield is
+1450 MPa. The mean radius is $r = 150 + 1.377/2 = 150.69$ mm.
 
 1. **Slenderness.** $r/t = 150.69 / 1.377 = 109.4$.
 2. **Classical stress.** $\sigma_\text{cl} = 0.6052 \times 205{,}000 \times 1.377 / 150.69 = 1134$ MPa.
-3. **Knockdowns.** $\phi = \sqrt{109.4}/16 = 0.654$, so $\gamma_\text{axial} = 1 - 0.901(1 - e^{-0.654}) = 0.5675$ and
-   $\gamma_\text{bending} = 0.649$.
-4. **Axial capacity.** $\sigma_\text{cr} = 0.5675 \times 1134 = 643$ MPa — 44% of yield, so elastic buckling governs.
-   $P_\text{cr} = 643 \times 2\pi \times 150.69 \times 1.377 = 839$ kN.
+3. **Knockdowns.** $\phi = \sqrt{109.4}/16 = 0.654$, so $\gamma_\text{axial} = 1 - 0.901(1 - e^{-0.654}) = 0.5675$
+   and $\gamma_\text{bending} = 0.649$.
+4. **Axial capacity.** $\sigma_\text{cr} = 0.5675 \times 1134 = 643$ MPa. This is 44% of yield, so elastic buckling
+   governs. $P_\text{cr} = 643 \times 2\pi \times 150.69 \times 1.377 = 839$ kN.
 5. **Bending capacity.** $\sigma_\text{cr} = 0.649 \times 1134 = 736$ MPa, so
    $M_\text{cr} = 736 \times \pi \times 150.69^2 \times 1.377 = 72.3$ kN·m.
-6. **Flight loads.** Say 20 kN axial and 3 kN·m bending (traced on [Load paths & joints](../../joints/load-paths/)):
-   $R = 20/839 + 3/72.3 = 0.024 + 0.041 = 0.065$. The loads
-   could rise 15 times before the case buckles.
-7. **Evacuated empty case** — a vacuum leak check before the case is loaded, say. One atmosphere outside, 0.101 MPa.
-   $Z = \frac{1000^2}{150.69 \times 1.377}\sqrt{0.91} = 4597$
-   (moderate length), so $p_\text{cl} = 0.226$ MPa and, with the 0.56 correlation factor, $p_\text{allow} = 0.127$ MPa.
-   $R_p = 0.101 / 0.127 = 0.80$. Pressure on the closures adds 7.2 kN of axial load ($R_a = 0.009$). Total 0.81: the
-   loads could rise only **1.24 times** before buckling.
+6. **Flight loads.** Assume 20 kN axial and 3 kN·m bending (from [Load paths & joints](../../joints/load-paths/)):
+   $R = 20/839 + 3/72.3 = 0.024 + 0.041 = 0.065$. The loads could increase by 15 times before the case buckles.
+7. **Empty case with a vacuum inside,** for example for a vacuum leak check before the propellant is loaded. There is
+   one atmosphere outside, 0.101 MPa. $Z = \frac{1000^2}{150.69 \times 1.377}\sqrt{0.91} = 4597$ (moderate length), so
+   $p_\text{cl} = 0.226$ MPa. With the 0.56 correlation factor, $p_\text{allow} = 0.127$ MPa. Thus
+   $R_p = 0.101 / 0.127 = 0.80$. The pressure on the closures adds 7.2 kN of axial load ($R_a = 0.009$). The total is
+   0.81. The loads could increase only **1.24 times** before the case buckles.
 
-The case that holds 12.5 MPa from inside has a reserve of 1.24 against 0.1 MPa from outside. Whether that passes
-depends on your programme's buckling factor of safety — any factor above 1.24 fails. The fixes, in the calculator:
+The case that holds 12.5 MPa from inside has a reserve of only 1.24 against 0.1 MPa from outside. If this passes
+depends on the buckling factor of safety of your programme. Any factor above 1.24 fails. The solutions, in the
+calculator:
 
-- **Vent it.** Never evacuate or seal-and-cool a thin empty case without checking this load case.
-- **Add a ring at mid-length.** $L = 500$ mm doubles the buckling pressure: reserve 2.45.
-- **Thicken the wall by 10%.** Buckling pressure rises 27%: reserve 1.57 — at a cost in mass everywhere.
+- **Vent the case.** Never put a vacuum in, or seal and cool, a thin empty case before you check this load case.
+- **Add a ring at mid-length.** $L = 500$ mm doubles the buckling pressure: the reserve becomes 2.45.
+- **Make the wall 10% thicker.** The buckling pressure increases by 27%, and the reserve becomes 1.57. But this adds
+  mass everywhere.
 
 ## Where this stops
 
-- **Unstiffened, isotropic, elastic cylinders with their ends held round.** Ring- and stringer-stiffened shells, cones
-  (NASA SP-8019) and domes (NASA SP-8032) have their own methods. A dome under external pressure is itself very
-  imperfection-sensitive.
-- **Composite cases** are orthotropic: buckling depends on the laminate's bending and membrane stiffnesses, and the
-  knockdowns differ.
-- **Local load introduction** — at skirts, joints, lugs and support cradles — creates local compression that a uniform
-  membrane check does not see. That needs finite-element analysis.
-- **Knockdowns are lower bounds**, not predictions. Less conservative designs use measured imperfections, non-linear
+- **Unstiffened, isotropic, elastic cylinders with their ends held round.** Shells with rings and stringers, cones
+  (NASA SP-8019) and domes (NASA SP-8032) have their own methods. A dome under external pressure is also very sensitive
+  to imperfections.
+- **Composite cases** are orthotropic. Their buckling depends on the bending and membrane stiffnesses of the laminate,
+  and the knockdowns are different.
+- **Local load introduction** at skirts, joints, lugs and support cradles causes local compression that a uniform
+  membrane check does not see. This needs a finite-element analysis.
+- **Knockdowns are lower limits,** not predictions. Less conservative designs use measured imperfections, non-linear
   analysis and test.
-- **Plasticity.** Near the proportional limit the elastic formula is unconservative.
-- **Internal pressure** stabilises the shell. This page treats the unpressurised case only.
-- **A case-bonded grain supports the wall** like an elastic foundation and raises the buckling load of a loaded
-  motor. It is usually ignored for conservatism — and it is not there at all for an empty case, which is why
-  manufacturing and test are often the most critical buckling cases.
+- **Plasticity.** Near the proportional limit, the elastic formula is unconservative.
+- **Internal pressure** makes the shell more stable. This page treats only the case without pressure.
+- **A case-bonded grain supports the wall** as an elastic foundation, and it increases the buckling load of a loaded
+  motor. Usually it is ignored for conservatism. It is not present in an empty case. This is why manufacture and test
+  are often the most critical buckling cases.
 
 ## On the drawing
 
-- **Control roundness and dents.** The knockdown assumes imperfections no worse than those in the test base.
-  Out-of-roundness tolerance and dent acceptance criteria on the cylinder are buckling requirements as much as
-  manufacturing ones.
-- **Use the minimum wall.** Buckling allowables are calculated on the minimum thickness the drawing allows, after
+- **Control roundness and dents.** The knockdown assumes imperfections that are not worse than those in the test data.
+  The out-of-roundness tolerance and the dent acceptance criteria on the cylinder are buckling requirements as well as
+  manufacturing requirements.
+- **Use the minimum wall.** Calculate buckling allowables on the minimum thickness that the drawing permits, after
   machining and any chemical milling.
-- **Define the supports.** Lifting points, cradle positions and support pads belong on the drawing or handling
-  specification, since they decide where local compression goes.
-- **Say what must not happen.** "Vent before evacuating" or "do not seal while hot" belongs in the handling notes when
-  the external-pressure reserve is small.
-- **Stiffening rings** are structure: their attachment, weld inspection and tolerances need the same care as the
-  shell.
+- **Define the supports.** Give the lifting points, cradle positions and support pads on the drawing or in the handling
+  specification, because they decide where the local compression goes.
+- **Tell what must not occur.** If the external-pressure reserve is small, write "Vent before you apply a vacuum" or
+  "Do not seal while hot" in the handling notes.
+- **Stiffening rings are structure.** Their attachment, weld inspection and tolerances need the same care as the shell.
 
 ## References and further reading
 
 - NASA SP-8007, *Buckling of Thin-Walled Circular Cylinders*, NASA Space Vehicle Design Criteria (1965, revised 1968)
-  — the knockdowns and interactions used here.
+  (the knockdowns and interactions used here).
 - NASA Engineering and Safety Center revision of SP-8007, *Buckling of Thin-Walled Circular Cylinders* (NASA NTRS
   20205011530).
 - M. W. Hilburger, *Developing the Next Generation Shell Buckling Design Factors and Technologies*, AIAA paper (2012),
@@ -218,10 +222,10 @@ depends on your programme's buckling factor of safety — any factor above 1.24 
 - NASA SP-8019, *Buckling of Thin-Walled Truncated Cones* (1968); NASA SP-8032, *Buckling of Thin-Walled Doubly Curved
   Shells* (1969).
 - S. P. Timoshenko & J. M. Gere, *Theory of Elastic Stability*, 2nd ed., McGraw-Hill (1961).
-- W. C. Young, R. G. Budynas & A. M. Sadegh, *Roark's Formulas for Stress and Strain*, 8th ed., McGraw-Hill (2011) —
-  shell buckling tables.
+- W. C. Young, R. G. Budynas & A. M. Sadegh, *Roark's Formulas for Stress and Strain*, 8th ed., McGraw-Hill (2011)
+  (shell buckling tables).
 
 <Aside type="note">
-  Preliminary sizing. Real buckling assessment uses measured imperfections, the actual boundary conditions and load
-  introduction, non-linear analysis and test, signed off by the responsible stress authority.
+  This is preliminary sizing. A real buckling assessment uses measured imperfections, the actual boundary conditions
+  and load introduction, non-linear analysis and test, with approval by the responsible stress authority.
 </Aside>

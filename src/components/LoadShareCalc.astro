@@ -23,7 +23,7 @@
           <label>Gap (mm)<input name="g2" type="number" min="0" step="any" value="0" /></label>
           <label>Capacity (kN)<input name="c2" type="number" min="0" step="any" placeholder="your allowable" autocomplete="off" /></label>
         </div>
-        <p class="hint">A tube: k = E·π·D·t/L. A gap is free movement either way before the path takes load — hole clearance, a slip joint.</p>
+        <p class="hint">A tube: k = E·π·D·t/L. A gap is free movement either way before the path takes load: hole clearance, a slip joint.</p>
       </fieldset>
       <fieldset>
         <legend>Load</legend>
@@ -31,7 +31,7 @@
           <label>Applied load (kN, tension +)<input name="P" type="number" step="any" value="0" /></label>
           <label>Path 1 longer by (mm)<input name="d" type="number" step="any" value="1.80" /></label>
         </div>
-        <p class="hint">The mismatch is how much longer path 1 would be than path 2 with nothing joining them — pressure growth, thermal expansion, a tolerance.</p>
+        <p class="hint">The mismatch is how much longer path 1 would be than path 2 with nothing joining them: pressure growth, thermal expansion, a tolerance.</p>
       </fieldset>
       <fieldset>
         <legend>Your programme's factor</legend>
@@ -152,11 +152,11 @@
         } else { r('fs').innerHTML = `path ${n} alone <small>enter its capacity to check it</small>`; cls('fs', ''); }
       } else { r('fs').innerHTML = '— <small>needs an applied load and a capacity</small>'; cls('fs', ''); }
 
-      if (d !== 0 && fm >= 0.5) notes.push(['warn', `A ${f(Math.abs(d), 2)} mm mismatch forces ${kN(fm)} kN through both paths before any load is applied. Fix one end and let the other slide — a gap larger than the mismatch — or make one path compliant.`]);
-      if (d !== 0 && fm < 0.5) notes.push(['ok', 'The gaps are larger than the mismatch: the paths no longer fight each other. A sliding end still has to carry the loads across it — radial and shear — and stay seated.']);
-      if (P !== 0 && Math.abs(sh1 - 0.5) > 0.15) notes.push(['', `The stiffer path takes ${f(100 * Math.max(sh1, 1 - sh1), 0)}% of the applied load — load goes where the stiffness is, not where it was intended.`]);
+      if (d !== 0 && fm >= 0.5) notes.push(['warn', `A ${f(Math.abs(d), 2)} mm mismatch forces ${kN(fm)} kN through both paths before any load is applied. Fix one end and let the other slide (a gap larger than the mismatch) or make one path compliant.`]);
+      if (d !== 0 && fm < 0.5) notes.push(['ok', 'The gaps are larger than the mismatch: the paths no longer fight each other. A sliding end still has to carry the loads across it (radial and shear) and stay seated.']);
+      if (P !== 0 && Math.abs(sh1 - 0.5) > 0.15) notes.push(['', `The stiffer path takes ${f(100 * Math.max(sh1, 1 - sh1), 0)}% of the applied load: load goes where the stiffness is, not where it was intended.`]);
       if ((p1.gap ?? 0) > 0 || (p2.gap ?? 0) > 0) notes.push(['', 'A path with a gap carries nothing until the joint has moved through it. In a bolted shear joint with clearance holes, the first bolt to bear takes the load; in a bonded and bolted joint, the bond fails before the bolts engage.']);
-      if (p1.cap && p2.cap && Number.isFinite(ff.load) && ff.load !== 0) notes.push(['', `Capacities do not add: the joint fails when its first path does, at ${kN(Math.abs(ff.load))} kN — then the other must carry everything alone.`]);
+      if (p1.cap && p2.cap && Number.isFinite(ff.load) && ff.load !== 0) notes.push(['', `Capacities do not add: the joint fails when its first path does, at ${kN(Math.abs(ff.load))} kN, then the other must carry everything alone.`]);
 
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       chart(p1, p2, d, s.u, P);

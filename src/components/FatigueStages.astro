@@ -6,7 +6,7 @@ const finalR = 168;
 ---
 
 <figure class="viz">
-  <p class="viz-title">Reading a fatigue fracture — schematic</p>
+  <p class="viz-title">Reading a fatigue fracture: schematic</p>
   <svg viewBox="0 0 640 300" role="img" aria-labelledby="fs-desc" class="fs-svg">
     <desc id="fs-desc">
       The fracture surface of a round bar broken in fatigue. A crack starts at a point on the surface, often at a notch or
@@ -28,16 +28,16 @@ const finalR = 168;
       {beach.map((b) => <circle cx={ox} cy={oy} r={b} fill="none" stroke="var(--rd-ink)" stroke-opacity="0.55" stroke-width="1.2"></circle>)}
     </g>
     <circle cx={ox} cy={oy - 2} r="5" fill="var(--rd-accent)"></circle>
-    <text x={ox} y={oy + 22} text-anchor="middle" font-size="11" fill="var(--rd-accent)">origin — surface, notch, scratch</text>
+    <text x={ox} y={oy + 22} text-anchor="middle" font-size="11" fill="var(--rd-accent)">origin: surface, notch, scratch</text>
     <text x={cx + 18} y={cy + 30} font-size="11" fill="var(--rd-ink)">beach marks</text>
     <text x={cx} y={cy - 70} text-anchor="middle" font-size="11" fill="var(--rd-ink)">final fracture</text>
     <text x={cx} y={cy - 56} text-anchor="middle" font-size="10" fill="var(--rd-muted)">rough, sudden</text>
 
     <g font-size="11">
       {[
-        { y: 62, c: 'var(--rd-accent)', t: '1 · Initiation', d1: 'A crack forms at a stress raiser.', d2: 'Most of the life of a smooth part.', d3: 'This page — stress-life.' },
-        { y: 142, c: 'var(--rd-blue)', t: '2 · Propagation', d1: 'The crack grows a little each cycle.', d2: 'Dominates in notched or flawed parts.', d3: 'Fracture mechanics — the Paris law.' },
-        { y: 222, c: 'var(--rd-hot)', t: '3 · Final fracture', d1: 'The remaining section can no longer', d2: 'carry the load and breaks at once.', d3: 'Toughness — K_IC.' },
+        { y: 62, c: 'var(--rd-accent)', t: '1 · Initiation', d1: 'A crack forms at a stress raiser.', d2: 'Most of the life of a smooth part.', d3: 'This page: stress-life.' },
+        { y: 142, c: 'var(--rd-blue)', t: '2 · Propagation', d1: 'The crack grows a little each cycle.', d2: 'Dominates in notched or flawed parts.', d3: 'Fracture mechanics: the Paris law.' },
+        { y: 222, c: 'var(--rd-hot)', t: '3 · Final fracture', d1: 'The remaining section can no longer', d2: 'carry the load and breaks at once.', d3: 'Toughness: K_IC.' },
       ].map((s) => (
         <g>
           <rect x="300" y={s.y - 16} width="6" height="60" fill={s.c}></rect>
@@ -51,6 +51,6 @@ const finalR = 168;
   </svg>
   <figcaption>
     Beach marks point back to the origin, which is almost always at the surface. That is why surface finish, notches and
-    residual stress matter so much — and why the cheapest fatigue fix is usually the surface.
+    residual stress matter so much, and why the cheapest fatigue fix is usually the surface.
   </figcaption>
 </figure>

@@ -1,6 +1,6 @@
 ---
 title: Threads
-description: Screw thread forms and tolerance classes, rolled and cut threads, thread stripping and the engagement length that makes the bolt break first — in steel, aluminium and inserts — plus plating, galling and how threads feed the bolted-joint calculation.
+description: Screw thread forms and tolerance classes, rolled and cut threads, thread stripping and the engagement length that makes the bolt break first (in steel, aluminium and inserts), plating, galling, and how threads give data to the bolted-joint calculation.
 sidebar:
   order: 0
 ---
@@ -11,65 +11,68 @@ import ThreadProfile from '../../../components/ThreadProfile.astro';
 import ThreadCalc from '../../../components/ThreadCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Engage enough thread that the bolt breaks before the threads strip — a nut's height in steel, about 1.5–2 d in aluminium, or an insert.</div>
+  <div><b>In one line</b>Engage sufficient thread so that the bolt breaks before the threads strip: the height of a nut in steel, approximately 1.5–2 d in aluminium, or an insert.</div>
   <div><b>Before this</b><a href="../bolted-joints/">Bolted joints</a></div>
   <div><b>Used by</b><a href="../locking-and-retention/">Locking and retention</a></div>
 </div>
 
 ## Why this matters
 
-A thread is where a bolt's load passes into the part, and it fails in a less forgiving way than the bolt. A broken bolt is
-obvious, ductile, and replaced in minutes. Stripped threads in a tapped closure or skirt can show nothing until the joint
-lets go, and repairing them means drilling out and fitting an insert — sometimes scrapping the part. On a motor, tapped
-holes in aluminium skirts, brackets and nozzle hardware, and in high-strength steel closures, are where this matters.
+The thread is where the load of a bolt goes into the part. A thread failure is more dangerous than a bolt failure. A
+broken bolt is easy to see, it is ductile, and you can replace it in minutes. Stripped threads in a tapped closure or
+skirt can show nothing until the joint fails. To repair them, you must drill them out and install an insert, and
+sometimes you must scrap the part. On a motor, this is important for tapped holes in aluminium skirts, brackets and
+nozzle hardware, and in high-strength steel closures.
 
 ## Thread forms
 
 | Form | Profile | Where it is used |
 | --- | --- | --- |
-| ISO metric, M | 60°, flat or rounded root | General engineering; coarse pitch by default, fine pitch called up as M10 × 1.25 |
+| ISO metric, M | 60°, flat or rounded root | General engineering; coarse pitch by default, fine pitch specified as M10 × 1.25 |
 | Unified, UNC / UNF | 60°, the same profile in inch sizes | US hardware and older aerospace parts |
-| MJ and UNJ | 60°, with a large controlled root radius on the bolt | Aerospace fasteners: lower stress concentration at the root, so better fatigue life |
-| Trapezoidal, Acme | 30° or 29° | Power screws and actuators — moving loads, not clamping |
-| Buttress | Asymmetric | Heavy one-direction loads |
-| Pipe — NPT, BSPT | Tapered | Sealing on the flanks with a sealant; not a structural fastener thread |
+| MJ and UNJ | 60°, with a large controlled root radius on the bolt | Aerospace fasteners: lower stress concentration at the root, thus better fatigue life |
+| Trapezoidal, Acme | 30° or 29° | Power screws and actuators: loads that move, not clamping |
+| Buttress | Asymmetric | Heavy loads in one direction |
+| Pipe: NPT, BSPT | Tapered | Seals on the flanks with a sealant; not a structural fastener thread |
 
-**Fine or coarse?** A fine pitch has a slightly larger stress area and finer adjustment, but shallower threads, so it strips
-and galls more readily in soft materials and cross-threads more easily. Coarse threads are the usual choice for tapped
-holes in aluminium.
+**Fine or coarse?** A fine pitch has a slightly larger stress area and finer adjustment. But its threads are shallower,
+so in soft materials it strips and galls more easily, and it cross-threads more easily. Coarse threads are the usual
+choice for tapped holes in aluminium.
 
-**Do not mix forms.** NASA-STD-5020B §4.7.2 lists incompatible pairs:
+**Do not mix forms.** NASA-STD-5020B §4.7.2 gives the incompatible pairs:
 - fine with coarse, or inch with metric;
 - the same pitch at different diameters;
 - an external **MJ** thread in an **M** internal thread, or **UNJ** in **UN**.
 
-The mismatches cause interference, seizure, low strength or the wrong preload for a given torque.
+These mismatches cause interference, seizure, low strength, or an incorrect preload for a given torque.
 
 ## Tolerance classes
 
-ISO 965 gives each thread a **tolerance grade** (a number: smaller is tighter) and a **tolerance position** (a letter: how
-far the zone sits from basic size). Internal threads use capitals, external lower case:
+ISO 965 gives each thread a **tolerance grade** (a number: smaller is tighter) and a **tolerance position** (a letter:
+the distance of the zone from the basic size). Internal threads use capital letters, and external threads use lower
+case letters:
 
-- **6H / 6g** — the general-purpose fit. The "g" position leaves a small allowance below basic size on the bolt.
-- **4h6h / 4H5H** — the tighter classes used for MJ aerospace threads (ISO 5855).
-- **Unified: 2A / 2B** for general use, **3A / 3B** for tighter, aerospace work.
+- **6H / 6g:** the general-purpose fit. The "g" position leaves a small allowance below the basic size on the bolt.
+- **4h6h / 4H5H:** the tighter classes used for MJ aerospace threads (ISO 5855).
+- **Unified: 2A / 2B** for general use, and **3A / 3B** for tighter, aerospace work.
 
-Plating has to fit in that allowance. A coating of thickness $c$ on the 60° flanks grows the pitch diameter by $4c$, so a
-plated thread made to "h" with no allowance will not go into its nut.
+The plating must fit in that allowance. A coating of thickness $c$ on the 60° flanks increases the pitch diameter by
+$4c$. Thus a plated thread made to "h", with no allowance, does not go into its nut.
 
 ## Rolled or cut
 
-**Rolled** threads are formed, not machined: the grain flows round the thread form and the root is left in compression.
-They are much better in fatigue than cut threads, especially when rolled **after** heat treatment, so the compressive
-layer is not relieved ([Residual stress](../../materials/residual-stress/)). Aerospace bolts are rolled; a thread cut on a lathe is a weaker, rougher feature, and the root of a
-cut thread is a sharp notch for [fatigue](../../fundamentals/fatigue/).
+**Rolled** threads are formed, not machined. The grain flows around the thread form, and the root stays in
+compression. Rolled threads are much better in fatigue than cut threads, especially when they are rolled **after** heat
+treatment, so that the heat treatment does not relieve the compressive layer
+([Residual stress](../../materials/residual-stress/)). Aerospace bolts are rolled. A thread cut on a lathe is a weaker
+and rougher feature, and the root of a cut thread is a sharp notch for [fatigue](../../fundamentals/fatigue/).
 
 ## Thread stripping
 
 <ThreadProfile />
 
-When threads strip, each set shears on a cylinder. In the FED-STD-H28 / VDI 2230 form, with pitch $P$ and engagement
-length $L_e$:
+When threads strip, each set shears on a cylinder. In the form of FED-STD-H28 and VDI 2230, with the pitch $P$ and the
+engagement length $L_e$:
 
 $$
 A_\text{int} = \frac{\pi L_e\, d_{min}}{P}\left[\frac{P}{2} + \tan 30^\circ (d_{min} - D_{2,max})\right]
@@ -79,109 +82,113 @@ $$
 A_\text{ext} = \frac{\pi L_e\, D_{1,max}}{P}\left[\frac{P}{2} + \tan 30^\circ (d_{2,min} - D_{1,max})\right]
 $$
 
-with the bolt's major diameter $d$ and pitch diameter $d_2$, and the nut's minor diameter $D_1$ and pitch diameter $D_2$, at
-their minimum-material limits. At basic size they reduce to $A_\text{int} = \tfrac{7}{8}\pi d L_e$ and
-$A_\text{ext} = \tfrac{3}{4}\pi D_1 L_e$. The internal threads go when their shear ultimate × $A_\text{int}$ is reached, the bolt
-threads at their shear ultimate × $A_\text{ext}$. The bolt itself breaks at $R_m A_s$.
+Here $d$ is the major diameter and $d_2$ the pitch diameter of the bolt, and $D_1$ is the minor diameter and $D_2$ the
+pitch diameter of the nut, at their minimum-material limits. At the basic size, they become
+$A_\text{int} = \tfrac{7}{8}\pi d L_e$ and $A_\text{ext} = \tfrac{3}{4}\pi D_1 L_e$. The internal threads fail when the
+load gets to their shear ultimate × $A_\text{int}$, and the bolt threads fail at their shear ultimate × $A_\text{ext}$.
+The bolt itself breaks at $R_m A_s$.
 
-**Make the bolt the weak link.** NASA-STD-5020B §4.7.4 asks that a tapped part have enough complete threads engaged for
-the bolt to fail in tension before the threads strip: a broken bolt is visible, ductile, lets load move to its neighbours,
-and is easy to repair.
+**Make the bolt the weak link.** NASA-STD-5020B §4.7.4 requires that a tapped part has sufficient complete threads
+engaged, so that the bolt fails in tension before the threads strip. A broken bolt is easy to see, it is ductile, its
+load moves to the adjacent bolts, and it is easy to repair.
 
-- **In steel**, internal and external threads are about as strong as each other, and a standard nut height (about 0.8 d)
-  is enough.
-- **In aluminium**, the part's shear strength is a fraction of the bolt's, so engagement has to be longer — about
-  1.5–2 d in practice. Basic-size areas give a shorter length; tolerances, dilation and thread bending use up the
-  difference.
-- **Thread strength is not uniform.** The first engaged threads carry most of the load, so very long engagement adds
-  little; the extra length mostly protects against tolerance and wear.
+- **In steel,** the internal and external threads have almost the same strength, and a standard nut height
+  (approximately 0.8 d) is sufficient.
+- **In aluminium,** the shear strength of the part is a fraction of that of the bolt. Thus the engagement must be
+  longer, approximately 1.5–2 d in practice. The basic-size areas give a shorter length. The tolerances, dilation and
+  thread bending use the difference.
+- **The thread strength is not uniform.** The first engaged threads carry most of the load. Thus a very long engagement
+  adds little strength. The additional length mostly gives protection against tolerance and wear.
 
 <Analogy title="Tearing a strip of perforated stamps">
-  A row of stamps is joined by perforations. Pull a short strip and it tears along the perforations; pull a long strip
-  and the stamps themselves tear first. Engaged threads are the perforations: every extra thread adds a little strength
+  Perforations connect a row of stamps. If you pull a short strip, it tears along the perforations. If you pull a long
+  strip, the stamps tear first. The engaged threads are the perforations. Each additional thread adds a little strength,
   until the bolt, not the thread, is the weakest part.
 </Analogy>
 
 ## Inserts and procured internal threads
 
-- **Helical-coil inserts** (NASM 8846) are wire coils in a hole tapped oversize — about $d + 1.3P$. The part's threads then
-  shear at that larger diameter, so a given length is stronger. The coil also gives a hard, wear-resistant thread for
-  repeated assembly, and a stripped hole can be repaired.
-- **Key-locked inserts** (MIL-I-45914) are solid bushes staked in with keys. Heavy-duty versions resist pull-out better
-  than coils of the same length.
-- **Rate a procured nut or insert by its specification**, not by a stripping analysis, because they dilate under load. For
-  an insert, use the lower of its internal-thread strength and its pull-out from the part (NASA-STD-5020B §4.4.1).
-  Pull-out from non-metallic or sandwich parts needs test.
-- **A stainless insert in aluminium** needs a primer at the interface against galvanic corrosion.
+- **Helical-coil inserts** (NASM 8846) are wire coils in an oversize tapped hole, approximately $d + 1.3P$. The threads
+  of the part then shear at that larger diameter, so a given length is stronger. The coil also gives a hard thread that
+  resists wear for repeated assembly, and you can use it to repair a stripped hole.
+- **Key-locked inserts** (MIL-I-45914) are solid bushes held by keys. Heavy-duty versions resist pull-out better than
+  coils of the same length.
+- **Rate a procured nut or insert by its specification,** not by a stripping analysis, because they dilate under load.
+  For an insert, use the lower of its internal-thread strength and its pull-out strength from the part
+  (NASA-STD-5020B §4.4.1). Pull-out from non-metallic or sandwich parts needs a test.
+- **A stainless insert in aluminium** needs a primer at the interface to prevent galvanic corrosion.
 
 ## Plating, galling and lubrication
 
-- **Plating** grows the pitch diameter by four times its thickness (see above). On high-strength steels, electroplating
-  needs a hydrogen-embrittlement relief bake.
-- **Galling** — cold welding of the flanks — hits stainless steel and titanium threads, especially like-on-like. A
-  lubricant, a dissimilar mating material, or silver plating on one part prevents it.
-- **The lubricant sets the preload.** Thread friction $\mu_t$ is a third of the torque budget; see the torque split on
+- **Plating** increases the pitch diameter by four times its thickness (see above). On high-strength steels,
+  electroplating needs a bake to relieve hydrogen embrittlement.
+- **Galling** is the cold welding of the flanks. It occurs on stainless steel and titanium threads, especially when the
+  two parts are of the same material. A lubricant, a different mating material, or silver plating on one part prevents
+  it.
+- **The lubricant sets the preload.** The thread friction $\mu_t$ uses a third of the torque. See the torque split on
   [Bolted joints](../bolted-joints/).
 
 ## How threads feed the bolted-joint calculation
 
-- **Stress area** $A_s$, from the pitch and minor diameters — the bolt's tensile strength is $R_m A_s$.
+- **Stress area** $A_s$, from the pitch and minor diameters. The tensile strength of the bolt is $R_m A_s$.
 - **Thread friction** and the pitch term in the [torque–preload relation](../bolted-joints/#torque-and-preload).
-- **Engaged thread length**, part of the bolt's compliance.
-- **Prevailing torque**, if the internal thread carries a locking feature — see
+- **Engaged thread length,** which is part of the compliance of the bolt.
+- **Prevailing torque,** if the internal thread has a locking feature. See
   [Locking and retention](../locking-and-retention/).
 
 ## Calculator
 
 <ThreadCalc />
 
-## Worked example — the bracket screws
+## Worked example: the bracket screws
 
 The four M6 class 10.9 screws that hold the electronics unit on the aft skirt (from
-[Locking and retention](../locking-and-retention/)) go into a 6061-T6 bracket, with a shear ultimate of about 186 MPa
-(use your allowable).
+[Locking and retention](../locking-and-retention/)) go into a 6061-T6 bracket, with a shear ultimate of approximately
+186 MPa (use your allowable).
 
 1. **The bolt** breaks at $1040 \times 20.1 = 20.9$ kN.
-2. **Tapped 6 mm deep (1 d):** the bracket's threads shear on $\tfrac78 \pi \times 6 \times 6 = 99$ mm², at
-   $186 \times 99 = 18.4$ kN. **The threads strip first** — strength ratio 0.88.
-3. **Tapped 9 mm (1.5 d):** 27.6 kN, ratio 1.32: **the bolt breaks first**, at basic size. Equal strength comes at
-   6.8 mm — the 1.5 d rule leaves room for tolerance, dilation and thread bending.
-4. **A 6 mm helical-coil insert instead:** the bracket shears at ⌀7.3 mm — 22.4 kN, ratio 1.07. The bolt goes first
-   in a shorter hole, and the insert's own rating must also be checked.
-5. **In service:** the 9.5 kN preload loads the 9 mm tapped threads to about a third of their strength.
+2. **Tapped 6 mm deep (1 d):** the threads of the bracket shear on $\tfrac78 \pi \times 6 \times 6 = 99$ mm², at
+   $186 \times 99 = 18.4$ kN. **The threads strip first**: the strength ratio is 0.88.
+3. **Tapped 9 mm deep (1.5 d):** 27.6 kN, with a ratio of 1.32. **The bolt breaks first**, at basic size. Equal strength
+   occurs at 6.8 mm. The 1.5 d rule leaves space for tolerance, dilation and thread bending.
+4. **A 6 mm helical-coil insert:** the bracket shears at ⌀7.3 mm, which gives 22.4 kN and a ratio of 1.07. The bolt
+   breaks first in a shorter hole. You must also check the rating of the insert.
+5. **In service:** the 9.5 kN preload loads the 9 mm tapped threads to approximately a third of their strength.
 
-In a steel nut, equal strength comes at only 2.9 mm, which is why a standard nut (4.8 mm for M6) never strips before
-the bolt.
+In a steel nut, equal strength occurs at only 2.9 mm. This is why a standard nut (4.8 mm for M6) never strips before
+the bolt breaks.
 
 ## Where this stops
 
-- **Basic-size areas are an upper bound.** For a design value, use minimum-material diameters from the tolerance class.
-  VDI 2230's full method adds nut dilation and thread bending.
-- **Static strength only.** Thread fatigue is governed by the root of the first engaged thread — rolled threads, MJ/UNJ
+- **Basic-size areas are an upper limit.** For a design value, use the minimum-material diameters from the tolerance
+  class. The full method of VDI 2230 adds nut dilation and thread bending.
+- **Static strength only.** The root of the first engaged thread controls thread fatigue. See rolled threads, MJ/UNJ
   roots and the [fatigue](../../fundamentals/fatigue/) method.
-- **Temperature and creep.** Aluminium threads lose strength hot; long-term clamping of soft parts can relax.
+- **Temperature and creep.** Aluminium threads lose strength when hot. The long-term clamping of soft parts can relax.
 
 ## On the drawing
 
-- **Thread designation and class** — for example M6 × 1 – 6H, MJ6 × 1 – 4H5H, or ¼-28 UNJF-3B.
-- **Full-thread depth**, separate from drill depth, for tapped holes; the minimum engagement the analysis assumed.
-- **Inserts by specification and length** (NASM 8846, MIL-I-45914), with primer for stainless in aluminium.
-- **Plating with its thickness and the embrittlement relief**, and the thread lubricant.
-- **Fastener length**: at least two pitches past a nut or insert, and clear of incomplete run-out threads
+- **Thread designation and class,** for example M6 × 1 – 6H, MJ6 × 1 – 4H5H, or ¼-28 UNJF-3B.
+- **Full-thread depth,** separate from the drill depth, for tapped holes, and the minimum engagement that the analysis
+  assumed.
+- **Inserts by specification and length** (NASM 8846, MIL-I-45914), with a primer for stainless steel in aluminium.
+- **Plating with its thickness and the embrittlement relief,** and the thread lubricant.
+- **Fastener length:** at least two pitches past a nut or an insert, and clear of the incomplete run-out threads
   (NASA-STD-5020B §4.7.4–4.7.5).
 
 ## References and further reading
 
-- NASA-STD-5020B, *Requirements for Threaded Fastening Systems in Spaceflight Hardware* — §4.4.1 (procured
-  nuts and inserts), §4.7.2 (thread form compatibility), §4.7.4 (engagement), Appendix B (inserts).
-- FED-STD-H28, *Screw-Thread Standards for Federal Services* — thread shear areas.
+- NASA-STD-5020B, *Requirements for Threaded Fastening Systems in Spaceflight Hardware*: §4.4.1 (procured nuts and
+  inserts), §4.7.2 (thread form compatibility), §4.7.4 (engagement), Appendix B (inserts).
+- FED-STD-H28, *Screw-Thread Standards for Federal Services* (thread shear areas).
 - ISO 68-1 (basic profile), ISO 261 and ISO 262 (metric sizes), ISO 965-1 (tolerances), ISO 5855 (MJ threads).
 - ASME B1.1 (Unified inch threads); SAE AS8879 (UNJ threads).
 - NASM 8846 (helical-coil inserts); MIL-I-45914 (key-locked inserts).
-- VDI 2230 Part 1 (2015) — minimum engagement length with dilation and thread bending.
-- *Machinery's Handbook*, Industrial Press — screw thread systems and thread stripping.
+- VDI 2230 Part 1 (2015) (minimum engagement length with dilation and thread bending).
+- *Machinery's Handbook*, Industrial Press (screw thread systems and thread stripping).
 
 <Aside type="note">
-  Guidance on method from general practice and the cited public standard. Thread classes, engagement requirements and
-  insert ratings for your hardware come from your programme's requirements and part specifications.
+  This is guidance on method from general practice and the cited public standard. Thread classes, engagement
+  requirements and insert ratings for your hardware come from the requirements of your programme and the part
+  specifications.
 </Aside>

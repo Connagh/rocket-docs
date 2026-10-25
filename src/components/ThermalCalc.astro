@@ -24,7 +24,7 @@ const PRESETS = {
 ---
 
 <div class="calc thcalc" data-thcalc>
-  <div class="calc-head"><span>Transient thermal — lumped against conduction</span><span>implicit 1-D · two phases</span></div>
+  <div class="calc-head"><span>Transient thermal: lumped against conduction</span><span>implicit 1-D · two phases</span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <div class="th-presets">
@@ -34,9 +34,9 @@ const PRESETS = {
         <legend>Part</legend>
         <label>Shape
           <select name="geo">
-            <option value="slab">Slab — heated on one face, back face insulated</option>
-            <option value="cylinder">Solid cylinder — heated all round</option>
-            <option value="sphere">Solid sphere — heated all round</option>
+            <option value="slab">Slab: heated on one face, back face insulated</option>
+            <option value="cylinder">Solid cylinder: heated all round</option>
+            <option value="sphere">Solid sphere: heated all round</option>
           </select>
         </label>
         <div class="row2">
@@ -95,7 +95,7 @@ const PRESETS = {
   </div>
   <div class="calc-foot">
     Constant properties, perfect contact between layers, convection only (add radiation as an extra film coefficient),
-    no decomposition, char or erosion — for insulation that ablates, use the insulation page. Slab back faces are
+    no decomposition, char or erosion, for insulation that ablates, use the insulation page. Slab back faces are
     insulated, which is conservative for anything that can lose heat from behind.
   </div>
   <script type="application/json" data-data set:html={JSON.stringify({ MATS, PRESETS })}></script>
@@ -185,7 +185,7 @@ const PRESETS = {
       r('soak').innerHTML = d2 > 0 && res.tPeakBack > d1 * 1.0001 ? `+${f(rise, 1)} K <small>peak ${dur(res.tPeakBack - d1)} after</small>` : 'none';
 
       const out: [string, string][] = [];
-      if (hold) out.push(['', 'The heated surface is held at a fixed temperature, so there is no surface resistance and no lumped model — only conduction.']);
+      if (hold) out.push(['', 'The heated surface is held at a fixed temperature, so there is no surface resistance and no lumped model: only conduction.']);
       else if (lumpedOk) out.push(['', `Bi = ${bi < 0.01 ? bi.toExponential(1) : f(bi, 2)}: heat spreads through the part far faster than it arrives, so one temperature describes it. The lumped curve and the conduction curves lie on top of each other.`]);
       else out.push(['warn', `Bi = ${f(bi, 2)}: the inside cannot keep up with the surface. The lumped model ${res.tLimit !== null && tl !== null ? `says the limit is reached in ${dur(tl)}; conduction says ${dur(res.tLimit)}` : 'is not a fair description here'}. Use the conduction curves.`]);
       if (d2 > 0 && res.tPeakBack > d1 * 1.0001 && rise > 1)

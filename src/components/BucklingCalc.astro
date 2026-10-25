@@ -10,7 +10,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.f
 ---
 
 <div class="calc bkcalc" data-bkcalc>
-  <div class="calc-head"><span>Cylinder buckling — unpressurised</span><span>classical · NASA SP-8007 knockdowns</span></div>
+  <div class="calc-head"><span>Cylinder buckling: unpressurised</span><span>classical · NASA SP-8007 knockdowns</span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -35,7 +35,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.f
           <label>Wall (mm)<input name="t" type="number" min="0.01" step="any" value="1.377" /></label>
           <label>Unsupported length (mm)<input name="L" type="number" min="1" step="any" value="1000" /></label>
         </div>
-        <p class="hint">Unsupported length: between the features that hold the shell round — domes, rings, skirt attachments.</p>
+        <p class="hint">Unsupported length: between the features that hold the shell round (domes, rings, skirt attachments).</p>
       </fieldset>
       <fieldset>
         <legend>Loads, case not pressurised</legend>
@@ -45,7 +45,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.f
           <label>External pressure (MPa)<input name="q" type="number" min="0" step="any" value="0.101" /></label>
         </div>
         <label class="inline"><input type="checkbox" name="ends" checked /> Pressure also acts on the end closures (a sealed case)</label>
-        <p class="hint">0.101 MPa is one atmosphere — a case evacuated inside, or sealed and cooled.</p>
+        <p class="hint">0.101 MPa is one atmosphere: a case evacuated inside, or sealed and cooled.</p>
       </fieldset>
       <fieldset>
         <legend>Knockdown and factor</legend>
@@ -169,12 +169,12 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.f
       if (b.sum > 0) out.push([b.sum >= 1 ? 'bad' : '', `${b.sum >= 1 ? 'Buckles: ' : ''}axial ${f(b.axial.R, 3)} + bending ${f(b.bending.R, 3)} + pressure ${f(b.pressure.R, 3)} = ${f(b.sum, 3)}. ${top[0][0].toUpperCase() + top[0].slice(1)} uses ${f((top[1] / b.sum) * 100, 0)}% of it.`]);
       if (fs === null && b.sum > 0) out.push(['warn', awaitingMessage(['buckling factor of safety'], 'the margin', false) + ` Until then: the loads can rise ${f(b.reserve, 2)}× before buckling, so any factor below that passes.`]);
       if (i.endPressure && i.q > 0) out.push(['', `The external pressure on the end closures adds ${f((i.q * Math.PI * i.r * i.r) / 1000, 1)} kN of axial compression.`]);
-      if (b.elasticToYield > 1) out.push(['', 'This wall is thick enough to yield before it buckles in axial compression — buckling is not the problem here.']);
+      if (b.elasticToYield > 1) out.push(['', 'This wall is thick enough to yield before it buckles in axial compression: buckling is not the problem here.']);
       else if (b.elasticToYield > 0.6) out.push(['warn', `The axial buckling stress is ${f(b.elasticToYield * 100, 0)}% of yield. Check the material's proportional limit: above it the elastic formula over-predicts, and a plasticity correction is needed.`]);
       if (b.rt > 1500) out.push(['warn', 'r/t above 1500 is beyond most of the test data behind the SP-8007 curve.']);
       if (b.axial.governs === 'column') out.push(['warn', `The whole tube buckles as a column (pinned ends over ${f(i.L, 0)} mm) before the wall wrinkles. Shorten the unsupported length or treat it as a column problem.`]);
       if (b.pressure.Z < 100) out.push(['warn', 'Short between supports (Batdorf Z < 100): the moderate-length pressure formula over-predicts for short, plate-like panels.']);
-      if (b.pressure.R > 0.5) out.push(['', `External pressure is the weak spot. Buckling pressure grows as t^2.5 for this length — a 10% thicker wall gives ${f((1.1 ** 2.5 - 1) * 100, 0)}% more — and doubles if a ring halves the unsupported length.`]);
+      if (b.pressure.R > 0.5) out.push(['', `External pressure is the weak spot. Buckling pressure grows as t^2.5 for this length (a 10% thicker wall gives ${f((1.1 ** 2.5 - 1) * 100, 0)}% more) and doubles if a ring halves the unsupported length.`]);
       notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       kdChart(b.rt, b.gammaA, b.gammaB, i.gammaP);
       intChart(b.axial.R + b.bending.R, b.pressure.R, fs);

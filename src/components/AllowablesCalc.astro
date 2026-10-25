@@ -18,8 +18,8 @@ const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium al
           <label>Specification minimum, if any (MPa)<input name="smin" type="number" min="0" step="any" placeholder="none" /></label>
           <label>Load path
             <select name="path">
-              <option value="A">Single — failure is not contained (A-basis)</option>
-              <option value="B">Redundant — load redistributes (B-basis)</option>
+              <option value="A">Single: failure is not contained (A-basis)</option>
+              <option value="B">Redundant: load redistributes (B-basis)</option>
             </select>
           </label>
         </div>
@@ -36,7 +36,7 @@ const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium al
           <label>Environment<input name="kenv" type="number" min="0" max="1.2" step="0.01" value="1" /></label>
           <label>Joint / weld efficiency<input name="kj" type="number" min="0" max="1.2" step="0.01" value="1" /></label>
         </div>
-        <p class="hint">Knockdown factors are property ratios from your own or handbook data — not safety factors. The temperature curve is a family screening estimate; override it with data.</p>
+        <p class="hint">Knockdown factors are property ratios from your own or handbook data, not safety factors. The temperature curve is a family screening estimate; override it with data.</p>
       </fieldset>
       <fieldset>
         <legend>The check</legend>
@@ -65,7 +65,7 @@ const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium al
       </figure>
       <figure class="al-fig">
         <svg viewBox="0 0 480 220" data-k role="img" aria-label="Tolerance factor k against number of tests"></svg>
-        <figcaption>The factor k against the number of tests. Few tests mean a big k — uncertainty about the population is paid for in allowable.</figcaption>
+        <figcaption>The factor k against the number of tests. Few tests mean a big k: uncertainty about the population is paid for in allowable.</figcaption>
       </figure>
       <figure class="al-fig">
         <svg viewBox="0 0 480 220" data-chain role="img" aria-label="From basis value to design allowable"></svg>
@@ -140,8 +140,8 @@ const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium al
       ];
       const chosen = rows.find((x) => x.key === path)!;
       const allow = chosen.v * kProd;
-      r('allowLabel').textContent = `Design allowable — ${path}-basis`;
-      r('allow').innerHTML = Number.isFinite(allow) ? `${f(allow, 1)} <small>MPa</small>` : '<small>no temperature estimate — enter a factor</small>';
+      r('allowLabel').textContent = `Design allowable: ${path}-basis`;
+      r('allow').innerHTML = Number.isFinite(allow) ? `${f(allow, 1)} <small>MPa</small>` : '<small>no temperature estimate: enter a factor</small>';
       r('res').textContent = sapp > 0 && Number.isFinite(allow) ? `${f(allow / sapp, 3)}×` : '—';
       if (fs === null) { r('ms').innerHTML = '<small>needs your factor</small>'; cls('ms', ''); }
       else { const ms = allow / (fs * sapp) - 1; r('ms').textContent = `${ms >= 0 ? '+' : ''}${f(ms, 2)}`; cls('ms', ms < 0 ? 'bad' : ms < 0.05 ? 'warn' : 'ok'); }
@@ -155,9 +155,9 @@ const FAMS: [string, string][] = [['al', 'Aluminium alloy'], ['ti', 'Titanium al
       }).join('')}</tbody></table>`;
 
       const out: [string, string][] = [];
-      out.push(['', `The ${path}-basis value is ${f(chosen.v, 1)} MPa — ${f(((b.mean - chosen.v) / b.mean) * 100, 1)}% below the mean and ${f(b.min - chosen.v, 1)} MPa below the lowest test. It bounds ${path === 'A' ? '99%' : '90%'} of the population with 95% confidence, not this sample.`]);
+      out.push(['', `The ${path}-basis value is ${f(chosen.v, 1)} MPa: ${f(((b.mean - chosen.v) / b.mean) * 100, 1)}% below the mean and ${f(b.min - chosen.v, 1)} MPa below the lowest test. It bounds ${path === 'A' ? '99%' : '90%'} of the population with 95% confidence, not this sample.`]);
       const typA = (b.mean * kProd) / sapp, chA = allow / sapp;
-      if (sapp > 0 && Number.isFinite(chA)) out.push(['', `Against ${f(sapp, 0)} MPa: the typical value gives a reserve of ${f(typA, 2)}, the ${path}-basis value ${f(chA, 2)}. Any factor of safety between the two would pass on the typical value and fail on the real allowable — the error a typical value hides.`]);
+      if (sapp > 0 && Number.isFinite(chA)) out.push(['', `Against ${f(sapp, 0)} MPa: the typical value gives a reserve of ${f(typA, 2)}, the ${path}-basis value ${f(chA, 2)}. Any factor of safety between the two would pass on the typical value and fail on the real allowable: the error a typical value hides.`]);
       if (!Number.isFinite(tempCurve) && ktIn === '') out.push(['warn', 'The design temperature is beyond the family curve. Enter a temperature factor from data.']);
       if (b.n < 10) out.push(['warn', `With ${b.n} tests, k is large (A-basis ${f(b.kA, 2)}). Handbook A- and B-basis values come from many tests across several material lots.`]);
       if (b.cv > 0.08) out.push(['warn', `Scatter is high (CV ${f(b.cv * 100, 1)}%). Check for mixed lots, orientations or test problems before computing an allowable.`]);

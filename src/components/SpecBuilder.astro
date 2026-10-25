@@ -110,9 +110,9 @@ const groups = Object.entries(FAM).map(([k, n]) => ({ n, items: sheets.map((s, i
       const fi = +field('form').value, ti = +field('temper').value, ni = +field('finish').value;
       const f = s.forms[fi];
       const std = parseStandard(f.standard).alternatives[+field('std').value] ?? '';
-      q('formnote').textContent = `${f.standard}${f.note ? ' — ' + f.note : ''}`;
+      q('formnote').textContent = `${f.standard}${f.note ? ': ' + f.note : ''}`;
       q('tempnote').textContent = ti >= 0 ? s.tempers[ti].note : 'Leaving the condition off the drawing leaves it to the supplier.';
-      q('finnote').textContent = ni >= 0 ? `${s.finishes[ni].spec} — ${s.finishes[ni].note}` : 'No finish called up.';
+      q('finnote').textContent = ni >= 0 ? `${s.finishes[ni].spec}: ${s.finishes[ni].note}` : 'No finish called up.';
       q('out').textContent = buildCallout({
         sheet: s, formIndex: fi, standard: std, temperIndex: ti, finishIndex: ni,
         afterFinish: (field('after') as HTMLInputElement).checked, traceability: (field('trace') as HTMLInputElement).checked,

@@ -30,14 +30,14 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
       <fieldset data-panel="fast" hidden>
         <legend>Fastener pattern</legend>
         <div class="row2">
-          <label>Fastening<select name="f_type"><option value="fixed">Fixed — one part threaded</option><option value="floating">Floating — clearance holes in both</option></select></label>
+          <label>Fastening<select name="f_type"><option value="fixed">Fixed: one part threaded</option><option value="floating">Floating: clearance holes in both</option></select></label>
           <label>Fastener, largest ⌀ (mm)<input name="f_F" type="number" min="0" step="any" value="10" /></label>
           <label>Clearance hole at MMC ⌀ (mm)<input name="f_H" type="number" min="0" step="any" value="11.0" /></label>
           <label>Clearance holes' tolerance ⌀ (mm)<input name="f_t1" type="number" min="0" step="any" value="0.5" /></label>
           <label>Projection: clamped part (mm)<input name="f_P" type="number" min="0" step="any" value="24" /></label>
           <label>Thread engagement, least (mm)<input name="f_D" type="number" min="0.1" step="any" value="15" /></label>
         </div>
-        <p class="hint">Fixed: the projection is the thickness of the part with clearance holes — how far the fastener stands out of its threaded hole.</p>
+        <p class="hint">Fixed: the projection is the thickness of the part with clearance holes (how far the fastener stands out of its threaded hole).</p>
       </fieldset>
 
       <fieldset data-panel="gland" hidden>
@@ -53,7 +53,7 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
           <label>Ring section, smallest (mm)<input name="g_cmin" type="number" min="0" step="any" value="5.20" /></label>
           <label>Ring section, largest (mm)<input name="g_cmax" type="number" min="0" step="any" value="5.46" /></label>
         </div>
-        <p class="hint">Runout as full indicator movement, or a diametral position tolerance — either moves the groove off its pilot by half. Defaults: the O-ring page's nozzle-to-case seal.</p>
+        <p class="hint">Runout as full indicator movement, or a diametral position tolerance: either moves the groove off its pilot by half. Defaults: the O-ring page's nozzle-to-case seal.</p>
       </fieldset>
     </form>
     <div>
@@ -149,18 +149,18 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
       if (!(hi > lo && tol >= 0 && Number.isFinite(act))) { notes.push(['bad', 'Enter size limits (largest above smallest), a tolerance and the actual size.']); return null; }
       const r = featureOfSize(kind, lo, hi, tol, mod, act);
       const measured = Number.isFinite(dx) && Number.isFinite(dy) ? positionFromXY(dx, dy) : NaN;
-      rows.push({ dt: 'Allowed position tolerance', dd: `⌀${f(r.allowed)} <small>${r.inLimits ? `stated ⌀${f(tol)} + bonus ${f(r.bonus)} at ⌀${f(act)}` : `the size ⌀${f(act)} is outside its limits — the feature is rejected on size`}</small>`, primary: true, cls: r.inLimits ? '' : 'bad' });
+      rows.push({ dt: 'Allowed position tolerance', dd: `⌀${f(r.allowed)} <small>${r.inLimits ? `stated ⌀${f(tol)} + bonus ${f(r.bonus)} at ⌀${f(act)}` : `the size ⌀${f(act)} is outside its limits: the feature is rejected on size`}</small>`, primary: true, cls: r.inLimits ? '' : 'bad' });
       if (Number.isFinite(measured)) {
         const ok = r.inLimits && measured <= r.allowed + 1e-12;
-        rows.push({ dt: 'Measured position', dd: `⌀${f(measured)} <small>2√(Δx² + Δy²) · ${ok ? 'conforms' : 'does not conform'}${ok && measured > tol ? ' — only because of the bonus' : ''}</small>`, cls: ok ? 'ok' : 'bad' });
+        rows.push({ dt: 'Measured position', dd: `⌀${f(measured)} <small>2√(Δx² + Δy²) · ${ok ? 'conforms' : 'does not conform'}${ok && measured > tol ? ': only because of the bonus' : ''}</small>`, cls: ok ? 'ok' : 'bad' });
       }
       rows.push(
-        { dt: 'Virtual condition', dd: `⌀${f(r.virtual)} <small>${mod === 'RFS' ? 'the boundary at MMC; without a modifier no fixed gauge can check it' : `the worst-case boundary — a functional gauge ${kind === 'hole' ? 'pin' : 'ring'} of this size`}</small>` },
-        { dt: 'Resultant condition', dd: `⌀${f(r.resultant)} <small>the opposite extreme — what wall thickness and edge distance must allow for</small>` },
+        { dt: 'Virtual condition', dd: `⌀${f(r.virtual)} <small>${mod === 'RFS' ? 'the boundary at MMC; without a modifier no fixed gauge can check it' : `the worst-case boundary: a functional gauge ${kind === 'hole' ? 'pin' : 'ring'} of this size`}</small>` },
+        { dt: 'Resultant condition', dd: `⌀${f(r.resultant)} <small>the opposite extreme: what wall thickness and edge distance must allow for</small>` },
       );
-      if (mod === 'MMC') notes.push(['', `At MMC the feature fits with the least clearance, so it gets the least tolerance. As it departs towards LMC the clearance grows, and so may the position error — up to ⌀${f(r.maxAllowed)} at LMC, with the mating part still assembling.`]);
+      if (mod === 'MMC') notes.push(['', `At MMC the feature fits with the least clearance, so it gets the least tolerance. As it departs towards LMC the clearance grows, and so may the position error: up to ⌀${f(r.maxAllowed)} at LMC, with the mating part still assembling.`]);
       if (mod === 'RFS') notes.push(['', 'Regardless of feature size: the tolerance never grows. Use it where the feature locates something precisely, not just clears it.']);
-      if (mod === 'LMC') notes.push(['', 'LMC protects a minimum wall or edge distance — the bonus grows as the feature moves towards MMC, where there is more material.']);
+      if (mod === 'LMC') notes.push(['', 'LMC protects a minimum wall or edge distance: the bonus grows as the feature moves towards MMC, where there is more material.']);
       return () => {
         const span = hi - lo, x0 = lo - 0.25 * span, x1 = hi + 0.25 * span;
         const ys = [r.maxAllowed, tol, Number.isFinite(measured) ? measured : 0];
@@ -192,8 +192,8 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
         const k = 1 + (2 * P) / D, t2no = t2 / k, Hno = holeWithoutProjection(F, t1v, t2, P, D);
         rows.push(
           { dt: 'Shared between the parts', dd: `⌀${f(T)} <small>T₁ + T₂ = H − F</small>` },
-          { dt: 'Threaded holes, projected zone', dd: `⌀${f(t2)} <small>with a projected tolerance zone ${f(P, 0)} mm high — the zone sits where the fastener actually is</small>`, primary: true, cls: t2 > 0 ? 'ok' : 'bad' },
-          { dt: 'Without a projected zone', dd: `⌀${f(t2no)} <small>for the same hole — or keep ⌀${f(t2)} and open the clearance hole to ⌀${f(Hno)}</small>`, cls: 'warn' },
+          { dt: 'Threaded holes, projected zone', dd: `⌀${f(t2)} <small>with a projected tolerance zone ${f(P, 0)} mm high: the zone sits where the fastener actually is</small>`, primary: true, cls: t2 > 0 ? 'ok' : 'bad' },
+          { dt: 'Without a projected zone', dd: `⌀${f(t2no)} <small>for the same hole, or keep ⌀${f(t2)} and open the clearance hole to ⌀${f(Hno)}</small>`, cls: 'warn' },
         );
         if (t2 <= 0) notes.push(['bad', 'The clearance holes take all the tolerance: nothing is left for the threaded holes. Tighten the clearance holes or open them up.']);
         notes.push(['', `A threaded hole that leans carries the fastener with it, and the error grows over the ${f(P, 0)} mm the fastener stands out. Specify the projected tolerance zone on threaded holes, press-fit pins and studs.`]);
@@ -232,8 +232,8 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
         { dt: 'Largest offset', dd: `${f(r.eMax)} mm <small>half the pilot clearance plus half the runout</small>` },
         { dt: 'What the runout costs', dd: `${f(100 * (r0.squeezeMin - r.squeezeMin), 2)} points <small>of minimum squeeze, from ${f(g.runout)} mm of runout</small>` },
       );
-      notes.push(['', 'Geometric squeeze only: stretch onto the groove, temperature, swell and compression set come off this — see <a href="../../seals/o-ring-design/">O-ring design</a>. The runout adds to the eccentricity exactly as a looser pilot would.']);
-      notes.push(['', 'A groove with no runout or position on the drawing falls to the title block\'s general tolerance — often far looser than the seal can take.']);
+      notes.push(['', 'Geometric squeeze only: stretch onto the groove, temperature, swell and compression set come off this. See <a href="../../seals/o-ring-design/">O-ring design</a>. The runout adds to the eccentricity exactly as a looser pilot would.']);
+      notes.push(['', 'A groove with no runout or position on the drawing falls to the title block\'s general tolerance: often far looser than the seal can take.']);
       return () => {
         const th = Array.from({ length: 73 }, (_, i) => i * 5);
         const low = (run: number) => { const e = (g.boreMax - g.plugMin) / 2 + run / 2, m = (g.boreMax - g.rootMin) / 2; return th.map((t) => (g.csMin - (m + e * Math.cos((t * Math.PI) / 180))) / g.csMin); };
@@ -252,9 +252,9 @@ const TABS = [{ key: 'bonus', name: 'Bonus tolerance' }, { key: 'fast', name: 'F
 
     const RUN: Record<string, typeof runBonus> = { bonus: runBonus, fast: runFast, gland: runGland };
     const CAPS: Record<string, string> = {
-      bonus: 'The tolerance allowed at each actual size — the dynamic tolerance diagram. Anything in the shaded area conforms; the dot is the measured feature.',
-      fast: 'How the clearance between hole and fastener is spent: the fastener, the clearance holes\' tolerance, and the threaded holes\' — magnified when there is no projected zone.',
-      gland: 'Squeeze round the circumference for the two worst combinations of limits — the upper curve with the largest ring in the shallowest gland, the lower with the smallest ring in the deepest. Dashed: the same with the groove coaxial to its pilot.',
+      bonus: 'The tolerance allowed at each actual size: the dynamic tolerance diagram. Anything in the shaded area conforms; the dot is the measured feature.',
+      fast: 'How the clearance between hole and fastener is spent: the fastener, the clearance holes\' tolerance, and the threaded holes\': magnified when there is no projected zone.',
+      gland: 'Squeeze round the circumference for the two worst combinations of limits: the upper curve with the largest ring in the shallowest gland, the lower with the smallest ring in the deepest. Dashed: the same with the groove coaxial to its pilot.',
     };
 
     function run() {

@@ -1,6 +1,6 @@
 ---
 title: Bolted joints
-description: How a preloaded bolted joint carries load — torque and preload with its scatter, bolt and member stiffness, the joint diagram and load factor, separation, yield and ultimate margins, tightening stress, temperature, fatigue, and pressure closures on a motor.
+description: How a preloaded bolted joint carries load. Torque and preload with its scatter, bolt and member stiffness, the joint diagram and load factor, separation, yield and ultimate margins, tightening stress, temperature, fatigue, and pressure closures on a motor.
 sidebar:
   order: 0
 ---
@@ -11,61 +11,61 @@ import TorqueSplit from '../../../components/TorqueSplit.astro';
 import BoltCalc from '../../../components/BoltCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A bolted joint works by clamping: the preload keeps it tight, and an external load mostly unclamps the parts before it adds to the bolt — until they separate.</div>
+  <div><b>In one line</b>A bolted joint works by clamping. The preload keeps it tight. An external load mostly decreases the clamp before it adds to the bolt load, until the parts separate.</div>
   <div><b>Before this</b><a href="../../verify/margin-policy/">Margin policy</a> · <a href="../../fundamentals/fatigue/">Fatigue</a></div>
   <div><b>Used by</b><a href="../../seals/o-ring-design/">O-ring design</a> · <a href="../../motor/hardware/">Rocket motor hardware</a></div>
 </div>
 
 ## Why this matters
 
-On a motor, bolts hold the closures and the nozzle on against chamber pressure, attach the igniter, skirts and mounted
-units, and keep the seal glands closed. They fail in a few distinct ways:
+On a motor, bolts hold the closures and the nozzle against the chamber pressure. They attach the igniter, the skirts
+and the installed units, and they keep the seal glands closed. They fail in a small number of ways:
 
-- **Separation** — the clamped parts lift apart. On a pressure joint the seal gland opens, which is a leak path.
-- **Yielding** — while tightening, from tension and thread torsion together, or later under load.
-- **Fatigue** — at the first engaged thread, where the stress concentration is worst.
-- **Loosening** — vibration that turns the nut back; see [Random vibration](../../verify/random-vibration/).
-- **Thread stripping** — a separate check, on the [Threads](../threads/) page.
+- **Separation.** The clamped parts lift apart. On a pressure joint, the seal gland opens, which is a leak path.
+- **Yield.** This occurs during tightening, from tension and thread torsion together, or later under load.
+- **Fatigue.** This occurs at the first engaged thread, where the stress concentration is worst.
+- **Loosening.** Vibration turns the nut back. See [Random vibration](../../verify/random-vibration/).
+- **Thread stripping.** This is a separate check, on the [Threads](../threads/) page.
 
-All of them depend on one number that is hard to control: the **preload**.
+All of these depend on one number that is difficult to control: the **preload**.
 
 ## Torque and preload
 
-Tightening torque goes three ways: stretching the bolt up the thread helix, overcoming thread friction, and overcoming
-friction under the head or nut:
+The tightening torque has three parts. One part stretches the bolt up the thread helix, one overcomes the thread
+friction, and one overcomes the friction under the head or nut:
 
 $$
 T = F_i\left[\frac{P}{2\pi} + \frac{\mu_t\,d_2}{2\cos 30^\circ} + \mu_b\,\frac{D_{km}}{2}\right] \;\approx\; K\,F_i\,d
 $$
 
-with thread pitch $P$, pitch diameter $d_2$, thread and head friction $\mu_t$, $\mu_b$, and mean bearing diameter
-$D_{km}$. The short form uses a single **nut factor** $K$.
+Here $P$ is the thread pitch, $d_2$ the pitch diameter, $\mu_t$ and $\mu_b$ the thread and head friction, and $D_{km}$
+the mean bearing diameter. The short form uses one **nut factor** $K$.
 
 <TorqueSplit />
 
-Friction varies from bolt to bolt, so a given torque gives a band of preloads, not one value. Torque control is the
-least accurate method; turn-of-nut, measuring bolt stretch (for example ultrasonically) and direct tension indicators
-are progressively tighter. The scatter for your method, and how much preload you may count on, come from your governing
+Friction changes from bolt to bolt. Thus one torque gives a band of preloads, not one value. Torque control is the least
+accurate method. Turn-of-nut, measurement of bolt stretch (for example with ultrasound) and direct tension indicators
+are each more accurate. The scatter for your method, and how much preload you can use, come from your applicable
 standard.
 
 ## Stiffness and the joint diagram
 
-The bolt and the clamped parts are two springs in series under the same preload: the bolt stretches by $F_i/k_b$, the
-parts compress by $F_i/k_m$. The bolt's stiffness comes from its sections in series:
+The bolt and the clamped parts are two springs in series with the same preload. The bolt stretches by $F_i/k_b$, and
+the parts compress by $F_i/k_m$. The stiffness of the bolt comes from its sections in series:
 
 $$
 \frac{1}{k_b} = \frac{1}{E_b}\left(\frac{0.5d}{A_d} + \frac{l_s}{A_d} + \frac{l_t}{A_{d3}} + \frac{0.5d}{A_{d3}} + \frac{0.4d}{A_d}\right)
 $$
 
-— head, plain shank, threaded length in the grip, engaged thread and nut. The clamped parts carry the load in two 30°
-cones from the bearing faces:
+The terms are the head, the plain shank, the threaded length in the grip, the engaged thread and the nut. The clamped
+parts carry the load in two 30° cones from the bearing faces:
 
 $$
 k_m = \frac{\pi E_m d \tan 30^\circ}{2 \ln\!\left[\dfrac{(l\tan 30^\circ + d_w - d)(d_w + d)}{(l\tan 30^\circ + d_w + d)(d_w - d)}\right]}
 $$
 
-An external load $P$ that pulls the parts apart stretches the bolt a little more and unloads the parts a little. Only
-the **load factor** share reaches the bolt:
+An external load $P$ that pulls the parts apart stretches the bolt a little more, and decreases the load on the parts a
+little. Only the **load factor** share gets to the bolt:
 
 $$
 \Phi = \frac{k_b}{k_b + k_m}, \qquad P_{sep} = \frac{F_i}{1-\Phi}
@@ -75,30 +75,31 @@ $$
 F_b = F_i + \Phi P, \qquad F_c = F_i - (1-\Phi)P
 $$
 
-Clamped parts are usually much stiffer than the bolt, so $\Phi$ is small — often 0.1 to 0.3. Once $P$ reaches
-$P_{sep}$ the clamp force is gone, the joint opens, and the bolt carries all of the load.
+The clamped parts are usually much stiffer than the bolt, so $\Phi$ is small, often 0.1 to 0.3. When $P$ gets to
+$P_{sep}$, the clamp force is zero, the joint opens, and the bolt carries all the load.
 
 <Analogy title="A tug of war on a rope already pulled tight">
-  Two teams are holding a rope taut against a post between them. A child adds a small pull to one team: the rope's
-  tension barely changes — the extra pull mostly just eases the force on the post. Only when the post's force reaches
-  zero does every extra pull go straight into the rope. The bolt is the rope, the clamped parts are the post.
+  Two teams hold a rope tight against a post between them. A child adds a small pull to one team. The tension in the
+  rope almost does not change. The additional pull mostly decreases the force on the post. Only when the force on the
+  post is zero does each additional pull go directly into the rope. The bolt is the rope, and the clamped parts are the
+  post.
 </Analogy>
 
 ## Margins
 
-Each check uses the preload that is worst for it, and the factors and preload scatter from your programme
+Each check uses the preload that is worst for it, with the factors and the preload scatter of your programme
 ([Margin policy](../../verify/margin-policy/)):
 
-- **Separation** — minimum preload (low scatter, losses, the worst temperature):
+- **Separation:** use the minimum preload (low scatter, losses, the worst temperature):
   $MS = F_{i,min} / \big(k_{sep}(1-\Phi)P\big) - 1$.
-- **Yield and ultimate** — maximum preload, with the factored load: the bolt load is $F_{i,max} + \Phi\,kP$ while
-  the joint stays closed, and $kP$ once it has opened.
-- **Tightening** — at maximum preload the bolt carries tension and thread torsion together:
+- **Yield and ultimate:** use the maximum preload with the factored load. The bolt load is $F_{i,max} + \Phi\,kP$
+  while the joint stays closed, and $kP$ after it has opened.
+- **Tightening:** at the maximum preload, the bolt has tension and thread torsion together:
   $\sigma_{vm} = \sqrt{\sigma^2 + 3\tau^2}$, with $\tau$ from the thread torque on the stress-area diameter. VDI 2230
-  commonly tightens to about 90% of yield in this combined stress.
+  usually tightens to approximately 90% of yield in this combined stress.
 
-Standards such as NASA-STD-5020 set further rules — for example how preload is treated in the ultimate check, and which
-loads count for separation. Follow your governing standard where it differs.
+Standards such as NASA-STD-5020 give more rules, for example how to use preload in the ultimate check, and which loads
+to use for separation. Follow your applicable standard where it is different.
 
 ## Temperature
 
@@ -108,17 +109,18 @@ $$
 \Delta F_i = (\alpha_m - \alpha_b)\,\Delta T\, l\;\frac{k_b k_m}{k_b + k_m}
 $$
 
-Steel bolts in an aluminium closure lose preload when cold and gain it when hot. Titanium or composite parts reverse the
-sign. A motor is assembled at room temperature and stored, transported and fired anywhere across its qualified range,
-so check both ends. Plates of different materials also slide against each other across the bolt pattern — see
-[Differential expansion](../differential-expansion/).
+Steel bolts in an aluminium closure lose preload when cold and get more preload when hot. Titanium or composite parts
+have the opposite sign. A motor is assembled at room temperature, and it is stored, transported and fired anywhere in
+its qualified range. Thus check the two ends of the range. Plates of different materials also slide against each other
+across the bolt pattern. See [Differential expansion](../differential-expansion/).
 
 ## Fatigue
 
-Because only $\Phi P$ reaches the bolt, preload protects it: a load cycle from zero to $P$ swings the bolt stress by
-only $\pm\Phi P / 2A_s$. Bolts still have low fatigue strength — the first engaged thread is a sharp notch — so rolled
-threads (rolled after heat treatment where possible) and a high, reliable preload matter. Assess the swing on the
-[Fatigue](../../fundamentals/fatigue/) page. A joint that separates under load loses this protection completely.
+Only $\Phi P$ gets to the bolt. Thus preload protects it. A load cycle from zero to $P$ changes the bolt stress by only
+$\pm\Phi P / 2A_s$. But bolts have a low fatigue strength, because the first engaged thread is a sharp notch. Thus
+rolled threads (rolled after heat treatment where possible) and a high, reliable preload are important. Assess the
+stress change on the [Fatigue](../../fundamentals/fatigue/) page. A joint that separates under load loses this
+protection fully.
 
 ## Pressure closures on a motor
 
@@ -128,60 +130,64 @@ $$
 P = \frac{p\,\pi D_s^2/4}{n}
 $$
 
-- **The seal gland must stay closed** — at proof pressure as well as MEOP, at the cold corner, with the minimum
-  preload. If the parts lift, the O-ring has to follow the gap; see [O-ring design](../../seals/o-ring-design/).
-- **Flanges rotate and pry.** A flange that bends adds a prying force that this page's concentric model leaves out:
-  keep bolts close to the shell wall and the flange stiff, and analyse prying where the flange is thin.
-- **Many smaller bolts** spread the clamp more evenly than a few large ones, and keep the gland closed between bolts.
+- **The seal gland must stay closed:** at proof pressure as well as at MEOP, at the cold condition, and with the
+  minimum preload. If the parts lift, the O-ring must follow the gap. See [O-ring design](../../seals/o-ring-design/).
+- **Flanges turn and pry.** A flange that bends adds a prying force, which the concentric model on this page does not
+  include. Keep the bolts near the shell wall and the flange stiff. Analyse prying where the flange is thin.
+- **Many smaller bolts** spread the clamp more evenly than a few large bolts, and they keep the gland closed between
+  the bolts.
 
 ## Calculator
 
 <BoltCalc />
 
-## Worked example — the aft closure
+## Worked example: the aft closure
 
-The 300 mm case closes with a bolted aft closure. MEOP is 10.0 MPa ([MEOP build-up](../../motor/propellant/)), the seal
-diameter is 260 mm, and there are 30 M10 class 12.9 bolts through a 24 mm steel grip (16 mm of plain shank), tightened to
-60 N·m with a lubricant giving μ = 0.12. The preload scatter of ±25% and the factors — separation 1.2, yield 1.1,
-ultimate 1.25, fitting 1.15 — are **for this example only**; press **Load worked example**.
+The 300 mm case has a bolted aft closure. MEOP is 10.0 MPa ([MEOP build-up](../../motor/propellant/)), and the seal
+diameter is 260 mm. There are 30 M10 class 12.9 bolts through a 24 mm steel grip (16 mm of plain shank), tightened to
+60 N·m, with a lubricant that gives μ = 0.12. The preload scatter of ±25% and the factors (separation 1.2, yield 1.1,
+ultimate 1.25, fitting 1.15) are **for this example only**. Push **Load worked example**.
 
-1. **Load:** $10.0 \times \pi \times 130^2 = 531$ kN on the closure, so $P = 17.7$ kN per bolt.
-2. **Preload:** 36.5 kN ($K = 0.164$). Only 15% of the torque stretches the bolt. With ±25%, between 27.4 and 45.6 kN.
-3. **Stiffness:** $k_b = 362$ kN/mm and $k_m = 2097$ kN/mm, so $\Phi = 0.147$: each bolt feels 2.6 kN of its 17.7 kN.
+1. **Load:** $10.0 \times \pi \times 130^2 = 531$ kN on the closure, so $P = 17.7$ kN for each bolt.
+2. **Preload:** 36.5 kN ($K = 0.164$). Only 15% of the torque stretches the bolt. With ±25%, the preload is between
+   27.4 and 45.6 kN.
+3. **Stiffness:** $k_b = 362$ kN/mm and $k_m = 2097$ kN/mm, so $\Phi = 0.147$. Each bolt gets 2.6 kN of its 17.7 kN.
 4. **Separation:** the joint opens at $27.4/(1 - 0.147) = 32.1$ kN. Against $1.2 \times 17.7 = 21.2$ kN,
    **MS = +0.51**.
-5. **Yield:** factored load $1.1 \times 1.15 \times 17.7 = 22.4$ kN; bolt load $45.6 + 0.147 \times 22.4 = 48.9$ kN
-   against $1100 \times 58.0 = 63.8$ kN, **MS = +0.30**.
-6. **Ultimate:** $1.25 \times 1.15 \times 17.7 = 25.4$ kN; bolt load 49.4 kN against 70.7 kN, **MS = +0.43**. The
-   joint is still closed, so preload carries most of it.
-7. **Tightening:** 70% of yield in combined stress at nominal preload, 87% at the top of the scatter.
-8. **Fatigue:** each pressurisation swings the bolt by only ±22 MPa.
+5. **Yield:** the factored load is $1.1 \times 1.15 \times 17.7 = 22.4$ kN. The bolt load is
+   $45.6 + 0.147 \times 22.4 = 48.9$ kN, against $1100 \times 58.0 = 63.8$ kN: **MS = +0.30**.
+6. **Ultimate:** $1.25 \times 1.15 \times 17.7 = 25.4$ kN. The bolt load is 49.4 kN, against 70.7 kN: **MS = +0.43**.
+   The joint is still closed, so the preload carries most of the load.
+7. **Tightening:** 70% of yield in combined stress at the nominal preload, and 87% at the top of the scatter.
+8. **Fatigue:** each pressurisation changes the bolt stress by only ±22 MPa.
 
-**The same closure in aluminium** (7075, same bolts, same torque) shows the trade-offs. The softer flange raises
-$\Phi$ to 0.33, and a cold soak 60 °C below assembly temperature costs 4.1 kN of preload. The separation margin
-actually rises, to +0.64, because less of the load comes out of the clamp — but the bolt now sees a third of every load:
-the yield margin falls to +0.14 and the fatigue swing more than doubles, to ±50 MPa.
+**The same closure in aluminium** (7075, the same bolts and the same torque) shows the trade-offs. The softer flange
+increases $\Phi$ to 0.33. A cold soak 60 °C below the assembly temperature causes a loss of 4.1 kN of preload. The
+separation margin increases to +0.64, because less of the load comes out of the clamp. But the bolt now gets a third of
+each load. The yield margin decreases to +0.14, and the fatigue stress change more than doubles, to ±50 MPa.
 
-And **dry threads** at the same 60 N·m give only 25.6 kN — 30% less preload, with every margin that depends on it.
+**Dry threads** at the same 60 N·m give only 25.6 kN. This is 30% less preload, which decreases all the margins that
+depend on it.
 
 ## Where this stops
 
-- **One bolt, concentric axial load, one clamped material.** Eccentric loads, prying and flange rotation need VDI 2230's
-  eccentric method or a finite-element model. Loads applied within the clamped parts, rather than under the head and
-  nut, lower $\Phi$ (VDI's load-introduction factor).
+- **One bolt, concentric axial load, one clamped material.** Eccentric loads, prying and flange rotation need the
+  eccentric method of VDI 2230 or a finite-element model. Loads applied within the clamped parts, and not under the
+  head and nut, decrease $\Phi$ (the load-introduction factor of VDI 2230).
 - **No gaskets.** A soft gasket in the grip makes $k_m$ small and $\Phi$ large.
-- **Shear joints** are a different check: friction grip from the clamp force, or bearing and bolt shear once they slip.
-- [Thread stripping](../threads/) and [locking](../locking-and-retention/) are their own topics. Embedding and relaxation are entered here as a
-  percentage loss.
+- **Shear joints** need a different check: friction grip from the clamp force, or bearing and bolt shear after they
+  slip.
+- [Thread stripping](../threads/) and [locking](../locking-and-retention/) have their own pages. Here, embedding and
+  relaxation are entered as a percentage loss.
 
 ## On the drawing
 
-- **Torque value and tolerance, and the lubricant** — the lubricant matters as much as the torque.
-- **Tightening sequence and passes** — a cross pattern in stages, so the flange pulls down evenly.
-- **Fastener specification** — property class or material specification, thread class, plating and its hydrogen
-  embrittlement relief, washer type and hardness.
-- **Locking feature and reuse rules** — whether a fastener or locking element may be reused, and any re-torque after
-  a soak or test.
+- **Torque value and tolerance, and the lubricant.** The lubricant is as important as the torque.
+- **Tightening sequence and passes:** a cross pattern in stages, so that the flange pulls down evenly.
+- **Fastener specification:** property class or material specification, thread class, plating and its hydrogen
+  embrittlement relief, and washer type and hardness.
+- **Locking feature and reuse rules:** if a fastener or locking element can be used again, and any re-torque after a
+  soak or a test.
 
 ## References and further reading
 
@@ -190,11 +196,11 @@ And **dry threads** at the same 60 N·m give only 25.6 kN — 30% less preload, 
 - R. T. Barrett, *Fastener Design Manual*, NASA RP-1228 (1990).
 - ECSS-E-HB-32-23A, *Threaded fasteners handbook*.
 - J. H. Bickford, *An Introduction to the Design and Behavior of Bolted Joints*, CRC Press.
-- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill — chapter on screws and
-  fasteners.
-- ISO 898-1 (carbon and alloy steel bolts) and ISO 3506-1 (stainless steel bolts) — property classes.
+- R. G. Budynas and J. K. Nisbett, *Shigley's Mechanical Engineering Design*, McGraw-Hill (chapter on screws and
+  fasteners).
+- ISO 898-1 (carbon and alloy steel bolts) and ISO 3506-1 (stainless steel bolts) (property classes).
 
 <Aside type="note">
-  Guidance on method from general practice. Factors, preload scatter, tightening methods and fastener requirements
-  come from your programme's requirements and your organisation's procedures.
+  This is guidance on method from general practice. Factors, preload scatter, tightening methods and fastener
+  requirements come from the requirements of your programme and the procedures of your organisation.
 </Aside>

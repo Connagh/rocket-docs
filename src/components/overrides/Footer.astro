@@ -37,7 +37,7 @@ const phaseOfItem = (k: string) => PHASES.find((p) => p.k === k)!;
   )}
   {ph && phaseRest.length > 0 && (
     <section class="rf-phase" style={`--pc: var(--ph-${ph.k})`}>
-      <p class="rf-k">ALSO IN {ph.n} — {ph.sub.toUpperCase()}</p>
+      <p class="rf-k">ALSO IN {ph.n}: {ph.sub.toUpperCase()}</p>
       <div class="rf-chips">
         {phaseRest.map((z) => (
           <a href={hrefOf(z, base)} class:list={['rf-chip', z.slug !== null ? 'v2' : 'v1']}
@@ -49,7 +49,7 @@ const phaseOfItem = (k: string) => PHASES.find((p) => p.k === k)!;
     </section>
   )}
   <p class="rf-disclaimer">
-    Reference aid for learning and early design. Values are typical published data and screening methods — verify against the
-    current issue of the governing standard, your organisation's approved data and programme requirements before release.
+    Reference aid for learning and early design. Values are typical published data and screening methods. Before release, verify against the
+    current issue of the applicable standard, the approved data of your organisation and the requirements of your programme.
   </p>
 </footer>

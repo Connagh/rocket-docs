@@ -1,6 +1,6 @@
 ---
 title: Viscoelasticity
-description: Why seals, propellant, adhesives and composite matrices answer "solid or liquid?" with "how long are you watching?" — creep and relaxation, the Prony series, time–temperature superposition and DMA, and what they mean for seals, propellant and composites.
+description: Why seals, propellant, adhesives and composite matrices answer the question "solid or liquid?" with "how long do you look?". Creep and relaxation, the Prony series, time–temperature superposition and DMA, and what these mean for seals, propellant and composites.
 sidebar:
   order: 0
 ---
@@ -11,36 +11,37 @@ import ViscoModels from '../../../components/ViscoModels.astro';
 import ViscoCalc from '../../../components/ViscoCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>In an elastic material, stress depends on strain. In a viscoelastic one it depends on the whole history of strain — how fast you got there and how long you have waited.</div>
+  <div><b>In one line</b>In an elastic material, stress depends on strain. In a viscoelastic material, it depends on the full history of strain: how fast the strain was applied and how long you waited.</div>
   <div><b>Used by</b><a href="../../seals/o-ring-design/">O-ring design</a> · <a href="../../motor/propellant/">Propellant properties</a> · <a href="../../motor/propellant-grain/">Propellant grain</a></div>
-  <div><b>Related</b><a href="../../verify/storage-ageing/">Storage & ageing</a> — slow chemistry, not slow mechanics</div>
+  <div><b>Related</b><a href="../../verify/storage-ageing/">Storage & ageing</a> (slow chemistry, not slow mechanics)</div>
 </div>
 
 ## Why this matters
 
-Every rubber seal, propellant grain, adhesive bondline, insulation layer and composite matrix in a motor is
-viscoelastic. Treat them as springs and you will:
+All the rubber seals, propellant grains, adhesive bondlines, insulation layers and composite matrices in a motor are
+viscoelastic. If you treat them as springs, you will:
 
-- **overestimate the sealing force** a seal keeps through storage, and how fast it can follow a joint when cold;
-- **get grain stresses wrong by an order of magnitude**, depending on whether the load is a slow cool-down or a fast
-  ignition;
-- **miss the slow loss of bolt preload** through a composite flange, or the creep of a bonded joint under sustained
-  load.
+- **calculate a sealing force that is too high** after storage, and a seal that follows a joint too fast when cold;
+- **get grain stresses incorrect by a factor of ten,** because the load can be a slow cool-down or a fast ignition;
+- **not see the slow loss of bolt preload** through a composite flange, or the creep of a bonded joint under a
+  sustained load.
 
-Every complication on this page follows from one change: the material remembers.
+All the complications on this page come from one property: the material remembers.
 
 ## Two experiments, mirror images
 
-- **Relaxation** — hold a strain and watch the stress fall. The relaxation modulus is $E(t) = \sigma(t)/\varepsilon_0$.
-- **Creep** — hold a stress and watch the strain grow. The creep compliance is $J(t) = \varepsilon(t)/\sigma_0$.
+- **Relaxation.** Keep a strain constant and monitor the stress decrease. The relaxation modulus is
+  $E(t) = \sigma(t)/\varepsilon_0$.
+- **Creep.** Keep a stress constant and monitor the strain increase. The creep compliance is
+  $J(t) = \varepsilon(t)/\sigma_0$.
 
-They describe the same material, but they are **not reciprocals**: $J(t)\,E(t) \le 1$, and creep happens later in
-time than relaxation. They are linked exactly by $\int_0^t E(t-s)\,J(s)\,ds = t$, which is how the calculator turns one
-into the other.
+They describe the same material, but they are **not reciprocals**: $J(t)\,E(t) \le 1$, and creep occurs later in time
+than relaxation. The exact relation is $\int_0^t E(t-s)\,J(s)\,ds = t$. The calculator uses it to change one into the
+other.
 
 <Analogy title="Memory foam">
-  Press a memory-foam pillow and it gives slowly; take your hand away and the dent fills back in slowly. Put the
-  pillow somewhere cold and it turns hard and sluggish — the dent takes far longer to recover. Seals, propellant and
+  If you push on a memory-foam pillow, it moves slowly. If you remove your hand, the dent fills slowly. If you put the
+  pillow in a cold location, it becomes hard and slow, and the dent takes much longer to recover. Seals, propellant and
   adhesives do the same, on time scales from microseconds to years.
 </Analogy>
 
@@ -48,8 +49,8 @@ into the other.
 
 ## The Prony series
 
-Real polymers relax over many decades of time, so the useful model is the **generalised Maxwell** model: a long-term
-spring in parallel with many spring–dashpot arms, one per decade. Its relaxation modulus is a **Prony series**:
+Real polymers relax over many decades of time. Thus the useful model is the **generalised Maxwell** model: a long-term
+spring in parallel with many spring–dashpot arms, one for each decade. Its relaxation modulus is a **Prony series**:
 
 $$
 E(t) = E_\infty + \sum_{i} E_i\, e^{-t/\tau_i},
@@ -57,9 +58,9 @@ E(t) = E_\infty + \sum_{i} E_i\, e^{-t/\tau_i},
 E_0 = E_\infty + \sum_i E_i
 $$
 
-$E_0$ is the **instantaneous** (glassy) modulus and $E_\infty$ the **long-term** (rubbery) one. The relaxation times
-$\tau_i$ are usually fixed at one per decade over the range of interest, and the $E_i$ fitted to test data by
-least squares, kept positive. The same series gives the response to a sinusoidal load:
+$E_0$ is the **instantaneous** (glassy) modulus, and $E_\infty$ is the **long-term** (rubbery) modulus. The relaxation
+times $\tau_i$ are usually fixed at one for each decade over the important range. The $E_i$ are fitted to test data by
+least squares, and they must stay positive. The same series gives the response to a sinusoidal load:
 
 $$
 E'(\omega) = E_\infty + \sum_i E_i \frac{\omega^2\tau_i^2}{1+\omega^2\tau_i^2},
@@ -69,31 +70,32 @@ E''(\omega) = \sum_i E_i \frac{\omega\tau_i}{1+\omega^2\tau_i^2},
 \tan\delta = \frac{E''}{E'}
 $$
 
-$E'$ is the part stored, $E''$ the part lost as heat, and $\tan\delta$ their ratio.
+$E'$ is the stored part, $E''$ is the part lost as heat, and $\tan\delta$ is their ratio.
 
 ### Into a solver
 
-Finite-element codes take the series in normalised form, $g_i = E_i/E_0$, with the elastic modulus given as the
-instantaneous value. Two errors are common:
+Finite-element codes use the series in normalised form, $g_i = E_i/E_0$, with the instantaneous value as the elastic
+modulus. Two errors are frequent:
 
-- **The $g_i$ must sum to less than 1.** The remainder, $1 - \sum g_i = E_\infty/E_0$, is the long-term fraction. A
-  sum of 1 means the material relaxes away completely, and the solver will reject it.
-- **The elastic card must match.** Give the instantaneous modulus, not a datasheet "Young's modulus" measured at some
-  unknown rate — or declare the long-term basis and give $E_\infty$. Mixing the two scales every stress in the model.
+- **The sum of the $g_i$ must be less than 1.** The remainder, $1 - \sum g_i = E_\infty/E_0$, is the long-term
+  fraction. A sum of 1 means that the material relaxes fully, and the solver rejects it.
+- **The elastic card must agree.** Give the instantaneous modulus, not a datasheet "Young's modulus" measured at an
+  unknown rate. Alternatively, declare the long-term basis and give $E_\infty$. If you mix the two, all the stresses in
+  the model are incorrect by a factor.
 
-A third, quieter one: **space the arms closely enough.** One arm per decade fits $E(t)$ well but leaves visible ripples
-in $\tan\delta$, because each arm adds its own loss peak; two per decade gives smooth dynamic properties. The presets
-in the calculator use two.
+A third error is less easy to see: **put the arms sufficiently close together.** One arm for each decade fits $E(t)$
+well, but it causes visible ripples in $\tan\delta$, because each arm adds its own loss peak. Two arms for each decade
+give smooth dynamic properties. The presets in the calculator use two.
 
-Solvers usually apply the $g_i$ to the shear modulus. For a nearly incompressible material ($E \approx 3G$) the
-normalised values carry over; if the bulk modulus relaxes as well, it needs its own terms.
+Solvers usually apply the $g_i$ to the shear modulus. For an almost incompressible material ($E \approx 3G$), the
+normalised values are the same. If the bulk modulus also relaxes, it needs its own terms.
 
 ## Time–temperature superposition
 
-**Cold behaves like slow.** Lowering the temperature slows every relaxation process by the same factor $a_T$, so a
-test at low temperature over a few seconds shows what happens at room temperature over days. Shifting short tests
-made at several temperatures along the log-time axis until they overlap builds a **master curve** spanning far more
-decades than any single test.
+**Cold has the same effect as slow.** A lower temperature makes all relaxation processes slower by the same factor
+$a_T$. Thus a test at low temperature over a few seconds shows what occurs at room temperature over days. If you move
+short tests at several temperatures along the log-time axis until they overlap, you get a **master curve**. It covers
+many more decades than one test.
 
 Above the glass transition, the shift factor follows the WLF equation:
 
@@ -101,95 +103,95 @@ $$
 \log_{10} a_T = \frac{-C_1\,(T - T_r)}{C_2 + T - T_r}
 $$
 
-With the reference at the glass transition, the general constants are $C_1 = 17.44$ and $C_2 = 51.6$ K. Referred to
-any other temperature $T_r$, they become $C_1 = 17.44 \times 51.6 / (51.6 + T_r - T_g)$ and $C_2 = 51.6 + T_r - T_g$.
-At $T_r = T_g + 50$ K that gives 8.86 and 101.6 K — the values the [propellant page](../../motor/propellant/#explorer)
-uses. WLF holds from about $T_g$ to $T_g + 100$ K. Below $T_g$, glassy polymers such as composite matrices usually
-follow an Arrhenius-type shift instead.
+With the reference at the glass transition, the general constants are $C_1 = 17.44$ and $C_2 = 51.6$ K. For a
+different reference temperature $T_r$, they become $C_1 = 17.44 \times 51.6 / (51.6 + T_r - T_g)$ and
+$C_2 = 51.6 + T_r - T_g$. At $T_r = T_g + 50$ K, this gives 8.86 and 101.6 K, which are the values that the
+[propellant page](../../motor/propellant/#explorer) uses. WLF is valid from approximately $T_g$ to $T_g + 100$ K. Below
+$T_g$, glassy polymers such as composite matrices usually follow an Arrhenius-type shift.
 
 ### Dynamic mechanical analysis
 
-A DMA test pushes a sample sinusoidally while sweeping the temperature. As the material passes through its glass
-transition, $E'$ drops by two or three orders of magnitude and $\tan\delta$ peaks. The peak sits above
-the $T_g$ from a slow thermal test, and moves up with test frequency — so always quote the frequency with a DMA
-$T_g$.
+A DMA test applies a sinusoidal load to a sample while the temperature changes. As the material goes through its glass
+transition, $E'$ decreases by two or three orders of magnitude and $\tan\delta$ has a peak. The peak is above the $T_g$
+from a slow thermal test, and it moves up with the test frequency. Thus always give the frequency with a DMA $T_g$.
 
 ## Calculator
 
 <ViscoCalc />
 
-## Worked example — a fluoroelastomer seal
+## Worked example: a fluoroelastomer seal
 
-An illustrative FKM-like seal compound: $E_\infty = 6$ MPa and 27 arms, two per decade from 0.1 µs to $10^6$ s, so
-$E_0 = 950$ MPa;
-$T_g = -20$ °C, with the data referred to 20 °C, so $C_1 = 9.82$ and $C_2 = 91.6$ K. These are the calculator's
-starting values.
+This is an illustrative seal compound, similar to FKM: $E_\infty = 6$ MPa and 27 arms, two for each decade from 0.1 µs
+to $10^6$ s, so $E_0 = 950$ MPa. $T_g = -20$ °C, and the data refer to 20 °C, so $C_1 = 9.82$ and $C_2 = 91.6$ K. These
+are the starting values of the calculator.
 
-1. **Stiffness depends on when you ask.** At 20 °C the modulus 1 s after loading is 11.6 MPa. At 40 °C it is 7.6 MPa;
-   at 0 °C, 44 MPa.
-2. **Storage.** At 40 °C, $a_T = 0.0174$, so a year squeezed at 40 °C does as much relaxing as 58 years at 20 °C. The
-   sealing force falls to **79%** of its value one second after squeezing.
-3. **The gap opens.** Released at 40 °C, the seal gives back **63%** of its squeeze within 0.1 s. Released at 0 °C —
-   where every process runs about 32,000 times slower than at 40 °C — it gives back only **6.4%**.
-4. **The lesson.** A seal has to follow the joint as it opens. Cold, it cannot. That was the mechanism behind the loss
-   of *Challenger*: O-rings too cold to spring back as the field joint opened under pressure. The design responses —
-   keep the seal warm, choose a compound with a lower glass transition, add squeeze, and stop the joint opening — are
-   on the [O-ring page](../../seals/o-ring-design/).
+1. **The stiffness depends on the time.** At 20 °C, the modulus 1 s after loading is 11.6 MPa. At 40 °C it is 7.6 MPa.
+   At 0 °C it is 44 MPa.
+2. **Storage.** At 40 °C, $a_T = 0.0174$. Thus one year of squeeze at 40 °C causes the same relaxation as 58 years at
+   20 °C. The sealing force decreases to **79%** of its value one second after the squeeze.
+3. **The gap opens.** If the seal is released at 40 °C, it recovers **63%** of its squeeze within 0.1 s. If it is
+   released at 0 °C, where all processes are approximately 32,000 times slower than at 40 °C, it recovers only
+   **6.4%**.
+4. **The lesson.** A seal must follow the joint as it opens. When it is cold, it cannot. This was the mechanism of the
+   loss of *Challenger*: the O-rings were too cold to expand as the field joint opened under pressure. The design
+   responses are on the [O-ring page](../../seals/o-ring-design/): keep the seal warm, select a compound with a lower
+   glass transition, add squeeze, and prevent the joint from opening.
 
-The **propellant preset** is the same illustrative propellant as the
-[propellant page's explorer](../../motor/propellant/#explorer), written as a 33-arm Prony series — ready for a solver.
+The **propellant preset** is the same illustrative propellant as in the
+[explorer on the propellant page](../../motor/propellant/#explorer), written as a 33-arm Prony series that a solver can
+use.
 
 ## What it means for seals, propellant and composites
 
 ### Seals
 
-- **Sealing force relaxes in storage**, and real compounds also take a chemical set as they age. Design the minimum
-  squeeze on the relaxed, aged state — see [Storage & ageing](../../verify/storage-ageing/).
-- **Low-temperature recovery** is measured by the temperature-retraction (TR) test. Specify it at the lowest
-  temperature at which the seal must *follow movement*, not just the one it must survive.
-- **Below the glass transition** a seal is a hard plastic, and seals nothing that moves.
+- **The sealing force relaxes in storage,** and real compounds also take a chemical set as they age. Design the minimum
+  squeeze for the relaxed, aged condition. See [Storage & ageing](../../verify/storage-ageing/).
+- **The low-temperature recovery** is measured by the temperature-retraction (TR) test. Specify it at the lowest
+  temperature at which the seal must *follow movement*, not only at the lowest temperature that it must survive.
+- **Below the glass transition,** a seal is a hard plastic, and it cannot seal a part that moves.
 
 ### Propellant
 
-- The grain sees a **relaxed modulus** during slow cool-downs and a **glassy-ward modulus** at ignition — often ten
-  times stiffer. That is why the [grain page](../../motor/propellant-grain/) handles the two load cases separately.
-- Strain capability depends on rate and temperature too, and grain analyses use measured Prony series and shift
-  factors with cumulative damage over the service life.
+- During slow cool-downs, the grain has a **relaxed modulus**. At ignition, it has a modulus nearer to the **glassy**
+  value, often ten times stiffer. This is why the [grain page](../../motor/propellant-grain/) treats the two load cases
+  separately.
+- The strain capability also depends on rate and temperature. Grain analyses use measured Prony series and shift
+  factors, with cumulative damage over the service life.
 
 ### Composites and adhesives
 
-- **Fibre-dominated** properties — along the carbon fibres — barely creep. **Matrix-dominated** ones — shear,
-  transverse and through-thickness — do, increasingly as the temperature approaches the matrix's glass transition.
-  Moisture lowers that glass transition, so hot-and-wet is the critical condition.
-- **Bolted composite joints lose preload** as the laminate creeps through its thickness. Metal inserts or bushes,
-  checks of preload loss over time, and a retorque policy where allowed are the usual answers.
-- **Stress rupture.** Aramid and glass fibres can fail after long periods under constant load; carbon fibre is far
+- **Fibre-dominated** properties (along the carbon fibres) almost do not creep. **Matrix-dominated** properties (shear,
+  transverse and through-thickness) do creep, and more so as the temperature approaches the glass transition of the
+  matrix. Moisture decreases that glass transition. Thus hot and wet is the critical condition.
+- **Bolted composite joints lose preload** as the laminate creeps through its thickness. The usual solutions are metal
+  inserts or bushes, checks of the preload loss over time, and a retorque policy where permitted.
+- **Stress rupture.** Aramid and glass fibres can fail after long periods under a constant load. Carbon fibre is much
   less susceptible. This is the basis of the stress-rupture requirements for composite-overwrapped pressure vessels.
-- **Bondlines creep** under sustained shear, especially when hot. Sustained-load allowables sit well below short-term
-  strength.
-- Composite design practice keeps the maximum operating temperature a margin below the matrix's **wet** glass
-  transition temperature.
+- **Bondlines creep** under sustained shear, especially when hot. Sustained-load allowables are much lower than the
+  short-term strength.
+- Composite design practice keeps the maximum operating temperature a margin below the **wet** glass transition
+  temperature of the matrix.
 
 ## Where this stops
 
-- **Linear viscoelasticity**: small strains, no damage. Filled rubbers soften with the first loading (the Mullins
-  effect) and propellants dewet; both are non-linear.
-- **Thermorheologically simple**: one shift factor for every arm. Multi-phase materials can break this.
-- **WLF range**: about $T_g$ to $T_g + 100$ K.
-- **Pressure** also shifts the response, in the opposite sense to temperature, and **ageing** changes the Prony series
-  itself.
-- **Bulk behaviour** is treated as elastic here; only the deviatoric response relaxes.
+- **Linear viscoelasticity:** small strains and no damage. Filled rubbers become softer after the first load (the
+  Mullins effect), and propellants dewet. These two effects are non-linear.
+- **Thermorheologically simple:** one shift factor for all arms. Multi-phase materials can be different.
+- **WLF range:** approximately $T_g$ to $T_g + 100$ K.
+- **Pressure** also shifts the response, in the opposite direction to temperature. **Ageing** changes the Prony series.
+- **Bulk behaviour** is elastic here. Only the deviatoric response relaxes.
 
 ## On the drawing and in the specifications
 
-- **Seal compounds:** specify low-temperature retraction and compression set at a stated temperature and time — not
-  hardness alone.
-- **Any viscoelastic property** quoted on a drawing or in a specification needs its temperature and its rate or
-  time: "modulus at 20 °C, 1 minute", not just "modulus".
-- **Composites:** state the maximum operating temperature with its basis in the wet glass transition, and use
-  sustained-load allowables for permanently loaded joints.
-- **Analyses:** record where the Prony data came from, its reference temperature and its shift law, so the material
-  model can be checked.
+- **Seal compounds:** specify the low-temperature retraction and the compression set at a stated temperature and time,
+  not only the hardness.
+- **Each viscoelastic property** on a drawing or in a specification needs its temperature and its rate or time:
+  "modulus at 20 °C, 1 minute", not only "modulus".
+- **Composites:** give the maximum operating temperature, with its basis in the wet glass transition. Use
+  sustained-load allowables for joints that have a permanent load.
+- **Analyses:** record the source of the Prony data, its reference temperature and its shift law, so that somebody can
+  check the material model.
 
 ## References and further reading
 
@@ -206,6 +208,6 @@ The **propellant preset** is the same illustrative propellant as the
 - *Report of the Presidential Commission on the Space Shuttle Challenger Accident* (1986).
 
 <Aside type="note">
-  Teaching material. The presets illustrate the behaviour and are not measurements of any real compound or propellant.
-  Structural analysis needs the actual material characterised to the programme's requirements.
+  This is teaching material. The presets show the behaviour, and they are not measurements of a real compound or
+  propellant. A structural analysis needs the actual material, characterised to the requirements of the programme.
 </Aside>

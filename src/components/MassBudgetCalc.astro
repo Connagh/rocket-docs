@@ -46,7 +46,7 @@ const ITEMS = [
       </dl>
       <figure class="mb-fig">
         <svg viewBox="0 0 480 92" data-bar role="img" aria-label="Mass budget at ignition"></svg>
-        <figcaption>Mass at ignition. Underneath: the Δv each inert item costs — what you would gain if it weighed nothing.</figcaption>
+        <figcaption>Mass at ignition. Underneath: the Δv each inert item costs (what you would gain if it weighed nothing).</figcaption>
       </figure>
       <figure class="mb-fig">
         <svg viewBox="0 0 480 230" data-chart role="img" aria-label="Ideal delta-v versus propellant mass fraction"></svg>
@@ -112,10 +112,10 @@ const ITEMS = [
 
       const big = [...gains].sort((a, b) => b.gain - a.gain)[0];
       const out: string[] = [];
-      out.push(`Every kilogram of hardware removed is worth ${f(p.dvPerKgInert, 1)} m/s — or lets you carry ${f(p.exchange, 2)} kg less propellant for the same Δv. That exchange ratio is just m₀/m<sub>f</sub> − 1.`);
+      out.push(`Every kilogram of hardware removed is worth ${f(p.dvPerKgInert, 1)} m/s, or lets you carry ${f(p.exchange, 2)} kg less propellant for the same Δv. That exchange ratio is just m₀/m<sub>f</sub> − 1.`);
       if (big.m > 0) out.push(`The heaviest lever here is the ${big.short.toLowerCase()}: ${f(big.m, 1)} kg, costing ${f(big.gain, 0)} m/s.`);
-      if (ml > mp) out.push('The payload outweighs the propellant, so the motor’s own mass fraction matters less than usual — Δv is limited by the propellant load.');
-      if (p.fraction < 0.75) out.push('A mass fraction below about 0.75 is typical of small motors, where hardware that does not scale down — igniter, nozzle, bosses, seals — is a large share of the total.');
+      if (ml > mp) out.push('The payload outweighs the propellant, so the motor’s own mass fraction matters less than usual: Δv is limited by the propellant load.');
+      if (p.fraction < 0.75) out.push('A mass fraction below about 0.75 is typical of small motors, where hardware that does not scale down (igniter, nozzle, bosses, seals) is a large share of the total.');
       notes.innerHTML = out.map((t) => `<li>${t}</li>`).join('');
     }
 

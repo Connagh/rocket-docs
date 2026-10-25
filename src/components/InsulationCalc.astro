@@ -4,7 +4,7 @@
 import { LINER_MATERIALS, BACKUP_MATERIALS } from '../lib/insulation';
 
 const REGIMES = [
-  { key: 'none', label: 'No erosion — char only', f: 0 },
+  { key: 'none', label: 'No erosion: char only', f: 0 },
   { key: 'low', label: 'Low velocity (forward dome, behind grain)', f: 0.25 },
   { key: 'mod', label: 'Moderate flow', f: 1 },
   { key: 'high', label: 'High velocity / particle impingement (aft dome)', f: 4 },
@@ -63,7 +63,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
         <label>Check an as-designed thickness (mm, optional)
           <input name="chk" type="number" min="0" step="any" placeholder="blank = size it" />
         </label>
-        <p class="hint">Enter your programme's safety factor — it comes from the governing requirement, not from this site.</p>
+        <p class="hint">Enter your programme's safety factor: it comes from the governing requirement, not from this site.</p>
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
     </form>
@@ -83,7 +83,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
       </dl>
       <p class="pv-sub">Bondline temperature</p>
       <dl class="readouts">
-        <div class="readout"><dt>Thickness for limit — insulated face</dt><dd data-r="tbA">—</dd></div>
+        <div class="readout"><dt>Thickness for limit: insulated face</dt><dd data-r="tbA">—</dd></div>
         <div class="readout"><dt>…radiating face</dt><dd data-r="tbR">—</dd></div>
         <div class="readout" data-peak><dt>Peak at this thickness</dt><dd data-r="peak">—</dd></div>
       </dl>
@@ -225,7 +225,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
       if (sf !== null && ad.governs === 'bondline temperature')
         notes.push(['', `The bondline limit, not the affected depth, sets the thickness here. Options: a thicker or higher-capacity case, a lower-conductivity insulator, or a higher-temperature bond system.`]);
       if (field('tp').value === '' && s.ins.k > 5)
-        notes.push(['warn', 'This material does not char and conducts heat well: it protects the surface but not the structure. It needs a separate insulator behind it — size that layer with a charring insulator.']);
+        notes.push(['warn', 'This material does not char and conducts heat well: it protects the surface but not the structure. It needs a separate insulator behind it: size that layer with a charring insulator.']);
       if (Math.abs(ra.tBond - ad.tBond) > 0.25 * ad.tBond && Number.isFinite(ad.tBond))
         notes.push(['', `The two after-burnout assumptions differ by ${f(Math.abs(ad.tBond - ra.tBond), 1)} mm. Which is closer depends on how the motor cools after burnout, which is why bondline thermocouples on firings matter.`]);
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');

@@ -30,8 +30,8 @@ const rev = new Date().toISOString().slice(0, 10);
     <p class="hero-kicker"><span class="dot" aria-hidden="true"></span>MISSION REFERENCE · SOLID ROCKET MOTOR &amp; MECHANICAL DESIGN</p>
     <h1 id={PAGE_TITLE_ID} class="hero-title">REF<span class="stamp">·</span>DB</h1>
     <p class="hero-tag">
-      Learn the concept, see it, then run the numbers. A working reference for solid rocket motor hardware — cases,
-      grains, insulation, seals, materials — built so a newcomer can learn it and an engineer can use it.
+      Learn the concept, see it, then run the numbers. A working reference for solid rocket motor hardware (cases,
+      grains, insulation, seals and materials). A newcomer can learn from it and an engineer can use it.
     </p>
     <dl class="hero-meta">
       <div><dt>REV</dt><dd>v2 · {rev}</dd></div>
@@ -57,7 +57,7 @@ const rev = new Date().toISOString().slice(0, 10);
           <span class="zb-phase">
             PHASE {PHASES.indexOf(ph) + 1} OF {PHASES.length} · {ph.n} · {here.primer ? 'PRIMER' : `STEP ${step} OF ${inPhase.filter((z) => !z.primer).length}`} · {here.tag}
           </span>
-          <span class="zb-sub">{ph.sub} — {ph.d}</span>
+          <span class="zb-sub">{ph.sub}: {ph.d}</span>
           <span class="zb-steps">
             {inPhase.map((z) => (
               <a href={hrefOf(z, base)} class:list={[z.slug !== null ? 'v2' : 'v1', { here: z.key === here.key, primer: z.primer }]}

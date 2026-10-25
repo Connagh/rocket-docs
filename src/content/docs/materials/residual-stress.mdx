@@ -1,6 +1,6 @@
 ---
 title: Residual stress
-description: Stresses locked into a part with no load on it — where they come from (welding, machining, heat treatment, shot peening, autofrettage), how they add to service stresses in fatigue, fracture and stress-corrosion cracking, how they relax, and how they are measured, relieved and put to use.
+description: Stresses in a part that has no load on it. Where they come from (welding, machining, heat treatment, shot peening, autofrettage), how they add to service stresses in fatigue, fracture and stress-corrosion cracking, how they relax, and how to measure, relieve and use them.
 sidebar:
   order: 0
 ---
@@ -11,32 +11,32 @@ import ResidualProfiles from '../../../components/ResidualProfiles.astro';
 import ResidualCalc from '../../../components/ResidualCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Residual stress is what a part carries with no load on it: invisible on the drawing, often as large as yield, and added to every service stress.</div>
+  <div><b>In one line</b>Residual stress is the stress in a part that has no load on it. The drawing does not show it, it can be as large as yield, and it adds to each service stress.</div>
   <div><b>Before this</b><a href="../../fundamentals/fatigue/">Fatigue</a> · <a href="../allowables/">Allowables</a></div>
   <div><b>Used by</b><a href="../../verify/proof-testing/">Proof testing</a> · <a href="../../verify/leak-before-break/">Leak before break</a></div>
 </div>
 
 ## Why this matters
 
-Every weld, every machined or ground surface, every quenched or straightened part carries stresses that no load
-analysis shows. They can reach yield. They add to the service stress at every point, and they never switch off:
+Each weld, each machined or ground surface, and each quenched or straightened part has stresses that no load analysis
+shows. They can be as large as yield. They add to the service stress at each point, and they are always present:
 
-- **Fatigue** — residual tension shortens life; residual compression from peening or rolling lengthens it, often
-  several times.
-- **Fracture** — residual tension shrinks the flaw a part can tolerate.
-- **Stress-corrosion cracking** — it needs only sustained tension, and residual stress is sustained by definition. A
+- **Fatigue.** Residual tension decreases the life. Residual compression from peening or rolling increases it, often
+  by several times.
+- **Fracture.** Residual tension decreases the flaw size that a part can tolerate.
+- **Stress-corrosion cracking.** This needs only sustained tension, and residual stress is always sustained. A
   high-strength steel part can crack in storage with no load on it.
-- **Distortion** — machine away a stressed layer and the part moves.
+- **Distortion.** If you machine away a stressed layer, the part moves.
 
-On a solid motor: the welds in a high-strength steel case, the ground surfaces near them, rolled threads, peened
-fillets, quenched aluminium skirts and closures — and the thermal residual stresses in composite cases, bonded joints
-and the propellant grain itself.
+On a solid motor, residual stress is in the welds of a high-strength steel case, the ground surfaces near them, rolled
+threads, peened fillets, and quenched aluminium skirts and closures. There are also thermal residual stresses in
+composite cases, bonded joints and the propellant grain.
 
 ## What it is
 
-A residual stress is the elastic response to a **misfit**. Some region has been yielded, transformed or shrunk so that
-it no longer fits the material around it, and the surroundings force it to fit. With no external load, the stresses
-must balance across any cut through the part — no net force and no net moment:
+A residual stress is the elastic response to a **misfit**. A region has yielded, transformed or shrunk, so that it does
+not fit the material around it. The material around it forces it to fit. With no external load, the stresses must
+balance across all cuts through the part, with no net force and no net moment:
 
 $$
 \int_A \sigma_{res}\,dA = 0
@@ -46,15 +46,15 @@ $$
 \int_A \sigma_{res}\,y\,dA = 0
 $$
 
-So tension somewhere always means compression somewhere else — and when machining removes part of the section, the
-remainder rebalances and the part distorts.
+Thus tension in one location always has compression in a different location. When machining removes part of the
+section, the stresses in the remaining material balance again, and the part distorts.
 
 <Analogy title="Toughened glass">
-  A glass panel is heated and its surfaces are blasted with cold air. The surfaces set first; the hot core then cools
-  and shrinks, pulling them into compression and leaving itself in tension. A scratch in the surface now has to fight
-  that compression before it can grow, so the glass is several times stronger. But the stored energy is still there:
-  break through to the core and the whole panel shatters into pebbles. Prince Rupert's drop is the same trick, in one
-  drop of glass.
+  To make toughened glass, you heat a glass panel and blow cold air on its surfaces. The surfaces become solid first.
+  The hot core then cools and shrinks. It pulls the surfaces into compression, and the core stays in tension. A scratch
+  in the surface must overcome that compression before it can grow, so the glass is several times stronger. But the
+  stored energy is still there. If a crack gets through to the core, the full panel breaks into small pieces. A Prince
+  Rupert's drop works in the same way, in one drop of glass.
 </Analogy>
 
 <ResidualProfiles />
@@ -63,34 +63,35 @@ remainder rebalances and the part distorts.
 
 | Process | Where | Sign and size | Notes |
 | --- | --- | --- | --- |
-| Welding | Weld and heat-affected zone | Tension near yield along the weld; compression away from it | Lower across the weld. Phase changes in steels alter the pattern |
-| Machining | A thin surface layer, up to a few tenths of a millimetre | Compression from sharp tools and light cuts; tension from heat | Abusive grinding leaves tension and a burned, re-hardened layer |
-| Quenching | Through the section | Non-transforming alloys: surface compression, core tension | Thick aluminium sections distort when machined; transforming steels can reverse the pattern |
-| Shot peening, deep rolling, thread rolling, cold expansion of holes | Surface, roughly 0.1–1 mm deep | Compression, a large fraction of yield | Balanced by a small tension below; lost if machined off afterwards |
-| Straightening and forming | Where it bent | Tension on one side | Straightening hardened high-strength steel is restricted for this reason |
-| Autofrettage | Bore of a thick cylinder | Hoop compression at the bore | Yield the inner wall once, then unload |
+| Welding | Weld and heat-affected zone | Tension near yield along the weld; compression away from it | Lower across the weld. Phase changes in steels change the pattern |
+| Machining | A thin surface layer, up to some tenths of a millimetre | Compression from sharp tools and light cuts; tension from heat | Abusive grinding leaves tension and a burned, hardened-again layer |
+| Quenching | Through the section | Non-transforming alloys: surface compression, core tension | Thick aluminium sections distort when machined; transforming steels can have the opposite pattern |
+| Shot peening, deep rolling, thread rolling, cold expansion of holes | Surface, approximately 0.1–1 mm deep | Compression, a large fraction of yield | Balanced by a small tension below; lost if machined off after |
+| Straightening and forming | Where it bent | Tension on one side | For this reason, straightening of hardened high-strength steel is restricted |
+| Autofrettage | Bore of a thick cylinder | Hoop compression at the bore | Yield the inner wall one time, then unload |
 | Thermal mismatch | Composites at cure, bonded joints, the propellant grain | Either sign | See [Differential expansion](../../joints/differential-expansion/) and [Propellant grain](../../motor/propellant-grain/) |
 
-Assembly stresses act the same way: an interference-fit bush or an over-tightened fitting holds a sustained tension that
-no service load explains.
+Assembly stresses have the same effect. An interference-fit bush or an over-tightened fitting keeps a sustained tension
+that no service load explains.
 
 ## How it adds to service stress
 
-While everything is elastic, residual and service stresses simply add. Three consequences follow.
+While all the material is elastic, the residual stress and the service stress add. This has three results.
 
-**Static strength of a ductile part barely changes.** The residual stress balances itself, so as the part approaches
-collapse it yields away. Brittle parts, buckling and distortion are different: there it stays.
+**The static strength of a ductile part almost does not change.** The residual stress balances itself, so it yields
+away as the part approaches collapse. This is not true for brittle parts, buckling and distortion. In these cases the
+residual stress stays.
 
-**Yield caps it.** If service stress plus residual stress would pass yield, the excess yields away, and less residual
-stress is left afterwards:
+**Yield sets a limit.** If the service stress plus the residual stress is more than yield, the excess yields away, and
+less residual stress stays after the load:
 
 $$
 \sigma'_{res} = \min\left(\sigma_{res},\; F_{ty} - \sigma_{max}\right)
 $$
 
-with the matching limit in compression. One large load — a proof test, an overload — is therefore a mechanical stress
-relief, and it can leave compression at notches that yielded. It also means large fatigue cycles wash residual stress
-out: it does most for high-cycle fatigue.
+There is the same limit in compression. Thus one large load (a proof test or an overload) is a mechanical stress
+relief, and it can leave compression at notches that yielded. Also, large fatigue cycles remove residual stress. Thus
+residual stress has the largest effect in high-cycle fatigue.
 
 **In fatigue it is a mean stress.** At the surface where cracks start, the residual stress adds to the service mean:
 
@@ -98,134 +99,138 @@ $$
 \sigma_{m,eff} = \sigma_m + \sigma'_{res}
 $$
 
-then Goodman or another mean-stress rule, as on the [Fatigue](../../fundamentals/fatigue/) page. Tension pushes the
-cycle towards failure. Compression pulls it away — this page, like the fatigue page, credits compression only as far
-as it cancels tensile mean stress.
+Then use Goodman or a different mean-stress rule, as on the [Fatigue](../../fundamentals/fatigue/) page. Tension moves
+the cycle towards failure. Compression moves it away. This page, as the fatigue page, gives credit to compression only
+until it cancels the tensile mean stress.
 
-**In fracture it is crack-driving stress, load or no load:**
+**In fracture it is a crack-driving stress, with or without a load:**
 
 $$
 K = Y\,(\sigma + \sigma_{res})\sqrt{\pi a}
 $$
 
-The critical flaw depth goes as $1/(\sigma + \sigma_{res})^2$, so even a modest residual stress costs a lot of
-tolerable flaw size ([Leak before break](../../verify/leak-before-break/)). Fitness-for-service procedures such as
-BS 7910 and API 579-1 prescribe residual stresses where they are not measured — up to yield in as-welded joints, a
-fraction of it after post-weld heat treatment.
+The critical flaw depth changes as $1/(\sigma + \sigma_{res})^2$. Thus even a small residual stress causes a large
+decrease in the tolerable flaw size ([Leak before break](../../verify/leak-before-break/)). Fitness-for-service
+procedures such as BS 7910 and API 579-1 give residual stresses where they are not measured: up to yield in as-welded
+joints, and a fraction of yield after post-weld heat treatment.
 
-**In stress corrosion it is often the whole story.** Stress-corrosion cracking needs a susceptible material, an
-environment and sustained tension. Residual tension supplies the last at all times: a flaw grows once $K$ from the
-residual stress alone exceeds $K_{ISCC}$. High-strength steels and 7075-T6 aluminium loaded across its short-transverse
-grain are the classic cases — the reason for over-aged tempers such as T73 and T7351.
+**In stress corrosion it is often the only cause.** Stress-corrosion cracking needs a susceptible material, an
+environment and sustained tension. Residual tension always gives the tension. A flaw grows when $K$ from the residual
+stress alone is more than $K_{ISCC}$. Typical examples are high-strength steels, and 7075-T6 aluminium loaded across its
+short-transverse grain. This is why over-aged tempers such as T73 and T7351 exist.
 
 ## Autofrettage
 
-A thick cylinder pressurised beyond its first-yield pressure yields from the bore outwards to a radius $c$. On
-unloading, the elastic outer wall squeezes the yielded inner wall, leaving the bore in hoop compression. For a bore of
-radius $a$ and outside radius $b$ (Hill, Tresca):
+If you pressurise a thick cylinder above its first-yield pressure, it yields from the bore outwards to a radius $c$.
+When you remove the pressure, the elastic outer wall squeezes the yielded inner wall, and the bore stays in hoop
+compression. For a bore of radius $a$ and an outside radius $b$ (Hill, Tresca):
 
 $$
 p_A = F_{ty}\left[\ln\frac{c}{a} + \frac{b^2 - c^2}{2b^2}\right]
 $$
 
-from first yield at $F_{ty}(b^2-a^2)/2b^2$ to full overstrain at $F_{ty}\ln(b/a)$. In service, pressure cycles the
-bore around a compressive mean, so bore cracks barely open, and the peak stress moves out to the edge of the yielded
-zone. Too much overstrain on a thick wall yields the bore in **reverse** on unloading — sooner in real steels, whose
-reverse yield strength falls after overstrain (the Bauschinger effect). It is used on gun tubes, high-pressure pumps
-and tubing, and on the metal liners of composite-overwrapped pressure vessels: the liner is yielded once so that it
-works elastically, in compression at zero pressure, ever after.
+This goes from first yield at $F_{ty}(b^2-a^2)/2b^2$ to full overstrain at $F_{ty}\ln(b/a)$. In service, the pressure
+cycles the bore around a compressive mean. Thus cracks at the bore almost do not open, and the peak stress moves out to
+the edge of the yielded zone. Too much overstrain on a thick wall causes **reverse** yield of the bore when you remove
+the pressure. In real steels this occurs sooner, because the reverse yield strength decreases after overstrain (the
+Bauschinger effect). Autofrettage is used on gun tubes, high-pressure pumps and tubing, and on the metal liners of
+composite-overwrapped pressure vessels. The liner yields one time. After that it operates elastically, in compression
+at zero pressure.
 
 ## Measuring it
 
 | Method | Depth | Part survives? | Notes |
 | --- | --- | --- | --- |
-| X-ray diffraction | Tens of micrometres | Yes | Surface lattice strain; profiles by electropolishing layers off (EN 15305) |
-| Hole drilling | To about 1–2 mm | Small hole | Strain-gauge rosette around a drilled hole (ASTM E837) |
+| X-ray diffraction | Tens of micrometres | Yes | Surface lattice strain; profiles by removing layers with electropolishing (EN 15305) |
+| Hole drilling | To approximately 1–2 mm | Small hole | Strain-gauge rosette around a drilled hole (ASTM E837) |
 | Neutron diffraction | Centimetres | Yes | At a neutron source; through-section maps (ISO 21432) |
-| Contour method | Whole cut plane | No | Cut the part, measure how the cut face deforms |
+| Contour method | Whole cut plane | No | Cut the part, and measure how the cut face deforms |
 | Slitting, ring-core, deep-hole drilling | Through thickness | Partly or no | Strain released by a cut or core |
 | Barkhausen noise, temper etch | Surface | Yes | Screening for grinding burns, not values |
 
-Almen strips control shot-peening intensity (SAE J442 and J443); they measure the process, not the part. Every
-measurement averages over its own gauge volume, and steep gradients near the surface or a weld need the method chosen
-for them.
+Almen strips control the shot-peening intensity (SAE J442 and J443). They measure the process, not the part. Each
+measurement gives an average over its own gauge volume. Steep gradients near the surface or a weld need a method that
+is applicable to them.
 
 ## Relieving and controlling it
 
-- **Thermal stress relief.** At temperature the yield strength falls and creep relaxes the stress; slow cooling keeps
-  it from coming back. Stay below the tempering temperature of quenched-and-tempered steels, or they soften. The
-  temperature and time come from the material specification.
-- **Weld, then heat-treat.** High-strength steel cases are commonly welded before their final hardening and
-  tempering, which also relieves the welds. A repair weld after heat treatment brings back near-yield tension and an
-  untempered heat-affected zone, so it needs the full heat treatment again — or is not allowed.
-- **Mechanical relief.** Aluminium plate and forgings are stretched or compressed a few per cent after quenching (the
-  T651, T7351 and T652 tempers) because heating them would over-age the alloy. A proof test relieves tensile residual
-  stress where it yields.
-- **Process control.** Welding sequence and heat input; sharp tools and light finishing cuts; grinding with controlled
-  feeds and coolant, inspected for burns. For distortion-prone parts: rough, stress-relieve, then finish.
-- **Put compression where cracks start.** Shot peening, laser peening, deep rolling, threads rolled after heat
-  treatment, cold-expanded holes. Peen after the last machining, and check at temperature — peened layers relax when
-  hot.
+- **Thermal stress relief.** At temperature, the yield strength decreases and creep relaxes the stress. Slow cooling
+  prevents its return. Stay below the tempering temperature of quenched-and-tempered steels, or they become softer.
+  The temperature and time come from the material specification.
+- **Weld, then heat-treat.** High-strength steel cases are usually welded before their final hardening and tempering,
+  which also relieves the welds. A repair weld after heat treatment causes near-yield tension again and an untempered
+  heat-affected zone. Thus it needs the full heat treatment again, or it is not permitted.
+- **Mechanical relief.** After quenching, aluminium plate and forgings are stretched or compressed by a few per cent
+  (the T651, T7351 and T652 tempers), because heat would over-age the alloy. A proof test relieves tensile residual
+  stress where it causes yield.
+- **Process control.** Control the welding sequence and heat input. Use sharp tools and light finishing cuts. Grind
+  with controlled feeds and coolant, and inspect for burns. For parts that easily distort: machine roughly, relieve the
+  stress, then finish.
+- **Put compression where cracks start.** Use shot peening, laser peening, deep rolling, threads rolled after heat
+  treatment, and cold-expanded holes. Peen after the last machining operation. Check at temperature, because peened
+  layers relax when hot.
 
 ## Calculator
 
 <ResidualCalc />
 
-## Worked example — residual stress in the 300 mm motor's hardware
+## Worked example: residual stress in the 300 mm motor's hardware
 
-The starting values in each tab of the calculator are this example's. The residual stresses here are **assumed for
-the example**; on real hardware they are measured or set by your assessment procedure.
+The starting values in each tab of the calculator are the values of this example. The residual stresses here are
+**assumed for the example**. On real hardware, you measure them or your assessment procedure gives them.
 
-1. **The case weld.** At MEOP the D6AC case wall carries 1094 MPa of hoop stress, and $K_{IC} = 70$ MPa√m
+1. **The case weld.** At MEOP, the D6AC case wall has 1094 MPa of hoop stress, and $K_{IC} = 70$ MPa√m
    ([Leak before break](../../verify/leak-before-break/)). A long, shallow surface flaw along a longitudinal weld
-   ($Y = 1.12$) goes critical at $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1094}\right)^2 = 1.04$ mm deep. Assume
-   290 MPa of residual stress — 20% of yield — survives the final heat treatment across the weld. The critical depth
-   falls to **0.65 mm**. The 11 MPa proof test helps: proof stress plus residual, $1204 + 290$, passes the 1450 MPa
-   yield, so the residual stress relaxes to $1450 - 1204 = 246$ MPa and the critical depth recovers to **0.69 mm**.
-   A repair weld after heat treatment would bring back near-yield tension in an untempered heat-affected zone.
-2. **The case in storage.** With the case unpressurised, the 246 MPa still acts. At a 0.5 mm flaw it sustains
-   $K = 1.12 \times 246 \times \sqrt{\pi \times 0.0005} = 10.9$ MPa√m — permanently. For high-strength steels in
-   moist or salty air, $K_{ISCC}$ can be a small fraction of $K_{IC}$. If it is below 10.9 MPa√m for this steel, heat
+   ($Y = 1.12$) becomes critical at $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1094}\right)^2 = 1.04$ mm depth. Assume
+   that 290 MPa of residual stress (20% of yield) stays across the weld after the final heat treatment. The critical
+   depth decreases to **0.65 mm**. The 11 MPa proof test helps. The proof stress plus the residual stress,
+   $1204 + 290$, is more than the 1450 MPa yield. Thus the residual stress relaxes to $1450 - 1204 = 246$ MPa, and the
+   critical depth increases again to **0.69 mm**. A repair weld after heat treatment would cause near-yield tension
+   again, in an untempered heat-affected zone.
+2. **The case in storage.** When the case has no pressure, the 246 MPa still acts. At a 0.5 mm flaw, it gives
+   $K = 1.12 \times 246 \times \sqrt{\pi \times 0.0005} = 10.9$ MPa√m, permanently. For high-strength steels in moist or
+   salty air, $K_{ISCC}$ can be a small fraction of $K_{IC}$. If it is less than 10.9 MPa√m for this steel, heat
    treatment and storage environment, that flaw grows with no pressure in the case. Enter your $K_{ISCC}$ in the
    **Fracture & SCC** tab to see the deepest flaw that is safe in storage.
-3. **The actuator bracket.** The 4340 bracket from the [Fatigue](../../fundamentals/fatigue/#worked-example--an-actuator-bracket)
-   page lasts 6.2 service lives as machined. Its fillet sees local cycles of 444 on 444 MPa in handling and 320 on
+3. **The actuator bracket.** The 4340 bracket from the [Fatigue](../../fundamentals/fatigue/#worked-example-an-actuator-bracket)
+   page lasts 6.2 service lives as machined. Its fillet has local cycles of 444 on 444 MPa in handling, and 320 on
    107 MPa in firings.
-   - **Shot peened**, with −400 MPa at the surface: the handling mean drops to 44 MPa, the equivalent amplitude from
-     680 to 460 MPa, and the handling life rises from 16,000 to 126,000 cycles. Firings gain less: their mean goes
-     compressive, and compression gets no credit. The bracket lasts **25 service lives — 4.1 times longer**.
-   - **Abusively ground**, leaving +300 MPa: the first handling cycle takes the surface to yield, so the residual
-     relaxes to 292 MPa — and stays there. Handling life falls to 1,670 cycles, and the bracket lasts **0.73 service
-     lives**. It fails in service, from a surface treatment no drawing shows.
-4. **Autofrettage.** Motor cases at 10 MPa never need it, but high-pressure test equipment does. A tube with a 10 mm
-   bore and 25 mm outside diameter, of steel with $F_{ty} = 1000$ MPa, works at 300 MPa. Plain, its bore carries
-   714 MPa of Tresca stress. Autofrettaged at 650 MPa, it yields the inner 23% of the wall and leaves **−548 MPa** of
-   hoop stress at the bore. At working pressure the bore is still in compression (−133 MPa), and the peak stress is
-   537 MPa at the edge of the yielded zone — **25% lower**. Pressure cycles at the bore now swing between −548 and
-   −133 MPa, so a crack there barely opens. 650 MPa is close to the best for this tube: more overstrain raises the
-   peak again.
+   - **Shot peened,** with −400 MPa at the surface. The handling mean decreases to 44 MPa, the equivalent amplitude
+     decreases from 680 to 460 MPa, and the handling life increases from 16,000 to 126,000 cycles. Firings get less
+     benefit, because their mean becomes compressive and compression gets no credit. The bracket lasts **25 service
+     lives, 4.1 times longer**.
+   - **Abusively ground,** with +300 MPa. The first handling cycle takes the surface to yield, so the residual stress
+     relaxes to 292 MPa and stays there. The handling life decreases to 1,670 cycles, and the bracket lasts **0.73
+     service lives**. It fails in service, because of a surface treatment that no drawing shows.
+4. **Autofrettage.** Motor cases at 10 MPa never need it, but high-pressure test equipment does. A steel tube has a
+   10 mm bore and a 25 mm outside diameter, with $F_{ty} = 1000$ MPa. It operates at 300 MPa. Without autofrettage, its
+   bore has 714 MPa of Tresca stress. Autofrettage at 650 MPa yields the inner 23% of the wall, and leaves **−548 MPa**
+   of hoop stress at the bore. At working pressure, the bore is still in compression (−133 MPa). The peak stress is
+   537 MPa at the edge of the yielded zone, which is **25% lower**. Pressure cycles at the bore now go between −548 and
+   −133 MPa, so a crack there almost does not open. 650 MPa is almost the best value for this tube. More overstrain
+   increases the peak again.
 
 ## Where this stops
 
 - **Elastic–perfectly plastic, uniaxial.** Real relaxation depends on the cyclic stress–strain curve, multiaxial
-  stress and the number of cycles; residual stresses also fade at temperature.
-- **Uniform residual stress across a flaw.** Real profiles vary steeply with depth, and fitness-for-service procedures
+  stress and the number of cycles. Residual stresses also decrease at temperature.
+- **Uniform residual stress across a flaw.** Real profiles change quickly with depth. Fitness-for-service procedures
   integrate them through the crack.
-- **Autofrettage without the Bauschinger effect**, Tresca and elastic unloading. Codes such as ASME VIII Division 3
+- **Autofrettage without the Bauschinger effect,** with Tresca and elastic unloading. Codes such as ASME VIII Division 3
   use corrected methods.
-- **Values come from measurement or your assessment procedure** — not from typical numbers like the ones in this
+- **Values come from measurement or your assessment procedure,** not from typical numbers such as the numbers in this
   example.
 
 ## On the drawing
 
-- **Stress relief** — heat treatment after welding, forming or straightening, with the material specification's
-  temperature and time; whether straightening or repair welding is allowed at all.
-- **Shot peening** — areas and masking, intensity (Almen), coverage and media to the governing specification (for
-  example SAE AMS 2430), and that it follows the last machining.
-- **Grinding** — inspection for grinding burns on high-strength steel, and limits on stock removal.
-- **Thread rolling after heat treatment** for fatigue-critical fasteners — see [Threads](../../joints/threads/).
+- **Stress relief.** Heat treatment after welding, forming or straightening, with the temperature and time of the
+  material specification. Also tell if straightening or repair welding is permitted.
+- **Shot peening.** Areas and masking, intensity (Almen), coverage and media to the applicable specification (for
+  example SAE AMS 2430). Peening must follow the last machining operation.
+- **Grinding.** Inspection for grinding burns on high-strength steel, and limits on stock removal.
+- **Thread rolling after heat treatment** for fatigue-critical fasteners. See [Threads](../../joints/threads/).
 - **Stress-relieved tempers** (T651, T7351) for aluminium parts machined from thick stock.
-- **Autofrettage pressure** and the verification that follows it, for autofrettaged parts.
+- **Autofrettage pressure,** and the verification after it, for autofrettaged parts.
 
 ## References and further reading
 
@@ -235,15 +240,15 @@ the example**; on real hardware they are measured or set by your assessment proc
 - K. Masubuchi, *Analysis of Welded Structures*, Pergamon (1980).
 - G. E. Totten, M. Howes and T. Inoue (eds.), *Handbook of Residual Stress and Deformation of Steel*, ASM International
   (2002).
-- R. Hill, *The Mathematical Theory of Plasticity*, Oxford University Press (1950) — the autofrettaged thick cylinder.
+- R. Hill, *The Mathematical Theory of Plasticity*, Oxford University Press (1950) (the autofrettaged thick cylinder).
 - BS 7910, *Guide to methods for assessing the acceptability of flaws in metallic structures*; API 579-1/ASME FFS-1,
   *Fitness-For-Service*.
 - ASTM E837 (hole drilling); EN 15305 (X-ray diffraction); ISO 21432 (neutron diffraction).
 - SAE AMS 2430, *Shot peening*; SAE J442 and J443, Almen strips.
-- ANSI/AIAA S-081, *Space Systems — Composite Overwrapped Pressure Vessels* — liner autofrettage.
+- ANSI/AIAA S-081, *Space Systems — Composite Overwrapped Pressure Vessels* (liner autofrettage).
 
 <Aside type="note">
-  Guidance on method from general practice. Residual stresses for design come from measurement or from your assessment
-  procedure; stress-relief and peening parameters from the material and process specifications; $K_{ISCC}$ from data
-  for your material, heat treatment and environment.
+  This is guidance on method from general practice. Residual stresses for design come from measurement or from your
+  assessment procedure. Stress-relief and peening parameters come from the material and process specifications.
+  $K_{ISCC}$ comes from data for your material, heat treatment and environment.
 </Aside>

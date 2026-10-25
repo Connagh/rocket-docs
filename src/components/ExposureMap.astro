@@ -25,7 +25,7 @@
           <label>Effective surface (°C)<input name="ts" type="number" step="any" value="1200" /></label>
           <label>Char front (°C)<input name="tp" type="number" step="any" value="450" /></label>
         </div>
-        <p class="hint">EPDM properties (k 0.25 W/m·K, ρ 1100 kg/m³, c<sub>p</sub> 2000 J/kg·K). Thickness here is your programme's safety factor × affected depth at burnout only — check the bondline with the calculator below.</p>
+        <p class="hint">EPDM properties (k 0.25 W/m·K, ρ 1100 kg/m³, c<sub>p</sub> 2000 J/kg·K). Thickness here is your programme's safety factor × affected depth at burnout only: check the bondline with the calculator below.</p>
         <p class="hint factor-await" data-await hidden></p>
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
@@ -101,7 +101,7 @@
       r('ex').innerHTML = `${f(Math.min(...e.exposure), 1)} / ${f(Math.max(...e.exposure), 1)} <small>s</small>`;
       r('th').innerHTML = `${f(tMin, 2)} / ${f(tMax, 2)} <small>mm</small>`;
       r('note').textContent = Math.max(...e.exposure) < 0.5
-        ? 'A tube grain reaches the case everywhere at once, so in this ideal model the cylinder is barely exposed. Real motors still insulate it for tail-off, uneven burn-back, ignition and handling — minimum gauge governs here.'
+        ? 'A tube grain reaches the case everywhere at once, so in this ideal model the cylinder is barely exposed. Real motors still insulate it for tail-off, uneven burn-back, ignition and handling: minimum gauge governs here.'
         : `The case under the ${key === 'star' ? 'star tips' : 'slot tips'} is uncovered first and needs the most insulation; under the ${key === 'star' ? 'valleys' : 'webs between slots'} the flame arrives last.`;
 
       const svg = root.querySelector<SVGSVGElement>('[data-polar]')!;

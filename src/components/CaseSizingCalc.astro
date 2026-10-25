@@ -20,7 +20,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
 
 <div class="calc pvcalc" data-pvcalc>
   <div class="calc-head">
-    <span>Motor case sizing — metallic, membrane only</span>
+    <span>Motor case sizing: metallic, membrane only</span>
     <span class="head-btns">
       <button type="button" class="chip" data-load-example>Load worked example</button>
       <button type="button" class="chip" data-share>Copy link to these inputs</button>
@@ -68,14 +68,14 @@ const DEFAULT = 'D6AC (AMS 6431)';
           <label>Proof factor<input name="pf" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
           <label>Burst factor<input name="bf" type="number" min="1" step="0.01" placeholder="your value" autocomplete="off" /></label>
         </div>
-        <p class="hint">Enter your programme's factors — they come from the governing requirement, not from this site.</p>
+        <p class="hint">Enter your programme's factors: they come from the governing requirement, not from this site.</p>
         <p class="hint example-note" data-example-note hidden></p>
         <label>Weld / joint efficiency
           <select name="e">
-            <option value="1">1.00 — seamless, no weld in the pressure boundary</option>
-            <option value="0.9" selected>0.90 — full-penetration weld, fully radiographed</option>
-            <option value="0.85">0.85 — full-penetration weld, spot radiographed</option>
-            <option value="0.7">0.70 — single-sided weld, no radiography</option>
+            <option value="1">1.00: seamless, no weld in the pressure boundary</option>
+            <option value="0.9" selected>0.90: full-penetration weld, fully radiographed</option>
+            <option value="0.85">0.85: full-penetration weld, spot radiographed</option>
+            <option value="0.7">0.70: single-sided weld, no radiography</option>
           </select>
         </label>
         <label>Check an as-designed wall (mm, optional)
@@ -107,7 +107,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
       </dl>
       <svg class="pv-bar" viewBox="0 0 600 100" role="img" aria-label="Pressure scale showing MEOP, proof, design burst and predicted burst" data-bar></svg>
 
-      <p class="pv-sub">Fracture — Irwin leak-before-break screen</p>
+      <p class="pv-sub">Fracture: Irwin leak-before-break screen</p>
       <dl class="readouts">
         <div class="readout"><dt>Critical crack ½-length at MEOP</dt><dd data-r="cm">—</dd></div>
         <div class="readout"><dt>…at proof</dt><dd data-r="cp">—</dd></div>
@@ -128,7 +128,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
     </div>
   </div>
   <div class="calc-foot">
-    Screening tool for early sizing. Membrane stress only — it does not size dome–cylinder junctions, closures, bosses,
+    Screening tool for early sizing. Membrane stress only: it does not size dome–cylinder junctions, closures, bosses,
     skirts or joints, where real cases usually fail. K<sub>IC</sub> values are indicative. Verify against your governing
     standard and get stress sign-off before anything is built.
   </div>
@@ -250,10 +250,10 @@ const DEFAULT = 'D6AC (AMS 6431)';
       drawRing(res);
 
       const notes: [string, string][] = [];
-      if (!Number.isFinite(res.t)) notes.push(['bad', 'Design pressure exceeds the allowable stress — no wall thickness works. Pick a stronger material or lower MEOP.']);
+      if (!Number.isFinite(res.t)) notes.push(['bad', 'Design pressure exceeds the allowable stress: no wall thickness works. Pick a stronger material or lower MEOP.']);
       if (!res.thinWallOk) notes.push(['warn', `t/r = ${f(res.tOverR, 3)} ≥ 0.1: thin-wall theory is unconservative here. The sizing above already uses Lamé, which is exact for the cylinder away from its ends.`]);
       if (res.leakBeforeBreak === false) notes.push(['bad', `A crack that has just broken through the wall would run unstably at MEOP (critical ½-length ${f(res.cMeop, 2)} mm < wall ${f(res.t, 2)} mm). Expect burst without a warning leak. Safety then rests on NDT finding cracks reliably, and on the proof test, which fails any through-crack longer than about ${f(2 * res.cProof, 1)} mm on the test stand instead of in service.`]);
-      if (m.kicIsFamilyDefault) notes.push(['warn', 'Fracture toughness for this alloy is a family default — treat the fracture result as a rough indication only.']);
+      if (m.kicIsFamilyDefault) notes.push(['warn', 'Fracture toughness for this alloy is a family default: treat the fracture result as a rough indication only.']);
       if (m.maxServiceTemp < 150) notes.push(['warn', `Maximum service temperature ~${m.maxServiceTemp} °C. Confirm the insulation keeps the case below this for the whole burn and soak-back.`]);
       if (!m.weldable && +field('e').value < 1) notes.push(['warn', `${m.name} is not normally fusion-welded. A weld efficiency below 1.0 implies a weld that this alloy may not tolerate.`]);
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
@@ -329,7 +329,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
         : td < 0.008 ? 'between a drinks can (≈0.0015) and an eggshell (≈0.008), relative to size'
         : td < 0.05 ? 'thicker than an eggshell (≈0.008), relative to size'
         : 'a genuinely thick-walled vessel';
-      r('ringNote').innerHTML = `Drawn to scale. Wall-to-diameter ratio t/D = ${f(td, 4)} — ${cmp}. Almost all of the strength is in a skin you can barely see.`;
+      r('ringNote').innerHTML = `Drawn to scale. Wall-to-diameter ratio t/D = ${f(td, 4)}: ${cmp}. Almost all of the strength is in a skin you can barely see.`;
     }
 
     form.addEventListener('input', run);

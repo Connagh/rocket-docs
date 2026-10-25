@@ -1,6 +1,6 @@
 ---
 title: Specifying materials
-description: Turn a material choice into a drawing callout an inspector can accept or reject — alloy and condition, product form standard, finish — with a builder for 27 specification sheets.
+description: Change a material selection into a drawing callout that an inspector can accept or reject. Alloy and condition, product-form standard and finish, with a builder for 27 specification sheets.
 sidebar:
   order: 3
 ---
@@ -12,32 +12,33 @@ import GrainFlow from '../../../components/GrainFlow.astro';
 import SpecBuilder from '../../../components/SpecBuilder.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A complete callout names the alloy <em>and</em> condition, the product-form standard, and the finish with its own spec.</div>
+  <div><b>In one line</b>A complete callout gives the alloy <em>and</em> its condition, the product-form standard, and the finish with its own specification.</div>
   <div><b>Before this</b><a href="../selection/">Selecting materials</a> · <a href="../designations/">Designations</a></div>
 </div>
 
 ## Why this matters
 
-The material block is the part of a drawing that is easiest to write badly and most expensive to get wrong. "6082-T6"
-or "D6AC" tells a supplier the chemistry and nothing about what you will receive: which product form, what tolerance
-class, what melt practice, what strength, what certificate. The strength you designed to only arrives if the drawing
-asks for it in terms an inspector can check.
+The material block is the part of a drawing that is easiest to write badly, and errors in it are the most expensive.
+"6082-T6" or "D6AC" tells a supplier the chemistry and nothing about what you will get: which product form, which
+tolerance class, which melt practice, which strength and which certificate. You get the strength of your design only if
+the drawing asks for it in a form that an inspector can check.
 
 ## The three-part rule
 
 <Analogy title="Ordering a coffee">
-  Ask for "a coffee" and you will get *a* coffee. Ask for "a large flat white with oat milk and an extra shot" and you
-  get what you meant — and if it arrives wrong, you can say exactly how. A material callout works the same way: the
-  alloy is "coffee"; the form, standard, condition and finish are everything that makes the order checkable.
+  If you ask for "a coffee", you get *a* coffee. If you ask for "a large flat white with oat milk and an extra shot", you
+  get what you want. If it is not correct, you can say exactly what is incorrect. A material callout works in the same
+  way. The alloy is "coffee". The form, the standard, the condition and the finish are the items that make the order
+  possible to check.
 </Analogy>
 
-Every metallic callout needs three things, and most drawings carry only one or two:
+Each metallic callout needs three items. Most drawings give only one or two:
 
-1. **The alloy and its condition** — temper or heat treatment, stated so it can be tested (for example a minimum UTS),
-   with the process specification that delivers it.
-2. **The product form and its standard** — properties and tolerances differ between bar, plate, extrusion and forging,
-   so the standard for *that form* governs. Many forms have a separate tolerance standard.
-3. **The finish, with its own specification** — anodise, plating, passivation, primer, peening. Never "to suit".
+1. **The alloy and its condition.** Give the temper or heat treatment in a form that can be tested (for example a
+   minimum UTS), with the process specification that gives it.
+2. **The product form and its standard.** Properties and tolerances are different for bar, plate, extrusion and
+   forging. Thus the standard for *that form* applies. Many forms have a separate tolerance standard.
+3. **The finish, with its own specification:** anodise, plating, passivation, primer or peening. Never "to suit".
 
 <CalloutAnatomy />
 
@@ -45,64 +46,65 @@ Every metallic callout needs three things, and most drawings carry only one or t
 
 <GrainFlow />
 
-Rolled and extruded metal is anisotropic. In thick plate the **short-transverse** direction, through the thickness,
-typically has the lowest elongation and fracture toughness and the highest sensitivity to stress-corrosion cracking —
-the classic failure path for high-strength aluminium and steel fittings loaded through their thickness. Two
-consequences for the drawing:
+Rolled and extruded metal is anisotropic. In thick plate, the **short-transverse** direction (through the thickness)
+usually has the lowest elongation and fracture toughness, and the highest sensitivity to stress-corrosion cracking.
+This is the usual failure path for high-strength aluminium and steel fittings loaded through their thickness. There are
+two results for the drawing:
 
-- **Choose the form for the load path.** A closure, boss or Y-ring that carries pressure load around a contour is
-  usually forged so the grain follows the shape, rather than machined from bar or plate.
-- **Say which way the grain runs** when it matters. A grain-direction note on the drawing and on the forging drawing
-  removes the guesswork.
+- **Select the form for the load path.** A closure, a boss or a Y-ring that carries pressure load around a contour is
+  usually forged, so that the grain follows the shape. It is not machined from bar or plate.
+- **Give the grain direction** when it is important. A grain-direction note on the drawing and on the forging drawing
+  removes the uncertainty.
 
 ## Builder
 
-Pick a sheet, then each of the three parts. The builder assembles the block from the standards on that sheet; the
-example underneath is how REF·DB v1 wrote a complete callout for the same material.
+Select a sheet, then each of the three parts. The builder makes the block from the standards on that sheet. The example
+below it shows how REF·DB v1 wrote a complete callout for the same material.
 
 <SpecBuilder />
 
-## Worked example — a D6AC motor case component
+## Worked example: a D6AC motor case component
 
-The builder's default is the D6AC sheet, one of the two case-steel sheets added in v2.
+The default of the builder is the D6AC sheet, one of the two case-steel sheets added in v2.
 
-1. **Alloy and form.** Bar to **AMS 6431**, the material specification for D6AC bar, forgings and tubing, which also
-   fixes vacuum-arc remelting (VAR). Sheet and plate for a rolled-and-welded cylinder come under **AMS 6439**.
-2. **Condition.** The case strength — around 1520 MPa minimum UTS in v1's example — comes from hardening and double
-   tempering, invoked through the heat-treatment specification (AMS 2759/2 for low-alloy steels at this strength) with
-   furnace pyrometry to AMS 2750. Write the strength you designed to on the drawing, not just the process.
-3. **Finish.** Paint over a phosphate or primer base. Electroplating ultra-high-strength steel risks hydrogen
-   embrittlement, so it is used only where justified and always followed by an embrittlement-relief bake.
-4. **Extras that matter for a pressure part:** an inspection certificate (BS EN 10204 type 3.1 in the UK), batch or heat
-   marking by a method that doesn't create stress raisers, and NDT after heat treatment — the v1 example shows magnetic
-   particle inspection to ASTM E1444.
+1. **Alloy and form.** Bar to **AMS 6431**, the material specification for D6AC bar, forgings and tubing. It also
+   specifies vacuum-arc remelting (VAR). Sheet and plate for a rolled-and-welded cylinder are to **AMS 6439**.
+2. **Condition.** The case strength (a minimum UTS of approximately 1520 MPa in the v1 example) comes from hardening
+   and double tempering. Specify it with the heat-treatment specification (AMS 2759/2 for low-alloy steels at this
+   strength), with furnace pyrometry to AMS 2750. Write the design strength on the drawing, not only the process.
+3. **Finish.** Paint over a phosphate or primer base. Electroplating of ultra-high-strength steel can cause hydrogen
+   embrittlement. Thus use it only where you can justify it, and always follow it with an embrittlement-relief bake.
+4. **Additional items that are important for a pressure part:** an inspection certificate (BS EN 10204 type 3.1 in the
+   UK), batch or heat marking with a method that does not cause stress raisers, and NDT after heat treatment. The v1
+   example shows magnetic particle inspection to ASTM E1444.
 
 <Aside type="tip" title="Special processes get their own lines">
-  Heat treatment, welding, NDT, coating and cleanliness are each separate notes with their own specification. If a
-  requirement can't be verified by measuring the finished part, it needs an approved process and a certificate.
+  Heat treatment, welding, NDT, coating and cleanliness are each separate notes with their own specification. If you
+  cannot verify a requirement by a measurement of the finished part, it needs an approved process and a certificate.
 </Aside>
 
 ## Where this stops
 
 <Aside type="caution" title="Check the current issue">
-  Standards are revised, superseded and sometimes withdrawn. The sheets here are a starting point carried over from
-  REF·DB v1 plus two v2 additions; work to the issue your programme invokes, and use your organisation's preferred
-  specifications where they exist.
+  Standards are revised and superseded, and sometimes they are withdrawn. The sheets here are a starting point from
+  REF·DB v1, with two v2 additions. Use the issue that your programme specifies, and use the preferred specifications of
+  your organisation where they exist.
 </Aside>
 
-- **Equivalent is not identical.** Two specifications for "the same" alloy can differ in impurity limits, melt practice,
-  testing and acceptance. See [designations](../designations/) before substituting across systems.
+- **Equivalent is not identical.** Two specifications for "the same" alloy can have different impurity limits, melt
+  practice, testing and acceptance. Read [designations](../designations/) before you substitute across systems.
 - **Fracture-critical parts** add flaw-size and NDE requirements and controlled quality classes to the drawing.
-- **Composites and non-metallics** are specified quite differently: the lay-up, process and cure *are* the material.
+- **Composites and non-metallics** are specified very differently. The lay-up, the process and the cure *are* the
+  material.
 
 ## References and further reading
 
-- BS 8888 — the UK framework for technical product specification, including how drawings invoke standards.
+- BS 8888 (the UK framework for technical product specification, including how drawings refer to standards).
 - SAE AMS specifications for aerospace materials and processes (AMS 6431, AMS 6439, AMS 2759 series, AMS 2750).
-- BS EN 10204 — types of inspection documents for metallic products.
+- BS EN 10204 (types of inspection documents for metallic products).
 - ASM Handbook, Vol. 4 (*Heat Treating*) and Vol. 14 (*Forming and Forging*).
 
 <Aside type="note">
-  Screening and educational material. Drawing callouts are approved under your organisation's drawing and materials
-  procedures.
+  This is screening and educational material. Drawing callouts are approved under the drawing and materials procedures
+  of your organisation.
 </Aside>

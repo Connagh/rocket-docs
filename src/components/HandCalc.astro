@@ -52,7 +52,7 @@ const SECTIONS = [
           <label>Yield F<sub>ty</sub> (MPa)<input name="p_fty" type="number" min="0" step="any" value="655" /></label>
           <label>Ultimate F<sub>tu</sub> (MPa)<input name="p_ftu" type="number" min="0" step="any" value="860" /></label>
         </div>
-        <p class="hint">Rectangular-plate coefficients are for ν = 0.3. A bolted cover sits between simply supported and clamped — run both.</p>
+        <p class="hint">Rectangular-plate coefficients are for ν = 0.3. A bolted cover sits between simply supported and clamped: run both.</p>
       </fieldset>
 
       <fieldset data-panel="shell" hidden>
@@ -98,7 +98,7 @@ const SECTIONS = [
           <label>Effective-length factor K<input name="c_K" type="number" min="0.1" step="any" value="1" /></label>
           <label>Eccentricity (mm)<input name="c_e" type="number" min="0" step="any" value="0.6" /></label>
         </div>
-        <p class="hint">K: 1.0 pinned–pinned; design values 2.1 fixed–free, 0.8 fixed–pinned, 0.65 fixed–fixed. Eccentricity can stand in for crookedness — L/1000 is a common assumption.</p>
+        <p class="hint">K: 1.0 pinned–pinned; design values 2.1 fixed–free, 0.8 fixed–pinned, 0.65 fixed–fixed. Eccentricity can stand in for crookedness: L/1000 is a common assumption.</p>
         <label>Section<select name="c_kind">{SECTIONS.map((s) => <option value={s.key}>{s.name}</option>)}</select></label>
         <div class="row2">
           <label data-dim="c_d1"><span>Outside ⌀ (mm)</span><input name="c_d1" type="number" min="0" step="any" value="25" /></label>
@@ -131,7 +131,7 @@ const SECTIONS = [
   <div class="calc-foot">
     Linear elastic, small deflection, closed-form idealisations: beam theory, Roark's plate solutions, thin-shell membrane
     and edge bending, first-cut lug and pin checks, Euler and Johnson columns with the secant formula. First answers, to
-    size a part and to check a finite-element model — not a substitute for either.
+    size a part and to check a finite-element model, not a substitute for either.
   </div>
 </div>
 
@@ -248,7 +248,7 @@ const SECTIONS = [
         msRow('Ultimate margin', fu, 'ultimate factor', num('b_ftu'), sigma),
       );
       if (L / s.c < 10) notes.push(['warn', `A short, deep beam (span ${f(L / (2 * s.c), 1)} × its depth): shear deflection and local effects at the supports matter, and beam theory is only approximate.`]);
-      if (field('b_kind').value === 'tube' && 2 * s.c / num('b_d2') > 50) notes.push(['', `A thin tube (D/t = ${f((2 * s.c) / num('b_d2'), 0)}): beam bending is rarely what fails it. Check local loads where it is supported, and buckling under bending — see <a href="../../verify/shell-buckling/">Shell buckling</a>.`]);
+      if (field('b_kind').value === 'tube' && 2 * s.c / num('b_d2') > 50) notes.push(['', `A thin tube (D/t = ${f((2 * s.c) / num('b_d2'), 0)}): beam bending is rarely what fails it. Check local loads where it is supported, and buckling under bending. See <a href="../../verify/shell-buckling/">Shell buckling</a>.`]);
       return () => {
         const xs = Array.from({ length: 121 }, (_, i) => (L * i) / 120);
         const Ms = xs.map((x) => b.Mx(x) / 1e6), [lo, hi] = span([...Ms, 0], 0.15);
@@ -272,7 +272,7 @@ const SECTIONS = [
       const res = circ ? circularPlate(edge, q, a, t, E, nu) : rectPlate(edge, q, a, b, t, E);
       rows.push({ dt: 'Peak stress', dd: `${g3(res.sigma)} MPa <small>at the ${res.where}${circ && edge === 'clamped' ? ` · ${g3((3 * (1 + nu) * q * a * a) / (8 * t * t))} MPa at the centre` : ''}</small>`, primary: true });
       rows.push({ dt: 'Deflection', dd: `${g3(res.w)} mm <small>at the centre · ${f(res.w / t, 2)} of the thickness</small>`, cls: res.w > 0.5 * t ? 'warn' : '' });
-      if (circ && edge === 'ss') rows.push({ dt: 'Edge slope', dd: `${f(((res as ReturnType<typeof circularPlate>).slope * 180) / Math.PI, 2)}° <small>the edge rotates — it can open a face seal</small>` });
+      if (circ && edge === 'ss') rows.push({ dt: 'Edge slope', dd: `${f(((res as ReturnType<typeof circularPlate>).slope * 180) / Math.PI, 2)}° <small>the edge rotates: it can open a face seal</small>` });
       if (!circ) rows.push({ dt: 'Coefficients', dd: `β ${f((res as ReturnType<typeof rectPlate>).beta, 3)} <small>α ${f((res as ReturnType<typeof rectPlate>).alpha, 4)} · sides ${f((res as ReturnType<typeof rectPlate>).ratio, 2)} : 1</small>` });
       rows.push(msRow('Yield margin', fy, 'yield factor', num('p_fty'), res.sigma), msRow('Ultimate margin', fu, 'ultimate factor', num('p_ftu'), res.sigma));
       if (fy !== null && fu !== null && num('p_fty') > 0 && num('p_ftu') > 0) {
@@ -280,8 +280,8 @@ const SECTIONS = [
         const dome = circ ? Math.max((fy * q * a) / (2 * num('p_fty')), (fu * q * a) / (2 * num('p_ftu'))) : NaN;
         rows.push({ dt: 'Thickness needed', dd: `${g3(need)} mm <small>stress goes as 1/t²${circ ? ` · a hemispherical head of the same radius needs ${g3(dome)} mm` : ''}</small>` });
       } else rows.push({ dt: 'Thickness needed', dd: `<small>${awaitingMessage(['yield and ultimate factors'], 'the thickness needed')}</small>` });
-      if (res.w > 0.5 * t) notes.push(['warn', `The deflection is ${f(res.w / t, 2)} of the thickness. Beyond about half, the plate also stretches like a membrane and these small-deflection formulas over-predict the stress — use a large-deflection solution or a finite-element model.`]);
-      notes.push(['', edge === 'ss' ? 'Simply supported gives the largest centre stress and deflection; clamped gives the largest edge stress. A bolted or welded edge lies between — check both.' : 'Clamped assumes the edge cannot rotate at all. A flange or bolt pattern that can rotate moves the stress toward the centre — check simply supported too.']);
+      if (res.w > 0.5 * t) notes.push(['warn', `The deflection is ${f(res.w / t, 2)} of the thickness. Beyond about half, the plate also stretches like a membrane and these small-deflection formulas over-predict the stress: use a large-deflection solution or a finite-element model.`]);
+      notes.push(['', edge === 'ss' ? 'Simply supported gives the largest centre stress and deflection; clamped gives the largest edge stress. A bolted or welded edge lies between: check both.' : 'Clamped assumes the edge cannot rotate at all. A flange or bolt pattern that can rotate moves the stress toward the centre: check simply supported too.']);
       return () => {
         if (circ) {
           const p = res as ReturnType<typeof circularPlate>, rs = Array.from({ length: 81 }, (_, i) => (a * i) / 80);
@@ -311,13 +311,13 @@ const SECTIONS = [
         { dt: 'Radial growth', dd: `${g3(s.growth)} mm <small>${f((100 * s.growth) / r, 2)}% of the radius</small>` },
         { dt: 'Edge zone', dd: `${g3(s.decayLength)} mm <small>π/β, where edge bending dies away · √(rt) = ${g3(s.sqrtRT)} mm</small>` },
         { dt: 'At a clamped edge', dd: `${g3(s.peakAxial)} MPa <small>axial, inner surface: ${f(s.edgeBend / s.hoop, 2)} × hoop in bending · a land of ${g3((t * s.peakAxial) / s.hoop)} mm holds it to the hoop stress</small>`, cls: 'warn' },
-        { dt: 'Sphere or hemisphere', dd: `${g3(s.sphere)} MPa <small>pr/2t — half the cylinder's hoop stress</small>` },
+        { dt: 'Sphere or hemisphere', dd: `${g3(s.sphere)} MPa <small>pr/2t: half the cylinder's hoop stress</small>` },
         msRow('Yield margin', fy, 'yield factor', num('s_fty'), s.hoop),
         msRow('Ultimate margin', fu, 'ultimate factor', num('s_ftu'), s.hoop),
       );
-      if (s.thick) notes.push(['warn', `r/t = ${f(r / t, 1)}: below about 10 the wall is thick and thin-shell theory under-predicts the inner-surface stress. Use Lamé's thick-cylinder solution — see <a href="../../motor/case-sizing/">Case sizing</a>.`]);
+      if (s.thick) notes.push(['warn', `r/t = ${f(r / t, 1)}: below about 10 the wall is thick and thin-shell theory under-predicts the inner-surface stress. Use Lamé's thick-cylinder solution. See <a href="../../motor/case-sizing/">Case sizing</a>.`]);
       notes.push(['', `Membrane stresses hold only away from edges, closures, rings and openings. Within about ${g3(s.decayLength)} mm of a stiff edge the wall bends; a fully clamped edge raises the axial surface stress to ${f(s.peakAxial / s.hoop, 2)} × the hoop stress.`]);
-      notes.push(['', 'Under external pressure or axial compression a thin shell buckles long before it yields — see <a href="../../verify/shell-buckling/">Shell buckling</a>.']);
+      notes.push(['', 'Under external pressure or axial compression a thin shell buckles long before it yields. See <a href="../../verify/shell-buckling/">Shell buckling</a>.']);
       return () => {
         const xmax = 3 * s.decayLength, xs = Array.from({ length: 121 }, (_, i) => (xmax * i) / 120);
         const hoop = xs.map(s.hoopAt), inner = xs.map(s.innerAt), outer = xs.map(s.outerAt);
@@ -382,7 +382,7 @@ const SECTIONS = [
         else { const sm = secantStress(fy * P, s, L, K, E, e), ms = Fty / sm - 1; rows.push({ dt: 'First yield', dd: `MS ${Number.isFinite(sm) ? sgn(ms) : '< −1'} <small>${Number.isFinite(sm) ? `${g3(sm)} MPa` : 'beyond the Euler load'} at ${f(fy, 2)} × load with ${g3(e)} mm eccentricity</small>`, cls: ms < 0 ? 'bad' : 'ok' }); }
       }
       if (c.mode === 'Johnson') notes.push(['warn', `A short column (KL/r ${f(c.slender, 0)} below ${f(c.transition, 0)}): it yields as it buckles, and the Euler load of ${g3(c.PcrEuler / 1000)} kN would be ${f(100 * (c.PcrEuler / c.Pcr - 1), 0)}% unconservative.`]);
-      if (field('c_kind').value === 'tube' && num('c_d1') / num('c_d2') > 40) notes.push(['', 'A thin-walled tube can also fail by local buckling of its wall before the column buckles — see Shell buckling.']);
+      if (field('c_kind').value === 'tube' && num('c_d1') / num('c_d2') > 40) notes.push(['', 'A thin-walled tube can also fail by local buckling of its wall before the column buckles. See Shell buckling.']);
       notes.push(['', 'K is a judgement about the ends. Real "fixed" ends rotate, so design values (2.1, 0.8, 0.65) are larger than the theoretical ones (2, 0.7, 0.5).']);
       return () => {
         const smax = Math.max(160, c.slender * 1.25, c.transition * 1.3), sl = Array.from({ length: 121 }, (_, i) => 1 + ((smax - 1) * i) / 120);
@@ -401,7 +401,7 @@ const SECTIONS = [
     const RUN: Record<string, typeof runBeam> = { beam: runBeam, plate: runPlate, shell: runShell, lug: runLug, column: runColumn };
     const CAPS: Record<string, string> = {
       beam: 'Bending moment along the span, and the deflected shape (not to scale).',
-      plate: 'Surface stresses across a circular plate, or the stress coefficient of a rectangular plate against its aspect ratio — the dot is this plate.',
+      plate: 'Surface stresses across a circular plate, or the stress coefficient of a rectangular plate against its aspect ratio: the dot is this plate.',
       shell: 'Stresses near a clamped edge. The hoop stress is suppressed at the edge, and bending adds and subtracts from the axial stress on the two surfaces; both settle to membrane values beyond the edge zone.',
       lug: 'Each check as a share of its allowable. The longest bar governs.',
       column: 'Critical stress against slenderness: Johnson\'s parabola below the transition, Euler above it. The dot on the curve is this column\'s buckling stress; the red dot is its stress under the load (factored once the ultimate factor is entered).',

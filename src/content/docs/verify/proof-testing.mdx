@@ -1,6 +1,6 @@
 ---
 title: Proof testing
-description: What a proof test proves and what it doesn't, how the proof factor is chosen, flaw screening by proof, test media and stored energy, rig safety, and acceptance criteria.
+description: What a proof test proves and what it does not prove, how to select the proof factor, flaw screening by proof, test media and stored energy, rig safety, and acceptance criteria.
 sidebar:
   order: 1
 ---
@@ -14,68 +14,70 @@ import ProofRig from '../../../components/ProofRig.astro';
 import ProofRigCalc from '../../../components/ProofRigCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A proof test doesn't show a vessel is perfect — it guarantees that every survivor's flaws are smaller than a size you can calculate.</div>
-  <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> (MEOP, proof and burst; leak-before-break)</div>
+  <div><b>In one line</b>A proof test does not show that a vessel is perfect. It makes sure that the flaws in each vessel that passes are smaller than a size that you can calculate.</div>
+  <div><b>Before this</b><a href="../../motor/case-sizing/">Case sizing</a> (MEOP, proof and burst; leak before break)</div>
 </div>
 
 ## Why this matters
 
-Every solid motor case is normally proof tested before it is insulated and loaded with propellant. It is the last
-check between manufacture and a vessel that will hold an energetic load for years. A proof test catches:
+Usually, each solid motor case has a proof test before it gets its insulation and propellant. It is the last check
+between manufacture and a vessel that will hold an energetic load for years. A proof test finds:
 
-- **Workmanship and material errors** — a wrong heat treatment, a weak weld, a wall machined too thin, a bad batch of
-  material.
-- **Cracks nobody found.** This is the subtle one, and the reason proof is part of the fracture-control argument rather
-  than just a quality check.
+- **Workmanship and material errors:** an incorrect heat treatment, a weak weld, a wall machined too thin, or a bad
+  batch of material.
+- **Cracks that nobody found.** This is the less obvious result. It is the reason why proof is part of the
+  fracture-control case, and not only a quality check.
 - **Leaks** at welds, bosses and seals.
 
-## What a proof test proves — and what it doesn't
+## What a proof test proves, and what it does not
 
 <Analogy title="A sieve">
-  Pour a bag of gravel through a sieve. You never look at a single stone, but you know for certain that every stone
-  that passed through is smaller than the mesh. A proof test is a sieve for cracks: any case carrying a crack big
-  enough to fail at proof pressure fails on the test stand, safely. Every case that survives has only cracks smaller
-  than the "mesh size" — even cracks no inspection could ever have found.
+  Pour a bag of gravel through a sieve. You never look at one stone, but you know that each stone that went through is
+  smaller than the mesh. A proof test is a sieve for cracks. Each case with a crack that is sufficiently large to fail at
+  proof pressure fails on the test stand, safely. Each case that survives has only cracks smaller than the "mesh size".
+  This is also true for cracks that no inspection could find.
 </Analogy>
 
 <ProofSieve />
 
 It does **not** prove:
 
-- **That the case has margin to burst.** Proof is below burst on purpose. Burst capability is shown by analysis and by
-  testing qualification articles to failure.
-- **That flaws stay small.** Cracks grow with every pressurisation and, in some environments, under sustained load. The
-  proof screen is the *starting* size for a life argument, not the end of it.
-- **That the case survives loads other than pressure** — thrust, bending, handling, external pressure.
-- **That the test did no harm.** Proof is the highest stress the part will see before flight. It can grow sub-critical
-  cracks and, in a susceptible material and environment, leave the case worse than it found it.
+- **That the case has margin to burst.** The proof pressure is below burst on purpose. Analysis, and tests to failure
+  of qualification articles, show the burst capability.
+- **That flaws stay small.** Cracks grow with each pressurisation and, in some environments, under sustained load. The
+  proof screen gives the *starting* size for a life analysis. It is not the end of the analysis.
+- **That the case survives loads other than pressure:** thrust, bending, handling and external pressure.
+- **That the test caused no damage.** Proof is the highest stress that the part has before flight. It can grow
+  sub-critical cracks. In a susceptible material and environment, it can leave the case in a worse condition than
+  before.
 
 ## Choosing the proof factor
 
 The proof pressure is MEOP times a proof factor (see the [pressure ladder](../../motor/case-sizing/#the-three-pressures)).
-The factor is squeezed from both sides:
+Requirements in two directions set the factor:
 
-| Pushes the factor **up** | Pushes the factor **down** |
+| Increases the factor | Decreases the factor |
 | --- | --- |
-| Smaller screened flaw, so more crack-growth life | Proof stress must stay below yield, with margin for local peaks |
-| Must cover strength lost at the service temperature | The test can grow cracks and cause sustained-load damage |
-| Must cover toughness lost at the service temperature | Composites: fibre damage, stress-rupture and damage accumulation |
-| Must screen to a size NDT cannot reliably see | Good hardware lost in the test, schedule and cost |
+| Smaller screened flaw, thus more crack-growth life | The proof stress must stay below yield, with margin for local peaks |
+| Must cover the strength lost at the service temperature | The test can grow cracks and cause sustained-load damage |
+| Must cover the toughness lost at the service temperature | Composites: fibre damage, stress rupture and damage accumulation |
+| Must screen to a size that NDT cannot reliably see | Good hardware lost in the test, schedule and cost |
 
-The governing standard sets the factor for the vessel class, and the fracture-control plan checks it buys enough
-life. This site never supplies the value: the calculator below starts with it blank. Two corrections are routinely applied on top:
+The applicable standard sets the factor for the class of vessel. The fracture-control plan checks that it gives
+sufficient life. This site never gives the value. The calculator below starts with this field empty. Two corrections
+are usually added:
 
-- **Temperature.** If the case is weaker at its service temperature than at the test temperature, raise the proof
-  pressure by the ratio of strengths, so the proof stress-to-strength ratio covers the service condition.
-- **Toughness.** The screen only works if the material is at least as tough in the test as in service. Toughness of
-  high-strength steels usually falls with temperature, so a warm proof can screen *nothing* for a cold-day firing. The
-  calculator below shows how quickly that happens.
+- **Temperature.** If the case is weaker at its service temperature than at the test temperature, increase the proof
+  pressure by the ratio of the strengths. The ratio of proof stress to strength then covers the service condition.
+- **Toughness.** The screen works only if the material is at least as tough in the test as in service. The toughness of
+  high-strength steels usually decreases with temperature. Thus a warm proof test can screen *nothing* for a cold-day
+  firing. The calculator below shows how quickly this occurs.
 
 ## The flaw-screening argument
 
-For a crack of depth $a$ in a wall at stress $\sigma$, linear-elastic fracture mechanics gives the stress intensity
-$K = Y\sigma\sqrt{\pi a}$, where $Y$ is a geometry factor (about 1.12 for a long, shallow surface crack). The crack
-runs unstably when $K$ reaches the fracture toughness $K_{IC}$. So:
+For a crack of depth $a$ in a wall at a stress $\sigma$, linear-elastic fracture mechanics gives the stress intensity
+$K = Y\sigma\sqrt{\pi a}$. $Y$ is a geometry factor (approximately 1.12 for a long, shallow surface crack). The crack
+runs unstably when $K$ gets to the fracture toughness $K_{IC}$. Thus:
 
 $$
 a_\text{screen} = \frac{1}{\pi}\left(\frac{K_{IC,\text{proof}}}{Y\,\sigma_\text{proof}}\right)^2
@@ -83,63 +85,65 @@ a_\text{screen} = \frac{1}{\pi}\left(\frac{K_{IC,\text{proof}}}{Y\,\sigma_\text{
 a_\text{crit} = \frac{1}{\pi}\left(\frac{K_{IC,\text{service}}}{Y\,\sigma_\text{MEOP}}\right)^2
 $$
 
-Their ratio is the heart of proof-test logic (Tiffany and Masters, 1965):
+Their ratio is the basis of proof-test logic (Tiffany and Masters, 1965):
 
 $$
 \frac{a_\text{crit}}{a_\text{screen}} = R^2 \left(\frac{K_{IC,\text{service}}}{K_{IC,\text{proof}}}\right)^2
 $$
 
-where $R$ is the proof factor. In the worked example below, $R = 1.10$ leaves room for the surviving cracks to grow by 21% before they become
-critical at MEOP. Raising $R$ helps as $R^2$; losing toughness in service hurts as the square of the toughness ratio.
+Here $R$ is the proof factor. In the worked example below, $R = 1.10$ lets the remaining cracks grow by 21% before they
+become critical at MEOP. A larger $R$ helps as $R^2$. A loss of toughness in service has an effect as the square of
+the toughness ratio.
 
-The crack-growth life between the two comes from the Paris law, $da/dN = C\,(\Delta K)^m$. With a constant $Y$ it
-integrates in closed form:
+The crack-growth life between the two sizes comes from the Paris law, $da/dN = C\,(\Delta K)^m$. With a constant $Y$,
+the integral has a closed form:
 
 $$
 N = \frac{a_\text{crit}^{\,1-m/2} - a_\text{screen}^{\,1-m/2}}{C\,\left(Y\,\Delta\sigma\sqrt{\pi}\right)^m\,(1 - m/2)}
 $$
 
-Fracture-control standards for flight pressure vessels typically require the analysed life to be at least **four
+Fracture-control standards for flight pressure vessels usually require that the analysed life is at least **four
 times** the service life.
 
-## Calculator — what does the proof buy?
+## Calculator: what does the proof buy?
 
 <ProofScreenCalc />
 
-## Worked example — the D6AC case
+## Worked example: the D6AC case
 
-The case from the [case-sizing example](../../motor/case-sizing/#worked-example): hoop stress 1094 MPa at 10 MPa MEOP,
-1.377 mm wall, $K_{IC} \approx 70$ MPa√m, proof factor 1.10, long surface crack ($Y = 1.12$). The proof and life
-factors are for this example only; press **Load worked example** in the calculator to load these inputs.
+This is the case from the [case-sizing example](../../motor/case-sizing/#worked-example): a hoop stress of 1094 MPa at
+the 10 MPa MEOP, a 1.377 mm wall, $K_{IC} \approx 70$ MPa√m, a proof factor of 1.10, and a long surface crack
+($Y = 1.12$). The proof factor and the life factor are for this example only. Push **Load worked example** in the
+calculator to load these inputs.
 
-1. **Proof stress.** $1.10 \times 1094 = 1204$ MPa — 83% of the 1450 MPa yield.
-2. **Screened flaw.** $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1204}\right)^2 = 0.86$ mm. No case that passes proof has
-   a crack deeper than this.
+1. **Proof stress.** $1.10 \times 1094 = 1204$ MPa, which is 83% of the 1450 MPa yield.
+2. **Screened flaw.** $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1204}\right)^2 = 0.86$ mm. No case that passes proof
+   has a crack deeper than this.
 3. **Critical flaw at MEOP.** $\frac{1}{\pi}\left(\frac{70}{1.12 \times 1094}\right)^2 = 1.04$ mm. The ratio is
    $1.10^2 = 1.21$.
-4. **Life.** Martensitic steel, Barsom's upper bound $da/dN = 1.35 \times 10^{-10}\,\Delta K^{2.25}$, full 0–MEOP
-   cycles: about **105 pressurisations** to grow from 0.86 to 1.04 mm. For a single firing plus one leak check, with a
-   life factor of 4, the requirement is 8 — a margin of about 13.
-5. **NDT.** If inspection can only promise to find cracks deeper than about 1.3 mm, it cannot support this argument on
-   its own: the critical size is smaller than what NDT sees. Proof carries the fracture case.
+4. **Life.** For martensitic steel, the upper limit of Barsom is $da/dN = 1.35 \times 10^{-10}\,\Delta K^{2.25}$. With
+   full cycles from zero to MEOP, the crack takes approximately **105 pressurisations** to grow from 0.86 to 1.04 mm.
+   For one firing plus one leak check, with a life factor of 4, the requirement is 8. The margin is approximately 13.
+5. **NDT.** If inspection can only find cracks deeper than approximately 1.3 mm, it cannot support this case alone,
+   because the critical size is smaller than the size that NDT can find. The proof test carries the fracture case.
 
-Two warnings come out of the same numbers:
+The same numbers give two warnings:
 
-- **Cold service.** If toughness at −40 °C is 20% lower (56 MPa√m), the ratio becomes $1.21 \times 0.8^2 = 0.77$.
-  Survivors of a room-temperature proof may then carry cracks that fail on a cold day. The proof screen is worthless
-  unless the test is done cold or the toughness drop is ruled out.
-- **Deep cracks.** The critical crack is 75% of the wall. A constant $Y$ underestimates $K$ that deep, so the real sizes
-  are smaller. This is also the [break-before-leak](../../motor/case-sizing/#leak-before-break) case the case-sizing
-  page flagged. A released analysis uses a proper surface-crack solution.
+- **Cold service.** If the toughness at −40 °C is 20% lower (56 MPa√m), the ratio becomes $1.21 \times 0.8^2 = 0.77$.
+  Cases that passed a room-temperature proof can then have cracks that fail on a cold day. The proof screen has no
+  value unless the test is done cold, or unless you show that the toughness does not decrease.
+- **Deep cracks.** The critical crack is 75% of the wall. At that depth, a constant $Y$ gives a value of $K$ that is
+  too low. Thus the real sizes are smaller. This is also the [break-before-leak](../../motor/case-sizing/#leak-before-break)
+  case that the case-sizing page identified. A released analysis uses a correct surface-crack solution.
 
 ## Test media and safety
 
 ### Why we proof with liquid
 
 <Analogy title="A full suitcase versus a compressed spring">
-  Sitting on a suitcase packed with books barely squashes it, and nothing much springs back when you stand up. That is
-  a liquid: it hardly compresses, so it stores very little energy. A gas is a coiled spring — every bit of work done to
-  squeeze it is waiting to come back out the instant the vessel opens.
+  If you sit on a suitcase full of books, it compresses only a little, and almost nothing springs back when you stand
+  up. A liquid is the same: it almost does not compress, so it stores very little energy. A gas is a coiled spring. All
+  the work used to compress it comes back out at the moment when the vessel opens.
 </Analogy>
 
 The energy released if the vessel fails is:
@@ -152,21 +156,24 @@ E_\text{gas} = \frac{p V}{\gamma - 1}\left[1 - \left(\frac{p_\text{atm}}{p}\righ
 E_\text{wall} = \tfrac{1}{2}\,p\,\Delta V
 $$
 
-For the 85-litre example case at 11 MPa: water stores about **2.3 kJ**, and the steel wall's own elastic strain energy
-adds 5.2 kJ — 7.5 kJ in total, about 2 g of TNT. The same test with nitrogen stores about **1.7 MJ**, roughly
-0.4 kg of TNT: **over 200 times more**. That is why proof tests are hydrostatic unless there is a compelling reason
-otherwise, and why pneumatic proof needs special approval, remote operation and much larger exclusion zones.
+For the 85-litre example case at 11 MPa, water stores approximately **2.3 kJ**, and the elastic strain energy of the
+steel wall adds 5.2 kJ. The total is 7.5 kJ, which is approximately 2 g of TNT. The same test with nitrogen stores
+approximately **1.7 MJ**, which is approximately 0.4 kg of TNT: **more than 200 times more**. This is why proof tests
+are hydrostatic unless there is a very good reason, and why a pneumatic proof test needs special approval, remote
+operation and much larger exclusion zones.
 
-**Trapped air** is gas energy hidden inside a hydrostatic test. It matters most in large, low-pressure tests, where the
-liquid stores little energy of its own. Vessels are filled from the bottom and bled from the highest point until only
+**Trapped air** is gas energy inside a hydrostatic test. It is most important in large tests at low pressure, where
+the liquid stores little energy. Fill the vessels from the bottom, and bleed them from the highest point until only
 liquid comes out.
 
 ### The medium must not attack the vessel
 
-- **Stress-corrosion cracking.** High-strength steels can crack under sustained stress in plain water. Proof water is
-  inhibited and its chemistry controlled, hold times are kept short, and the case is drained and dried promptly.
-- **Chemistry matters for every alloy.** Titanium pressure tanks failed during Apollo-era testing with methanol, and
-  chlorides attack stainless steels. Check the test medium against the material as carefully as the propellant.
+- **Stress-corrosion cracking.** High-strength steels can crack under sustained stress in plain water. Thus the proof
+  water is inhibited and its chemistry is controlled, the hold times are short, and the case is drained and dried
+  immediately.
+- **Chemistry is important for all alloys.** Titanium pressure tanks failed during tests with methanol in the Apollo
+  era, and chlorides attack stainless steels. Check the test medium against the material as carefully as you check the
+  propellant.
 - **Temperature.** Steel cases are tested well above any ductile–brittle transition, and at a temperature that keeps
   the toughness argument above valid.
 
@@ -176,85 +183,89 @@ liquid comes out.
 
 <ProofProfile />
 
-- **Remote operation.** No one is near a pressurised vessel, and the cell is cleared and barricaded before pressure
-  rises above a low leak-check level.
-- **Relief valve** set above proof pressure and below anything that would damage the vessel; rupture discs as backup.
-- **Two independent, calibrated pressure measurements.** A single gauge that reads low can over-pressurise a case.
-- **Stepped pressurisation** with holds, and a slow final ramp, so a leak or an abnormal strain reading stops the test
-  early.
-- **Records.** Gauge calibrations, liquid temperature, pressure and strain histories, and the serial number of the part
-  form the acceptance record.
+- **Remote operation.** Nobody is near a pressurised vessel. The cell is cleared and barricaded before the pressure
+  goes above a low leak-check level.
+- **A relief valve** set above the proof pressure and below any pressure that would damage the vessel, with rupture
+  discs as backup.
+- **Two independent, calibrated pressure measurements.** One gauge that reads low can over-pressurise a case.
+- **Pressurisation in steps** with holds, and a slow final ramp. Thus a leak or an abnormal strain reading stops the
+  test early.
+- **Records.** The gauge calibrations, the liquid temperature, the pressure and strain histories, and the serial number
+  of the part make the acceptance record.
 
 ## Acceptance criteria
 
-A case passes proof when the test specification's criteria are all met. Typically:
+A case passes proof when it meets all the criteria of the test specification. Usually these are:
 
-1. **No burst and no leak.** Leaks are judged visually and by the pressure hold — after correcting for temperature.
-2. **No significant permanent deformation.** Measured by volumetric expansion (water jacket), strain gauges or
-   dimensional checks before and after. A widely used convention for gas cylinders limits permanent expansion to 10% of
-   the total expansion at test pressure. Motor cases use programme-specific limits.
-3. **Strain tracks prediction.** Strain gauges should follow the predicted elastic response linearly. A knee in the
-   strain–pressure curve means local yielding.
-4. **Post-proof NDT** to look for cracks the test may have grown.
-5. **Composite cases** add acoustic-emission criteria, because fibre and matrix damage makes noise long before it shows.
+1. **No burst and no leak.** Leaks are checked visually and by the pressure hold, after the temperature correction.
+2. **No significant permanent deformation.** Measure it by volumetric expansion (water jacket), strain gauges or
+   dimensional checks before and after. A frequent convention for gas cylinders limits the permanent expansion to 10% of
+   the total expansion at test pressure. Motor cases use limits specific to the programme.
+3. **The strain follows the prediction.** Strain gauges must follow the predicted elastic response linearly. A knee in
+   the strain–pressure curve shows local yield.
+4. **NDT after proof,** to look for cracks that the test possibly grew.
+5. **Composite cases** add acoustic-emission criteria, because fibre damage and matrix damage make noise long before
+   you can see them.
 
 ### Why hold pressure drifts
 
-A liquid-full vessel is very stiff, so tiny volume changes move the pressure a lot. A change in liquid temperature
-changes its volume:
+A vessel full of liquid is very stiff. Thus very small volume changes cause large pressure changes. A change in liquid
+temperature changes its volume:
 
 $$
 \frac{dp}{dT} = \frac{\beta_\text{liquid} - 3\alpha_\text{vessel}}{1/K + C}
 $$
 
-where $\beta$ is the liquid's volumetric expansion coefficient, $\alpha$ the vessel's linear expansion coefficient, and
-$C = \frac{1}{V}\frac{dV}{dp}$ the vessel's volumetric compliance. For the example case it is about **0.12 MPa per
-kelvin** — over 1% of proof pressure for a single degree. Most hold-pressure "leaks" are the liquid cooling.
+Here $\beta$ is the volumetric expansion coefficient of the liquid, $\alpha$ is the linear expansion coefficient of the
+vessel, and $C = \frac{1}{V}\frac{dV}{dp}$ is the volumetric compliance of the vessel. For the example case it is
+approximately **0.12 MPa for each kelvin**, which is more than 1% of the proof pressure for one degree. Most "leaks"
+during a pressure hold are the liquid that cools.
 
-## Calculator — test rig and acceptance
+## Calculator: test rig and acceptance
 
 <ProofRigCalc />
 
-The defaults show a typical hold reading: a 0.15 MPa drop during a 1 K fall in liquid temperature. Temperature explains
-0.12 MPa of it, leaving 0.03 MPa unexplained — inside the illustrative 0.05 MPa allowance.
+The defaults show a typical hold reading: a 0.15 MPa decrease during a 1 K decrease in liquid temperature. The
+temperature explains 0.12 MPa of it. The remaining 0.03 MPa is not explained, and it is within the illustrative
+0.05 MPa allowance.
 
 ## Where this stops
 
 <Aside type="caution" title="Screening, not a fracture-control plan">
-  These tools use linear-elastic fracture mechanics with a constant geometry factor and class-typical growth data.
-  A released proof-test argument uses measured toughness and crack-growth data at the right temperature and
-  environment, surface- and embedded-crack solutions, crack growth during the proof cycle itself, sustained-load
-  (environment-assisted) cracking, and the governing standard's factors.
+  These tools use linear-elastic fracture mechanics with a constant geometry factor and growth data typical of the
+  class. A released proof-test case uses measured toughness and crack-growth data at the correct temperature and
+  environment, surface-crack and embedded-crack solutions, crack growth during the proof cycle, sustained-load
+  (environment-assisted) cracking, and the factors of the applicable standard.
 </Aside>
 
-- **Thin, tough walls** may tear in a ductile way before linear-elastic fracture mechanics applies. Elastic-plastic
-  methods are then needed.
-- **Composite cases** are not screened this way. Their proof logic is about damage, stress rupture and acoustic
-  emission, not a single crack.
+- **Thin, tough walls** can tear in a ductile way before linear-elastic fracture mechanics applies. Then you need
+  elastic-plastic methods.
+- **Composite cases** are not screened in this way. Their proof logic is about damage, stress rupture and acoustic
+  emission, not one crack.
 
 ### Differences from REF·DB v1
 
 <Aside type="note" title="Crack-growth constants corrected">
-  v1 labelled the ferrite–pearlite constants ($6.9\times10^{-12}$, $m = 3.0$) as "low-alloy / maraging steel". D6AC,
-  maraging and other martensitic case steels use Barsom's martensitic upper bound ($1.35\times10^{-10}$, $m = 2.25$),
-  which predicts faster growth at the stress intensities that matter here. v1's austenitic coefficient also did not
-  match the metric form of Barsom's line; it is now $5.6\times10^{-12}$, $m = 3.25$.
+  v1 gave the ferrite–pearlite constants ($6.9\times10^{-12}$, $m = 3.0$) the label "low-alloy / maraging steel". D6AC,
+  maraging and other martensitic case steels use the martensitic upper limit of Barsom ($1.35\times10^{-10}$,
+  $m = 2.25$), which predicts faster growth at the important stress intensities. Also, the austenitic coefficient of v1
+  did not agree with the metric form of the line of Barsom. It is now $5.6\times10^{-12}$, $m = 3.25$.
 </Aside>
 
 ## References and further reading
 
 - C. F. Tiffany & J. N. Masters, "Applied Fracture Mechanics", in *Fracture Toughness Testing and its Applications*,
-  ASTM STP 381 (1965) — the origin of proof-test logic for pressure vessels.
-- J. M. Barsom & S. T. Rolfe, *Fracture and Fatigue Control in Structures*, 3rd ed., ASTM (1999) — crack-growth
-  relationships for steels.
+  ASTM STP 381 (1965) (the origin of proof-test logic for pressure vessels).
+- J. M. Barsom & S. T. Rolfe, *Fracture and Fatigue Control in Structures*, 3rd ed., ASTM (1999) (crack-growth
+  relations for steels).
 - T. L. Anderson, *Fracture Mechanics: Fundamentals and Applications*, 4th ed., CRC Press (2017).
 - NASA-STD-5019, *Fracture Control Requirements for Spaceflight Hardware*; NASA-STD-5009, *Nondestructive Evaluation
   Requirements for Fracture-Critical Metallic Components*.
-- AIAA S-080 and S-081 — metallic and composite-overwrapped pressure vessels.
-- 49 CFR 180.205 — US requirements for requalifying gas cylinders by hydrostatic test, including the permanent-expansion
-  limit.
+- AIAA S-080 and S-081 (metallic and composite-overwrapped pressure vessels).
+- 49 CFR 180.205 (US requirements for the requalification of gas cylinders by hydrostatic test, including the
+  permanent-expansion limit).
 
 <Aside type="note">
-  Educational and screening material. Proof test procedures, pressures and acceptance criteria come from your
-  programme's test specifications and are approved by the responsible test, stress and safety authorities.
+  This is educational and screening material. Proof test procedures, pressures and acceptance criteria come from the
+  test specifications of your programme. The responsible test, stress and safety authorities approve them.
 </Aside>

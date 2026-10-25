@@ -8,17 +8,17 @@ const items = route();
 const byKey = Object.fromEntries(items.map((i) => [i.key, i]));
 
 const WAVES = [
-  { n: 'Wave 1 — Solid rocket motor core', why: 'The reason this site exists, so it goes first.',
+  { n: 'Wave 1: Solid rocket motor core', why: 'The reason this site exists, so it goes first.',
     keys: ['primer-srm', 'pv', 'grain', 'ablative', 'proof', 'rocket', 'propellant', 'thermal', 'lbb', 'buckling', 'visco', 'ageing'] },
-  { n: 'Wave 2 — Materials', why: 'Selection, data and how to call it up.',
+  { n: 'Wave 2: Materials', why: 'Selection, data and how to call it up.',
     keys: ['materials', 'xref', 'matspec', 'trade', 'sheet', 'allow', 'metal', 'fatigue', 'cryo', 'density', 'plastics', 'elast', 'coat', 'galvanic'] },
-  { n: 'Wave 3 — Joints, seals and features', why: 'Where pressure hardware actually leaks or loosens.',
+  { n: 'Wave 3: Joints, seals and features', why: 'Where pressure hardware actually leaks or loosens.',
     keys: ['oring', 'sealstrat', 'bolts', 'threads', 'locking', 'loadpath', 'diffexp', 'residual', 'handcalc'] },
-  { n: 'Wave 4 — Verification', why: 'Proving it survives.',
+  { n: 'Wave 4: Verification', why: 'Proving it survives.',
     keys: ['margins', 'vibration', 'feamat', 'fea', 'correl'] },
-  { n: 'Wave 5 — Drawing, manufacture and inspection', why: 'Turning the design into parts that pass inspection.',
+  { n: 'Wave 5: Drawing, manufacture and inspection', why: 'Turning the design into parts that pass inspection.',
     keys: ['gdt', 'gdtprac', 'fits', 'stack', 'surf', 'gauge', 'process', 'cost', 'weld', 'ndt', 'leak', 'certs'] },
-  { n: 'Wave 6 — Process, standards and tools', why: 'Everything around the design itself.',
+  { n: 'Wave 6: Process, standards and tools', why: 'Everything around the design itself.',
     keys: ['home', 'reqs', 'duty', 'risk', 'sandbox', 'worked', 'read', 'access', 'standards', 'guides', 'drawing', 'release', 'export'] },
 ];
 

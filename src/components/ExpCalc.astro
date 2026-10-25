@@ -29,7 +29,7 @@ import { EXP_MATERIALS } from '../lib/expansion';
           <label>Friction μ<input name="mu" type="number" min="0" step="0.01" value="0.15" /></label>
           <label>Outer part yield (MPa)<input name="fy" type="number" min="1" step="any" value="500" /></label>
         </div>
-        <p class="hint">Negative interference is a clearance. Yield is a typical value — use your allowable at temperature.</p>
+        <p class="hint">Negative interference is a clearance. Yield is a typical value: use your allowable at temperature.</p>
       </fieldset>
       <fieldset>
         <legend>Bonded overlap</legend>
@@ -72,7 +72,7 @@ import { EXP_MATERIALS } from '../lib/expansion';
   </div>
   <div class="calc-foot">
     Uniform temperature, linear elastic, room-temperature properties. Fit: Lamé thick cylinders. Bond: one-dimensional shear
-    lag — no peel, no edge singularity, no adhesive relaxation. Bolt pattern: slip relative to a common fixed point.
+    lag: no peel, no edge singularity, no adhesive relaxation. Bolt pattern: slip relative to a common fixed point.
   </div>
 </div>
 
@@ -123,7 +123,7 @@ import { EXP_MATERIALS } from '../lib/expansion';
           const del = fitAt!(T), p = fitPressure(del, fp), s = fitStresses(p, fp), hold = fitHolding(p, fp.d, L, mu);
           r(k).innerHTML = del > 0
             ? `${f(del, 3)} mm <small>interference · p ${f(p, 2)} MPa · holds ${f(hold.force / 1000, 1)} kN</small>`
-            : `${f(-del, 3)} mm <small>clearance — loose at ${f(T, 0)} °C</small>`;
+            : `${f(-del, 3)} mm <small>clearance: loose at ${f(T, 0)} °C</small>`;
           cls(k, del > 0 ? 'ok' : 'bad');
           return { del, p, s };
         };
@@ -134,7 +134,7 @@ import { EXP_MATERIALS } from '../lib/expansion';
         cls('vm', ratio > 1 ? 'bad' : ratio > 0.67 ? 'warn' : 'ok');
         for (const [x, T] of [[c, tc], [h, th]] as const) if (x.del <= 0) notes.push(['bad', `The fit is loose at ${f(T, 0)} °C (${f(-x.del, 3)} mm clearance): it cannot locate or hold the part there. Pin, key or bolt it, or choose materials with matched expansion.`]);
         if (ratio > 1) notes.push(['bad', `The outer part yields at the tightest extreme (${f(worst.s.vmOuter, 0)} MPa): less interference, a thicker outer part, or a matched material.`]);
-        if (mi.alpha === mo.alpha) notes.push(['', 'Same expansion: the fit does not change with a uniform temperature. Transients — one part heating before the other — still do.']);
+        if (mi.alpha === mo.alpha) notes.push(['', 'Same expansion: the fit does not change with a uniform temperature. Transients (one part heating before the other) still do.']);
       } else { notes.push(['bad', 'Check the fit geometry: outer OD larger than the interface, inner bore smaller.']); }
 
       // bond — the larger temperature excursion governs
@@ -154,8 +154,8 @@ import { EXP_MATERIALS } from '../lib/expansion';
       const slip = Math.max(patternSlip(p1.alpha, p2.alpha, dTc, R), patternSlip(p1.alpha, p2.alpha, dTh, R));
       r('slip').innerHTML = `${f(slip, 3)} mm <small>against ${f(cl, 2)} mm hole clearance</small>`;
       cls('slip', slip >= cl ? 'bad' : slip > 0.5 * cl ? 'warn' : 'ok');
-      if (slip >= cl) notes.push(['bad', `The plates move ${f(slip, 3)} mm relative to each other — more than the hole clearance, so the outer bolts bear and are sheared on every thermal cycle. Use one fixed hole with radial slots, flexures, or matched materials.`]);
-      else if (slip > 0) notes.push(['', `Relative slip of ${f(slip, 3)} mm at the outer bolts: within the clearance, but friction under preload resists it, so the joint stores the mismatch as shear until it slips — a source of preload loss and fretting.`]);
+      if (slip >= cl) notes.push(['bad', `The plates move ${f(slip, 3)} mm relative to each other: more than the hole clearance, so the outer bolts bear and are sheared on every thermal cycle. Use one fixed hole with radial slots, flexures, or matched materials.`]);
+      else if (slip > 0) notes.push(['', `Relative slip of ${f(slip, 3)} mm at the outer bolts: within the clearance, but friction under preload resists it, so the joint stores the mismatch as shear until it slips (a source of preload loss and fretting).`]);
 
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       chart(fitAt, ta, tc, th);

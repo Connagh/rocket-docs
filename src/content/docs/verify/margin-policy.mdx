@@ -1,6 +1,6 @@
 ---
 title: Margin policy
-description: How margins of safety are built and reported — limit and ultimate loads, yield and ultimate factors and the special factors that multiply them, consistent load–factor–allowable pairs, combined loading and interaction, and a margin-report template.
+description: How to make and report margins of safety. Limit and ultimate loads, yield and ultimate factors and the special factors that multiply them, consistent sets of load, factor and allowable, combined loading and interaction, and a margin-report template.
 sidebar:
   order: 0
 ---
@@ -11,33 +11,33 @@ import LoadLevels from '../../../components/LoadLevels.astro';
 import MarginCalc from '../../../components/MarginCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A margin means something only when load, factor and allowable are a consistent set — yield with yield, ultimate with ultimate, at the same condition.</div>
-  <div><b>Before this</b><a href="../../materials/allowables/">Allowables</a> — where the allowable comes from</div>
+  <div><b>In one line</b>A margin has a meaning only when the load, the factor and the allowable are a consistent set: yield with yield, ultimate with ultimate, at the same condition.</div>
+  <div><b>Before this</b><a href="../../materials/allowables/">Allowables</a> (where the allowable comes from)</div>
   <div><b>Used by</b><a href="../../motor/case-sizing/">Case sizing</a> · <a href="../shell-buckling/">Shell buckling</a> · <a href="../../fundamentals/fatigue/">Fatigue</a></div>
 </div>
 
 ## Why this matters
 
-The margin of safety is the currency of a stress report: one number per failure mode that says whether a part is
-strong enough, and by how much. Reviewers do not check every calculation — they check that every margin is built from
-a consistent set. Most review findings come from four errors:
+The margin of safety is the main result of a stress report. There is one number for each failure mode. It tells if a
+part is sufficiently strong, and by how much. Reviewers do not check each calculation. They check that each margin
+comes from a consistent set. Most review findings come from four errors:
 
-- **Mixed pairs** — a yield allowable against an ultimate load, or the reverse.
-- **The wrong basis** — a typical or room-temperature value in a hot, single-load-path check.
-- **Missing factors** — a fitting or casting factor the specification requires, left out.
-- **Stacked conservatism** — a pessimistic load, times a pessimistic allowable, times a pessimistic model, giving a
-  heavy part and a margin nobody believes.
+- **Mixed pairs:** a yield allowable against an ultimate load, or the opposite.
+- **The incorrect basis:** a typical value or a room-temperature value in a hot check with a single load path.
+- **Missing factors:** a fitting factor or casting factor that the specification requires, but that is not used.
+- **Too much conservatism:** a pessimistic load, times a pessimistic allowable, times a pessimistic model. This gives a
+  heavy part and a margin that nobody believes.
 
 ## Load levels
 
 <LoadLevels />
 
-- **Limit load** is the most severe load expected in service, defined by your programme's load rules — for a pressure
-  vessel, MEOP.
-- **Yield design load** is limit × the yield factor. At it there must be no yielding that harms function: no
-  permanent set that matters, no leak, no misalignment.
-- **Ultimate design load** is limit × the ultimate factor. At it there must be no rupture or collapse.
-- **For pressure vessels** the proof and burst factors play these roles — see [case sizing](../../motor/case-sizing/)
+- **Limit load** is the most severe load that is expected in service. The load rules of your programme define it. For
+  a pressure vessel, it is MEOP.
+- **Yield design load** is the limit load × the yield factor. At this load, there must be no yield that has an effect
+  on the function: no important permanent set, no leak and no misalignment.
+- **Ultimate design load** is the limit load × the ultimate factor. At this load, there must be no rupture or collapse.
+- **For pressure vessels,** the proof and burst factors have these functions. See [case sizing](../../motor/case-sizing/)
   and [proof testing](../proof-testing/).
 
 ## The margin of safety
@@ -48,57 +48,58 @@ MS = \frac{\text{allowable}}{k \times \text{applied}} - 1
 \text{pass when } MS \ge 0
 $$
 
-with $k$ the factor for that check, the applied value at limit level, and the allowable on the right basis at the
-right condition. European practice often reports the **reserve factor** instead, $RF = MS + 1$, which passes when
+Here $k$ is the factor for that check. The applied value is at limit level, and the allowable has the correct basis at
+the correct condition. European practice often gives the **reserve factor**, $RF = MS + 1$, which passes when
 $RF \ge 1$.
 
-The formula works with stresses only when stress is proportional to load. For **buckling, contact, preloaded joints,
-large deflections and plasticity**, factor the *load* and analyse at the factored load:
-$MS = \text{failure load} / (k \times \text{limit load}) - 1$. Whether thermal stresses and preloads are factored, and
-by what, is a programme rule — state it in the report.
+The formula is correct with stresses only when the stress is proportional to the load. For **buckling, contact,
+preloaded joints, large deflections and plasticity,** apply the factor to the *load*, and do the analysis at the
+factored load: $MS = \text{failure load} / (k \times \text{limit load}) - 1$. It is a programme rule if thermal
+stresses and preloads get a factor, and which factor. Give this rule in the report.
 
 <Analogy title="A bathroom scale">
-  A scale that reads in pounds and a weight limit written in kilograms can both be correct, and the comparison still
-  wrong. A margin is the same: allowable, factor and load are each fine on their own, but they must be in the same
-  "units" — yield with yield, ultimate with ultimate, the same temperature, the same direction.
+  A scale that shows pounds and a weight limit in kilograms can both be correct, and the comparison can still be
+  incorrect. A margin is the same. The allowable, the factor and the load can each be correct, but they must be in the
+  same "units": yield with yield, ultimate with ultimate, the same temperature and the same direction.
 </Analogy>
 
-### Pairing — the most common finding
+### Pairing: the most common finding
 
 The [case-sizing worked example](../../motor/case-sizing/#worked-example) has a hoop stress of 1094 MPa at MEOP, a
-yield allowable of 1305 MPa and an ultimate allowable of 1368 MPa (weld efficiency included), with example factors of
+yield allowable of 1305 MPa and an ultimate allowable of 1368 MPa (with the weld efficiency), with example factors of
 1.10 and 1.25:
 
-| Pairing | Margin | Verdict |
+| Pairing | Margin | Result |
 | --- | --- | --- |
 | Yield allowable, yield factor | $1305 / (1.10 \times 1094) - 1 = +0.08$ | Correct |
 | Ultimate allowable, ultimate factor | $1368 / (1.25 \times 1094) - 1 = 0.00$ | Correct |
-| Yield allowable, ultimate factor | $1305 / (1.25 \times 1094) - 1 = -0.05$ | A false failure |
-| Ultimate allowable, yield factor | $1368 / (1.10 \times 1094) - 1 = +0.14$ | False comfort |
+| Yield allowable, ultimate factor | $1305 / (1.25 \times 1094) - 1 = -0.05$ | A failure that is not real |
+| Ultimate allowable, yield factor | $1368 / (1.10 \times 1094) - 1 = +0.14$ | A pass that is not real |
 
-Run yield and ultimate as **separate rows**, every time.
+Always calculate yield and ultimate as **separate rows**.
 
 ## Special factors
 
-Specifications often require extra factors for particular features, which multiply the basic factor:
+Specifications often require additional factors for some features. These multiply the basic factor:
 
 | Factor | Applies to |
 | --- | --- |
-| Fitting factor | Joints and fittings, where the stress state is uncertain |
+| Fitting factor | Joints and fittings, where the stress state is not certain |
 | Bearing factor | Bearing at fastener holes with clearance or vibration |
-| Casting factor | Cast parts, tied to the inspection level |
-| Weld factor | Welded joints, tied to procedure and inspection |
-| Model-uncertainty factor | Analysis methods not validated by test |
+| Casting factor | Cast parts, related to the inspection level |
+| Weld factor | Welded joints, related to the procedure and the inspection |
+| Model-uncertainty factor | Analysis methods that a test has not validated |
 
-Missing a required one makes every margin downstream wrong. Their values, like the basic factors, come from your
-specification — this site does not hold them.
+If a necessary factor is missing, all the margins that follow from it are incorrect. As with the basic factors, their
+values come from your specification. This site does not give them.
 
 ## Combined loading
 
-- **The same stress component from several loads** — add the stresses at limit level, then factor the total. For
-  ductile metals under combined normal and shear stress, use von Mises: $\sigma_{vm} = \sqrt{\sigma^2 + 3\tau^2}$.
-- **Different load types or failure modes** — a fastener in tension and shear, a shell under axial load, bending and
-  pressure — use an interaction equation:
+- **The same stress component from several loads.** Add the stresses at limit level, then apply the factor to the
+  total. For ductile metals under combined normal stress and shear stress, use von Mises:
+  $\sigma_{vm} = \sqrt{\sigma^2 + 3\tau^2}$.
+- **Different load types or failure modes,** for example a fastener in tension and shear, or a shell under axial load,
+  bending and pressure. Use an interaction equation:
 
 $$
 \sum_i R_i^{\,e_i} \le 1,
@@ -106,92 +107,98 @@ $$
 R_i = \frac{k \times \text{applied}_i}{\text{allowable}_i}
 $$
 
-Linear interaction ($e = 1$) is the most conservative; elliptical ($e = 2$) is common for fasteners in tension and
-shear. Use the form and exponents your governing standard specifies — for spaceflight fasteners, NASA-STD-5020.
+Linear interaction ($e = 1$) is the most conservative. Elliptical interaction ($e = 2$) is usual for fasteners in
+tension and shear. Use the form and the exponents that your applicable standard specifies. For spaceflight fasteners,
+this is NASA-STD-5020.
 
-The margin is how far **all the loads can grow together** before reaching the curve: $MS = \lambda - 1$, where
-$\sum (\lambda R_i)^{e_i} = 1$. For linear interaction that is $1/\sum R_i - 1$; for elliptical it is
-$1/\sqrt{R_1^2 + R_2^2} - 1$. A common shortcut, $1/\sum R_i^2 - 1$, is wrong and overstates the margin badly.
+The margin tells how much **all the loads can increase together** before they get to the curve: $MS = \lambda - 1$,
+where $\sum (\lambda R_i)^{e_i} = 1$. For linear interaction this is $1/\sum R_i - 1$. For elliptical interaction it is
+$1/\sqrt{R_1^2 + R_2^2} - 1$. A frequent shortcut, $1/\sum R_i^2 - 1$, is incorrect. It gives a margin that is much too
+high.
 
 ## Conservatism and the heavy-part rule
 
-Conservatism is fine when it is known. Record where it sits — the load, the allowable, the model — so it can be
-removed deliberately if mass becomes a problem, rather than discovered at the end. And on a mass-driven part, a large
-margin is itself a finding: as a rule of thumb, above about 0.5 either the part is heavier than it needs to be, or a
-different failure mode or load case governs and has not been found yet.
+Conservatism is acceptable when you know where it is. Record its location (the load, the allowable or the model), so
+that you can remove it on purpose if mass becomes a problem, and do not find it only at the end. On a part where mass is
+important, a large margin is also a finding. A general rule: above approximately 0.5, the part is heavier than
+necessary, or a different failure mode or load case governs and you have not found it yet.
 
 ## The margin report
 
-One row per failure mode per load case, with everything a reviewer needs to check it without asking:
+Use one row for each failure mode and each load case. Give all the data that a reviewer needs to check it without
+questions:
 
-| Column | What goes in it | Example — the hoop-burst row |
+| Column | What goes in it | Example: the hoop-burst row |
 | --- | --- | --- |
-| Item / location | The part and where on it | Case cylinder, mid-length |
+| Item / location | The part and the location on it | Case cylinder, mid-length |
 | Load case | Which limit case | MEOP |
-| Failure mode | What would happen | Hoop burst |
+| Failure mode | What would occur | Hoop burst |
 | Applied (limit) | Limit-level value, with units | 1094 MPa |
 | Factor(s) | Basic and special factors, with their source | Ultimate 1.25 (example), spec clause |
 | Allowable | Value, basis, condition and source | 1368 MPa, A-basis ultimate × weld 0.9, 20 °C, MMPDS |
 | MS | The margin | 0.00 |
 | Reference | The calculation or analysis run | Case-sizing calc, §3 |
 
-- **Summarise the lowest margin per item** at the front, and never hide a negative one.
-- **Units in every column**, and the analysis or finite-element run referenced, so the margin can be traced.
-- **State the status** — preliminary, design or final — because allowables and loads mature during a programme.
+- **Give the lowest margin for each item** at the start of the report. Never hide a negative margin.
+- **Give units in each column,** and refer to the analysis or finite-element run, so that the margin is traceable.
+- **Give the status** (preliminary, design or final), because allowables and loads change during a programme.
 
-The calculator below builds this table and copies it into a spreadsheet or as Markdown.
+The calculator below makes this table. You can copy it into a spreadsheet or as Markdown.
 
 ## Calculator
 
 <MarginCalc />
 
-## Worked example — a motor case and its closure bolts
+## Worked example: a motor case and its closure bolts
 
-The calculator's rows are the 300 mm D6AC case from earlier pages, plus its aft-closure bolts. The factors are
-**example values only**: yield 1.10, ultimate 1.25, buckling 1.25, and a fitting factor of 1.15 on the bolts. Press
+The rows of the calculator are the 300 mm D6AC case from the other pages, plus its aft-closure bolts. The factors are
+**example values only**: yield 1.10, ultimate 1.25, buckling 1.25, and a fitting factor of 1.15 on the bolts. Push
 **Load worked example** to load them.
 
 1. **Hoop yield at proof:** $1305 / (1.10 \times 1094) - 1 = +0.08$.
-2. **Hoop burst:** $1368 / (1.25 \times 1094) - 1 = 0.00$ — exactly on the line, because the case was sized to burst.
-3. **Buckling of the empty case under vacuum:** $0.127 / (1.25 \times 0.101) - 1 = +0.00$ — see
-   [shell buckling](../shell-buckling/#worked-example--the-300-mm-case-unpressurised).
-4. **Closure bolt, tension and shear** — 18 kN on a 60 kN allowable, 4 kN on 40 kN (illustrative), factored by
-   $1.25 \times 1.15 = 1.44$: $R_1 = 0.431$, $R_2 = 0.144$. Elliptical interaction gives
-   $\lambda = 1/\sqrt{0.431^2 + 0.144^2} = 2.20$, so **MS = +1.20**. Linear interaction would give +0.74; the wrong
-   shortcut $1/(R_1^2 + R_2^2) - 1$ would claim +3.84.
+2. **Hoop burst:** $1368 / (1.25 \times 1094) - 1 = 0.00$. The margin is exactly zero, because the case was sized to
+   burst.
+3. **Buckling of the empty case under vacuum:** $0.127 / (1.25 \times 0.101) - 1 = +0.00$. See
+   [shell buckling](../shell-buckling/#worked-example-the-300-mm-case-unpressurised).
+4. **Closure bolt, tension and shear:** 18 kN on a 60 kN allowable, and 4 kN on 40 kN (illustrative). The factor is
+   $1.25 \times 1.15 = 1.44$, so $R_1 = 0.431$ and $R_2 = 0.144$. Elliptical interaction gives
+   $\lambda = 1/\sqrt{0.431^2 + 0.144^2} = 2.20$, so **MS = +1.20**. Linear interaction would give +0.74. The incorrect
+   shortcut $1/(R_1^2 + R_2^2) - 1$ would give +3.84.
 
-The lowest margin is the hoop burst at 0.00: the case governs. The bolt margin of +1.20 is a finding under the
-heavy-part rule — either something else sizes those bolts (preload, joint separation, thread engagement) and needs its
-own row, or they could be smaller. [Bolted joints](../../joints/bolted-joints/) works those checks for the same closure.
+The lowest margin is the hoop burst at 0.00, so the case governs. The bolt margin of +1.20 is a finding under the
+heavy-part rule. Either a different check sizes these bolts (preload, joint separation or thread engagement) and needs
+its own row, or the bolts could be smaller. [Bolted joints](../../joints/bolted-joints/) does those checks for the same
+closure.
 
 ## Where this stops
 
-- **Factors, load definitions and margin rules** come from your programme's requirements — for example NASA-STD-5001
-  or ECSS-E-ST-32-10 for spaceflight structures. This page explains how they fit together; it does not supply them.
+- **Factors, load definitions and margin rules** come from the requirements of your programme, for example
+  NASA-STD-5001 or ECSS-E-ST-32-10 for spaceflight structures. This page tells how they fit together. It does not give
+  them.
 - **Linear responses only** for stress-based margins. Non-linear responses need load-based margins at the factored
   load.
-- **Fatigue and fracture** are judged on life and flaw size with their own factors — see
-  [Fatigue](../../fundamentals/fatigue/) and [Proof testing](../proof-testing/).
+- **Fatigue and fracture** use life and flaw size, with their own factors. See [Fatigue](../../fundamentals/fatigue/)
+  and [Proof testing](../proof-testing/).
 
 ## On the drawing and in the report
 
-- **The drawing carries what the margins assumed:** material specification and temper, finish, inspection class,
-  weld and casting quality levels. If a margin needed a casting factor tied to an inspection level, that level must be
-  on the drawing.
-- **The report carries the set:** for every row, load, factor and allowable with their sources — and the lowest margin
-  per item up front.
+- **The drawing gives what the margins assumed:** material specification and temper, finish, inspection class, and
+  weld and casting quality levels. If a margin needed a casting factor related to an inspection level, that level must
+  be on the drawing.
+- **The report gives the full set:** for each row, the load, the factor and the allowable with their sources, and the
+  lowest margin for each item at the start.
 
 ## References and further reading
 
 - NASA-STD-5001, *Structural Design and Test Factors of Safety for Spaceflight Hardware*.
 - ECSS-E-ST-32-10, *Space engineering — Structural factors of safety for spaceflight hardware*.
 - NASA-STD-5020, *Requirements for Threaded Fastening Systems in Spaceflight Hardware*.
-- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs Publishing (1973) — margins and interaction
-  equations.
+- E. F. Bruhn, *Analysis and Design of Flight Vehicle Structures*, Jacobs Publishing (1973) (margins and interaction
+  equations).
 - M. C. Y. Niu, *Airframe Stress Analysis and Sizing*, Conmilit Press (1997).
-- 14 CFR 25.301–25.305 — loads, factor of safety, strength and deformation, for civil aircraft.
+- 14 CFR 25.301–25.305 (loads, factor of safety, strength and deformation, for civil aircraft).
 
 <Aside type="note">
-  Guidance on method from general practice. Factors, load definitions and margin rules come from your programme's
-  requirements and your organisation's procedures.
+  This is guidance on method from general practice. Factors, load definitions and margin rules come from the
+  requirements of your programme and the procedures of your organisation.
 </Aside>

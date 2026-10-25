@@ -28,7 +28,7 @@ const ROWS = [
         <p class="hint">Open a row to edit it; the report below lists them all. Leave applied or allowable blank to drop a row.</p>
       {ROWS.map((r, k) => (
         <details class="mg-row">
-          <summary><b>Row {k + 1}</b> <span data-sum={k}>{r.item ? `${r.item} · ${r.fail}` : 'empty — add your own'}</span></summary>
+          <summary><b>Row {k + 1}</b> <span data-sum={k}>{r.item ? `${r.item} · ${r.fail}` : 'empty: add your own'}</span></summary>
           <div class="mg-fields">
           <div class="row2">
             <label>Item<input name={`it${k}`} type="text" value={r.item} /></label>
@@ -64,8 +64,8 @@ const ROWS = [
           <label>Applied · allowable<span class="mg-pair"><input name="a2" type="number" min="0" step="any" value="4" aria-label="load 2 applied" /><input name="u2" type="number" min="0" step="any" value="40" aria-label="load 2 allowable" /></span></label>
           <label>Interaction
             <select name="ix">
-              <option value="2,2">Elliptical — R₁² + R₂² ≤ 1</option>
-              <option value="1,1">Linear — R₁ + R₂ ≤ 1</option>
+              <option value="2,2">Elliptical: R₁² + R₂² ≤ 1</option>
+              <option value="1,1">Linear: R₁ + R₂ ≤ 1</option>
               <option value="custom">Other exponents</option>
             </select>
           </label>
@@ -89,7 +89,7 @@ const ROWS = [
       <textarea class="mg-copytext" data-copy-text readonly hidden rows="6" aria-label="Report text to copy"></textarea>
       <figure class="mg-fig">
         <svg viewBox="0 0 480 260" data-int role="img" aria-label="Interaction diagram for the combined loading"></svg>
-        <figcaption>Interaction diagram. The dot is the factored load; the ray shows how far all loads can grow together before reaching the curve — that distance is the margin.</figcaption>
+        <figcaption>Interaction diagram. The dot is the factored load; the ray shows how far all loads can grow together before reaching the curve: that distance is the margin.</figcaption>
       </figure>
       <ul class="pv-notes" data-notes></ul>
     </div>
@@ -165,7 +165,7 @@ const ROWS = [
     function run() {
       [0, 1, 2, 3].forEach((k) => {
         const it = txt(`it${k}`), fm = txt(`fm${k}`);
-        r2(k).textContent = it || fm ? [it, fm].filter(Boolean).join(' · ') : 'empty — add your own';
+        r2(k).textContent = it || fm ? [it, fm].filter(Boolean).join(' · ') : 'empty: add your own';
       });
       const factors = { yield: readFactor(field('fy').value), ultimate: readFactor(field('fu').value), other: readFactor(field('fo').value) };
       const rows: MarginRow[] = [0, 1, 2, 3].map((k) => ({
@@ -191,7 +191,7 @@ const ROWS = [
       const all = lastRes.map((x, i) => ({ x, row: lastRows[i] }));
       const evald = all.filter((a) => Number.isFinite(a.x.ms));
       const low = evald.sort((a, b) => a.x.ms - b.x.ms)[0];
-      r('low').innerHTML = low ? `${msTxt(low.x.ms)} <small>${esc(low.row.item)} — ${esc(low.row.failure)}</small>` : '<small>needs your factors</small>';
+      r('low').innerHTML = low ? `${msTxt(low.x.ms)} <small>${esc(low.row.item)}: ${esc(low.row.failure)}</small>` : '<small>needs your factors</small>';
       cls('low', low ? (low.x.ms < 0 ? 'bad' : 'ok') : '');
       r('count').textContent = `${evald.length} of ${all.length}`;
       const flags = all.filter((a) => a.x.mismatch).length, heavy = evald.filter((a) => a.x.ms > 0.5).length;
@@ -211,7 +211,7 @@ const ROWS = [
       const out: [string, string][] = [];
       if (missing.length) out.push(['warn', awaitingMessage(missing.map((m) => `${m} factor`), 'the margins')]);
       for (const a of all) if (a.x.mismatch) out.push(['warn', `${esc(a.row.item)}, ${esc(a.row.failure)}: ${a.x.mismatch}. Pair yield with yield and ultimate with ultimate.`]);
-      for (const a of evald) if (a.x.ms > 0.5) out.push(['', `${esc(a.row.item)}, ${esc(a.row.failure)}: MS ${msTxt(a.x.ms)}. On a mass-driven part a large margin is a finding, not a success — either the part is heavy or another failure mode governs.`]);
+      for (const a of evald) if (a.x.ms > 0.5) out.push(['', `${esc(a.row.item)}, ${esc(a.row.failure)}: MS ${msTxt(a.x.ms)}. On a mass-driven part a large margin is a finding, not a success: either the part is heavy or another failure mode governs.`]);
       if (low && low.x.ms < 0) out.push(['bad', `${esc(low.row.item)}, ${esc(low.row.failure)} fails with MS ${msTxt(low.x.ms)}.`]);
       root.querySelector('[data-notes]')!.innerHTML = out.map(([c, t]) => `<li class="${c}">${t}</li>`).join('');
       intChart(comb, kU === null ? null : kU * cx);
@@ -232,8 +232,8 @@ const ROWS = [
         svg.append(el('text', { x: X(v), y: H - B + 14, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(2)));
         svg.append(el('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--rd-muted)' }, v.toFixed(2)));
       }
-      svg.append(el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, `R₁ — ${txt('n1')}`));
-      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, `R₂ — ${txt('n2')}`));
+      svg.append(el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, `R₁: ${txt('n1')}`));
+      svg.append(el('text', { x: 12, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)', transform: `rotate(-90 12 ${(T + H - B) / 2})` }, `R₂: ${txt('n2')}`));
       const pts = Array.from({ length: 101 }, (_, i) => i / 100).map((a) => [a, Math.pow(Math.max(0, 1 - Math.pow(a, e1)), 1 / e2)]);
       svg.append(el('path', { d: pts.map(([a, b], i) => `${i ? 'L' : 'M'}${X(a).toFixed(1)},${Y(b).toFixed(1)}`).join('') + ` L${X(0)},${Y(0)} Z`, fill: 'var(--rd-ok)', 'fill-opacity': 0.1, stroke: 'var(--rd-accent)', 'stroke-width': 2.2 }));
       if (comb && Number.isFinite(comb.lambda)) {

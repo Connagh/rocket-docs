@@ -38,7 +38,7 @@ const sel = (name: string, opts: readonly (string | number)[], v: string | numbe
               <label>Assembly clearance (mm)<input name="p_ac" type="number" min="0" step="any" value="0.05" /></label>
             </>}
           </div>
-          <p class="hint">{c.panel === 'press' ? 'Shrink fit: the hub is heated (or the inner part cooled) until the largest interference becomes the assembly clearance. Yield is typical — use your allowable at temperature.' : 'Limits are at 20 °C, the ISO 1 reference temperature. Sizes to 500 mm; letters and grades as tabulated in ISO 286-2 — check critical values against the standard.'}</p>
+          <p class="hint">{c.panel === 'press' ? 'Shrink fit: the hub is heated (or the inner part cooled) until the largest interference becomes the assembly clearance. Yield is typical: use your allowable at temperature.' : 'Limits are at 20 °C, the ISO 1 reference temperature. Sizes to 500 mm; letters and grades as tabulated in ISO 286-2: check critical values against the standard.'}</p>
         </fieldset>
       ))}
     </form>
@@ -152,14 +152,14 @@ const sel = (name: string, opts: readonly (string | number)[], v: string | numbe
       rows.push(
         { dt: 'Hole', dd: `⌀${f(fit.hole.min)} – ${f(fit.hole.max)} <small>${field('f_hl').value}${field('f_hg').value}: ${um(fit.hole.EI / 1000)} / ${um(fit.hole.ES / 1000)} µm</small>` },
         { dt: 'Shaft', dd: `⌀${f(fit.shaft.min)} – ${f(fit.shaft.max)} <small>${field('f_sl').value}${field('f_sg').value}: ${um(fit.shaft.ei / 1000)} / ${um(fit.shaft.es / 1000)} µm</small>` },
-        { dt: 'At 20 °C', dd: `${fit.kind} <small>clearance ${range(fit.cMin, fit.cMax)} — negative is interference</small>`, primary: true },
+        { dt: 'At 20 °C', dd: `${fit.kind} <small>clearance ${range(fit.cMin, fit.cMax)}: negative is interference</small>`, primary: true },
         { dt: `At ${f(tc, 0)} °C`, dd: `${kindOf(cc0, cc1)} <small>${range(cc0, cc1)}</small>`, cls: kindOf(cc0, cc1) !== fit.kind ? 'warn' : '' },
         { dt: `At ${f(th, 0)} °C`, dd: `${kindOf(ch0, ch1)} <small>${range(ch0, ch1)}</small>`, cls: kindOf(ch0, ch1) !== fit.kind ? 'warn' : '' },
       );
       if (hm.alpha !== sm.alpha) {
         const tighter = sm.alpha > hm.alpha ? 'hot' : 'cold';
         notes.push(['', `The shaft expands ${sm.alpha > hm.alpha ? 'more' : 'less'} than the hole, so the fit tightens when ${tighter} by ${f(Math.abs(d * (sm.alpha - hm.alpha)) * 1000, 1)} µm per kelvin of difference.`]);
-      } else notes.push(['', 'Same material: a uniform temperature change leaves the fit alone. Transients — one part heating first — still change it.']);
+      } else notes.push(['', 'Same material: a uniform temperature change leaves the fit alone. Transients (one part heating first) still change it.']);
       if (fit.kind === 'clearance' && Math.min(cc0, ch0) < 0) notes.push(['bad', 'A clearance fit at 20 °C becomes an interference at one end of the range: a sliding or removable part seizes there.']);
       if (fit.kind === 'interference' && Math.max(cc1, ch1) > 0) notes.push(['bad', 'An interference fit at 20 °C can go loose at one end of the range: it cannot be relied on to hold or locate there.']);
       return () => {
@@ -199,7 +199,7 @@ const sel = (name: string, opts: readonly (string | number)[], v: string | numbe
       );
       if (dLoose <= 0) notes.push(['bad', `At ${f(loosest, 0)} °C the least interference is ${f(dLoose)} mm: the fit can go loose. Pin, key or bolt the parts, or choose materials and a fit that grip across the whole range.`]);
       if (fy > 0 && st.vmOuter > 0.67 * fy) notes.push(['warn', 'The hub runs above two-thirds of yield at the tightest corner: a heavier hub, a lighter fit, or a stronger material.']);
-      notes.push(['', 'Part of the interference is lost as surface peaks flatten on assembly — methods such as DIN 7190 subtract a share of the roughness. Specify the finish on both parts.']);
+      notes.push(['', 'Part of the interference is lost as surface peaks flatten on assembly: methods such as DIN 7190 subtract a share of the roughness. Specify the finish on both parts.']);
       return () => {
         const t0 = Math.min(tc, 20) - 10, t1 = Math.max(th, 20) + 10, N = 40, Ts = Array.from({ length: N + 1 }, (_, i) => t0 + ((t1 - t0) * i) / N);
         const pl = Ts.map((T) => fitPressure(inter(T)[0], geo)), ph = Ts.map((T) => fitPressure(inter(T)[1], geo));

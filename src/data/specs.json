@@ -31,7 +31,7 @@
         {
           "form": "Extruded seamless tube",
           "standard": "BS EN 755-2 + BS EN 755-7",
-          "note": "Porthole (welded-seam extruded) tube is EN 755-8 — not the same thing."
+          "note": "Porthole (welded-seam extruded) tube is EN 755-8, not the same thing."
         },
         {
           "form": "Extruded profile / section",
@@ -71,7 +71,7 @@
         },
         {
           "code": "T651",
-          "note": "T6 plus stress relief by controlled stretching. Use for plate you intend to machine — far less distortion."
+          "note": "T6 plus stress relief by controlled stretching. Use for plate you intend to machine: far less distortion."
         },
         {
           "code": "T4",
@@ -83,24 +83,24 @@
         },
         {
           "code": "F",
-          "note": "As fabricated — no mechanical property limits apply. Avoid on drawings."
+          "note": "As fabricated: no mechanical property limits apply. Avoid on drawings."
         }
       ],
       "finishes": [
         {
           "name": "Sulphuric anodise",
           "spec": "BS EN ISO 7599 (or DEF STAN 03-24/25 on MoD work)",
-          "note": "5–25 µm. Corrosion protection and paint key. Electrically insulating — mask bond points."
+          "note": "5–25 µm. Corrosion protection and paint key. Electrically insulating: mask bond points."
         },
         {
           "name": "Hard anodise",
           "spec": "BS EN 2536 / DEF STAN 03-26 / MIL-A-8625 Type III",
-          "note": "25–75 µm for wear. Roughly half grows outward — state whether dims apply before or after."
+          "note": "25–75 µm for wear. Roughly half grows outward: state whether dims apply before or after."
         },
         {
           "name": "Chromate conversion",
           "spec": "DEF STAN 03-18 / MIL-DTL-5541 (SurTec 650, Alocrom 1200)",
-          "note": "Negligible thickness and electrically conductive — the choice for earth/EMC bonding faces."
+          "note": "Negligible thickness and electrically conductive: the choice for earth/EMC bonding faces."
         },
         {
           "name": "Shot peen",
@@ -113,11 +113,11 @@
           "note": "Cosmetic/uniform matt. State the media and pressure or you'll get inconsistent parts."
         }
       ],
-      "callout": "MATERIAL: EN AW-6082-T6 EXTRUDED BAR TO BS EN 755-2\n          TOLERANCES TO BS EN 755-3\nFINISH:   SULPHURIC ANODISE TO BS EN ISO 7599, 15 µm, NATURAL\n          MASK ALL TAPPED HOLES AND FACE 'A' (BOND — CHROMATE ONLY)\nNOTE:     DIMENSIONS APPLY AFTER TREATMENT",
+      "callout": "MATERIAL: EN AW-6082-T6 EXTRUDED BAR TO BS EN 755-2\n          TOLERANCES TO BS EN 755-3\nFINISH:   SULPHURIC ANODISE TO BS EN ISO 7599, 15 µm, NATURAL\n          MASK ALL TAPPED HOLES AND FACE 'A' (BOND FACE, CHROMATE ONLY)\nNOTE:     DIMENSIONS APPLY AFTER TREATMENT",
       "tips": [
-        "6082 is the UK's stocked general-purpose grade — 6061 is the US equivalent and often interchangeable, but confirm before substituting.",
+        "6082 is the UK's stocked general-purpose grade: 6061 is the US equivalent and often interchangeable, but confirm before substituting.",
         "Specify T651 rather than T6 for plate you'll machine heavily; the stress relief saves you distortion arguments later.",
-        "Extruded properties vary with section thickness — read the right row of EN 755-2, don't quote a single UTS."
+        "Extruded properties vary with section thickness: read the right row of EN 755-2, don't quote a single UTS."
       ]
     },
     {
@@ -145,7 +145,7 @@
         {
           "form": "Sheet (usually clad)",
           "standard": "BS EN 485-2 / AMS 4049 (Alclad)",
-          "note": "Bare 7075 pits badly — clad or protect."
+          "note": "Bare 7075 pits badly: clad or protect."
         },
         {
           "form": "Forgings",
@@ -160,11 +160,11 @@
         },
         {
           "code": "T73 / T7351",
-          "note": "Overaged. ~10% strength sacrificed for a large gain in SCC resistance — the default for sustained-load fittings."
+          "note": "Overaged. ~10% strength sacrificed for a large gain in SCC resistance: the default for sustained-load fittings."
         },
         {
           "code": "T76 / T7651",
-          "note": "Intermediate — better exfoliation resistance than T6, more strength than T73."
+          "note": "Intermediate: better exfoliation resistance than T6, more strength than T73."
         },
         {
           "code": "O",
@@ -180,7 +180,7 @@
         {
           "name": "Sulphuric anodise",
           "spec": "BS EN ISO 7599 / DEF STAN 03-25",
-          "note": "Good corrosion protection; reduces fatigue life slightly — check with stress."
+          "note": "Good corrosion protection; reduces fatigue life slightly: check with stress."
         },
         {
           "name": "Primer + topcoat",
@@ -193,9 +193,9 @@
           "note": "Common on fatigue-critical 7075 fittings."
         }
       ],
-      "callout": "MATERIAL: EN AW-7075-T7351 PLATE TO BS EN 485-2\nFINISH:   CHROMATE CONVERSION TO DEF STAN 03-18 (CLASS B, CONDUCTIVE)\n          THEN EPOXY PRIMER TO [PROGRAMME SPEC]\nNOTE:     T73 TEMPER MANDATORY — DO NOT SUBSTITUTE T6\n          GRAIN DIRECTION AS SHOWN. SHORT-TRANSVERSE LOADING NOT PERMITTED.",
+      "callout": "MATERIAL: EN AW-7075-T7351 PLATE TO BS EN 485-2\nFINISH:   CHROMATE CONVERSION TO DEF STAN 03-18 (CLASS B, CONDUCTIVE)\n          THEN EPOXY PRIMER TO [PROGRAMME SPEC]\nNOTE:     T73 TEMPER MANDATORY. DO NOT SUBSTITUTE T6\n          GRAIN DIRECTION AS SHOWN. SHORT-TRANSVERSE LOADING NOT PERMITTED.",
       "tips": [
-        "If the part sees sustained tensile load in the short-transverse direction, T73 is not optional — this is the classic 7075 failure mode.",
+        "If the part sees sustained tensile load in the short-transverse direction, T73 is not optional: this is the classic 7075 failure mode.",
         "7075 is effectively non-weldable. If someone asks to weld it, the answer is a different alloy (7020 or 6082), not a different procedure.",
         "State grain direction on the drawing for anything cut from thick plate."
       ]
@@ -235,7 +235,7 @@
         },
         {
           "code": "T351",
-          "note": "T3 with stress relief by stretching — for plate."
+          "note": "T3 with stress relief by stretching, for plate."
         },
         {
           "code": "T4",
@@ -269,9 +269,9 @@
       ],
       "callout": "MATERIAL: EN AW-2024-T3 ALCLAD SHEET TO BS EN 485-2, 1.6 THK\nFINISH:   CHROMATE CONVERSION TO DEF STAN 03-18 + EPOXY PRIMER\nNOTE:     DO NOT REMOVE CLADDING BY MACHINING OR ABRASION\n          EDGES ISO 13715 -0.1/-0.5, NO BURRS",
       "tips": [
-        "Never machine or sand through the cladding — you've just removed the corrosion protection the sheet was bought for.",
+        "Never machine or sand through the cladding: you've just removed the corrosion protection the sheet was bought for.",
         "2024 has excellent fatigue behaviour, which is why it survives on airframes; don't swap it for 7075 to gain static strength without checking fatigue.",
-        "Effectively non-weldable — use mechanical fastening or bonding."
+        "Effectively non-weldable: use mechanical fastening or bonding."
       ]
     },
     {
@@ -339,7 +339,7 @@
       ],
       "callout": "MATERIAL: EN AW-2219-T87 PLATE TO AMS 4095\nWELD:     PER [WPS] TO BS EN ISO 15614-2. QUALITY LEVEL B TO BS EN ISO 10042\nNDT:      100% RT OF WELDS TO BS EN ISO 17636. PT TO BS EN ISO 3452 LEVEL 3\nNOTE:     PROOF TEST PER [TEST SPEC]. DIMENSIONS APPLY AT 20 °C.",
       "tips": [
-        "2219 is the go-to when you need a weldable aluminium that also works cryogenically — it keeps toughness where 6082 and 7075 can't go.",
+        "2219 is the go-to when you need a weldable aluminium that also works cryogenically: it keeps toughness where 6082 and 7075 can't go.",
         "Weld strength is well below parent strength; design the joint, don't assume parent properties across it.",
         "Consider post-weld re-solution and age (to T62) where the design can take the distortion."
       ]
@@ -364,12 +364,12 @@
         {
           "form": "Seamless tube",
           "standard": "AMS 4945 (Gr 9) / ASTM B338",
-          "note": "For Ti-6Al-4V tube specifically, confirm the form spec — much Ti tubing is Grade 9."
+          "note": "For Ti-6Al-4V tube specifically, confirm the form spec: much Ti tubing is Grade 9."
         },
         {
           "form": "Forgings",
           "standard": "AMS 4967 / ASTM B381",
-          "note": "Grain flow matters — consider a macro-etch requirement."
+          "note": "Grain flow matters: consider a macro-etch requirement."
         },
         {
           "form": "Wire",
@@ -385,7 +385,7 @@
       "tempers": [
         {
           "code": "Mill annealed",
-          "note": "The common supply condition — good balance of properties."
+          "note": "The common supply condition: good balance of properties."
         },
         {
           "code": "Solution treated & aged (STA)",
@@ -419,7 +419,7 @@
         {
           "name": "Chemical mill / etch",
           "spec": "AMS 2680",
-          "note": "Also removes the alpha case after hot work — see tips."
+          "note": "Also removes the alpha case after hot work. See tips."
         },
         {
           "name": "Dry film lubricant",
@@ -427,12 +427,12 @@
           "note": "Anti-galling on threads and sliding faces."
         }
       ],
-      "callout": "MATERIAL: Ti-6Al-4V BAR TO AMS 4928, MILL ANNEALED\nNDT:      PT TO BS EN ISO 3452, SENSITIVITY LEVEL 3\nNOTE:     ALPHA CASE TO BE REMOVED FROM ALL SURFACES AFTER HOT FORMING\n          ANTI-SEIZE ON ALL THREADS PER [SPEC] — TITANIUM GALLS\n          DIMENSIONS APPLY AFTER TREATMENT",
+      "callout": "MATERIAL: Ti-6Al-4V BAR TO AMS 4928, MILL ANNEALED\nNDT:      PT TO BS EN ISO 3452, SENSITIVITY LEVEL 3\nNOTE:     ALPHA CASE TO BE REMOVED FROM ALL SURFACES AFTER HOT FORMING\n          ANTI-SEIZE ON ALL THREADS PER [SPEC] (TITANIUM GALLS)\n          DIMENSIONS APPLY AFTER TREATMENT",
       "tips": [
-        "Titanium galls against itself and against stainless. Never run Ti on Ti unlubricated — specify anti-seize or a dry film lubricant on threads and sliding faces.",
+        "Titanium galls against itself and against stainless. Never run Ti on Ti unlubricated: specify anti-seize or a dry film lubricant on threads and sliding faces.",
         "Alpha case (a hard, brittle oxygen-enriched surface layer) forms during hot working. It must be removed by chemical milling or machining, and the drawing should say so.",
         "Machining is slow: low surface speed, high feed, rigid setup, flood coolant, sharp tools. Budget the cycle time realistically.",
-        "Fire risk with fine swarf — check your shop's procedures before specifying operations that generate it."
+        "Fire risk with fine swarf: check your shop's procedures before specifying operations that generate it."
       ]
     },
     {
@@ -458,17 +458,17 @@
           "note": "Surface finish designations (1D, 2B, 2R...) are in EN 10088-2."
         },
         {
-          "form": "Seamless tube — pressure",
+          "form": "Seamless tube: pressure",
           "standard": "BS EN 10216-5",
           "note": "Use for pressure-retaining systems."
         },
         {
-          "form": "Welded tube — pressure",
+          "form": "Welded tube: pressure",
           "standard": "BS EN 10217-7",
           "note": ""
         },
         {
-          "form": "Seamless tube — mechanical",
+          "form": "Seamless tube: mechanical",
           "standard": "BS EN 10297-2",
           "note": "Structural and general engineering."
         },
@@ -486,11 +486,11 @@
       "tempers": [
         {
           "code": "+AT",
-          "note": "Solution annealed — the standard supply condition."
+          "note": "Solution annealed: the standard supply condition."
         },
         {
           "code": "+C / +SH",
-          "note": "Cold drawn / cold drawn and ground — higher strength, lower ductility."
+          "note": "Cold drawn / cold drawn and ground: higher strength, lower ductility."
         },
         {
           "code": "Cold worked tempers",
@@ -501,7 +501,7 @@
         {
           "name": "Passivation",
           "spec": "BS EN ISO 16048 / ASTM A967",
-          "note": "Removes free iron after machining. Do this — machined stainless is not passive."
+          "note": "Removes free iron after machining. Do this: machined stainless is not passive."
         },
         {
           "name": "Electropolish",
@@ -526,10 +526,10 @@
       ],
       "callout": "MATERIAL: X2CrNiMo17-12-2 (1.4404) BRIGHT BAR TO BS EN 10088-3\n          DIMENSIONS AND TOLERANCES TO BS EN 10278, h9\nFINISH:   PASSIVATE TO BS EN ISO 16048 AFTER MACHINING\nNOTE:     NO CARBON STEEL TOOLING OR MEDIA TO CONTACT PART\n          EDGES ISO 13715 -0.1/-0.5, NO BURRS",
       "tips": [
-        "Machined stainless is not corrosion resistant until it is passivated — free iron smeared from tooling will rust. Put passivation on the drawing.",
+        "Machined stainless is not corrosion resistant until it is passivated: free iron smeared from tooling will rust. Put passivation on the drawing.",
         "316L work-hardens rapidly: rigid setup, sharp tools, positive feed, never dwell. A rubbing tool makes the next cut worse.",
-        "Keep stainless away from carbon steel tooling, brushes and blast media — cross-contamination causes rust spots that look like material defects.",
-        "For pressure systems use the EN 10216/10217 tube standards, not the mechanical ones — the acceptance requirements differ."
+        "Keep stainless away from carbon steel tooling, brushes and blast media: cross-contamination causes rust spots that look like material defects.",
+        "For pressure systems use the EN 10216/10217 tube standards, not the mechanical ones: the acceptance requirements differ."
       ]
     },
     {
@@ -552,7 +552,7 @@
         {
           "form": "Forgings",
           "standard": "AMS 5643 / BS EN 10250-4",
-          "note": "15-5PH is often preferred for forgings — cleaner, better transverse toughness."
+          "note": "15-5PH is often preferred for forgings: cleaner, better transverse toughness."
         },
         {
           "form": "Investment castings",
@@ -563,7 +563,7 @@
       "tempers": [
         {
           "code": "Condition A",
-          "note": "Solution annealed. Supply condition — machine here, then age."
+          "note": "Solution annealed. Supply condition: machine here, then age."
         },
         {
           "code": "H900",
@@ -571,7 +571,7 @@
         },
         {
           "code": "H1025",
-          "note": "Aged at 550 °C. The common compromise — ~1070 MPa with much better toughness."
+          "note": "Aged at 550 °C. The common compromise: ~1070 MPa with much better toughness."
         },
         {
           "code": "H1075 / H1150",
@@ -602,10 +602,10 @@
       ],
       "callout": "MATERIAL: 17-4PH BAR TO AMS 5643, SUPPLIED CONDITION A\nHEAT TREAT: AGE TO CONDITION H1025 PER AMS 2759/3\n            FURNACE PYROMETRY TO AMS 2750\nFINISH:   PASSIVATE TO BS EN ISO 16048\nNOTE:     HARDNESS 35-40 HRC. DIMENSIONS APPLY AFTER HEAT TREATMENT.",
       "tips": [
-        "The condition is not optional detail — it IS the specification. '17-4PH' alone tells the shop nothing about strength.",
+        "The condition is not optional detail: it IS the specification. '17-4PH' alone tells the shop nothing about strength.",
         "Ageing causes a small, predictable dimensional change. Machine in condition A, age, then finish-machine critical features.",
         "H900 is tempting for strength but is the worst condition for stress-corrosion cracking. H1025 or H1075 is usually the right engineering answer.",
-        "Prefer 15-5PH for forgings and thick sections — less delta ferrite means better transverse properties."
+        "Prefer 15-5PH for forgings and thick sections: less delta ferrite means better transverse properties."
       ]
     },
     {
@@ -618,7 +618,7 @@
         {
           "form": "Bar & billet",
           "standard": "AMS 5662 (solution + aged) / AMS 5663 / ASTM B637",
-          "note": "AMS 5662 vs 5663 differ in heat treatment — check which the stress report assumed."
+          "note": "AMS 5662 vs 5663 differ in heat treatment: check which the stress report assumed."
         },
         {
           "form": "Sheet, strip & plate",
@@ -674,7 +674,7 @@
         {
           "name": "Dry film lubricant",
           "spec": "AMS 2525",
-          "note": "Nickel alloys gall badly — treat threads."
+          "note": "Nickel alloys gall badly: treat threads."
         },
         {
           "name": "Aluminide / thermal barrier coating",
@@ -682,12 +682,12 @@
           "note": "Where the service temperature justifies it."
         }
       ],
-      "callout": "MATERIAL: INCONEL 718 BAR TO AMS 5662 (SOLUTION TREATED AND AGED)\nNDT:      PT TO BS EN ISO 3452 LEVEL 3; UT TO AMS-STD-2154 CLASS A\nNOTE:     ANTI-SEIZE ON ALL THREADS PER [SPEC]\n          MACHINE WITH RIGID SETUP — SEE PROCESS SHEET\n          DIMENSIONS APPLY AFTER HEAT TREATMENT",
+      "callout": "MATERIAL: INCONEL 718 BAR TO AMS 5662 (SOLUTION TREATED AND AGED)\nNDT:      PT TO BS EN ISO 3452 LEVEL 3; UT TO AMS-STD-2154 CLASS A\nNOTE:     ANTI-SEIZE ON ALL THREADS PER [SPEC]\n          MACHINE WITH RIGID SETUP. SEE PROCESS SHEET\n          DIMENSIONS APPLY AFTER HEAT TREATMENT",
       "tips": [
-        "718 is one of the hardest common alloys to machine: low surface speed, heavy positive feed, rigid setup, sharp carbide, and never let the tool rub — it work-hardens instantly.",
+        "718 is one of the hardest common alloys to machine: low surface speed, heavy positive feed, rigid setup, sharp carbide, and never let the tool rub (it work-hardens instantly).",
         "Budget the cycle time honestly. A part that takes 45 minutes in 17-4PH can take several hours in 718, and that dominates the cost, not the £/kg.",
         "Weld in the solution annealed condition, then heat treat. Welding aged material risks cracking.",
-        "Above about 700 °C the strength falls away quickly — if you need hotter, you need 625, Waspaloy or Haynes."
+        "Above approximately 700 °C the strength decreases quickly. For higher temperatures, use 625, Waspaloy or Haynes."
       ]
     },
     {
@@ -741,7 +741,7 @@
         {
           "name": "Cadmium plating",
           "spec": "DEF STAN 03-19 (legacy)",
-          "note": "Still on legacy fleets — check the programme before specifying."
+          "note": "Still on legacy fleets: check the programme before specifying."
         },
         {
           "name": "Phosphate",
@@ -751,7 +751,7 @@
         {
           "name": "Epoxy primer + topcoat",
           "spec": "Programme spec",
-          "note": "15CDV6 rusts readily — it is never left bare."
+          "note": "15CDV6 rusts readily: it is never left bare."
         },
         {
           "name": "Shot peen",
@@ -759,10 +759,10 @@
           "note": "Fatigue-critical areas."
         }
       ],
-      "callout": "MATERIAL: 15CDV6 BAR TO AIR 9160C, QUENCHED AND TEMPERED\n          UTS 980 MPa MIN\nWELD:     PER [WPS] TO BS EN ISO 15614-1. NO POST-WELD HEAT TREATMENT REQUIRED\nNDT:      100% MPI TO BS EN ISO 9934 + PT TO BS EN ISO 3452 LEVEL 3\nFINISH:   ZINC-NICKEL TO BS EN ISO 2081 + EPOXY PRIMER\nNOTE:     BAKE FOR HYDROGEN EMBRITTLEMENT RELIEF WITHIN 4 HRS OF PLATING\n          PER BS EN ISO 4042 — 200 °C, 8 HRS MIN",
+      "callout": "MATERIAL: 15CDV6 BAR TO AIR 9160C, QUENCHED AND TEMPERED\n          UTS 980 MPa MIN\nWELD:     PER [WPS] TO BS EN ISO 15614-1. NO POST-WELD HEAT TREATMENT REQUIRED\nNDT:      100% MPI TO BS EN ISO 9934 + PT TO BS EN ISO 3452 LEVEL 3\nFINISH:   ZINC-NICKEL TO BS EN ISO 2081 + EPOXY PRIMER\nNOTE:     BAKE FOR HYDROGEN EMBRITTLEMENT RELIEF WITHIN 4 HRS OF PLATING\n          PER BS EN ISO 4042 (200 °C, 8 HRS MIN)",
       "tips": [
         "The whole reason 15CDV6 exists is that it welds at full strength without post-weld heat treatment. If your design doesn't exploit that, a cheaper steel may do.",
-        "Still a high-strength steel — the hydrogen embrittlement bake after plating is mandatory, not advisory. Put the time limit and temperature on the drawing.",
+        "Still a high-strength steel: the hydrogen embrittlement bake after plating is mandatory, not advisory. Put the time limit and temperature on the drawing.",
         "No direct BS EN equivalent exists; procure to AIR 9160C and expect a French or German supply chain."
       ]
     },
@@ -814,7 +814,7 @@
         },
         {
           "code": "Stress relieved",
-          "note": "After welding — worthwhile on any welded frame."
+          "note": "After welding: worthwhile on any welded frame."
         }
       ],
       "finishes": [
@@ -846,8 +846,8 @@
       ],
       "callout": "MATERIAL: 25CrMo4 (1.7218) SEAMLESS TUBE TO BS EN 10297-1\n          NORMALISED CONDITION\nWELD:     PER [WPS] TO BS EN ISO 15614-1, QUALITY LEVEL C TO BS EN ISO 5817\n          STRESS RELIEVE AFTER WELDING PER [PROCESS SPEC]\nFINISH:   PHOSPHATE TO BS EN ISO 9717 + EPOXY PRIMER\nNOTE:     EDGES ISO 13715 -0.1/-0.5",
       "tips": [
-        "4130 is the cheap, weldable, forgiving option for rigs, stands, nozzle shells and test hardware — it doesn't need to be exotic to be right.",
-        "Normalised tube welds well without preheat in thin sections; thicker sections may need preheat — let the WPS decide, not the drawing.",
+        "4130 is the cheap, weldable, forgiving option for rigs, stands, nozzle shells and test hardware: it doesn't need to be exotic to be right.",
+        "Normalised tube welds well without preheat in thin sections; thicker sections may need preheat: let the WPS decide, not the drawing.",
         "It rusts fast. Specify a finish even for internal test hardware, or it will be brown before the programme finishes."
       ]
     },
@@ -887,7 +887,7 @@
       "tempers": [
         {
           "code": "R220 / O60",
-          "note": "Annealed — soft, formable."
+          "note": "Annealed: soft, formable."
         },
         {
           "code": "R250 / H065",
@@ -895,7 +895,7 @@
         },
         {
           "code": "R290 / H110",
-          "note": "Hard drawn — for strength and stiffness."
+          "note": "Hard drawn, for strength and stiffness."
         }
       ],
       "finishes": [
@@ -920,11 +920,11 @@
           "note": "Diffusion barrier before other coatings."
         }
       ],
-      "callout": "MATERIAL: Cu-ETP (CW004A) BAR TO BS EN 13601, HALF HARD\nFINISH:   TIN PLATE 8 µm MIN TO BS EN ISO 2093 ON FACES SHOWN\nNOTE:     HANDLE WITH GLOVES — NO FINGERPRINTS ON PLATED SURFACES\n          DO NOT ANNEAL AFTER FORMING WITHOUT ENGINEERING APPROVAL",
+      "callout": "MATERIAL: Cu-ETP (CW004A) BAR TO BS EN 13601, HALF HARD\nFINISH:   TIN PLATE 8 µm MIN TO BS EN ISO 2093 ON FACES SHOWN\nNOTE:     HANDLE WITH GLOVES. NO FINGERPRINTS ON PLATED SURFACES\n          DO NOT ANNEAL AFTER FORMING WITHOUT ENGINEERING APPROVAL",
       "tips": [
-        "Copper is gummy to machine — sharp, polished, high-rake tooling and plenty of coolant. Free-machining brass is a far better choice if conductivity isn't the point.",
+        "Copper is gummy to machine: sharp, polished, high-rake tooling and plenty of coolant. Free-machining brass is a far better choice if conductivity isn't the point.",
         "Specify the temper: annealed and hard-drawn copper behave completely differently, and the temper is lost if the part is later brazed.",
-        "Oxidation happens fast — if a surface matters electrically, plate it or specify handling and storage."
+        "Oxidation occurs quickly. If a surface is important electrically, plate it or specify handling and storage."
       ]
     },
     {
@@ -937,7 +937,7 @@
         {
           "form": "Rolled plate (thick)",
           "standard": "AMS 4205 / BS EN 485-2",
-          "note": "The UK thick-plate alloy — machined spars, ribs, bulkheads."
+          "note": "The UK thick-plate alloy: machined spars, ribs, bulkheads."
         },
         {
           "form": "Forgings",
@@ -953,7 +953,7 @@
       "tempers": [
         {
           "code": "T7451",
-          "note": "Overaged + stress relieved by stretching. The standard thick-plate condition — good SCC resistance and through-thickness properties."
+          "note": "Overaged + stress relieved by stretching. The standard thick-plate condition: good SCC resistance and through-thickness properties."
         },
         {
           "code": "T7651",
@@ -988,7 +988,7 @@
       ],
       "callout": "",
       "tips": [
-        "7010 was developed specifically to beat 7075 on through-thickness properties in thick plate — that is the whole reason to choose it.",
+        "7010 was developed specifically to beat 7075 on through-thickness properties in thick plate: that is the whole reason to choose it.",
         "Always supplied overaged (T7451). Do not substitute a T6 temper to gain strength; the SCC resistance is the point.",
         "Check short-transverse allowables for anything loaded through the plate thickness."
       ]
@@ -1003,7 +1003,7 @@
         {
           "form": "Die forgings",
           "standard": "AMS 4149 / BS EN 586-2",
-          "note": "The principal form — high-integrity aerospace fittings."
+          "note": "The principal form: high-integrity aerospace fittings."
         },
         {
           "form": "Hand forgings",
@@ -1049,7 +1049,7 @@
       ],
       "callout": "",
       "tips": [
-        "7175 is a tighter-controlled 7075 aimed at forgings — better toughness and more consistent properties in heavy sections.",
+        "7175 is a tighter-controlled 7075 aimed at forgings: better toughness and more consistent properties in heavy sections.",
         "Specify grain flow and consider a macro-etch requirement; forging direction is why you are paying for it.",
         "Same short-transverse caution as all 7xxx alloys."
       ]
@@ -1110,9 +1110,9 @@
       ],
       "callout": "",
       "tips": [
-        "The alloy to reach for when aluminium has to run hot — historically the Concorde skin alloy (RR58) and still used for pistons and rotating parts.",
+        "The alloy to reach for when aluminium has to run hot: historically the Concorde skin alloy (RR58), and still used for pistons and rotating parts.",
         "Nickel-bearing, so it behaves differently in machining and finishing from ordinary 2xxx alloys.",
-        "Legacy drawings will call DTD 5014A or Hiduminium RR58 — same material."
+        "Legacy drawings will call DTD 5014A or Hiduminium RR58: same material."
       ]
     },
     {
@@ -1155,7 +1155,7 @@
         },
         {
           "code": "T4",
-          "note": "Solution treated, naturally aged — formable."
+          "note": "Solution treated, naturally aged: formable."
         },
         {
           "code": "O",
@@ -1181,9 +1181,9 @@
       ],
       "callout": "",
       "tips": [
-        "The US general-purpose grade. In the UK, 6082 is more commonly stocked and slightly stronger — check availability before specifying 6061.",
+        "The US general-purpose grade. In the UK, 6082 is more commonly stocked and slightly stronger: check availability before specifying 6061.",
         "Weldable, but strength in the heat-affected zone drops substantially; design the joint for annealed properties unless you re-heat-treat.",
-        "Anodises more uniformly than 6082 because of its lower manganese — worth knowing for cosmetic parts."
+        "Anodises more uniformly than 6082 because of its lower manganese: worth knowing for cosmetic parts."
       ]
     },
     {
@@ -1196,7 +1196,7 @@
         {
           "form": "Sheet & strip",
           "standard": "BS EN 485-2 + BS EN 485-4",
-          "note": "The forming and folding sheet — brackets, panels, guards."
+          "note": "The forming and folding sheet: brackets, panels, guards."
         },
         {
           "form": "Plate",
@@ -1212,7 +1212,7 @@
       "tempers": [
         {
           "code": "H22 / H24",
-          "note": "Work hardened and partially annealed — the usual formable sheet tempers."
+          "note": "Work hardened and partially annealed: the usual formable sheet tempers."
         },
         {
           "code": "O",
@@ -1242,9 +1242,9 @@
       ],
       "callout": "",
       "tips": [
-        "Non-heat-treatable, so strength comes only from work hardening — you cannot heat treat your way out of a forming problem.",
+        "Non-heat-treatable, so strength comes only from work hardening: you cannot heat treat your way out of a forming problem.",
         "Excellent weldability and corrosion resistance; the sensible default for folded sheet-metal brackets and enclosures.",
-        "State bend radius and grain direction — H tempers crack if bent tight across the grain."
+        "State bend radius and grain direction: H tempers crack if bent tight across the grain."
       ]
     },
     {
@@ -1304,9 +1304,9 @@
       ],
       "callout": "",
       "tips": [
-        "321 is titanium-stabilised so it resists sensitisation during welding — that is precisely why it is chosen for welded hot assemblies over plain 304/316.",
+        "321 is titanium-stabilised so it resists sensitisation during welding: that is precisely why it is chosen for welded hot assemblies over plain 304/316.",
         "347 (niobium-stabilised) is the alternative; 347 is generally preferred where post-weld stress relief is involved.",
-        "Do not substitute 304 for 321 in a welded hot part to save money — you lose the whole point of the grade."
+        "Do not substitute 304 for 321 in a welded hot part to save money: this removes the reason to use the grade."
       ]
     },
     {
@@ -1335,7 +1335,7 @@
       "tempers": [
         {
           "code": "Condition A",
-          "note": "Solution annealed — machine here, then age."
+          "note": "Solution annealed: machine here, then age."
         },
         {
           "code": "H900",
@@ -1369,9 +1369,9 @@
       ],
       "callout": "",
       "tips": [
-        "Choose 15-5PH over 17-4PH for forgings and thick sections — lower delta ferrite gives noticeably better transverse toughness.",
+        "Choose 15-5PH over 17-4PH for forgings and thick sections: lower delta ferrite gives noticeably better transverse toughness.",
         "As with all PH stainless, the condition IS the specification. Never write the grade alone.",
-        "Machine in Condition A, age, then finish critical features — ageing causes a small predictable dimensional change."
+        "Machine in Condition A, age, then finish critical features: ageing causes a small predictable dimensional change."
       ]
     },
     {
@@ -1431,9 +1431,9 @@
       ],
       "callout": "",
       "tips": [
-        "A286 is the sensible middle ground — far better than stainless at temperature, far cheaper than a nickel superalloy.",
+        "A286 is the sensible middle ground: far better than stainless at temperature, far cheaper than a nickel superalloy.",
         "Galls badly. Silver-plated or dry-film-lubricated threads are the norm on A286 fasteners, not an optional extra.",
-        "Machines much like Inconel — slow, rigid, sharp tools. Budget the time."
+        "Machines much like Inconel: slow, rigid, sharp tools. Budget the time."
       ]
     },
     {
@@ -1472,7 +1472,7 @@
       "tempers": [
         {
           "code": "+AT",
-          "note": "Solution annealed — standard."
+          "note": "Solution annealed: standard."
         },
         {
           "code": "+C",
@@ -1499,7 +1499,7 @@
       "callout": "",
       "tips": [
         "The general-purpose austenitic for ground equipment, rigs and non-marine service. Use 316L wherever chlorides are present.",
-        "The L (low carbon) grade resists sensitisation during welding — worth the small premium on anything welded.",
+        "The L (low carbon) grade resists sensitisation during welding: worth the small premium on anything welded.",
         "Work hardens rapidly; do not let the tool dwell."
       ]
     },
@@ -1564,7 +1564,7 @@
       "callout": "",
       "tips": [
         "Where 17-4 and 15-5 run out of strength. Vacuum melted, very clean, excellent transverse properties.",
-        "Expensive and long lead time — confirm availability before designing around it.",
+        "Expensive and long lead time: confirm availability before designing around it.",
         "Same rule as all PH grades: state the H-condition on the drawing."
       ]
     },
@@ -1589,7 +1589,7 @@
       "tempers": [
         {
           "code": "Annealed",
-          "note": "Supply and machining condition — machine here."
+          "note": "Supply and machining condition: machine here."
         },
         {
           "code": "Hardened & tempered",
@@ -1619,7 +1619,7 @@
       ],
       "callout": "",
       "tips": [
-        "Corrosion resistance is much lower than 316 or even 304 — it is a hardenable stainless, not a corrosion-resistant one.",
+        "Corrosion resistance is much lower than 316 or even 304: it is a hardenable stainless, not a corrosion-resistant one.",
         "Machine annealed, then harden. Machining at 58 HRC means grinding or EDM.",
         "Watch distortion on hardening; leave grinding stock on precision features."
       ]
@@ -1671,7 +1671,7 @@
       ],
       "callout": "",
       "tips": [
-        "Nitrogen-strengthened austenitic — roughly double the yield of 316 while staying fully austenitic and non-magnetic.",
+        "Nitrogen-strengthened austenitic: roughly double the yield of 316 while staying fully austenitic and non-magnetic.",
         "The standard choice for high-pressure aerospace fluid lines where 316 would need an impractical wall thickness.",
         "Work hardens very aggressively; bending and flaring need the right tooling and technique."
       ]
@@ -1728,9 +1728,9 @@
       ],
       "callout": "",
       "tips": [
-        "A genuinely British aerospace grade — 12% chromium martensitic, developed for gas turbine compressor components and still on many UK engine drawings.",
+        "A genuinely British aerospace grade: 12% chromium martensitic, developed for gas turbine compressor components and still on many UK engine drawings.",
         "Good strength to around 450-500 °C with better corrosion resistance than a low-alloy steel.",
-        "High-strength martensitic, so hydrogen embrittlement relief after plating is mandatory — state the bake on the drawing."
+        "High-strength martensitic, so hydrogen embrittlement relief after plating is mandatory: state the bake on the drawing."
       ]
     },
     {
@@ -1790,7 +1790,7 @@
       "callout": "",
       "tips": [
         "Another British-developed PH stainless, widely used in UK compressor and pump applications where 17-4 is not quite enough.",
-        "Weldable in the solution treated condition, then age — a real advantage over many high-strength stainless grades.",
+        "Weldable in the solution treated condition, then age: a real advantage over many high-strength stainless grades.",
         "State the ageing treatment explicitly; the property spread between single and double aged is large."
       ]
     }

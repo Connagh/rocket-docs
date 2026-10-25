@@ -1,6 +1,6 @@
 ---
 title: Propellant grain
-description: How grain geometry sets the thrust curve, how the burning surface evolves, and how to screen a case-bonded grain for cool-down cracking, ignition strain and bond failure.
+description: How the grain geometry sets the thrust curve, how the burning surface changes, and how to screen a case-bonded grain for cool-down cracking, ignition strain and bond failure.
 sidebar:
   order: 2
 ---
@@ -13,90 +13,91 @@ import GrainCooldown from '../../../components/GrainCooldown.astro';
 import GrainStructCalc from '../../../components/GrainStructCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>The grain's shape sets the thrust curve; its rubbery mechanics decide whether it survives being cold.</div>
+  <div><b>In one line</b>The shape of the grain sets the thrust curve. Its rubber-like mechanics decide if it survives when it is cold.</div>
   <div><b>Before this</b><a href="../../fundamentals/how-a-solid-motor-works/">How a solid rocket motor works</a> · <a href="../case-sizing/">Case sizing</a></div>
 </div>
 
 ## Why this matters
 
-The grain is the motor's fuel tank, combustion chamber wall and throttle all at once. Its **geometry** fixes how much
-burning surface is exposed at every instant, and therefore chamber pressure and thrust for the whole burn. It also
-fixes how much propellant fits in the case and how high the peak pressure is — which is what the case has to be sized
-for.
+The grain is the fuel tank, the combustion chamber wall and the throttle of the motor, all at the same time. Its
+**geometry** sets how much burning surface is exposed at each instant. Thus it sets the chamber pressure and the thrust
+for the full burn. It also sets how much propellant fits in the case, and how high the peak pressure is. The case must
+be sized for this peak.
 
-Its **structural integrity** is a safety issue, not a performance one. A crack is new burning surface. More surface
-means more gas, higher pressure, and — because pressure amplifies changes by $1/(1-n)$ — potentially a case failure.
-That is why cold-soak cracking and debonding are taken so seriously.
+Its **structural integrity** is a safety subject, not a performance subject. A crack is new burning surface. More
+surface gives more gas and a higher pressure. Because pressure amplifies changes by $1/(1-n)$, this can cause a case
+failure. This is why cold-soak cracking and debonding are very important.
 
-This page has two halves: [geometry and burn-back](#part-1--geometry-and-burn-back), then
-[structural integrity](#part-2--structural-integrity).
+This page has two parts: [geometry and burn-back](#part-1-geometry-and-burn-back), then
+[structural integrity](#part-2-structural-integrity).
 
-## Part 1 — Geometry and burn-back
+## Part 1: Geometry and burn-back
 
 ### The burning surface moves like a grass fire
 
-Over most of a burn, every exposed point of propellant recedes **perpendicular to the local surface** at the same
-burn rate $r$. After burning a distance $y$ (the **web burned**), the surface is simply every point that is a distance
-$y$ from the original surface.
+During most of a burn, each exposed point of propellant moves back **perpendicular to the local surface** at the same
+burn rate $r$. After the flame burns a distance $y$ (the **web burned**), the surface is the set of all points that are
+at a distance $y$ from the original surface.
 
 <Analogy title="A grass fire spreading from a burning outline">
-  Light the edge of a field along an irregular line. With no wind, the fire front spreads into the grass at the same
-  speed everywhere. Bumps that point into the grass widen into smooth arcs; narrow tongues of grass between two fronts
-  burn from both sides and vanish fastest. Draw the front every minute and you get contour lines — which is exactly how
-  the burn-back map in the simulator below is coloured.
+  Light the edge of a field along an irregular line. With no wind, the fire front moves into the grass at the same speed
+  everywhere. Bumps that point into the grass become smooth arcs. Narrow areas of grass between two fronts burn from
+  the two sides and disappear first. If you draw the front each minute, you get contour lines. The burn-back map in the
+  simulator below uses these contours for its colours.
 </Analogy>
 
-Two consequences follow directly:
+This has two direct results:
 
-- **Port corners that point into the propellant** (star tips, slot ends) round off into arcs as they burn.
-- **Propellant ridges that point into the port** (between star points) stay sharp and recede quickly, because they burn
-  from both sides. When those ridges burn out, burning area drops sharply.
+- **Port corners that point into the propellant** (star tips, slot ends) become round arcs as they burn.
+- **Propellant ridges that point into the port** (between star points) stay sharp and move back quickly, because they
+  burn from the two sides. When these ridges burn out, the burning area decreases quickly.
 
 ### Words you need
 
-| Term | Meaning | Why it matters |
+| Term | Meaning | Why it is important |
 | --- | --- | --- |
-| Web, $w$ | Distance the flame burns before first reaching the case | Sets burn time: $t_b \approx w / \bar r$ |
-| Web fraction | $w$ divided by the grain outer radius | High web fraction = long burn, more propellant, but more structural strain |
-| Volumetric loading | Propellant volume ÷ volume available inside the case | How much of the case you actually filled with propellant |
-| Sliver | Propellant left when the flame first touches the case | Burns in a low-pressure tail-off, contributes little useful thrust |
-| $K_n$ | Burning area ÷ throat area | Sets chamber pressure |
-| Port ÷ throat area | Flow area down the bore relative to the throat | Too small means fast bore flow and erosive burning |
+| Web, $w$ | Distance that the flame burns before it first gets to the case | Sets the burn time: $t_b \approx w / \bar r$ |
+| Web fraction | $w$ divided by the outer radius of the grain | High web fraction = long burn and more propellant, but more structural strain |
+| Volumetric loading | Propellant volume ÷ volume available inside the case | How much of the case you filled with propellant |
+| Sliver | Propellant that stays when the flame first touches the case | Burns in a low-pressure tail-off, and gives little useful thrust |
+| $K_n$ | Burning area ÷ throat area | Sets the chamber pressure |
+| Port ÷ throat area | Flow area along the bore relative to the throat | If too small, the bore flow is fast and causes erosive burning |
 
 ### Shape sets the thrust curve
 
 <GrainProfiles />
 
-- **Tube (internal-burning cylinder).** The port only gets bigger, so burning area and thrust rise all the way:
-  **progressive**. Simple and robust, but the peak pressure at the end of the burn sizes the case.
-- **Star.** The points' area shrinks while the circular region grows, which can be balanced to give near-**neutral**
-  thrust. The price is a **sliver** left behind the star valleys, unless the design adds fillets or sliver-filling
-  inserts.
-- **Core plus radial slots (wagon wheel, and the slotted section of a finocyl).** Very large initial burning area for a
-  high-thrust boost, usually **regressive** as the slots open up.
-- **End burner.** Burns like a cigarette, face-on: perfectly neutral, the longest burn time and the most propellant for
-  the case, but low thrust — and the case wall behind the face sees hot gas for the whole burn.
-- **BATES (stacked short tubes, ends burning).** The bore grows while the ends shrink inward, roughly cancelling.
+- **Tube (internal-burning cylinder).** The port only becomes larger, so the burning area and the thrust increase
+  until the end: **progressive**. It is simple and robust, but the peak pressure at the end of the burn sizes the case.
+- **Star.** The area of the points decreases while the circular region increases. You can balance these to get an
+  almost **neutral** thrust. The disadvantage is a **sliver** behind the star valleys, unless the design adds fillets or
+  sliver-filling inserts.
+- **Core plus radial slots (wagon wheel, and the slotted section of a finocyl).** A very large initial burning area for
+  a high-thrust boost. It is usually **regressive** as the slots open.
+- **End burner.** It burns face-on, like a cigarette. It is perfectly neutral, with the longest burn time and the most
+  propellant for the case, but low thrust. Also, the case wall behind the face has hot gas on it for the full burn.
+- **BATES (stacked short tubes, ends burning).** The bore increases while the ends become smaller. The two effects
+  almost cancel.
 
-That BATES balance is a good example of the geometry reasoning. For a segment of outer diameter $D$, port $d$ and
-length $L$, with both ends burning, the burning area after web $y$ is:
+The BATES balance is a good example of geometry analysis. For a segment of outer diameter $D$, port $d$ and length $L$,
+with the two ends burning, the burning area after a web $y$ is:
 
 $$
 A_b(y) = \underbrace{\pi (d + 2y)(L - 2y)}_{\text{bore}} + \underbrace{2 \cdot \frac{\pi}{4}\left(D^2 - (d+2y)^2\right)}_{\text{two ends}}
 $$
 
-Setting the area at ignition equal to the area at burnout ($d + 2y = D$) gives the classic sizing rule:
+If you make the area at ignition equal to the area at burnout ($d + 2y = D$), you get the usual sizing rule:
 
 $$
 L = \frac{3D + d}{2}
 $$
 
-With that length the trace starts and ends at the same level, with a gentle hump in between.
+With this length, the trace starts and ends at the same level, with a small hump between.
 
 ### From burning area to thrust
 
 Combine the burning area with the pressure balance from [the fundamentals page](../../fundamentals/how-a-solid-motor-works/#why-chamber-pressure-settles-at-one-value).
-At every web position $y$:
+At each web position $y$:
 
 $$
 p_c(y) = \left(\rho_p\,a\,c^*\,\frac{A_b(y)}{A_t}\right)^{\frac{1}{1-n}}
@@ -106,143 +107,149 @@ p_c(y) = \left(\rho_p\,a\,c^*\,\frac{A_b(y)}{A_t}\right)^{\frac{1}{1-n}}
 F = C_F\,p_c\,A_t
 $$
 
-March through the web, accumulate time, and you have the pressure and thrust traces. One useful check falls out:
-because mass flow through the throat is $p_c A_t / c^*$, the total impulse is
+Go through the web in steps and add the time. This gives the pressure and thrust traces. It also gives a useful check.
+The mass flow through the throat is $p_c A_t / c^*$, thus the total impulse is:
 
 $$
 I_t = \int F\,dt = C_F\, c^*\, m_p
 $$
 
-whatever the grain shape. Geometry changes *when* the impulse is delivered, not how much there is.
+This is true for all grain shapes. The geometry changes *when* the motor gives the impulse, not how much impulse it
+gives.
 
 ### Simulator
 
-The simulator finds the burn-back by computing, for every point in the cross-section, its distance to the original
-port outline — the grass-fire rule, done numerically. Try the presets, then change one dimension at a time.
+The simulator finds the burn-back. For each point in the cross-section, it calculates the distance to the original
+port outline. This is the grass-fire rule, done numerically. Try the presets, then change one dimension at a time.
 
 <BurnbackSim />
 
 Things to try:
 
-- **Tube → star.** Same propellant, same case: the star flattens the thrust curve but leaves a sliver. Watch the burn
-  map — the sliver is the propellant left between the star valleys and the case when the flame first touches the wall.
-- **Make the star points deeper** (larger tip diameter) and watch the profile tip from neutral into regressive.
-- **BATES:** change the segment length away from $(3D+d)/2$ and see the trace tilt.
-- **Shrink the tube port** to 50 mm and watch the port-to-throat warning appear.
+- **Tube → star.** With the same propellant and the same case, the star makes the thrust curve flatter, but it leaves a
+  sliver. Look at the burn map. The sliver is the propellant between the star valleys and the case when the flame first
+  touches the wall.
+- **Make the star points deeper** (larger tip diameter). The profile changes from neutral to regressive.
+- **BATES:** change the segment length away from $(3D+d)/2$ and look at the tilt of the trace.
+- **Make the tube port smaller,** to 50 mm. The port-to-throat warning comes on.
 
-### Worked example — tube grain by hand
+### Worked example: tube grain by hand
 
-Grain outer diameter 150 mm, port 80 mm, length 600 mm, ends inhibited. Propellant as the defaults:
-$a = 4.05$ mm/s at 1 MPa, $n = 0.35$, $\rho_p = 1770$ kg/m³, $c^* = 1540$ m/s, $C_F = 1.5$. Throat sized so peak
-pressure is 7 MPa.
+The grain has an outer diameter of 150 mm, a port of 80 mm and a length of 600 mm, with inhibited ends. The propellant
+has the default values: $a = 4.05$ mm/s at 1 MPa, $n = 0.35$, $\rho_p = 1770$ kg/m³, $c^* = 1540$ m/s and
+$C_F = 1.5$. The throat is sized so that the peak pressure is 7 MPa.
 
-1. **Burning area.** Start: $\pi \times 80 \times 600 = 150{,}800$ mm². End (port reaches 150 mm):
-   $\pi \times 150 \times 600 = 282{,}700$ mm². Ratio 1.875 — **progressive**.
-2. **Throat.** Peak pressure is at the end. $K_n = 7^{0.65} \times 10^9 / (1770 \times 4.05 \times 1540) = 320.9$,
+1. **Burning area.** At the start: $\pi \times 80 \times 600 = 150{,}800$ mm². At the end (the port gets to 150 mm):
+   $\pi \times 150 \times 600 = 282{,}700$ mm². The ratio is 1.875: **progressive**.
+2. **Throat.** The peak pressure is at the end. $K_n = 7^{0.65} \times 10^9 / (1770 \times 4.05 \times 1540) = 320.9$,
    so $A_t = 282{,}700 / 320.9 = 881$ mm² and $D_t = 33.5$ mm.
-3. **Starting pressure.** $p \propto A_b^{1/(1-n)}$, so $p_0 = 7 \times (80/150)^{1.538} = 2.66$ MPa. A 1.9× swing in
-   area becomes a 2.6× swing in pressure.
-4. **Burn time.** Burn rate at the end is $4.05 \times 7^{0.35} = 8.00$ mm/s, and $r \propto (\text{port radius})^{n/(1-n)}$.
-   Integrating $dt = dy/r$ from a port radius of 40 mm to 75 mm gives $t_b = 5.11$ s.
+3. **Starting pressure.** $p \propto A_b^{1/(1-n)}$, so $p_0 = 7 \times (80/150)^{1.538} = 2.66$ MPa. A change of 1.9
+   times in area becomes a change of 2.6 times in pressure.
+4. **Burn time.** The burn rate at the end is $4.05 \times 7^{0.35} = 8.00$ mm/s, and
+   $r \propto (\text{port radius})^{n/(1-n)}$. Integrate $dt = dy/r$ from a port radius of 40 mm to 75 mm. This gives
+   $t_b = 5.11$ s.
 5. **Mass and impulse.** $m_p = \frac{\pi}{4}(150^2 - 80^2) \times 600 \times 1770 \times 10^{-9} = 13.4$ kg, and
-   $I_t = 1.5 \times 1540 \times 13.4 = 31.0$ kN·s, so the average thrust is about 6.1 kN.
+   $I_t = 1.5 \times 1540 \times 13.4 = 31.0$ kN·s. Thus the average thrust is approximately 6.1 kN.
 
-The simulator's tube preset reproduces these numbers to within about 1%. The automated tests check both.
+The tube preset of the simulator gives these numbers within approximately 1%. The automated tests check the two.
 
 <Aside type="caution" title="Where the burn-back model stops">
-  Real motors add effects this model leaves out: **erosive burning** (fast gas along the bore raises the local burn
-  rate, which is why a low port-to-throat ratio gives an ignition spike), the **ignition transient**, **throat
-  erosion** (pressure sags during the burn), the **burn-rate scale factor and "hump"** between small test motors and
-  full-scale grains, **3-D geometry** (finocyl fins, conical ports, domed ends), and grain **deformation** under
-  pressure changing the port. Production ballistics use full internal-ballistics codes anchored to motor firings.
+  Real motors have effects that this model does not include. **Erosive burning:** fast gas along the bore increases
+  the local burn rate. This is why a low port-to-throat ratio gives an ignition spike. Also: the **ignition
+  transient**; **throat erosion** (the pressure decreases during the burn); the **burn-rate scale factor and "hump"**
+  between small test motors and full-scale grains; **3-D geometry** (finocyl fins, conical ports, domed ends); and grain
+  **deformation** under pressure, which changes the port. Production ballistics use full internal-ballistics codes,
+  calibrated with motor firings.
 </Aside>
 
-## Part 2 — Structural integrity
+## Part 2: Structural integrity
 
 ### The material: a filled rubber with a memory
 
-Composite propellant is around 85–90% solid particles (oxidiser and aluminium) held in a rubber binder. Mechanically it
-behaves like a **viscoelastic** solid: its stiffness and strength depend on **how fast** it is loaded and **how cold**
-it is. The models behind this are on the [viscoelasticity page](../../fundamentals/viscoelasticity/).
+Composite propellant is approximately 85–90% solid particles (oxidiser and aluminium) in a rubber binder. Mechanically
+it is a **viscoelastic** solid. Its stiffness and strength depend on **how fast** you load it and **how cold** it is.
+The models for this are on the [viscoelasticity page](../../fundamentals/viscoelasticity/).
 
 <Analogy title="Silly Putty">
-  Pull Silly Putty slowly and it stretches a long way. Yank it and it snaps. Put it in the freezer and even a slow pull
-  snaps it. Propellant follows the same pattern — and cold behaves like fast. That equivalence (time–temperature
-  superposition) is what lets a few lab tests describe years of storage and milliseconds of ignition.
+  If you pull Silly Putty slowly, it stretches a long way. If you pull it quickly, it breaks. If you put it in the
+  freezer, even a slow pull breaks it. Propellant follows the same pattern, and cold has the same effect as fast. This
+  equivalence (time–temperature superposition) lets a few laboratory tests describe years of storage and milliseconds
+  of ignition.
 </Analogy>
 
-Three facts drive everything below:
+Three facts control all the results below:
 
-1. **Propellant is nearly incompressible.** It changes shape easily but barely changes volume (bulk modulus is
-   thousands of times its shear modulus). Wherever its volume *wants* to change, the geometry decides where the
-   movement goes.
-2. **Relaxation lowers stress, not strain.** In a case-bonded grain the bore strain is set by geometry and expansion
-   coefficients, not by stiffness. Slow cool-downs relax the *stress* away, but the *strain* stays.
-3. **Capability depends on rate, temperature, pressure and age.** There is no single "strain to failure". Each load case
-   is compared with the capability measured at its own rate and temperature, and capability falls as the propellant
+1. **Propellant is almost incompressible.** It is easy to change its shape, but its volume almost does not change (the
+   bulk modulus is thousands of times the shear modulus). Where its volume *tries* to change, the geometry decides
+   where the movement goes.
+2. **Relaxation decreases the stress, not the strain.** In a case-bonded grain, the geometry and the expansion
+   coefficients set the bore strain, not the stiffness. Slow cool-downs relax the *stress*, but the *strain* stays.
+3. **Capability depends on rate, temperature, pressure and age.** There is no single "strain to failure". Compare each
+   load case with the capability measured at its own rate and temperature. The capability decreases as the propellant
    ages.
 
 ### The load cases
 
-| Load case | What happens | Typically governs |
+| Load case | What occurs | Usually governs |
 | --- | --- | --- |
-| Cure cool-down and cold storage | Propellant tries to shrink far more than the case it is bonded to | Bore cracking, bond tension |
+| Cure cool-down and cold storage | Propellant tries to shrink much more than the case that it is bonded to | Bore cracking, bond tension |
 | Temperature cycling | Repeated cool-down strains | Cumulative damage over the service life |
-| Ignition pressurisation | Case dilates; incompressible grain amplifies it at the bore | Bore cracking at cold firing |
+| Ignition pressurisation | The case expands; the incompressible grain amplifies this at the bore | Bore cracking at cold firing |
 | Flight acceleration, vibration | Inertial loads on a soft grain | Bond shear at the ends, slender grains |
 | Long-term storage (slump) | The grain sags under its own weight for years | Large motors, bore deformation |
 
 ### Cool-down: why the bore cracks
 
-Propellant is cured warm and bonded to the case at that temperature, where it is stress-free. Its thermal expansion
-coefficient is around $10^{-4}$/K — roughly eight times steel's — so when it cools it tries to shrink far more than
-the case does. The outside is glued to the case and can't follow. Because it can't change volume either, the shrinkage
-has to come out of the bore, which is pulled open.
+Propellant cures warm and bonds to the case at that temperature, where it has no stress. Its thermal expansion
+coefficient is approximately $10^{-4}$/K, which is approximately eight times that of steel. Thus when it cools, it tries
+to shrink much more than the case. The outside is bonded to the case and cannot follow. The propellant also cannot
+change its volume. Thus the shrinkage must come from the bore, which opens.
 
 <GrainCooldown />
 
 <Analogy title="A ring doughnut glued inside a steel bangle, put in the freezer">
-  The doughnut wants to shrink, but its outer edge is stuck to the bangle, which barely shrinks at all. The doughnut
-  can't get smaller from the outside, so its hole gets bigger instead — stretching the inside surface around its
-  circumference. The thicker the doughnut relative to its hole, the more volume there is to accommodate, and the more
-  that small hole has to stretch.
+  The doughnut tries to shrink, but its outer edge is bonded to the bangle, which almost does not shrink. The doughnut
+  cannot become smaller from the outside, so its hole becomes larger. This stretches the inside surface around its
+  circumference. A doughnut that is thicker relative to its hole has more volume to accommodate, and its small hole
+  must stretch more.
 </Analogy>
 
-For a long, case-bonded cylindrical grain with bore radius $a$ and outer radius $b$, write $m = b/a$. Incompressibility
-means the area of each ring of propellant can't change except by thermal expansion, which fixes the displacement field.
-Applying the case boundary condition gives the bore hoop strain on cooling by $\Delta T$ (negative for cooling):
+For a long, case-bonded cylindrical grain with a bore radius $a$ and an outer radius $b$, let $m = b/a$. Because the
+propellant is incompressible, the area of each ring of propellant can change only by thermal expansion. This sets the
+displacement field. With the boundary condition at the case, the bore hoop strain on cooling by $\Delta T$ (negative for
+cooling) is:
 
 $$
 \varepsilon_{\theta}(a) = \Delta T \left[\frac{3\alpha_p - \alpha_c}{2}\,(1 - m^2) + m^2\,\alpha_c\right]
 \;\approx\; \tfrac{3}{2}\,(\alpha_p - \alpha_c)\,|\Delta T|\,(m^2 - 1)
 $$
 
-The approximate form is within $\alpha_c |\Delta T|$ (about 0.1%) of the full one. The key term is $m^2$: **bore strain
-grows with the square of the outer-to-bore ratio**. A grain with a small bore and a thick web — which is exactly what
-you want for propellant loading — is the hardest to keep from cracking. That is the central structural trade in grain
-design.
+The approximate form is within $\alpha_c |\Delta T|$ (approximately 0.1%) of the full form. The important term is
+$m^2$: **the bore strain increases with the square of the outer-to-bore ratio**. A grain with a small bore and a thick
+web gives the most propellant, but it is the most difficult grain to keep free of cracks. This is the main structural
+trade in grain design.
 
-The same analysis gives the radial tension pulling the grain off the case at the bond, using the propellant's relaxed
-modulus $E$ for this slow load:
+The same analysis gives the radial tension that pulls the grain off the case at the bond. It uses the relaxed modulus
+$E$ of the propellant for this slow load:
 
 $$
 \sigma_r(b) = E\,(m^2 - 1)\,(\alpha_p - \alpha_c)\,|\Delta T| \;\approx\; \tfrac{2}{3}\,E\,\varepsilon_\theta(a)
 $$
 
-A soft propellant keeps bond stress low; it does nothing for bore strain.
+A soft propellant keeps the bond stress low. It does not decrease the bore strain.
 
 ### Ignition: the case stretches, the bore stretches more
 
-At ignition, pressure pushes the grain against the case and the case dilates by a fraction of a percent. The
-propellant can't change volume much, so that small outward movement at radius $b$ has to be matched by a much larger
-movement of the bore:
+At ignition, the pressure pushes the grain against the case, and the case expands by a fraction of a per cent. The
+propellant cannot change its volume much. Thus the small outward movement at radius $b$ causes a much larger movement
+of the bore:
 
 $$
 \varepsilon_{\theta}(a) = m^2\,\varepsilon_{\theta,\text{case}} + \frac{m^2 - 1}{2}\left(\varepsilon_{z,\text{case}} + \frac{p}{K}\right)
 $$
 
-where $K$ is the propellant bulk modulus, and for a thin closed-end case of modulus $E_c$, Poisson's ratio $\nu_c$ and
-wall $h$:
+Here $K$ is the bulk modulus of the propellant. For a thin closed-end case with a modulus $E_c$, a Poisson's ratio
+$\nu_c$ and a wall $h$:
 
 $$
 \varepsilon_{\theta,\text{case}} = \frac{p\,b}{E_c\,h}\left(1 - \frac{\nu_c}{2}\right)
@@ -250,99 +257,105 @@ $$
 \varepsilon_{z,\text{case}} = \frac{p\,b}{E_c\,h}\left(\frac{1}{2} - \nu_c\right)
 $$
 
-This links the grain directly to [case sizing](../case-sizing/): a lighter, more highly stressed case stretches more,
-and the grain pays for it at the bore. The worst case is usually a **cold firing**, where the cool-down strain is
-already there when ignition adds its share.
+This connects the grain directly to [case sizing](../case-sizing/). A lighter case with more stress stretches more, and
+the bore of the grain gets more strain. The worst case is usually a **cold firing**, where the cool-down strain is
+already present when ignition adds its share.
 
 ### Calculator
 
 <GrainStructCalc />
 
-### Worked example — HTPB grain in the D6AC case
+### Worked example: HTPB grain in the D6AC case
 
-The same 300 mm D6AC case as the [case-sizing worked example](../case-sizing/#worked-example) (wall 1.377 mm, MEOP
-10 MPa), with a 100 mm circular bore ($m = 3$). Composite propellant with $\alpha_p = 100 \times 10^{-6}$/K, relaxed
-modulus 3.6 MPa and bulk modulus 3.5 GPa; steel $\alpha_c = 12 \times 10^{-6}$/K. Stress-free at 60 °C, coldest firing
-at −40 °C, so $\Delta T = -100$ K. The safety factor of 1.5 below is for this example only; press **Load worked
-example** in the structural calculator to load these inputs.
+This is the same 300 mm D6AC case as the [case-sizing worked example](../case-sizing/#worked-example) (wall 1.377 mm,
+MEOP 10 MPa), with a 100 mm circular bore ($m = 3$). The composite propellant has $\alpha_p = 100 \times 10^{-6}$/K, a
+relaxed modulus of 3.6 MPa and a bulk modulus of 3.5 GPa. The steel has $\alpha_c = 12 \times 10^{-6}$/K. The
+stress-free temperature is 60 °C and the coldest firing is at −40 °C, so $\Delta T = -100$ K. The safety factor of 1.5
+below is for this example only. Push **Load worked example** in the structural calculator to load these inputs.
 
 1. **Cool-down strain.** $100 \times \left[\frac{300 - 12}{2} \times 8 - 9 \times 12\right] \times 10^{-6} = 10.4\%$.
-2. **Case strain at MEOP.** $\frac{p b}{E_c h} = \frac{10 \times 150}{205{,}000 \times 1.377} = 0.531\%$, so hoop
-   $0.452\%$ and axial $0.106\%$.
+2. **Case strain at MEOP.** $\frac{p b}{E_c h} = \frac{10 \times 150}{205{,}000 \times 1.377} = 0.531\%$. Thus the hoop
+   strain is $0.452\%$ and the axial strain is $0.106\%$.
 3. **Ignition strain.** $9 \times 0.452\% + 4 \times (0.106\% + 10/3500) = 4.07\% + 1.57\% = 5.6\%$.
-4. **Cold ignition.** $10.4\% + 5.6\% = 16.1\%$. Against the illustrative 39.6% capability with a safety factor of 1.5:
-   margin $= 39.6 / (1.5 \times 16.1) - 1 = +0.64$.
+4. **Cold ignition.** $10.4\% + 5.6\% = 16.1\%$. Against the illustrative capability of 39.6%, with a safety factor of
+   1.5, the margin is $39.6 / (1.5 \times 16.1) - 1 = +0.64$.
 5. **Bond tension.** $3.6 \times 8 \times 88 \times 10^{-6} \times 100 = 0.25$ MPa.
 
-Now set the **concentration factor to 2.5**, roughly what a star point might add. The cold-ignition strain becomes 40%
-and the margin goes negative. The same grain that is comfortable with a circular bore fails with a star — which is why
-star points get generous fillet radii and their own detailed analysis.
+Now set the **concentration factor to 2.5**. This is approximately the effect of a star point. The cold-ignition strain
+becomes 40%, and the margin becomes negative. The same grain passes with a circular bore and fails with a star. This is
+why star points get large fillet radii and their own detailed analysis.
 
 ### Design levers
 
-- **Larger bore / smaller web** — the most powerful lever, because strain goes as $m^2$. It costs propellant loading.
-- **Stiffer or thicker case** — lowers ignition strain directly. Composite cases are light but stretch more.
-- **Raise the minimum firing temperature** — every degree of $\Delta T$ removed is strain removed. Often a system-level
-  negotiation.
-- **Lower the stress-free temperature** — curing cooler, or curing under pressure, reduces the cool-down $\Delta T$.
-- **Stress-relief flaps and boots** at the grain ends, where the bond terminates and stresses are far higher than the
+- **Larger bore / smaller web.** This has the largest effect, because the strain changes as $m^2$. It decreases the
+  propellant loading.
+- **Stiffer or thicker case.** This decreases the ignition strain directly. Composite cases are light, but they stretch
+  more.
+- **Increase the minimum firing temperature.** Each degree removed from $\Delta T$ removes strain. Usually this needs
+  an agreement at system level.
+- **Decrease the stress-free temperature.** A cooler cure, or a cure under pressure, decreases the cool-down
+  $\Delta T$.
+- **Stress-relief flaps and boots** at the grain ends. Where the bond stops, the stresses are much higher than the
   long-cylinder values above.
-- **Cartridge-loaded grains** (made separately and slid into the case) avoid the bonded cool-down problem entirely,
-  at the cost of support and inhibition complexity. Common for double-base grains, which go glassy at low temperature.
+- **Cartridge-loaded grains** (made separately and put into the case) do not have the bonded cool-down problem. But
+  their support and inhibition are more complex. They are usual for double-base grains, which become glassy at low
+  temperature.
 
 ### Where these formulas stop
 
 <Aside type="caution" title="Screening, not qualification">
-  These are long-cylinder, elastic, closed-form results. Real grain structural analysis uses viscoelastic finite
-  elements with measured relaxation data, covers the grain ends and every geometric feature, accumulates damage over
-  the full thermal and handling history, accounts for ageing, and is validated against instrumented motors and
-  analogue tests.
+  These are long-cylinder, elastic, closed-form results. A real structural analysis of a grain uses viscoelastic finite
+  elements with measured relaxation data. It includes the grain ends and all geometric features, adds the damage over
+  the full thermal and handling history, includes ageing, and is validated against instrumented motors and analogue
+  tests.
 </Aside>
 
 - **Ends and terminations.** Bond stresses at the grain ends can be several times the values above.
-- **Non-circular ports.** Star points, slot tips and fin roots need FEA. The concentration factor here is a placeholder.
-- **Dewetting.** At high strains the binder separates from the solid particles and voids open up. The material is then
-  no longer incompressible, and its response changes.
-- **Cumulative damage.** Repeated thermal cycles each use up some capability. Programmes track this with cumulative
-  damage models, and through surveillance testing of aged motors.
+- **Non-circular ports.** Star points, slot tips and fin roots need FEA. The concentration factor here is only an
+  estimate.
+- **Dewetting.** At high strains, the binder separates from the solid particles and voids open. The material is then
+  not incompressible, and its response changes.
+- **Cumulative damage.** Each thermal cycle uses some capability. Programmes monitor this with cumulative damage models
+  and with surveillance tests of aged motors.
 
 ### Differences from REF·DB v1
 
-<Aside type="note" title="Two corrections carried into this version">
-  **Pressurisation strain.** v1 used $\tfrac{p}{2G}\,\tfrac{b^2}{b^2 - a^2}$, which is the bore strain of a grain
-  with *no case around it*. For a soft composite propellant that predicts strains of hundreds of percent. In a
-  case-bonded grain, the case controls the bore strain — the formula above.
+<Aside type="note" title="Two corrections in this version">
+  **Pressurisation strain.** v1 used $\tfrac{p}{2G}\,\tfrac{b^2}{b^2 - a^2}$. This is the bore strain of a grain with
+  *no case around it*. For a soft composite propellant, it predicts strains of hundreds of per cent. In a case-bonded
+  grain, the case controls the bore strain, as in the formula above.
 
-  **Relaxation credit.** v1 reduced the cool-down bore strain by a viscoelastic relaxation factor. The bore strain in a
-  case-bonded grain is kinematically imposed, so relaxation lowers the stress but not the strain. Relaxation is now
-  applied only where it belongs: the bond stress, through the relaxed modulus.
+  **Relaxation credit.** v1 decreased the cool-down bore strain by a viscoelastic relaxation factor. In a case-bonded
+  grain, the bore strain is kinematically imposed. Thus relaxation decreases the stress but not the strain. The page now
+  applies relaxation only where it is correct: to the bond stress, through the relaxed modulus.
 </Aside>
 
 ## On the drawing
 
-- **Grain geometry** — port profile, fillet radii, web, and the tolerances on each. Fillet radii at star points and slot
-  tips are structural features, not cosmetic ones.
-- **Liner, insulation and inhibitor** — specifications, thicknesses, and which surfaces are inhibited.
-- **Bond and void acceptance** — the NDT method (typically radiography or CT for voids, cracks and debonds) and its
+- **Grain geometry:** port profile, fillet radii and web, with the tolerance on each. Fillet radii at star points and
+  slot tips are structural features, not cosmetic features.
+- **Liner, insulation and inhibitor:** specifications, thicknesses, and which surfaces are inhibited.
+- **Bond and void acceptance:** the NDT method (usually radiography or CT for voids, cracks and debonds) and its
   acceptance criteria.
-- **Stress-relief features** — flap geometry and the release treatment that lets them separate.
-- **Temperature limits** — storage and firing temperatures belong in the motor specification, because the structural
+- **Stress-relief features:** the flap geometry, and the release treatment that lets the flaps separate.
+- **Temperature limits:** give the storage and firing temperatures in the motor specification, because the structural
   margin depends on them.
 
 ## References and further reading
 
-- NASA SP-8073, *Solid Propellant Grain Structural Integrity Analysis* (1973) — the open reference for this half.
+- NASA SP-8073, *Solid Propellant Grain Structural Integrity Analysis* (1973) (the open reference for the structural
+  part).
 - NASA SP-8076, *Solid Propellant Grain Design and Internal Ballistics* (1972).
-- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) — chapters on solid propellant
-  rocket fundamentals and grain design.
+- G. P. Sutton & O. Biblarz, *Rocket Propulsion Elements*, 9th ed., Wiley (2017) (chapters on solid propellant rocket
+  fundamentals and grain design).
 - A. Davenas (ed.), *Solid Rocket Propulsion Technology*, Pergamon (1993).
 - M. L. Williams, P. J. Blatz & R. A. Schapery, *Fundamental Studies Relating to Systems Analysis of Solid Propellants*,
   GALCIT SM 61-5, California Institute of Technology (1961).
-- openMotor — an open-source solid motor internal-ballistics simulator that uses the same distance-map approach to
+- openMotor, an open-source solid motor internal-ballistics simulator that uses the same distance-map method for
   burn-back.
 
 <Aside type="note">
-  Educational and screening material. Propellant formulation and energetics processing are deliberately out of scope.
-  Grain design and structural qualification are specialist disciplines, governed by your programme's requirements and
-  safety case.
+  This is educational and screening material. Propellant formulation and energetics processing are intentionally
+  outside the scope. Grain design and structural qualification are specialist disciplines. The requirements and the
+  safety case of your programme control them.
 </Aside>

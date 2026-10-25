@@ -18,7 +18,7 @@ const ROWS = [
 ---
 
 <div class="calc ftcalc" data-ftcalc>
-  <div class="calc-head"><span>Fatigue — stress-life and Miner's rule</span><span>Marin · Peterson · Basquin</span></div>
+  <div class="calc-head"><span>Fatigue: stress-life and Miner's rule</span><span>Marin · Peterson · Basquin</span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -110,7 +110,7 @@ const ROWS = [
   <div class="calc-foot">
     Stress-life screening: Marin factors and Peterson notch sensitivity are correlations; the S-N curve is a Basquin
     estimate between 0.9·S<sub>ut</sub> at 10³ cycles and S<sub>e</sub>; Miner's rule ignores load sequence. Fatigue
-    scatter is a factor of ten in life — a fatigue-critical part is qualified by test.
+    scatter is a factor of ten in life: a fatigue-critical part is qualified by test.
   </div>
   <script type="application/json" data-mats set:html={JSON.stringify(MATS)}></script>
 </div>
@@ -173,7 +173,7 @@ const ROWS = [
       const base = baseFatigueStrength(fam(), uts);
       root.querySelector('[data-sehint]')!.textContent = base.limit
         ? `Estimate from UTS for this family, with an endurance limit at about ${sup(Math.log10(base.nE))} cycles. Replace with test data where you have it.`
-        : `Estimate from UTS. This family has no true endurance limit — the value is the strength at ${base.nE === 5e8 ? '5×10⁸' : sup(Math.log10(base.nE))} cycles and the curve keeps falling.`;
+        : `Estimate from UTS. This family has no true endurance limit: the value is the strength at ${base.nE === 5e8 ? '5×10⁸' : sup(Math.log10(base.nE))} cycles and the curve keeps falling.`;
       if (!(uts > 0 && sy > 0 && sePrime > 0 && sePrime < uts)) {
         notes.innerHTML = '<li class="bad">Check the material values: S′e must be positive and below the UTS.</li>';
         return;
@@ -213,14 +213,14 @@ const ROWS = [
       const out: [string, string][] = [];
       if (rows.length) {
         const top = [...rows].sort((a, b) => b.d - a.d)[0];
-        if (res.D > 0) out.push(['', `${esc(top.label)} does ${f((top.d / res.D) * 100, 0)}% of the damage in ${cyc(top.n)} cycles. ${rows.some((x) => x.d === 0) ? 'Blocks below the endurance limit do none at all — ' : ''}${base.limit ? 'a few large cycles matter far more than many small ones.' : ''}`]);
+        if (res.D > 0) out.push(['', `${esc(top.label)} does ${f((top.d / res.D) * 100, 0)}% of the damage in ${cyc(top.n)} cycles. ${rows.some((x) => x.d === 0) ? 'Blocks below the endurance limit do none at all: ' : ''}${base.limit ? 'a few large cycles matter far more than many small ones.' : ''}`]);
         if (!base.limit) out.push(['warn', 'No true endurance limit: every block does some damage, however small. Long vibration exposures add up.']);
-        if (rows.some((x) => x.static)) out.push(['bad', 'At least one block puts the notch above the tensile strength — that is a static failure, not fatigue. Scale the stresses to suit this material.']);
-        else if (rows.some((x) => Number.isFinite(x.N) && x.N < 1e3)) out.push(['warn', 'At least one block lasts under 10³ cycles — low-cycle fatigue, outside the stress-life method. Use strain-life.']);
+        if (rows.some((x) => x.static)) out.push(['bad', 'At least one block puts the notch above the tensile strength: that is a static failure, not fatigue. Scale the stresses to suit this material.']);
+        else if (rows.some((x) => Number.isFinite(x.N) && x.N < 1e3)) out.push(['warn', 'At least one block lasts under 10³ cycles: low-cycle fatigue, outside the stress-life method. Use strain-life.']);
         if (rows.some((x) => x.yields)) out.push(['warn', 'At least one block yields the notch on its first cycle (local σa + σm above yield). Local yielding redistributes the mean stress; a strain-life analysis is the right tool there.']);
       }
       out.push(['', `The part keeps ${f((m.se / sePrime) * 100, 0)}% of the coupon's fatigue strength: surface ${f(m.ka, 2)}, size ${f(m.kb, 2)}, loading ${f(m.kc, 2)}, temperature ${f(m.kd, 2)}, reliability ${f(m.ke, 2)}. The notch then multiplies the stress by ${f(kf, 2)}.`]);
-      if (fs !== null) out.push(['', 'The stress margin checks the worst block against the endurance limit — the right test only for a part that must never accumulate damage. For a finite-life design, the life margin is the one that counts.']);
+      if (fs !== null) out.push(['', 'The stress margin checks the worst block against the endurance limit: the right test only for a part that must never accumulate damage. For a finite-life design, the life margin is the one that counts.']);
       if (fs === null || fl === null) out.push(['warn', awaitingMessage([fs === null ? 'factor on stress' : '', fl === null ? 'factor on life' : ''].filter(Boolean), 'the margins', false)]);
       out.push(['', 'Miner\'s rule ignores sequence: high loads early can shorten life further. Test results scatter by about ten times in life, which is why programmes apply a factor on life.']);
       notes.innerHTML = out.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
@@ -243,7 +243,7 @@ const ROWS = [
         svg.append(el('rect', { x: L, y: y + 3, width: Math.max(w, 1), height: 16, rx: 2, fill: i === 0 ? 'var(--rd-muted)' : i === steps.length - 1 ? 'var(--rd-accent)' : 'var(--rd-blue)', 'fill-opacity': i === 0 ? 0.5 : 0.75 }));
         svg.append(el('text', { x: L + w + 5, y: y + 15, 'font-size': 10, fill: 'var(--rd-muted)' }, `${f(val, 0)}${i > 0 ? ` (${f(k, 2)})` : ''}`));
       });
-      svg.append(el('text', { x: L, y: T + steps.length * rowH + 14, 'font-size': 10, fill: 'var(--rd-muted)' }, 'MPa — the bottom bar is S_e for your part'));
+      svg.append(el('text', { x: L, y: T + steps.length * rowH + 14, 'font-size': 10, fill: 'var(--rd-muted)' }, 'MPa: the bottom bar is S_e for your part'));
     }
 
     function snChart(uts: number, coupon: ReturnType<typeof snCurve>, curve: ReturnType<typeof snCurve>, rows: { sar: number; N: number; label: string }[], nE: number) {

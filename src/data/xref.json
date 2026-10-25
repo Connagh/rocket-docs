@@ -124,7 +124,7 @@
     {
       "name": "Magnesium AZ31B",
       "family": "mg",
-      "en": "No EN 1753 designation — wrought",
+      "en": "No EN 1753 designation: wrought",
       "enNo": "3.5312",
       "legacyBs": "BS 3370 MAG-S-1101",
       "uns": "M11311",
@@ -189,7 +189,7 @@
       "legacyBs": "—",
       "uns": "R56400",
       "aero": "AMS 4911 sheet / 4928 bar",
-      "note": "W.Nr usage varies between 3.7164/3.7165 by supplier and condition — UNS R56400 is the reliable discriminator."
+      "note": "W.Nr usage varies between 3.7164/3.7165 by supplier and condition. UNS R56400 is the reliable discriminator."
     },
     {
       "name": "Ti-6Al-4V ELI (Grade 23)",
@@ -279,7 +279,7 @@
       "legacyBs": "—",
       "uns": "K11562",
       "aero": "AIR 9160C",
-      "note": "Weldable case steel — no post-weld heat treatment needed."
+      "note": "Weldable case steel: no post-weld heat treatment needed."
     },
     {
       "name": "D6AC",

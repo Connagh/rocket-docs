@@ -13,21 +13,21 @@ const exitCone: Pt[] = [[782, 148.9], [782, 134], [900, 86], [900, 100]];
 
 const parts = [
   { key: 'igniter', n: 1, name: 'Igniter', at: [140, 170],
-    desc: 'A small pyrotechnic charge — on larger motors, a miniature rocket motor in its own right — that fires hot gas and particles down the bore. It has to heat the whole exposed grain surface past ignition temperature and pressurise the chamber within tens of milliseconds, so burning becomes self-sustaining everywhere at once. Think of a barbecue lighter sized to light every coal simultaneously, not one corner.' },
+    desc: 'A small pyrotechnic charge (on larger motors, a miniature rocket motor in its own right) that fires hot gas and particles down the bore. It has to heat the whole exposed grain surface past ignition temperature and pressurise the chamber within tens of milliseconds, so burning becomes self-sustaining everywhere at once. Think of a barbecue lighter sized to light every coal simultaneously, not one corner.' },
   { key: 'fwd', n: 2, name: 'Forward dome / closure', at: [122, 118],
     desc: 'Closes the forward end of the pressure vessel and usually carries the igniter boss. A dome is far more efficient than a flat plate: a hemisphere carries pressure in pure membrane tension and needs only half the wall of the cylinder, while a flat plate has to resist the same pressure in bending.' },
   { key: 'case', n: 3, name: 'Case (pressure shell)', at: [330, 83],
     desc: 'The structural pressure vessel. It carries chamber pressure (hoop stress dominates), plus thrust, flight and handling loads. Typical materials are ultra-high-strength steels (D6AC, maraging 18Ni, 15CDV6), titanium, or filament-wound carbon/aramid composite. Case mass is the largest inert-mass lever on motor performance.' },
   { key: 'insul', n: 4, name: 'Insulation + liner', at: [470, 90],
-    desc: 'A rubbery thermal barrier (typically EPDM, NBR or silicone, often aramid- or silica-filled) that keeps ~3000 K combustion gas off the case — the case only keeps its strength if it stays near ambient temperature. The liner is the thin, tacky layer that bonds propellant to insulation. Insulation is thickest where hot gas reaches it earliest and longest: the aft dome and areas that burn out first.' },
+    desc: 'A rubbery thermal barrier (typically EPDM, NBR or silicone, often aramid- or silica-filled) that keeps ~3000 K combustion gas off the case: the case only keeps its strength if it stays near ambient temperature. The liner is the thin, tacky layer that bonds propellant to insulation. Insulation is thickest where hot gas reaches it earliest and longest: the aft dome and areas that burn out first.' },
   { key: 'grain', n: 5, name: 'Propellant grain', at: [330, 120],
-    desc: 'The propellant itself. Composite propellant is typically ammonium perchlorate (oxidiser) and aluminium powder (fuel) held in a cured HTPB rubber binder — fuel and oxidiser premixed into a solid, rubbery block. It burns only on exposed surfaces, receding perpendicular to the surface like a sugar cube dissolving layer by layer.' },
+    desc: 'The propellant itself. Composite propellant is typically ammonium perchlorate (oxidiser) and aluminium powder (fuel) held in a cured HTPB rubber binder: fuel and oxidiser premixed into a solid, rubbery block. It burns only on exposed surfaces, receding perpendicular to the surface like a sugar cube dissolving layer by layer.' },
   { key: 'bore', n: 6, name: 'Bore (combustion port)', at: [420, 170],
-    desc: 'The open channel through the grain. Its cross-section shape (circle, star, slots, fins) sets how the burning area changes as the surface regresses — and so the thrust–time curve. It is also the flow passage carrying gas to the nozzle; high port velocities cause erosive burning.' },
+    desc: 'The open channel through the grain. Its cross-section shape (circle, star, slots, fins) sets how the burning area changes as the surface regresses, and so the thrust–time curve. It is also the flow passage carrying gas to the nozzle; high port velocities cause erosive burning.' },
   { key: 'aft', n: 7, name: 'Aft dome / closure', at: [697, 103],
     desc: 'Transfers nozzle loads into the case and holds the polar boss the nozzle bolts to. Gas accelerates as it turns into the nozzle, so this is the most thermally aggressive region of the chamber and the insulation here is thickest.' },
   { key: 'throat', n: 8, name: 'Throat insert', at: [763, 141],
-    desc: 'The narrowest point of the nozzle. The flow is choked here (Mach 1), so throat area sets chamber pressure for a given burning area. Made from erosion-resistant graphite, carbon-carbon or refractory metal — any throat erosion during the burn enlarges the throat and lowers pressure and thrust.' },
+    desc: 'The narrowest point of the nozzle. The flow is choked here (Mach 1), so throat area sets chamber pressure for a given burning area. Made from erosion-resistant graphite, carbon-carbon or refractory metal: any throat erosion during the burn enlarges the throat and lowers pressure and thrust.' },
   { key: 'exit', n: 9, name: 'Exit cone', at: [850, 109],
     desc: 'The divergent section, where gas expands and accelerates to supersonic speed, turning chamber pressure into exhaust velocity. Usually carbon- or silica-phenolic ablative over a structural shell: it chars and erodes slowly by design, absorbing heat as it goes.' },
   { key: 'skirt', n: 10, name: 'Skirts', at: [150, 77],
@@ -36,7 +36,7 @@ const parts = [
 ---
 
 <figure class="viz cutaway" data-cutaway>
-  <p class="viz-title">Solid rocket motor — half-section (schematic, not to scale)</p>
+  <p class="viz-title">Solid rocket motor: half-section (schematic, not to scale)</p>
   <svg viewBox="0 0 960 340" role="img" aria-labelledby="cutaway-desc">
     <desc id="cutaway-desc">
       Longitudinal section of a solid rocket motor showing, from left to right, the igniter in the forward dome, the

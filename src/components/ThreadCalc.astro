@@ -5,7 +5,7 @@ import { THREADS, GRADES } from '../lib/bolts';
 ---
 
 <div class="calc thcalc" data-thcalc>
-  <div class="calc-head"><span>Thread engagement — one bolt</span><span class="head-btns"><span>bolt breaks first?</span></span></div>
+  <div class="calc-head"><span>Thread engagement: one bolt</span><span class="head-btns"><span>bolt breaks first?</span></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -31,7 +31,7 @@ import { THREADS, GRADES } from '../lib/bolts';
           <label>Rated strength (kN)<input name="rate" type="number" min="0" step="any" placeholder="from its spec" /></label>
           <label>Plating thickness (μm)<input name="pl" type="number" min="0" step="any" value="0" /></label>
         </div>
-        <p class="hint">Part shear ultimate is the parent material's (6061-T6 is about 186 MPa) — use your allowable. A rated part (nut, insert) uses its specified strength, not a stripping analysis.</p>
+        <p class="hint">Part shear ultimate is the parent material's (6061-T6 is about 186 MPa): use your allowable. A rated part (nut, insert) uses its specified strength, not a stripping analysis.</p>
       </fieldset>
       <details class="th-lim">
         <summary>Minimum-material diameters (optional)</summary>
@@ -55,13 +55,13 @@ import { THREADS, GRADES } from '../lib/bolts';
       </dl>
       <figure class="th-fig">
         <svg viewBox="0 0 420 260" data-chart role="img" aria-label="Strength of the bolt, the bolt threads and the internal threads against engagement length"></svg>
-        <figcaption>Thread strength grows with engagement; the bolt's does not. Beyond the crossing, the bolt breaks first — the failure you want: visible, ductile, and easy to repair.</figcaption>
+        <figcaption>Thread strength grows with engagement; the bolt's does not. Beyond the crossing, the bolt breaks first. This is the failure that you want: visible, ductile and easy to repair.</figcaption>
       </figure>
       <ul class="pv-notes" data-notes></ul>
     </div>
   </div>
   <div class="calc-foot">
-    Shear areas from the FED-STD-H28 / VDI 2230 form, A = π·L<sub>e</sub>·D·[P/2 + tan30°·Δ]/P — 7/8 of π·d·L<sub>e</sub> for the
+    Shear areas from the FED-STD-H28 / VDI 2230 form, A = π·L<sub>e</sub>·D·[P/2 + tan30°·Δ]/P: 7/8 of π·d·L<sub>e</sub> for the
     internal threads and 3/4 of π·D<sub>1</sub>·L<sub>e</sub> for the bolt threads at basic size. Helical-coil insert: the part is
     tapped to about d + 1.3P. Nut dilation and thread bending are not included.
   </div>
@@ -122,7 +122,7 @@ import { THREADS, GRADES } from '../lib/bolts';
       const first = (Object.entries(loads).filter(([, v]) => Number.isFinite(v)) as [keyof typeof loads, number][]).reduce((a, b) => (b[1] < a[1] ? b : a))[0];
       const ratio = Math.min(s.ext, Number.isFinite(intLoad) ? intLoad : Infinity) / s.bolt;
       const names = { bolt: 'the bolt breaks', external: 'the bolt threads strip', internal: kind === 'insert' ? 'the insert pulls out' : kind === 'nut' ? 'the nut fails' : 'the tapped threads strip' };
-      r('first').innerHTML = `${names[first]} <small>${first === 'bolt' ? 'the failure you want' : 'before the bolt — engage more'}</small>`;
+      r('first').innerHTML = `${names[first]} <small>${first === 'bolt' ? 'the failure you want' : 'before the bolt: engage more'}</small>`;
       cls('first', first === 'bolt' ? 'ok' : 'bad');
       r('ratio').innerHTML = `${f(ratio, 2)} <small>weaker threads ÷ bolt; above 1, the bolt goes first</small>`;
       cls('ratio', ratio >= 1 ? 'ok' : 'bad');
@@ -135,9 +135,9 @@ import { THREADS, GRADES } from '../lib/bolts';
       if (first !== 'bolt') notes.push(['bad', `${names[first][0].toUpperCase() + names[first].slice(1)} before the bolt breaks. NASA-STD-5020B §4.7.4 asks for enough complete threads that the bolt fails in tension first: engage more thread, fit an insert, or use a bolt no stronger than the threads need.`]);
       if (!Object.keys(lim).length && kind !== 'nut') notes.push(['', 'Basic-size shear areas are an upper bound: real threads at their tolerance limits have less, nuts dilate and threads bend. That is why practice engages about 1.5–2 d in aluminium alloys; enter minimum-material diameters, or use VDI 2230\'s full method, for a design value.']);
       if (kind === 'insert') notes.push(['', 'Rate a procured insert by its specification: the lower of its internal-thread strength and its pull-out from the part (NASA-STD-5020B §4.4.1). Pull-out from non-metallic or sandwich parts needs test. A stainless insert in aluminium needs primer against galvanic corrosion.']);
-      if (kind === 'nut') notes.push(['', 'Procured nuts and inserts are rated by their specified strength, not by a stripping analysis — they dilate under load (NASA-STD-5020B §4.4.1). The bolt should extend at least two pitches past the nut (§4.7.4).']);
+      if (kind === 'nut') notes.push(['', 'Procured nuts and inserts are rated by their specified strength, not by a stripping analysis: they dilate under load (NASA-STD-5020B §4.4.1). The bolt should extend at least two pitches past the nut (§4.7.4).']);
       const pl = num('pl');
-      if (pl > 0) notes.push(['', `A ${f(pl, 0)} μm coating on the flanks raises the pitch diameter by ${f(platingPitchGrowth(pl), 0)} μm — it must fit inside the allowance of the tolerance position (6g rather than 6h) or the plated thread will not assemble.`]);
+      if (pl > 0) notes.push(['', `A ${f(pl, 0)} μm coating on the flanks raises the pitch diameter by ${f(platingPitchGrowth(pl), 0)} μm: it must fit inside the allowance of the tolerance position (6g rather than 6h) or the plated thread will not assemble.`]);
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
       chart(t.d, Le, s.bolt, (L: number) => stripping({ ...base, Le: L }).ext, kind === 'nut' ? null : (L: number) => stripping({ ...base, Le: L }).int, kind === 'nut' && rate > 0 ? rate : null);
     }

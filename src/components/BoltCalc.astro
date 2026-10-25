@@ -5,7 +5,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
 ---
 
 <div class="calc btcalc" data-btcalc>
-  <div class="calc-head"><span>Bolted joint — one bolt</span><span class="head-btns"><span>preload · separation · margins</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-head"><span>Bolted joint: one bolt</span><span class="head-btns"><span>preload · separation · margins</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -37,7 +37,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
           <label>Head friction μ<sub>b</sub><input name="muh" type="number" min="0.02" max="0.5" step="0.01" value="0.12" /></label>
           <label>Preload loss (%)<input name="loss" type="number" min="0" max="50" step="any" value="0" /></label>
         </div>
-        <p class="hint">Friction: about 0.10–0.14 lubricated, 0.14–0.20 dry steel — measure it for your lubricant. The scatter of preload for your tightening method comes from your programme's standard. Loss covers embedding and relaxation.</p>
+        <p class="hint">Friction: about 0.10–0.14 lubricated, 0.14–0.20 dry steel: measure it for your lubricant. The scatter of preload for your tightening method comes from your programme's standard. Loss covers embedding and relaxation.</p>
       </fieldset>
       <fieldset>
         <legend>Load and temperature</legend>
@@ -158,7 +158,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
       show('ult', m.ult && m.ult.ms, m.ult ? `bolt ${kN(m.ult.load)} kN vs ${kN(Rm * t.As)} kN` : '');
       const missing = [gam === null && 'preload scatter', fsSep === null && 'separation factor', fy === null && 'yield factor', fu === null && 'ultimate factor'].filter(Boolean) as string[];
       if (missing.length) notes.push(['warn', awaitingMessage(missing, 'the margins')]);
-      if (m.sep !== null && m.sep < 0) notes.push(['bad', `The joint opens below the factored load (separation MS ${sgn(m.sep)}). On a pressure closure that is a leak path — the seal gland opens; see <a href="../../seals/o-ring-design/">O-ring design</a>.`]);
+      if (m.sep !== null && m.sep < 0) notes.push(['bad', `The joint opens below the factored load (separation MS ${sgn(m.sep)}). On a pressure closure that is a leak path: the seal gland opens; see <a href="../../seals/o-ring-design/">O-ring design</a>.`]);
       for (const [name, x] of [['yield', m.yield], ['ultimate', m.ult]] as const) {
         if (x && x.separated) notes.push(['warn', `At the factored ${name} load the joint has opened: the bolt carries the whole load, not ΦP.`]);
         if (x && x.ms < 0) notes.push(['bad', `The bolt fails the ${name} check (MS ${sgn(x.ms)}).`]);
@@ -170,9 +170,9 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
       r('tight').innerHTML = `${f(100 * nu, 0)}% <small>of yield, von Mises at ${gam === null ? 'nominal' : 'maximum'} preload</small>`;
       cls('tight', nu > 1 ? 'bad' : nu > 0.9 ? 'warn' : 'ok');
       if (nu > 1) notes.push(['bad', `The bolt yields while tightening${gam === null ? '' : ' at the top of the scatter'} (tension plus thread torsion ${f(ts.vm, 0)} MPa). Lower the torque, control the friction, or use a stronger bolt.`]);
-      else if (nu > 0.9) notes.push(['warn', `Tightening uses ${f(100 * nu, 0)}% of yield — little room for friction lower than assumed.`]);
+      else if (nu > 0.9) notes.push(['warn', `Tightening uses ${f(100 * nu, 0)}% of yield: little room for friction lower than assumed.`]);
       const sa = (phi * P) / (2 * t.As);
-      r('fat').innerHTML = `${f(sa, 1)} MPa <small>for each 0 → load cycle, ΦP/2A<sub>s</sub> — see <a href="../../fundamentals/fatigue/">Fatigue</a></small>`;
+      r('fat').innerHTML = `${f(sa, 1)} MPa <small>for each 0 → load cycle, ΦP/2A<sub>s</sub>. See <a href="../../fundamentals/fatigue/">Fatigue</a></small>`;
       const dWorst = Math.abs(dCold) > Math.abs(dHot) ? dCold : dHot;
       r('therm').innerHTML = mm.alpha === bm.alpha ? '0 kN <small>same expansion: no change</small>' : `${dWorst >= 0 ? '+' : ''}${kN(dWorst)} kN <small>cold ${kN(dCold)} · hot ${kN(dHot)} kN</small>`;
       cls('therm', dWorst < -0.1 * tp.F ? 'warn' : '');
@@ -213,7 +213,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
       if (P > 0) {
         const xs = s.separated ? db + dm : db + P / (kb + km), top = s.separated ? P : s.bolt, bot = s.separated ? 0 : s.clamp;
         svg.append(el('line', { x1: X(xs), x2: X(xs), y1: Y(top), y2: Y(bot), stroke: 'var(--rd-ok)', 'stroke-width': 3 }));
-        const label = `P ${f(P / 1000, 1)} kN${s.separated ? ' — open' : ''}`, fits = X(xs) + 6 + label.length * 7.3 < W - R;
+        const label = `P ${f(P / 1000, 1)} kN${s.separated ? ': open' : ''}`, fits = X(xs) + 6 + label.length * 7.3 < W - R;
         svg.append(el('text', { x: X(xs) + (fits ? 6 : -6), y: (Y(top) + Y(bot)) / 2 + 4, 'text-anchor': fits ? 'start' : 'end', 'font-size': 12, fill: 'var(--rd-ok)', ...halo }, label));
       }
     }

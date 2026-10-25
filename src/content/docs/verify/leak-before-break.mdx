@@ -1,6 +1,6 @@
 ---
 title: Leak before break
-description: Whether a crack growing in the case wall leaks or bursts — surface-flaw growth through the wall, the stability of the through crack it becomes (with bulging), why high-strength cases usually fail the test, and what it means for a motor.
+description: If a crack that grows in the case wall causes a leak or a burst. Surface-flaw growth through the wall, the stability of the through crack that it becomes (with bulging), why high-strength cases usually do not pass the test, and what this means for a motor.
 sidebar:
   order: 0
 ---
@@ -10,39 +10,40 @@ import Analogy from '../../../components/Analogy.astro';
 import LbbCalc from '../../../components/LbbCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>The safest failure is one you can hear: a crack that breaks through the wall and leaks, rather than one that runs while still buried and bursts the case.</div>
+  <div><b>In one line</b>The safest failure is a failure that you can hear: a crack that goes through the wall and leaks, not a crack that runs while it is still below the surface and bursts the case.</div>
   <div><b>Before this</b><a href="../../motor/case-sizing/#leak-before-break">Case sizing</a> (the simple screen) · <a href="../proof-testing/">Proof testing</a></div>
-  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> — where cases fail</div>
+  <div><b>Related</b><a href="../../motor/hardware/">Rocket motor hardware</a> (where cases fail)</div>
 </div>
 
 ## Why this matters
 
-Every case contains flaws; fracture control is about what they do. A crack growing in the wall can end in one of two
-ways:
+All cases contain flaws. Fracture control is about what the flaws do. A crack that grows in the wall can have one of
+two results:
 
-- **Leak before break.** The crack grows through the wall and becomes a through crack short enough to be stable. Gas
-  escapes, the pressure drops, and the failure is visible and contained.
-- **Break before leak.** The crack goes critical while still buried, or breaks through already too long to hold. The
-  case bursts with no warning, releasing all of its stored energy at once.
+- **Leak before break.** The crack grows through the wall and becomes a through crack that is sufficiently short to be
+  stable. Gas escapes and the pressure decreases. The failure is visible and contained.
+- **Break before leak.** The crack becomes critical while it is still below the surface, or it goes through the wall
+  when it is already too long to be stable. The case bursts with no warning, and it releases all of its stored energy
+  at one time.
 
-Which one you get is set by toughness, stress and wall thickness. It is a design decision whether or not anyone makes
-it deliberately.
+Toughness, stress and wall thickness decide which result occurs. This is a design decision, also if nobody makes it on
+purpose.
 
 <Analogy title="A slow puncture or a blowout">
-  A slow puncture hisses, the tyre goes soft, and you pull over. A blowout gives no warning at all. Both start with
-  damage in the wall. The difference is whether the hole, once it opens, stays a small hole — and that depends on how
-  tough the wall is compared with how hard it is being pulled.
+  A slow puncture makes a hissing noise, the tyre becomes soft, and you stop. A blowout gives no warning. The two start
+  with damage in the wall. The difference is if the hole stays small when it opens. This depends on the toughness of
+  the wall compared with the force that pulls it.
 </Analogy>
 
 ## Two questions
 
-1. **Does the flaw get through the wall before it becomes critical?**
-2. **When it gets through, is the through crack stable?**
+1. **Does the flaw go through the wall before it becomes critical?**
+2. **When it goes through, is the through crack stable?**
 
 ### 1. Growing through the wall
 
-Real flaws are **surface cracks**, roughly half-ellipses of depth $a$ and length $2c$. Their stress intensity comes
-from Newman and Raju's fit to finite-element results:
+Real flaws are **surface cracks**, approximately half-ellipses with a depth $a$ and a length $2c$. Their stress
+intensity comes from the fit of Newman and Raju to finite-element results:
 
 $$
 K = \sigma\sqrt{\frac{\pi a}{Q}}\;F\!\left(\frac{a}{c}, \frac{a}{t}, \varphi\right),
@@ -50,19 +51,20 @@ K = \sigma\sqrt{\frac{\pi a}{Q}}\;F\!\left(\frac{a}{c}, \frac{a}{t}, \varphi\rig
 Q \approx 1 + 1.464\left(\frac{a}{c}\right)^{1.65}
 $$
 
-$K$ is different at each point of the front: at the **deepest point** it drives the crack through the wall; at the
-**surface points** it drives it along. Each point grows by the Paris law, $da/dN = C\,\Delta K^m$. A long, shallow
-flaw rounds out towards a semicircle as it deepens, and close to the back face the surface points speed up and the
-crack lengthens.
+$K$ is different at each point of the front. At the **deepest point**, it moves the crack through the wall. At the
+**surface points**, it moves the crack along the wall. Each point grows by the Paris law, $da/dN = C\,\Delta K^m$. A
+long, shallow flaw becomes more semicircular as it becomes deeper. Near the back face, the surface points grow faster
+and the crack becomes longer.
 
-**Breakthrough** happens when the crack reaches the back face — or when the thin ligament ahead of it fractures or
-yields first. Either way, the flaw becomes a through crack about as long as its surface length $2c$. If $K$ at the
-surface points reaches $K_{IC}$ first, the crack runs along the wall while still buried, and the case bursts.
+**Breakthrough** occurs when the crack gets to the back face, or when the thin ligament in front of it fractures or
+yields first. In the two cases, the flaw becomes a through crack with a length of approximately its surface length
+$2c$. If $K$ at the surface points gets to $K_{IC}$ first, the crack runs along the wall while it is still below the
+surface, and the case bursts.
 
 ### 2. Is the through crack stable?
 
-A through crack in a flat plate has $K = \sigma\sqrt{\pi c}$. In a pressurised cylinder its edges **bulge** outward,
-which opens the crack further. The Folias factor $M$ captures this:
+A through crack in a flat plate has $K = \sigma\sqrt{\pi c}$. In a pressurised cylinder, its edges **bulge** outward,
+which opens the crack more. The Folias factor $M$ includes this effect:
 
 $$
 K = M\,\sigma\sqrt{\pi c},
@@ -72,106 +74,108 @@ M = \sqrt{1 + 0.6275\,z - 0.003375\,z^2},
 z = \frac{(2c)^2}{D\,t}
 $$
 
-(the modified-B31G form, for $z \le 50$). In a tough material the ligaments at the crack tips yield before they
-fracture, so the crack also fails by **plastic collapse** when $M\,\sigma = \sigma_\text{flow}$, with the flow stress
-taken here as the mean of yield and tensile strength. The through crack holds while
+This is the modified-B31G form, for $z \le 50$. In a tough material, the ligaments at the crack tips yield before they
+fracture. Thus the crack can also fail by **plastic collapse** when $M\,\sigma = \sigma_\text{flow}$. Here, the flow
+stress is the mean of the yield strength and the tensile strength. The through crack is stable while:
 
 $$
 \sigma_\text{hoop} < \min\!\left(\frac{K_{IC}}{M\sqrt{\pi c}},\; \frac{\sigma_\text{flow}}{M}\right)
 $$
 
-That gives the longest stable through crack, $2c_\text{crit}$. The design is **leak before break** if the crack breaks
-through shorter than that, and the ratio of the two lengths is the margin.
+This gives the longest stable through crack, $2c_\text{crit}$. The design is **leak before break** if the crack goes
+through the wall with a shorter length. The ratio of the two lengths is the margin.
 
-[Irwin's simple screen](../../motor/case-sizing/#leak-before-break) — a flat-plate through crack with half-length equal
-to the wall must be stable — is a quick version of the same argument, and gives the same verdict in the examples
-below.
+[The simple screen of Irwin](../../motor/case-sizing/#leak-before-break) requires that a flat-plate through crack with
+a half-length equal to the wall is stable. It is a quick version of the same method, and it gives the same result in
+the examples below.
 
 ## Why high-strength cases usually fail the test
 
-The stable crack length goes as $(K_{IC}/\sigma)^2$. Toughness tends to fall as strength rises, and high-strength
-cases run at high stress, so $c_\text{crit}$ shrinks fast: D6AC at 1094 MPa holds a through crack only about 2.6 mm
-long, in a wall 1.4 mm thick. There is barely room for a crack to get through before it is already too long.
+The stable crack length changes as $(K_{IC}/\sigma)^2$. Toughness usually decreases as strength increases, and
+high-strength cases operate at high stress. Thus $c_\text{crit}$ decreases quickly. D6AC at 1094 MPa holds a through
+crack of only approximately 2.6 mm, in a wall 1.4 mm thick. There is almost no space for a crack to go through before
+it is already too long.
 
-**Size works against you too.** At the same hoop stress, a bigger motor has a proportionally thicker wall. The crack
-must be longer to get through it, while the stable length is unchanged. A small case that leaks first can become a
+**Size also has a bad effect.** At the same hoop stress, a larger motor has a proportionally thicker wall. The crack
+must be longer to go through it, but the stable length does not change. A small case that leaks first can become a
 large case that bursts, in the same material at the same stress.
 
 ## What it means for a motor case
 
-<Aside type="caution" title="A leak in a burning motor is not benign">
-  In flight, a crack through a burning motor's case vents hot combustion gas, which usually burns through and ends the
-  flight. Leak-before-break does not make a flight failure safe. Fracture-control standards for spaceflight hardware
-  give leak-before-burst credit only where the leak itself is not hazardous.
+<Aside type="caution" title="A leak in a burning motor is not safe">
+  In flight, a crack through the case of a burning motor releases hot combustion gas. This gas usually burns through
+  and stops the flight. Leak before break does not make a flight failure safe. Fracture-control standards for
+  spaceflight hardware give credit for leak before burst only where the leak itself is not hazardous.
 </Aside>
 
-Where it does earn its keep:
+Where it is useful:
 
-- **On the proof-test stand.** A flaw that grows during proof leaks on the stand — water seeping from a hydrostatic
-  test is easy to see — instead of bursting the case next to the test crew.
-- **As a measure of robustness.** The ratio of stable length to breakthrough length says how much a missed flaw could
-  grow before it matters.
-- **In the rest of the system.** Pressurant bottles and actuator accumulators carry gas whose leak may be harmless, and
-  there leak-before-burst can carry real weight in the fracture-control argument.
+- **On the proof-test stand.** A flaw that grows during proof leaks on the stand. Water that comes out of a hydrostatic
+  test is easy to see. The case does not burst near the test crew.
+- **As a measure of robustness.** The ratio of the stable length to the breakthrough length tells how much a flaw that
+  was not found could grow before it is important.
+- **In the remainder of the system.** Pressurant bottles and actuator accumulators contain gas whose leak can be
+  harmless. There, leak before burst can be an important part of the fracture-control case.
 
-Where it does not hold — most high-strength steel cases — safety rests on **screening and inspection** instead: the
-[proof test](../proof-testing/) guarantees no flaw larger than its screened size survives, and NDT and the
-crack-growth life take it from there.
+Where leak before break is not true (most high-strength steel cases), safety depends on **screening and inspection**.
+The [proof test](../proof-testing/) makes sure that no flaw larger than its screened size stays. NDT and the
+crack-growth life then continue the protection.
 
 ## Calculator
 
 <LbbCalc />
 
-## Worked example — three cases at the same MEOP
+## Worked example: three cases at the same MEOP
 
-All three are the 300 mm, 10 MPa case from [case sizing](../../motor/case-sizing/#worked-example), each sized there
-with the same factors. Each starts from a surface flaw 0.25 mm deep and 1 mm long ($a/c = 0.5$), cycled from zero to
-MEOP.
+All three are the 300 mm, 10 MPa case from [case sizing](../../motor/case-sizing/#worked-example), each sized there with
+the same factors. Each starts from a surface flaw 0.25 mm deep and 1 mm long ($a/c = 0.5$), cycled from zero to MEOP.
 
-1. **D6AC** — 1.377 mm wall, hoop stress 1094 MPa, $K_{IC} = 70$ MPa√m. The longest stable through crack is 2.58 mm
-   ($c_\text{crit} = 1.29$ mm; $M = 1.005$, so bulging barely matters this short; fracture governs). The flaw grows for
-   about 1800 cycles with the martensitic-steel upper-bound growth law. By then it is 92% through the wall and 3.3 mm
-   long, and its surface points reach $K_{IC}$: it runs along the case. **Break before leak.** Irwin's screen agrees:
-   $c_\text{crit}/t = 0.95 < 1$.
-2. **15CDV6** — a lower-strength, tougher steel. Sized to the same MEOP its wall is 2.23 mm and the hoop stress
-   679 MPa, with $K_{IC} = 90$ MPa√m. The longest stable through crack is 10.2 mm. The flaw breaks through 5.7 mm
-   long. **Leak before break**, with a margin of 1.8 on length. The price: a wall 62% thicker, so a case about 60%
-   heavier.
-3. **Maraging 18Ni-250** — stronger *and* tougher ($K_{IC} = 100$ MPa√m). A 1.21 mm wall at 1242 MPa still leaks
-   first, with a margin of 1.29 — and the case is lighter than the D6AC one (10.6 kg against 11.8 kg). Toughness, not
-   low stress, can buy leak-before-break; the price is in the material, not the mass.
+1. **D6AC:** 1.377 mm wall, hoop stress 1094 MPa, $K_{IC} = 70$ MPa√m. The longest stable through crack is 2.58 mm
+   ($c_\text{crit} = 1.29$ mm; $M = 1.005$, so bulging is almost not important at this length; fracture governs). With
+   the upper-limit growth law for martensitic steel, the flaw grows for approximately 1800 cycles. It is then 92%
+   through the wall and 3.3 mm long, and its surface points get to $K_{IC}$. It runs along the case. **Break before
+   leak.** The screen of Irwin agrees: $c_\text{crit}/t = 0.95 < 1$.
+2. **15CDV6:** a steel with lower strength and higher toughness. When sized to the same MEOP, its wall is 2.23 mm and
+   the hoop stress is 679 MPa, with $K_{IC} = 90$ MPa√m. The longest stable through crack is 10.2 mm. The flaw goes
+   through the wall with a length of 5.7 mm. **Leak before break,** with a margin of 1.8 on length. The cost is a wall
+   that is 62% thicker, thus a case that is approximately 60% heavier.
+3. **Maraging 18Ni-250:** stronger *and* tougher ($K_{IC} = 100$ MPa√m). A 1.21 mm wall at 1242 MPa still leaks first,
+   with a margin of 1.29. The case is also lighter than the D6AC case (10.6 kg against 11.8 kg). Toughness, not low
+   stress, can give leak before break. The cost is in the material, not in the mass.
 
-Within one class of steel, the trade is plain: thinning the wall for mass costs leak-before-break. Moving to a
-tougher alloy can buy it back without the mass — at a material cost.
+Within one class of steel, the trade is clear. A thinner wall decreases the mass but loses leak before break. A tougher
+alloy can get it back without the mass, but the material costs more.
 
-<Aside type="note" title="Few cycles, but the shape still matters">
-  A motor case sees only a handful of pressure cycles — proof, leak check, one firing — so fatigue growth in service is
-  small. The growth model is here for the crack's *shape* as it deepens, which decides how long it is when it breaks
-  through.
+<Aside type="note" title="Few cycles, but the shape is still important">
+  A motor case has only a few pressure cycles (proof, leak check and one firing). Thus fatigue growth in service is
+  small. The growth model is here for the *shape* of the crack as it becomes deeper. The shape decides how long the
+  crack is when it goes through the wall.
 </Aside>
 
 ## Where this stops
 
-- **Screening only.** Linear-elastic fracture with a separate plastic-collapse check. Ductile materials are properly
-  assessed with tearing resistance, and fracture and collapse together on a failure assessment diagram (BS 7910, R6).
-- **The surface-crack fit** covers $a/t \le 0.8$ and $a/c \le 1$; beyond that the calculator extrapolates. Real
-  breakthrough can be dynamic and lengthen the crack.
-- **Toughness** must be measured at the right temperature, orientation and thickness. Welds and heat-affected zones are
-  often the least tough material in the case.
-- **Axial cracks** are assessed, since hoop stress is twice the axial stress. Circumferential cracks need their own
-  check where axial or bending loads are high.
-- **Environment.** Stress-corrosion and sustained-load cracking are not included.
-- **Detection.** A leak only counts if it is noticed in time to act — that half of the argument is not calculated here.
+- **Screening only.** This is linear-elastic fracture with a separate plastic-collapse check. For ductile materials,
+  the correct assessment uses tearing resistance, with fracture and collapse together on a failure assessment diagram
+  (BS 7910, R6).
+- **The surface-crack fit** covers $a/t \le 0.8$ and $a/c \le 1$. Outside this range, the calculator extrapolates. Real
+  breakthrough can be dynamic and make the crack longer.
+- **Toughness** must be measured at the correct temperature, orientation and thickness. Welds and heat-affected zones
+  are often the least tough material in the case.
+- **Axial cracks** are assessed, because the hoop stress is two times the axial stress. Circumferential cracks need
+  their own check where axial loads or bending loads are high.
+- **Environment.** Stress-corrosion cracking and sustained-load cracking are not included.
+- **Detection.** A leak is useful only if somebody finds it in time to act. This page does not calculate that part of
+  the case.
 
 ## On the drawing
 
-- **Write down the fracture-control approach** — leak-before-break or safe-life — in the drawing notes or the fracture
-  control plan, so inspection and test know what they are protecting.
-- **Specify minimum toughness** in the material specification, at the temperature and orientation that matter. The
-  verdict depends on it, and a datasheet typical value is not a requirement.
-- **Tie NDT acceptance to the initial flaw** the analysis assumed. If the analysis starts from 0.25 mm, the inspection
-  has to find 0.25 mm reliably — or the proof test has to screen it.
-- **Make proof testing an acceptance requirement** with pressure, hold and leak criteria stated — see
+- **Record the fracture-control approach** (leak before break or safe life) in the drawing notes or the fracture
+  control plan, so that inspection and test know what they protect.
+- **Specify the minimum toughness** in the material specification, at the important temperature and orientation. The
+  result depends on it, and a typical datasheet value is not a requirement.
+- **Relate the NDT acceptance to the initial flaw** that the analysis assumed. If the analysis starts from 0.25 mm, the
+  inspection must find 0.25 mm reliably, or the proof test must screen it.
+- **Make proof testing an acceptance requirement,** with the pressure, the hold and the leak criteria. See
   [Proof testing](../proof-testing/).
 
 ## References and further reading
@@ -190,7 +194,7 @@ tougher alloy can buy it back without the mass — at a material cost.
 - NASA-STD-5019, *Fracture Control Requirements for Spaceflight Hardware*.
 
 <Aside type="note">
-  Screening for early design. A released leak-before-break argument uses measured toughness and tearing data,
-  realistic flaw shapes, a demonstrated way of detecting the leak, and sign-off by the responsible fracture-control
+  This is screening for early design. A released leak-before-break case uses measured toughness and tearing data,
+  realistic flaw shapes, a demonstrated method to find the leak, and approval by the responsible fracture-control
   authority.
 </Aside>

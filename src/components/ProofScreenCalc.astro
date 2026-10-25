@@ -50,7 +50,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
           <label>Range per cycle (× MEOP stress)<input name="rf" type="number" min="0.05" max="1" step="0.05" value="1" /></label>
           <label>NDT reliable depth (mm)<input name="ndt" type="number" min="0" step="any" value="1.27" /></label>
         </div>
-        <p class="hint">Enter your programme's proof and life factors — they come from the governing requirement, not from this site.</p>
+        <p class="hint">Enter your programme's proof and life factors: they come from the governing requirement, not from this site.</p>
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
     </form>
@@ -128,7 +128,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
       field('kp').value = m.kic; field('ks').value = m.kic; field('ys').value = m.yield;
       field('paris').value = m.family === 'steel' ? (m.uts > 1100 ? 'mart' : 'fp') : m.family === 'ss' ? (/17-4|15-5|PH|FV520|maraging/i.test(m.name) ? 'mart' : 'aus') : m.family === 'ni' ? 'aus' : m.family;
       root.querySelector('[data-kichint]')!.textContent =
-        `Database K_IC ${m.kic} MPa√m${m.kicIsFamilyDefault ? ' (family default)' : ''} — indicative. Toughness usually falls at low temperature: enter the cold value for service if you have it.`;
+        `Database K_IC ${m.kic} MPa√m${m.kicIsFamilyDefault ? ' (family default)' : ''}: indicative. Toughness usually falls at low temperature: enter the cold value for service if you have it.`;
     };
 
     // Blank factors are computed as 1 and everything that depends on them is hidden in run().
@@ -180,10 +180,10 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
       cls('py', s.proofToYield >= 1 ? 'bad' : s.proofToYield > 0.9 ? 'warn' : 'ok');
 
       if (lf === null) notes.push(['warn', `Cycles to failure are shown. ${awaitingMessage(['life factor'], 'whether that meets the required life')}`]);
-      if (!s.screenWorks) notes.push(['bad', `The proof test screens nothing useful: the largest flaw that survives proof (${f(s.aScreen, 2)} mm) is bigger than the flaw that fails at MEOP in service (${f(s.aCrit, 2)} mm). Usually this is lower toughness in service than at the proof temperature — proof cold, or show the toughness does not fall.`]);
+      if (!s.screenWorks) notes.push(['bad', `The proof test screens nothing useful: the largest flaw that survives proof (${f(s.aScreen, 2)} mm) is bigger than the flaw that fails at MEOP in service (${f(s.aCrit, 2)} mm). Usually this is lower toughness in service than at the proof temperature: proof cold, or show the toughness does not fall.`]);
       else notes.push(['', `Every case that survives proof has no crack deeper than ${f(s.aScreen, 2)} mm, whether or not anyone could find it. The ratio of critical to screened size is (proof factor)² × (K_service/K_proof)² = ${f(s.ratio, 2)}.`]);
       if (s.proofToYield >= 1) notes.push(['bad', 'Proof stress exceeds yield: the test would permanently deform the vessel. Lower the proof factor or rethink the wall.']);
-      else if (s.proofToYield > 0.9) notes.push(['warn', 'Proof stress is within 10% of yield — little room for local stress raisers, weld peaking or a low-strength heat.']);
+      else if (s.proofToYield > 0.9) notes.push(['warn', 'Proof stress is within 10% of yield: little room for local stress raisers, weld peaking or a low-strength heat.']);
       if (s.deepCrack > 0.5) notes.push(['warn', `The critical crack is ${f(s.deepCrack * 100, 0)}% of the wall. A constant Y underestimates K for deep cracks (the back face matters), so these sizes are optimistic. Use a surface-crack solution such as Newman–Raju, and check leak-before-break on the case-sizing page.`]);
       if (s.governsInitial === 'NDT') notes.push(['', 'NDT reliably finds smaller flaws than the proof screen here, so inspection sets the initial flaw. Proof still covers anything the inspection missed.']);
       if (lf !== null && s.cycles > 0 && s.cycles < s.required) notes.push(['bad', `Only ${cyc(s.cycles)} cycles from initial flaw to failure, against ${f(s.required, 0)} required (${f(num('n'), 0)} × life factor ${f(lf!, 1)}). Raise the proof factor (if yield allows), lower the operating stress, or improve NDT.`]);

@@ -1,6 +1,6 @@
 ---
 title: Storage & ageing
-description: How motor hardware ages on the shelf and how to predict it — Arrhenius acceleration, the mean kinetic temperature of a storage record, service-life prediction from accelerated tests and its traps, and the surveillance that checks the prediction.
+description: How motor hardware ages in storage and how to predict it. Arrhenius acceleration, the mean kinetic temperature of a storage record, service-life prediction from accelerated tests and its possible errors, and the surveillance that checks the prediction.
 sidebar:
   order: 0
 ---
@@ -11,158 +11,161 @@ import AgeingCalc from '../../../components/AgeingCalc.astro';
 import SurveillanceTrend from '../../../components/SurveillanceTrend.astro';
 
 <div class="glance">
-  <div><b>In one line</b>Ageing is chemistry, and chemistry speeds up exponentially with temperature: hot days dominate, heat can shorten a test, and only aged hardware can prove a prediction.</div>
+  <div><b>In one line</b>Ageing is chemistry, and chemistry becomes exponentially faster with temperature. Hot days have the largest effect, heat can make a test shorter, and only aged hardware can prove a prediction.</div>
   <div><b>Before this</b><a href="../../seals/o-ring-design/">O-ring design</a> (compression set) · <a href="../../motor/propellant/#ageing">Propellant properties</a></div>
   <div><b>Scope</b>Non-energetic hardware: seals, adhesives, bondlines, coatings, joints</div>
 </div>
 
 <Aside type="note" title="What this page covers">
-  The ageing of hardware around the propellant. The propellant's own ageing — mechanical and chemical — is assessed by
-  your energetics specialists with their own methods and safety authority.
+  This page covers the ageing of the hardware around the propellant. Your energetics specialists assess the ageing of
+  the propellant (mechanical and chemical), with their own methods and safety authority.
 </Aside>
 
 ## Why this matters
 
-A motor is built once and then waits — often for years, sometimes for decades — and it has to work on its last day
-in store exactly as on its first. Meanwhile it is changing: seals take a compression set, adhesives and bondlines absorb
-moisture and oxidise, bolt preload relaxes, coatings break down at edges, and greases dry out. The service life a
-programme can claim is set by its fastest-ageing part. Claiming it takes two things: a **prediction** from accelerated
-tests, and **evidence** from surveillance of real aged hardware.
+A motor is made one time and then it waits, often for years and sometimes for decades. It must operate on its last day
+in storage exactly as on its first day. During this time it changes. Seals get a compression set, adhesives and
+bondlines absorb moisture and oxidise, bolt preload relaxes, coatings break down at edges, and greases become dry. The
+part that ages fastest sets the service life of the programme. To claim a service life, you need two things: a
+**prediction** from accelerated tests, and **evidence** from surveillance of real aged hardware.
 
-### What ages, and what to watch
+### What ages, and what to monitor
 
 | Item | How it ages | Design response |
 | --- | --- | --- |
-| Elastomer seals | Compression set, oxidation, loss of low-temperature resilience | Budget the set into the minimum squeeze ([O-ring design](../../seals/o-ring-design/)); record cure dates; keep surveillance samples |
-| Adhesive and bonded joints | Moisture uptake, plasticisation, interface degradation | Humidity-aged allowables; protect the bondline edge; witness coupons |
-| Liner and insulation bonds | Plasticiser migration to and from the propellant; hardening | Compatibility testing; bond-strength surveillance with the energetics team |
-| Bolted joints | Preload relaxation, embedment, creep of coatings and gaskets | Long grips, no soft layers in the clamp, a retorque policy if allowed |
-| Coatings and platings | Breakdown at edges and damage; galvanic attack | Coat the cathode too; inspect edges and fastener heads |
+| Elastomer seals | Compression set, oxidation, loss of low-temperature resilience | Include the set in the minimum squeeze ([O-ring design](../../seals/o-ring-design/)); record cure dates; keep surveillance samples |
+| Adhesive and bonded joints | Moisture absorption, plasticisation, interface degradation | Humidity-aged allowables; protect the edge of the bondline; witness coupons |
+| Liner and insulation bonds | Plasticiser migration to and from the propellant; hardening | Compatibility tests; bond-strength surveillance with the energetics team |
+| Bolted joints | Preload relaxation, embedding, creep of coatings and gaskets | Long grips, no soft layers in the clamp, a retorque policy if permitted |
+| Coatings and platings | Breakdown at edges and damage; galvanic attack | Also coat the cathode; inspect edges and fastener heads |
 | Lubricants and greases | Drying, separation, migration onto seals | Compatible with the elastomer; specify the quantity, not "lightly" |
-| Connectors and cabling | Contact corrosion; insulation embrittlement | Sealed connectors; continuity and insulation checks in surveillance |
+| Connectors and cabling | Contact corrosion; insulation becomes brittle | Sealed connectors; continuity and insulation checks in surveillance |
 
 ## Ageing is chemistry, and chemistry is temperature
 
-Most ageing is a chemical reaction — oxidation, hydrolysis, cross-linking — and reaction rates follow the Arrhenius
-law, $k = A\,e^{-E_a/RT}$. Life is inversely proportional to rate, so the **acceleration factor** between a test
-temperature and the service temperature is
+Most ageing is a chemical reaction: oxidation, hydrolysis or cross-linking. Reaction rates follow the Arrhenius law,
+$k = A\,e^{-E_a/RT}$. Life is inversely proportional to rate. Thus the **acceleration factor** between a test
+temperature and the service temperature is:
 
 $$
 AF = \exp\!\left[\frac{E_a}{R}\left(\frac{1}{T_\text{service}} - \frac{1}{T_\text{test}}\right)\right]
 \qquad R = 8.314 \ \text{J/(mol·K)},\ T \text{ in kelvin}
 $$
 
-The **activation energy** $E_a$ sets how steeply life falls with temperature:
+The **activation energy** $E_a$ sets how quickly life decreases with temperature:
 
-- The old rule of thumb that "ageing doubles every 10 °C" is just one value of $E_a$: about **53 kJ/mol** near room
-  temperature. At 80 kJ/mol the rate doubles every 6.5 K.
-- $E_a$ belongs to the **mechanism**, not the material name. Values for polymer oxidation fall broadly between 50 and
-  120 kJ/mol, and the answer is very sensitive to it. Measure it; do not borrow it.
+- The old rule "ageing doubles each 10 °C" is only one value of $E_a$: approximately **53 kJ/mol** near room
+  temperature. At 80 kJ/mol, the rate doubles each 6.5 K.
+- $E_a$ is a property of the **mechanism**, not of the material name. Values for polymer oxidation are approximately
+  between 50 and 120 kJ/mol, and the result is very sensitive to the value. Measure it. Do not take it from a different
+  source.
 
 <Analogy title="Milk on the kitchen counter">
-  Milk keeps for a week in the fridge and spoils in a day on a warm counter — a few degrees make a huge difference to
-  the chemistry. Now imagine a fridge that warms up for a few hours every afternoon. The milk spoils sooner than in a
-  fridge held steadily at the same average temperature, because the warm hours do far more harm than the cold hours
-  undo.
+  Milk stays good for a week in the fridge, and it becomes bad in a day on a warm counter. A few degrees make a very
+  large difference to the chemistry. Now think of a fridge that becomes warm for a few hours each afternoon. The milk
+  becomes bad sooner than in a fridge kept steadily at the same average temperature, because the warm hours cause much
+  more damage than the cold hours prevent.
 </Analogy>
 
 ## The average temperature is the wrong average
 
-A store that swings between 12 °C and 38 °C does not age hardware like a store held at the average. With
-$E_a = 79$ kJ/mol, an hour at 38 °C does as much ageing as 16 hours at 12 °C. The right average is the **mean kinetic
-temperature** — the constant temperature that would cause the same total ageing as the real, varying record:
+A store that changes between 12 °C and 38 °C does not age hardware as a store kept at the average does. With
+$E_a = 79$ kJ/mol, one hour at 38 °C causes the same ageing as 16 hours at 12 °C. The correct average is the **mean
+kinetic temperature (MKT)**. This is the constant temperature that causes the same total ageing as the real, changing
+record:
 
 $$
 T_\text{MKT} = \frac{E_a/R}{-\ln\!\left[\dfrac{1}{n}\displaystyle\sum_{i=1}^{n} e^{-E_a/(R\,T_i)}\right]}
 $$
 
-for $n$ equally spaced readings, in kelvin. The MKT is always at or above the arithmetic mean, and the gap grows with
-the size of the swings and with $E_a$. The idea comes from pharmaceutical storage (Haynes, 1971), where it is standard
-practice. **You cannot calculate it without a temperature log**, which is a good reason to require one in the storage
-specification.
+This is for $n$ readings at equal intervals, in kelvin. The MKT is always equal to or more than the arithmetic mean. The
+difference increases with the size of the temperature changes and with $E_a$. The method comes from pharmaceutical
+storage (Haynes, 1971), where it is standard practice. **You cannot calculate the MKT without a temperature log.** This
+is a good reason to require a log in the storage specification.
 
 ## Predicting service life from accelerated tests
 
-The method, as laid out for rubbers in ISO 11346:
+ISO 11346 gives this method for rubbers:
 
-1. **Choose the property and its end-of-life limit** — the compression set at which a seal no longer has enough
-   squeeze, or the bond strength below which a joint no longer meets its load.
-2. **Age samples at three or more raised temperatures**, in the right condition — seals compressed, bonds at the right
-   humidity — and record the time each takes to reach the limit.
-3. **Plot ln(life) against 1/T.** One mechanism gives a straight line, whose slope is $E_a/R$.
-4. **Extrapolate to the service MKT**, and compare with the required life using your programme's margin.
+1. **Select the property and its end-of-life limit.** Examples are the compression set at which a seal does not have
+   sufficient squeeze, or the bond strength below which a joint does not meet its load.
+2. **Age samples at three or more increased temperatures,** in the correct condition (seals compressed, bonds at the
+   correct humidity). Record the time that each sample takes to get to the limit.
+3. **Plot ln(life) against 1/T.** One mechanism gives a straight line, with a slope of $E_a/R$.
+4. **Extrapolate to the MKT of the service conditions,** and compare with the necessary life, with the margin of your
+   programme.
 
-The traps:
+The possible errors:
 
-- **One mechanism only.** Push the test temperature too high and a different chemistry takes over. You then extrapolate
-  the wrong answer with great precision. Points that fall off the line at the hot end are the warning.
-- **Thick sections age from the outside in.** At high test temperatures oxygen is used up near the surface faster than
-  it can diffuse inward, so the skin ages and the core does not — a pattern that never happens in service. Thick parts
-  need modest test temperatures, or a check for this.
-- **Long extrapolations magnify every error.** A 10% error in $E_a$ can move a predicted life by a factor of 1.5 or
-  more. The calculator shows how much for your data.
-- **Field ageing can disagree with the lab.** Long-term studies of rubbers stored for decades have found lives shorter
-  than the Arrhenius extrapolation predicted. Treat a prediction as a hypothesis for surveillance to test.
+- **One mechanism only.** If the test temperature is too high, a different chemistry starts. You then extrapolate an
+  incorrect result with high precision. Points that are off the line at the hot end are the warning.
+- **Thick sections age from the outside in.** At high test temperatures, the surface uses oxygen faster than the
+  oxygen can diffuse inward. Thus the skin ages and the core does not. This never occurs in service. Thick parts need
+  moderate test temperatures, or a check for this effect.
+- **Long extrapolations make all errors larger.** A 10% error in $E_a$ can change a predicted life by a factor of 1.5
+  or more. The calculator shows the effect for your data.
+- **Field ageing can be different from the laboratory.** Long-term studies of rubbers stored for decades found lives
+  shorter than the Arrhenius extrapolation predicted. Treat a prediction as a hypothesis that surveillance must test.
 
 ## Calculator
 
 <AgeingCalc />
 
-## Worked example — a seal in a hot store
+## Worked example: a seal in a hot store
 
-Illustrative test data for an elastomer seal: the time to reach its compression-set limit is 1400 h at 80 °C, 330 h at
-100 °C and 90 h at 120 °C. These are the calculator's starting values.
+The test data for an elastomer seal are illustrative. The time to get to its compression-set limit is 1400 h at 80 °C,
+330 h at 100 °C and 90 h at 120 °C. These are the starting values of the calculator.
 
-1. **Fit.** ln(life) against 1/T gives a slope of 9526 K, so $E_a = 9526 \times 8.314 = 79.2$ kJ/mol, with
+1. **Fit.** ln(life) against 1/T gives a slope of 9526 K. Thus $E_a = 9526 \times 8.314 = 79.2$ kJ/mol, with
    $r^2 \approx 1.000$.
-2. **Store.** An unconditioned store in a hot climate, read every three hours over a typical day: 12, 18, 24, 31, 38,
-   29, 21, 15 °C. The mean is 23.5 °C; the MKT is **26.9 °C**.
-3. **Life in this store.** 18.9 years at the MKT. The plain average would have said 27.2 years — 44% optimistic.
-4. **How sure?** The coolest test is 53 K above the store, so a 10% error in $E_a$ moves the answer by a factor of
-   1.6.
-5. **Test plan.** At 80 °C the acceleration factor is 119, so 30 days of oven ageing represents about 9.7 years in
-   this store, and 62 days would represent 20.
-6. **Against the requirement.** If 20 years were required, this seal falls short in this store. The options: store
-   the motors at a controlled 20 °C (39.9 years), choose a more resistant compound, or claim a shorter life now and
-   extend it with surveillance evidence.
+2. **Store.** This is a store without temperature control in a hot climate, read each three hours over a typical day:
+   12, 18, 24, 31, 38, 29, 21 and 15 °C. The mean is 23.5 °C, and the MKT is **26.9 °C**.
+3. **Life in this store.** 18.9 years at the MKT. The plain average would give 27.2 years, which is 44% too high.
+4. **Uncertainty.** The coolest test is 53 K above the store temperature. Thus a 10% error in $E_a$ changes the result
+   by a factor of 1.6.
+5. **Test plan.** At 80 °C the acceleration factor is 119. Thus 30 days of oven ageing represents approximately 9.7
+   years in this store, and 62 days represents 20 years.
+6. **Against the requirement.** If the requirement is 20 years, this seal does not meet it in this store. The options
+   are: store the motors at a controlled 20 °C (39.9 years), select a more resistant compound, or claim a shorter life
+   now and extend it with surveillance evidence.
 
 ## Surveillance
 
-A prediction says what should happen; surveillance says what did. A surveillance programme:
+A prediction tells what must occur. Surveillance tells what occurred. A surveillance programme:
 
-- **Holds back representative hardware and witness samples** — seal samples, bonded coupons, sample cartons —
-  stored with the fleet, under the same conditions.
-- **Withdraws them on a schedule** and tests them: dimensions and leak checks, NDT (radiography or CT for debonds and
-  cracks), dissection, mechanical tests of bonds and seals and, for complete motors, static firing of aged units.
-- **Trends the results** against the prediction and the end-of-life limit, and extends — or shortens — the service
-  life on the evidence.
+- **Keeps representative hardware and witness samples** (seal samples, bonded coupons, sample cartons) in storage with
+  the fleet, in the same conditions.
+- **Removes them on a schedule and tests them:** dimensions and leak checks, NDT (radiography or CT for debonds and
+  cracks), dissection, mechanical tests of bonds and seals, and, for complete motors, static firing of aged units.
+- **Plots the trend of the results** against the prediction and the end-of-life limit. With this evidence, it extends
+  or decreases the service life.
 
 <SurveillanceTrend />
 
-Design for it from the start: put witness samples in the build, make bondlines inspectable, record cure dates and
-batch traceability, and require a temperature log in store.
+Design for surveillance from the start. Put witness samples in the build, make the bondlines accessible for
+inspection, record cure dates and batch traceability, and require a temperature log in storage.
 
 ## Where this stops
 
 - **One mechanism with a constant activation energy.** Several mechanisms, humidity, oxygen supply and mechanical
-  stress each need their own treatment.
-- **A representative record.** The MKT is only as good as the log, and one hot day is not a year — use records that
-  cover the whole storage cycle.
-- **Non-energetic hardware only.** Propellant and igniter ageing, including chemical stability, belongs to the
-  energetics specialists.
-- **ISO 11346** also describes fitting by time–temperature shifting, and a maximum temperature of use; this page uses
-  the simplest form.
+  stress each need their own method.
+- **A representative record.** The MKT is only as good as the log. One hot day is not a year. Use records that cover the
+  full storage cycle.
+- **Non-energetic hardware only.** The energetics specialists are responsible for the ageing of the propellant and the
+  igniter, which includes chemical stability.
+- **ISO 11346** also gives fitting by time–temperature shifting, and a maximum temperature of use. This page uses the
+  simplest form.
 
 ## On the drawing and in the specifications
 
-- **Record cure dates and batch** for every elastomer, and apply the shelf-life rules of ISO 2230 or SAE ARP5316
+- **Record the cure dates and the batch** of each elastomer, and apply the shelf-life rules of ISO 2230 or SAE ARP5316
   before assembly.
-- **State the storage conditions** — temperature range, humidity, protection from ozone and UV — in the storage and
+- **Give the storage conditions** (temperature range, humidity, protection from ozone and UV) in the storage and
   handling specification, and require a temperature log.
-- **Identify life-limited items** with the basis of their life, so a surveillance result can be traced back to a
-  prediction.
-- **Build in witness samples** — coupons bonded and cured with the hardware — so there is something to test that is
-  not the flight article.
+- **Identify the items with a life limit,** with the basis of their life, so that you can trace a surveillance result
+  back to a prediction.
+- **Include witness samples in the build:** coupons bonded and cured with the hardware. You can then test something
+  that is not the flight article.
 
 ## References and further reading
 
@@ -171,11 +174,11 @@ batch traceability, and require a temperature log in store.
 - ISO 815-1, *Rubber — Determination of compression set at ambient or elevated temperatures*.
 - ISO 2230, *Rubber products — Guidelines for storage*; SAE ARP5316, *Storage of elastomer seals and seal assemblies*.
 - J. D. Haynes, "Worldwide virtual temperatures for product stability testing", *Journal of Pharmaceutical Sciences*
-  60 (1971) 927–929 — mean kinetic temperature.
+  60 (1971) 927–929 (mean kinetic temperature).
 - K. T. Gillen, R. Bernstein & D. K. Derzon, "Evidence of non-Arrhenius behaviour from laboratory aging and 24-year
   field aging of polychloroprene rubber materials", *Polymer Degradation and Stability* 87 (2005) 57–67.
 
 <Aside type="note">
-  A single-mechanism screening model. Service-life claims rest on measured ageing data in the right condition,
-  surveillance of real hardware, and sign-off by the responsible authority.
+  This is a screening model with one mechanism. Service-life claims need measured ageing data in the correct condition,
+  surveillance of real hardware, and approval by the responsible authority.
 </Aside>

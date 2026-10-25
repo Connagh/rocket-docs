@@ -5,13 +5,13 @@
 type Link = { href: string; label: string };
 const PARTS: { key: string; n: number; name: string; job: string; loads: string; fails: string; then: string; now: string; drawing: string; links: Link[] }[] = [
   { key: 'fwd', n: 1, name: 'Forward closure & igniter boss',
-    job: 'Closes the forward end of the pressure vessel and carries the igniter boss — and, on most motors, the forward skirt load path.',
+    job: 'Closes the forward end of the pressure vessel and carries the igniter boss, and, on most motors, the forward skirt load path.',
     loads: 'Pressure: membrane tension in the dome, bending where it meets the cylinder and around the boss. Igniter and port loads; handling.',
     fails: 'Discontinuity bending at the boss and the dome–cylinder junction; leaks past the boss seals; buckling of the knuckle of a thin ellipsoidal head, which carries compressive hoop stress.',
     then: 'Integral with a welded or forged steel case.',
     now: 'On composite cases, a metal polar boss (titanium, aluminium or steel) with fibre wound over it on a geodesic dome contour.',
-    drawing: 'Boss thread class and seal-surface finish; dome contour; weld NDT where welded; the boss-to-composite interface. The igniter itself is energetics — this site covers only its boss, housing and seals.',
-    links: [{ href: '../case-sizing/', label: 'Case sizing — domes' }] },
+    drawing: 'Boss thread class and seal-surface finish; dome contour; weld NDT where welded; the boss-to-composite interface. The igniter itself is energetics: this site covers only its boss, housing and seals.',
+    links: [{ href: '../case-sizing/', label: 'Case sizing: domes' }] },
   { key: 'case', n: 2, name: 'Case (pressure shell)',
     job: 'The pressure vessel and, on most stages and missiles, the main airframe as well.',
     loads: 'Hoop and axial pressure stress; thrust; flight bending; heat soak-back after burnout; handling. Axial compression and external pressure when it is not pressurised.',
@@ -22,14 +22,14 @@ const PARTS: { key: string; n: number; name: string; job: string; loads: string;
     links: [{ href: '../case-sizing/', label: 'Case sizing' }, { href: '../../verify/proof-testing/', label: 'Proof testing' }] },
   { key: 'skirt', n: 3, name: 'Skirts',
     job: 'Cylindrical extensions that attach the motor to the vehicle and carry interface loads around the domes, so the pressure-carrying domes are not also bending.',
-    loads: 'Thrust, bending and shear from the vehicle — plus the mismatch as the case grows under pressure and the skirt does not.',
+    loads: 'Thrust, bending and shear from the vehicle, plus the mismatch as the case grows under pressure and the skirt does not.',
     fails: 'Buckling; fastener and attach-ring failure; peel at the skirt-to-case bond.',
     then: 'Machined or forged integrally with a metal case.',
     now: 'On composite cases, bonded on through a rubber shear ply that lets the case grow without tearing the skirt off.',
     drawing: 'Interface hole pattern and datums from the vehicle ICD; bond preparation and shear-ply specification; fastener torques.',
     links: [{ href: '../../joints/load-paths/', label: 'Load paths & joints' }] },
   { key: 'joints', n: 4, name: 'Joints & seals',
-    job: 'Join closures, nozzle and — in segmented motors — case segments, and keep the hot gas in.',
+    job: 'Join closures, nozzle and (in segmented motors) case segments, and keep the hot gas in.',
     loads: 'Pressure end load through pins, bolts or lock rings; joint rotation as the case balloons, which tries to open the seal gap.',
     fails: 'Joint rotation opening the gap faster than the O-ring can follow (Challenger, 1986); pin bearing and shear-out; hot gas finding a path through the insulation to the seals.',
     then: 'Single O-ring seals; tang-and-clevis pinned joints on segmented boosters.',
@@ -43,15 +43,15 @@ const PARTS: { key: string; n: number; name: string; job: string; loads: string;
     then: 'Asbestos- and silica-filled nitrile rubber (NBR).',
     now: 'Aramid- or silica-filled EPDM: lower density, better ageing, no asbestos.',
     drawing: 'Thickness by zone; surface preparation, adhesive and liner specification; cure schedule; the NDT that verifies the bond.',
-    links: [{ href: '../insulation/', label: 'Insulation & ablatives' }, { href: '../propellant-grain/', label: 'Grain — bondline stress' }] },
+    links: [{ href: '../insulation/', label: 'Insulation & ablatives' }, { href: '../propellant-grain/', label: 'Grain: bondline stress' }] },
   { key: 'aft', n: 6, name: 'Aft closure',
     job: 'Carries the nozzle and its loads into the case through the aft polar boss.',
     loads: 'Pressure; the nozzle blow-off load; thrust-vector actuation and side loads; the hottest chamber gas, accelerating as it turns into the nozzle.',
     fails: 'Boss and joint failure under combined pressure and nozzle loads; insulation erosion where the flow turns into the nozzle.',
     then: 'Bolted steel closure.',
     now: 'Integral polar boss in metal or wound composite, with the nozzle often submerged into the case to shorten the motor.',
-    drawing: 'Boss interface to the nozzle, seal grooves, bolt pattern and preload, and the aft-dome insulation — usually the thickest in the motor.',
-    links: [{ href: '../insulation/', label: 'Insulation — aft dome' }] },
+    drawing: 'Boss interface to the nozzle, seal grooves, bolt pattern and preload, and the aft-dome insulation: usually the thickest in the motor.',
+    links: [{ href: '../insulation/', label: 'Insulation: aft dome' }] },
   { key: 'nozzle', n: 7, name: 'Nozzle structure',
     job: 'Holds the ablative liners in the right shape and carries pressure and thrust loads into the aft closure.',
     loads: 'Pressure on the convergent section; thrust; heat soaking through the liners; steering loads.',
@@ -61,7 +61,7 @@ const PARTS: { key: string; n: number; name: string; job: string; loads: string;
     drawing: 'Liner-to-housing bond and gap control; housing material and heat treatment; internal joint seals.',
     links: [{ href: '../insulation/', label: 'Nozzle ablatives' }] },
   { key: 'throat', n: 8, name: 'Throat insert',
-    job: 'Holds the throat area — and so chamber pressure — steady while the hottest, fastest gas in the motor passes it.',
+    job: 'Holds the throat area (and so chamber pressure) steady while the hottest, fastest gas in the motor passes it.',
     loads: 'The highest heat flux in the motor; severe thermal shock at ignition; oxidation by H₂O and CO₂ in the exhaust.',
     fails: 'Erosion (throat area grows, so pressure and thrust fall); thermal-shock cracking; fragments ejected through the nozzle.',
     then: 'Bulk or pyrolytic graphite; refractory metals such as tungsten on small motors.',
@@ -81,7 +81,7 @@ const PARTS: { key: string; n: number; name: string; job: string; loads: string;
     loads: 'Actuator loads; a flexible bearing carries the full nozzle blow-off load while it flexes; heat.',
     fails: 'Elastomer overheating or ageing in the bearing; actuator stall; torque rising at low temperature as the elastomer stiffens.',
     then: 'Jet vanes or jetavators in the exhaust, or liquid injected into the nozzle (Titan III’s solid boosters injected nitrogen tetroxide).',
-    now: 'A movable nozzle on a flexible bearing — laminated elastomer pads and metal or composite shims that flex in shear — driven by actuators, increasingly electromechanical.',
+    now: 'A movable nozzle on a flexible bearing (laminated elastomer pads and metal or composite shims that flex in shear) driven by actuators, increasingly electromechanical.',
     drawing: 'Elastomer compound and shim material; bearing stiffness and torque at temperature; actuator attach points.',
     links: [{ href: '../../legacy/?z=visco', label: 'Viscoelasticity (v1)' }] },
 ];
@@ -95,7 +95,7 @@ const BADGES: Record<string, [number, number, number, number]> = {
 ---
 
 <figure class="viz ha" data-atlas>
-  <p class="viz-title">Motor hardware — half-section, schematic, not to scale</p>
+  <p class="viz-title">Motor hardware: half-section, schematic, not to scale</p>
   <svg viewBox="0 82 960 230" role="img" aria-labelledby="ha-desc" data-svg>
     <desc id="ha-desc">
       Upper half of a solid rocket motor, centreline at the bottom. From left: the igniter in the forward polar boss, the
@@ -120,7 +120,7 @@ const BADGES: Record<string, [number, number, number, number]> = {
     <path d="M190,240 L190,177.5 A66,154 0 0 1 230,146 L640,146 A66,154 0 0 1 680,177.5 L680,240 Z"
       fill="var(--rd-propellant)" fill-opacity="0.35" stroke="var(--rd-propellant)" stroke-opacity="0.6"></path>
     <text x="435" y="200" text-anchor="middle" font-size="12" fill="var(--rd-muted)">propellant grain</text>
-    <text x="435" y="272" text-anchor="middle" font-size="12" fill="var(--rd-muted)">bore — hot gas</text>
+    <text x="435" y="272" text-anchor="middle" font-size="12" fill="var(--rd-muted)">bore: hot gas</text>
     <line x1="20" y1="300" x2="950" y2="300" stroke="var(--rd-muted)" stroke-dasharray="14 4 3 4"></line>
     <text x="24" y="294" font-size="10" fill="var(--rd-muted)">℄</text>
 
@@ -205,7 +205,7 @@ const BADGES: Record<string, [number, number, number, number]> = {
       <p class="ha-links">Go deeper: {p.links.map((l, j) => <>{j > 0 && ' · '}<a href={l.href}>{l.label}</a></>)}</p>
     </section>
   ))}
-  <figcaption>Select a number on the drawing or a name above. Proportions are for legibility only — no design dimensions implied.</figcaption>
+  <figcaption>Select a number on the drawing or a name above. Proportions are for legibility only: no design dimensions implied.</figcaption>
 </figure>
 
 <style is:global>

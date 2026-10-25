@@ -13,7 +13,7 @@ const BP = [
 ---
 
 <div class="calc vbcalc" data-vbcalc>
-  <div class="calc-head"><span>Random vibration — one mode</span><span class="head-btns"><span>Miles · exact · 3-sigma · Steinberg</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="calc-head"><span>Random vibration: one mode</span><span class="head-btns"><span>Miles · exact · 3-sigma · Steinberg</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
       <fieldset>
@@ -26,10 +26,10 @@ const BP = [
             <span class="vb-bp-note" data-bp={k}></span>
           </div>
         ))}
-        <p class="hint">Enter an ASD such as 0.04, or a slope such as +3 dB, for the segment joining that row to its neighbour — as test specifications are written. Leave a row blank to drop it.</p>
+        <p class="hint">Enter an ASD such as 0.04, or a slope such as +3 dB, for the segment joining that row to its neighbour, as test specifications are written. Leave a row blank to drop it.</p>
       </fieldset>
       <fieldset>
-        <legend>The part — one mode</legend>
+        <legend>The part: one mode</legend>
         <div class="row2">
           <label>Natural frequency f<sub>n</sub> (Hz)<input name="fn" type="number" min="1" step="any" value="150" /></label>
           <label>Amplification Q<input name="q" type="number" min="1" step="any" value="10" /></label>
@@ -37,7 +37,7 @@ const BP = [
           <label>Duration (s)<input name="t" type="number" min="0" step="any" value="120" /></label>
           <label>Clearance (mm)<input name="cl" type="number" min="0" step="any" value="2" placeholder="optional" /></label>
         </div>
-        <p class="hint">Q is the peak amplification at resonance; damping ratio ζ = 1/(2Q). Measure it in test where you can — about 10 is a common starting assumption for bolted metal structures.</p>
+        <p class="hint">Q is the peak amplification at resonance; damping ratio ζ = 1/(2Q). Measure it in test where you can: about 10 is a common starting assumption for bolted metal structures.</p>
       </fieldset>
       <fieldset>
         <legend>Strength margin</legend>
@@ -49,7 +49,7 @@ const BP = [
         <p class="hint example-note" data-example-note hidden></p>
       </fieldset>
       <fieldset>
-        <legend>Fatigue — Steinberg three-band</legend>
+        <legend>Fatigue: Steinberg three-band</legend>
         <div class="row2">
           <label>Stress per g of response (MPa/g)<input name="spg" type="number" min="0" step="any" value="4" /></label>
           <label>UTS (MPa)<input name="uts" type="number" min="1" step="any" value="310" /></label>
@@ -58,11 +58,11 @@ const BP = [
         </div>
         <label>S-N below S<sub>e</sub>
           <select name="lim">
-            <option value="no">Keeps falling — aluminium, most non-ferrous</option>
-            <option value="yes">Endurance limit — most steels, titanium</option>
+            <option value="no">Keeps falling: aluminium, most non-ferrous</option>
+            <option value="yes">Endurance limit: most steels, titanium</option>
           </select>
         </label>
-        <p class="hint">Stress per g at the critical point with the notch included; S<sub>e</sub> after surface, size and reliability factors — both from the <a href="../../fundamentals/fatigue/">Fatigue</a> page. Leave the stress blank to skip.</p>
+        <p class="hint">Stress per g at the critical point with the notch included; S<sub>e</sub> after surface, size and reliability factors: both from the <a href="../../fundamentals/fatigue/">Fatigue</a> page. Leave the stress blank to skip.</p>
       </fieldset>
     </form>
     <div>
@@ -169,7 +169,7 @@ const BP = [
       }
       const { points, error } = resolveProfile(raw);
       if (error || unreadable) {
-        clear(); notes.push(['bad', `Input PSD: ${error ?? 'a row could not be read — use a number such as 0.04, or a slope such as +3 dB'}.`]); say(); return;
+        clear(); notes.push(['bad', `Input PSD: ${error ?? 'a row could not be read: use a number such as 0.04, or a slope such as +3 dB'}.`]); say(); return;
       }
       raw.forEach((x) => {
         const i = points.findIndex((p) => p.f === x.f);
@@ -202,14 +202,14 @@ const BP = [
         r('ms').innerHTML = `${sgn(ms)} <small>${f(fs * load, 0)} N design vs ${f(al, 0)} N</small>`;
         cls('ms', ms < 0 ? 'bad' : 'ok');
         if (ms < 0) notes.push(['bad', `The mount fails: design load ${f(fs * load, 0)} N exceeds the ${f(al, 0)} N allowable (MS ${sgn(ms)}).`]);
-        else if (ms > 0.5) notes.push(['', `MS ${sgn(ms)}: on a mass-driven part a large margin is a finding — the mount may be heavier than it needs to be. See <a href="../margin-policy/">Margin policy</a>.`]);
+        else if (ms > 0.5) notes.push(['', `MS ${sgn(ms)}: on a mass-driven part a large margin is a finding (the mount may be heavier than it needs to be). See <a href="../margin-policy/">Margin policy</a>.`]);
       } else { r('ms').innerHTML = '<small>enter mass and allowable</small>'; cls('ms', ''); }
 
       // displacement
       const z3 = 3 * ex.zrms, cl = num('cl');
       r('disp').innerHTML = `${f(z3, z3 < 1 ? 2 : 1)} mm <small>relative to the base · rms ${f(ex.zrms, 3)}</small>`;
       cls('disp', cl > 0 ? (z3 >= cl ? 'bad' : 'ok') : '');
-      if (cl > 0 && z3 >= cl) notes.push(['bad', `3σ displacement ${f(z3, 2)} mm reaches the ${f(cl, 1)} mm clearance — expect contact. Stiffen the mount, add clearance or snub it.`]);
+      if (cl > 0 && z3 >= cl) notes.push(['bad', `3σ displacement ${f(z3, 2)} mm reaches the ${f(cl, 1)} mm clearance: expect contact. Stiffen the mount, add clearance or snub it.`]);
 
       // cycles, peaks and fatigue
       // Steinberg's cycle count and the Rayleigh peaks assume a resonant, narrow-band response
@@ -223,11 +223,11 @@ const BP = [
         const top = d.D > 0 ? d.bands[2].d / d.D : NaN;
         r('fat').innerHTML = `${sci(d.D)} <small>per exposure${d.D > 0 ? ` · life × ${sci(1 / d.D, 1)}` : ' · below S<sub>e</sub>'}</small>`;
         cls('fat', d.D >= 1 ? 'bad' : d.D > 0.1 ? 'warn' : 'ok');
-        table = `<table><caption>Steinberg bands — ${f(cycles, 0)} cycles at f<sub>n</sub>; stress amplitude, life in cycles, share of the damage</caption><thead><tr><th>Band</th><th>Cycles</th><th>MPa</th><th>Life</th><th>Share</th></tr></thead><tbody>${d.bands.map((b) =>
+        table = `<table><caption>Steinberg bands: ${f(cycles, 0)} cycles at f<sub>n</sub>; stress amplitude, life in cycles, share of the damage</caption><thead><tr><th>Band</th><th>Cycles</th><th>MPa</th><th>Life</th><th>Share</th></tr></thead><tbody>${d.bands.map((b) =>
           `<tr><td>${b.k}σ</td><td>${f(b.n, 0)}</td><td>${f(b.s, 1)}</td><td>${sci(b.N).replace(/ /g, '')}</td><td>${d.D > 0 ? `${f((100 * b.d) / d.D, 1)}%` : '—'}</td></tr>`).join('')}</tbody></table>`;
-        if (3 * spg * ex.grms >= uts) notes.push(['bad', `The 3σ stress (${f(3 * spg * ex.grms, 0)} MPa) reaches the UTS — a strength problem before a fatigue one.`]);
+        if (3 * spg * ex.grms >= uts) notes.push(['bad', `The 3σ stress (${f(3 * spg * ex.grms, 0)} MPa) reaches the UTS: a strength problem before a fatigue one.`]);
         if (d.D >= 1) notes.push(['bad', `Fatigue damage ${sci(d.D)} ≥ 1: the part is predicted to fail within this exposure.`]);
-        else if (top > 0.5) notes.push(['', `${f(100 * top, 0)}% of the damage comes from the 3σ band — 4.3% of the cycles. The rare large cycles do the damage, so a few dB on the input matters far more than the duration.`]);
+        else if (top > 0.5) notes.push(['', `${f(100 * top, 0)}% of the damage comes from the 3σ band: 4.3% of the cycles. The rare large cycles do the damage, so a few dB on the input matters far more than the duration.`]);
       } else if (!resonant) {
         r('fat').innerHTML = '<small>not resonant in this band</small>'; cls('fat', '');
       } else if (spg > 0 && se >= 0.9 * uts) {
@@ -239,7 +239,7 @@ const BP = [
       if (!resonant) notes.push(['warn', `f<sub>n</sub> = ${f(fn, 0)} Hz is outside the input band (${f(points[0].f, 0)}–${f(points[points.length - 1].f, 0)} Hz): the part isn't resonating in this environment, so ${fn > points[points.length - 1].f ? 'it moves with the base and the load is close to the input level' : 'it is isolated from the input'}; the fatigue cycle count doesn't apply. Check the band covers the part, and that nothing outside it (sine, transient) excites the mode.`]);
       else if (Math.abs(diff) > 0.1) notes.push(['warn', `Miles' equation is ${f(100 * Math.abs(diff), 0)}% ${diff > 0 ? 'high' : 'low'} here because the input isn't flat around f<sub>n</sub>. Use the exact value.`]);
       if (Q < 5) notes.push(['warn', 'Q below 5 is heavy damping for a structure; Miles assumes light damping. Rely on the exact value.']);
-      if (cycles > 0) notes.push(['', `In ${f(cycles, 0)} cycles about ${f(peaksAbove(3, cycles), 0)} peaks exceed 3σ and ${f(peaksAbove(4, cycles), peaksAbove(4, cycles) < 1 ? 1 : 0)} exceed 4σ. If a single overload breaks the part — a brittle material, a bond, a ceramic — size it beyond 3σ.`]);
+      if (cycles > 0) notes.push(['', `In ${f(cycles, 0)} cycles about ${f(peaksAbove(3, cycles), 0)} peaks exceed 3σ and ${f(peaksAbove(4, cycles), peaksAbove(4, cycles) < 1 ? 1 : 0)} exceed 4σ. If a single overload breaks the part (a brittle material, a bond, a ceramic) size it beyond 3σ.`]);
       say();
       chart(points, fn, Q);
     }

@@ -1,6 +1,6 @@
 ---
 title: Tolerance stack
-description: Tolerance stack-ups for motor hardware — building the loop diagram from datums and contact points, worst-case and root-sum-square stacks, putting GD&T, fits and assembly shifts into a stack, Cpk-based and Monte Carlo stacks, radial stacks of offsets that add as vectors, and when a statistical answer is acceptable.
+description: Tolerance stack-ups for motor hardware. How to make the loop diagram from datums and contact points, worst-case and root-sum-square stacks, GD&T, fits and assembly shifts in a stack, Cpk-based and Monte Carlo stacks, radial stacks of offsets that add as vectors, and when a statistical result is acceptable.
 sidebar:
   order: 0
 ---
@@ -12,57 +12,62 @@ import StackRadial from '../../../components/StackRadial.astro';
 import StackCalc from '../../../components/StackCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>A stack follows one gap through every part that decides it: the worst case adds every tolerance, a statistical stack adds them the way real parts vary — and which one you may use is a decision about risk, not arithmetic.</div>
+  <div><b>In one line</b>A stack follows one gap through all the parts that set it. The worst case adds all the tolerances. A statistical stack adds them as real parts vary. Which method you can use is a decision about risk.</div>
   <div><b>Before this</b><a href="../fits-and-limits/">Fits & limits</a> · <a href="../datums-and-position/">Datums & position</a></div>
   <div><b>Used by</b><a href="../../seals/o-ring-design/">O-ring design</a> · <a href="../../legacy/?z=gauge">Gauging</a></div>
 </div>
 
 ## Why this matters
 
-Every drawing on a motor can be right and the assembly still wrong. An O-ring groove, a bore and a pilot can each be in
-tolerance and leave the ring with too little squeeze. A case, a closure and a nozzle can each pass inspection and still
-point the thrust off the centre of gravity. The individual drawings cannot show this. The stack — the chain of
-dimensions that decides one gap — is where it shows.
+All the drawings of a motor can be correct and the assembly can still be incorrect. An O-ring groove, a bore and a pilot
+can each be in tolerance, and the ring can still have too little squeeze. A case, a closure and a nozzle can each pass
+inspection, and the thrust can still point away from the centre of gravity. The individual drawings do not show this.
+The stack shows it. A stack is the chain of dimensions that sets one gap.
 
-A stack answers three questions: what the gap can be, which tolerances decide it, and whether the answer must hold for
-every assembly or only for nearly all of them.
+A stack answers three questions:
+
+- What values can the gap have?
+- Which tolerances have the largest effect on it?
+- Must the result be correct for all assemblies, or only for almost all of them?
 
 <Analogy title="Books on a shelf">
-  Each book on a shelf is a little thicker or thinner than the catalogue says. Pick them at random and the errors mostly
-  cancel: the row ends close to where you expect. It overflows only if every book happens to be a fat one — possible,
-  but rare. Unless someone has sorted them, or they all came from one printing run: then the errors line up, and "rare"
-  becomes "every time". That is the whole of tolerance stacking: adding the worst case, adding what usually happens, and
-  knowing which one your parts allow.
+  Each book on a shelf is a little thicker or thinner than the catalogue says. If you take books at random, most of the
+  errors cancel and the row ends near where you expect. The row is too long only if all the books are thick ones. This
+  is possible, but rare. If someone sorted the books, or if all of them came from one print run, the errors add and the
+  rare result occurs each time. A tolerance stack does the same three things: it adds the worst case, it adds the usual
+  case, and it tells you which one your parts permit.
 </Analogy>
 
 ## The loop diagram
 
-1. **Name the result and its requirement** — a gap, a squeeze, an offset, and the limit it must meet.
-2. **Start at one side of the gap** and walk to the other through the parts that touch, one arrow per dimension. Pick
-   a positive direction; arrows the other way are negative.
-3. **Go through datums and contact points.** Each part's dimensions run from its datums, and parts meet where they touch,
-   so the loop goes datum to datum. If the drawing dimensions a feature from somewhere else, the loop has to go the long
-   way round, collecting more tolerance — usually a sign the datums are wrong
+1. **Name the result and its requirement.** The result is a gap, a squeeze or an offset. The requirement is the limit
+   that it must meet.
+2. **Start at one side of the gap.** Go to the other side through the parts that touch, with one arrow for each
+   dimension. Select a positive direction. Arrows in the opposite direction are negative.
+3. **Go through datums and contact points.** The dimensions of each part start at its datums, and parts meet where they
+   touch. Thus the loop goes from datum to datum. If the drawing gives a dimension from a different feature, the loop
+   must go a longer way and it collects more tolerance. This usually shows that the datums are not correct
    ([Datums & position](../datums-and-position/)).
-4. **Decide where the clearances sit.** Where a fit lets a part move, push it the way that is worst for this result.
-   The loop goes through the contact point.
-5. **Convert every dimension to mean ± equal half-tolerance**, and give it a sensitivity: ±1 for a length in the loop,
-   ±½ for a diameter whose radius is in it, $\cos\theta$ for one at an angle.
+4. **Decide the position of each clearance.** If a fit lets a part move, push the part in the direction that is worst
+   for this result. The loop then goes through the contact point.
+5. **Change each dimension to a mean ± an equal half-tolerance.** Give it a sensitivity: ±1 for a length in the loop,
+   ±½ for a diameter whose radius is in the loop, and $\cos\theta$ for a dimension at an angle.
 
 <StackLoop />
 
-For the nozzle seal on the [O-ring page](../../seals/o-ring-design/#worked-example--a-nozzle-to-case-radial-seal) —
-the plug pushed across onto the far wall of the bore, the groove offset by its runout $e$ — the deepest gland is:
+The [O-ring page](../../seals/o-ring-design/#worked-example-a-nozzle-to-case-radial-seal) has a nozzle seal. Push the
+plug onto the far wall of the bore, and let the groove move by its runout $e$. The deepest gland is then:
 
 $$
 g = D_{bore} - \tfrac{1}{2}D_{pilot} - \tfrac{1}{2}D_{root} + e
 $$
 
-The squeeze is the ring's section less $g$. On the tight side the bore drops out entirely: the plug sits on it.
+The squeeze is the ring section minus $g$. On the tight side, the bore diameter is not in the stack, because the plug
+sits on the bore.
 
 ## Worst case and RSS
 
-With the result $y = \sum s_i x_i$, each contributor's half-tolerance $t_i$ and sensitivity $s_i$:
+The result is $y = \sum s_i x_i$. Each contributor has a half-tolerance $t_i$ and a sensitivity $s_i$:
 
 $$
 t_{WC} = \sum |s_i|\,t_i
@@ -72,35 +77,36 @@ $$
 t_{RSS} = \sqrt{\textstyle\sum (s_i t_i)^2}
 $$
 
-- **Worst case** holds for every assembly made of in-tolerance parts, whatever their distributions. It grows in
-  proportion to the number of contributors.
-- **RSS** assumes every part is independent, normal, centred, and holds its tolerance at ±3σ. It grows only as the square
-  root of the number of contributors, so it is much tighter on long stacks — and about 0.27% of assemblies fall outside
-  its band even when every assumption holds.
-- **Which one** is a decision. Use the worst case where a single failure is unacceptable and would not be found at
-  assembly, where few parts are made, or where the statistics cannot be backed by process data. A statistical stack suits
-  many contributors, quantity production and failures that are caught or tolerable at the predicted rate.
+- **Worst case.** The result is correct for all assemblies of in-tolerance parts, for all distributions. It increases
+  in proportion to the number of contributors.
+- **RSS.** This method assumes that each part is independent, normal and centred, and that its tolerance is ±3σ. It
+  increases only as the square root of the number of contributors. Thus it is much smaller on long stacks. Even when all
+  the assumptions are correct, approximately 0.27% of assemblies are outside the RSS band.
+- **Which method to use.** This is a decision. Use the worst case when one failure is not acceptable and the assembly
+  check will not find it, when the quantity is small, or when you do not have process data for the statistics. A
+  statistical stack is applicable to many contributors, to large quantities, and to failures that an inspection finds
+  or that are acceptable at the predicted rate.
 
 ## GD&T and fits in a stack
 
 | On the drawing | In the stack |
 | --- | --- |
 | Size ⌀a–b, radius in the loop | mean $(a+b)/4$ ± $(b-a)/4$; sensitivity ½ on the diameter |
-| Position ⌀t at RFS, coaxiality ⌀t, runout t | an offset of 0 ± t/2 in the loop's direction |
-| Position ⌀t at MMC, to a hole's surface | size and position together: the surface lies between the virtual and resultant conditions, so radius $(VC + RC)/4$ ± $(RC - VC)/4$ |
-| Profile of a surface, total width t | 0 ± t/2 (equal-bilateral), or the zone's own offset if unequal |
-| Flatness, parallelism or perpendicularity t | 0 to t in a gap; as a tilt, t over the length it acts on, carried to the lever arm |
-| A clearance fit | an assembly shift: either the loop goes through the contact point (diameters at ±½), or a shift up to $c_{max}/2$ |
-| A datum feature at MMB | an extra shift, up to half the difference between its boundary and its actual size |
-| Temperature | each part's growth $\alpha L \Delta T$ as an extra arrow — check every temperature, not just 20 °C |
+| Position ⌀t at RFS, coaxiality ⌀t, runout t | an offset of 0 ± t/2 in the direction of the loop |
+| Position ⌀t at MMC, to the surface of a hole | size and position together. The surface is between the virtual and resultant conditions, so the radius is $(VC + RC)/4$ ± $(RC - VC)/4$ |
+| Profile of a surface, total width t | 0 ± t/2 (equal bilateral), or the offset of the zone if it is unequal |
+| Flatness, parallelism or perpendicularity t | 0 to t in a gap. As a tilt: t over the length that it acts on, moved to the lever arm |
+| A clearance fit | an assembly shift. The loop goes through the contact point (diameters at ±½), or uses a shift of up to $c_{max}/2$ |
+| A datum feature at MMB | an added shift, up to half the difference between its boundary and its actual size |
+| Temperature | the growth of each part, $\alpha L \Delta T$, as an added arrow. Check all temperatures, not only 20 °C |
 
-The size and geometric tolerances of one feature are not independent when a material condition modifier links them;
-use the boundaries ([GD&T](../gdt/#mmc-bonus-tolerance-and-virtual-condition)), not both rows.
+When a material condition modifier connects the size and the geometric tolerance of a feature, the two are not
+independent. Use the boundaries ([GD&T](../gdt/#mmc-bonus-tolerance-and-virtual-condition)), not two rows.
 
 ## Statistical stacks: Cpk and Monte Carlo
 
-**Cpk-based.** Real processes are not all at Cpk 1. A part made at capability $C_{pk}$ has, conservatively,
-$\sigma_i = t_i / (3\,C_{pk,i})$, and the assembly's σ and capability follow, with μ its mean:
+**Cpk-based.** Real processes do not all have a Cpk of 1. For a part made at a capability $C_{pk}$, a conservative
+value is $\sigma_i = t_i / (3\,C_{pk,i})$. The σ and the capability of the assembly follow, where μ is its mean:
 
 $$
 \sigma_y = \sqrt{\textstyle\sum (s_i \sigma_i)^2}
@@ -110,18 +116,19 @@ $$
 C_{pk,y} = \frac{\min(USL - \mu,\ \mu - LSL)}{3\,\sigma_y}
 $$
 
-Plain RSS is the case where every $C_{pk} = 1$. Treating a process that is off-centre ($C_{pk} < C_p$) this way spreads
-its shift as if it were random; if the shift is the same on every part, add it worst case instead. A part that is
-uniform across its tolerance — tool wear between resets, a feature nobody measures — has $\sigma = t/\sqrt{3}$, 1.7 times
-the normal value. Where the parts' capability is unknown, a traditional allowance multiplies RSS by 1.5 (Bender).
+Plain RSS is the special case where each $C_{pk}$ is 1. If a process is off-centre ($C_{pk} < C_p$), this method
+treats the shift as random. If the shift is the same on all parts, add it as a worst case. Some parts are uniform
+across their tolerance, for example because of tool wear between resets, or because nobody measures the feature. For
+these parts, $\sigma = t/\sqrt{3}$, which is 1.7 times the normal value. If you do not know the capability of the
+parts, a traditional allowance multiplies the RSS by 1.5 (Bender).
 
-**Monte Carlo.** Draw every part from its distribution, compute the result through the real function — nonlinear if it
-is, a squeeze as a percentage of the drawn section, a vector sum — and count the failures. It needs no normal
-assumption, but it needs enough samples: to see a one-in-10,000 failure, run hundreds of thousands. Its answer is only
-as good as the distributions put in.
+**Monte Carlo.** Take a sample of each part from its distribution. Calculate the result with the real function, also
+if it is nonlinear (for example a squeeze as a percentage of the sampled section, or a vector sum). Then count the
+failures. This method does not need a normal assumption, but it needs sufficient samples. To see a failure rate of 1 in
+10,000, use some hundred thousand samples. The result is only as good as the distributions that you use.
 
-**Correlation.** RSS and Monte Carlo assume independent parts. Two features turned in one setup, cut by one tool or
-taken from one batch move together; group them and add them worst case.
+**Correlation.** RSS and Monte Carlo assume that the parts are independent. Two features made in one setup, by one tool
+or from one batch, change together. Put them in a group and add them as a worst case.
 
 ## Radial stacks
 
@@ -129,35 +136,36 @@ taken from one batch move together; group them and add them worst case.
 
 Coaxiality, position and clearance shifts are offsets in a plane, in any direction. They add as vectors:
 
-- **The worst case** is $\sum r_i$, every offset in line.
-- **The RSS of the radii** $\sqrt{\sum r_i^2}$ is not a bound. It treats each offset as a ±3σ dimension, but a
-  clearance taken up fully in a random direction is nothing like that: with two equal ones, half of all assemblies exceed
-  it.
-- **Many random offsets** tend to a Rayleigh distribution, with $\sigma^2 = \sum \sigma_i^2$ in each direction —
-  $r^2/4$ for an offset anywhere in a zone, $r^2/2$ for a clearance fully taken up — so the radius covering a fraction
-  $p$ is $\sigma\sqrt{-2\ln(1-p)}$. With few offsets, use Monte Carlo.
-- **A common direction** turns random offsets into arithmetic ones. Gravity on a horizontal assembly stand takes every
-  clearance up downwards; so does a side load while the bolts are tightened.
-- **Tilts** are offsets too: a tolerance $t$ over a length $l$ tilts an axis by $t/l$, which moves it $tL/l$ at a
-  lever arm $L$.
+- **The worst case** is $\sum r_i$, with all offsets in one line.
+- **The RSS of the radii,** $\sqrt{\sum r_i^2}$, is not a limit. It treats each offset as a ±3σ dimension. A clearance
+  that is fully taken up in a random direction is very different. With two equal clearances, half of all assemblies
+  are more than this value.
+- **Many random offsets** approach a Rayleigh distribution, with $\sigma^2 = \sum \sigma_i^2$ in each direction. Use
+  $r^2/4$ for an offset anywhere in a zone, and $r^2/2$ for a clearance that is fully taken up. The radius that contains
+  a fraction $p$ is then $\sigma\sqrt{-2\ln(1-p)}$. With few offsets, use Monte Carlo.
+- **A common direction** makes random offsets add arithmetically. On a horizontal assembly stand, gravity takes up each
+  clearance in the downward direction. A side load during bolt tightening has the same effect.
+- **Tilts are also offsets.** A tolerance $t$ over a length $l$ tilts an axis by $t/l$. At a lever arm $L$, this moves
+  the axis by $tL/l$.
 
-For a nozzle, the result that matters is the **thrust line's offset from the centre of gravity**, $d$. It gives a
-disturbing moment $M = F d$ that the vehicle's control must trim, and folds the nozzle's lateral offset and its tilt into
-one number.
+For a nozzle, the important result is the **offset $d$ of the thrust line from the centre of gravity**. This offset
+gives a disturbing moment $M = F d$, which the vehicle control system must correct. It also combines the lateral offset
+and the tilt of the nozzle into one value.
 
 ## Calculator
 
 <StackCalc />
 
-## Worked example — seal squeeze and nozzle alignment
+## Worked example: seal squeeze and nozzle alignment
 
-The calculator's starting values are this example's. The parts' Cpk of 1.33 and both requirements are **for this example
-only**; press **Load worked example** to apply them.
+The starting values of the calculator are the values of this example. The part Cpk of 1.33 and the two requirements are
+**for this example only**. Push **Load worked example** to apply them.
 
 ### The nozzle seal
 
-The [O-ring page's](../../seals/o-ring-design/#worked-example--a-nozzle-to-case-radial-seal) radial seal, with the groove
-runout the [GD&T page](../gdt/#worked-example--the-aft-closure-its-bolts-and-the-nozzle-seal-groove) put on the drawing:
+This is the radial seal of the [O-ring page](../../seals/o-ring-design/#worked-example-a-nozzle-to-case-radial-seal),
+with the groove runout that the [GD&T page](../gdt/#worked-example-the-aft-closure-its-bolts-and-the-nozzle-seal-groove)
+added to the drawing:
 
 | Arrow | Limits (mm) | Sensitivity | Mean ± half |
 | --- | --- | --- | --- |
@@ -165,31 +173,33 @@ runout the [GD&T page](../gdt/#worked-example--the-aft-closure-its-bolts-and-the
 | Case bore ⌀ (H8) | 150.000–150.063 | −1 | 150.0315 ± 0.0315 |
 | Plug pilot ⌀ | 149.860–149.900 | +½ | 149.880 ± 0.020 |
 | Groove root ⌀ | 141.45–141.55 | +½ | 141.500 ± 0.050 |
-| Root runout 0.05 to the pilot | — | −1 | 0 ± 0.025 |
+| Root runout 0.05 to the pilot | (none) | −1 | 0 ± 0.025 |
 
-1. **Nominal and worst case.** The squeeze is 0.989 mm nominal, and **0.767 mm** at worst — 14.75% of the smallest
-   ring, the GD&T page's figure. The requirement here is 0.74 mm, the level at which the O-ring page's stretch, −40 °C and
-   20% compression set leave its 10% floor. The worst case passes, by 0.027 mm.
-2. **RSS.** ±0.139 mm, so **0.850 mm** at the low end — and the O-ring's own section is **88% of the variance**. Halving
-   all four machined tolerances moves that by less than 0.01 mm; a ring held to ±0.08 on its section would move it
-   about 0.05 mm. The machining is not where this stack is decided.
-3. **Cpk.** With every part at Cpk 1.33, σ = 0.035 mm and the assembly's Cpk against the 0.74 mm floor is 2.38. None of
-   the Monte Carlo's 100,000 assemblies falls below it.
-4. **The tempting saving.** Drop the runout to the general 0.2 and the worst case becomes **0.692 mm** — 9.2% at end of
-   life, below the floor. RSS says 0.819 mm and passes. Nobody measures a general tolerance, so model the runout as
-   uniform (“-0.1, 0.1, u”): it becomes 74% of the variance, the assembly's Cpk falls to 1.23, and the Monte Carlo
-   finds one assembly in 100,000 below the floor. (The normal estimate says one in 10,000; a uniform part has no tails,
-   which the normal approximation cannot see.)
-5. **Decision: worst case, and keep the 0.05.** A seal below its floor cannot be seen at assembly, and its failure is a
-   burn-through, on a product made in tens. Statistics would accept a risk the programme should not. The runout costs
-   nothing if the groove and the pilot are turned in one setup.
+1. **Nominal and worst case.** The nominal squeeze is 0.989 mm. The worst case is **0.767 mm**, which is 14.75% of the
+   smallest ring and agrees with the GD&T page. The requirement in this example is 0.74 mm. At this value, the stretch,
+   the −40 °C temperature and the 20% compression set of the O-ring page leave its 10% minimum. The worst case passes,
+   by 0.027 mm.
+2. **RSS.** The band is ±0.139 mm, so the low end is **0.850 mm**. The section of the O-ring itself is **88% of the
+   variance**. If you halve all four machined tolerances, the result changes by less than 0.01 mm. A ring with a section
+   tolerance of ±0.08 changes it by approximately 0.05 mm. The machining does not control this stack.
+3. **Cpk.** With all parts at Cpk 1.33, σ is 0.035 mm. The Cpk of the assembly against the 0.74 mm minimum is 2.38. None
+   of the 100,000 Monte Carlo assemblies is below the minimum.
+4. **A possible cost saving.** Change the runout to the general tolerance of 0.2. The worst case is then **0.692 mm**.
+   This is 9.2% at the end of life, which is below the minimum. RSS gives 0.819 mm, which passes. Nobody measures a
+   general tolerance, thus use a uniform distribution for the runout (“-0.1, 0.1, u”). The runout is then 74% of the
+   variance and the Cpk of the assembly decreases to 1.23. The Monte Carlo finds 1 assembly in 100,000 below the minimum.
+   The normal estimate gives 1 in 10,000. A uniform part has no tails, and the normal approximation does not show this.
+5. **Decision: use the worst case and keep the 0.05.** At assembly, you cannot see a seal that has too little squeeze.
+   Its failure causes a burn-through, and the quantity made is small. The statistics would accept a risk that the
+   programme must not accept. The runout has no cost if the groove and the pilot are machined in one setup.
 
-### The nozzle's alignment
+### The nozzle alignment
 
-The thrust line's offset at the vehicle's centre of gravity, 700 mm forward of the aft joint at ignition (illustrative),
-with the [load-path page's](../../joints/load-paths/#worked-example--the-300-mm-motors-load-path) 29.5 kN of thrust. The
-closure pilot fit is the [datums page's](../datums-and-position/#worked-example--the-closure-the-cmm-rejected); the other
-tolerances are illustrative. The requirement: 99.73% of motors within 0.45 mm.
+The result is the offset of the thrust line at the centre of gravity of the vehicle. At ignition, this point is 700 mm
+forward of the aft joint (illustrative value). The thrust is 29.5 kN, from the
+[load-path page](../../joints/load-paths/#worked-example-the-300-mm-motors-load-path). The closure pilot fit is from the
+[datums page](../datums-and-position/#worked-example-the-closure-the-cmm-rejected). The other tolerances are
+illustrative. The requirement is that 99.73% of motors are within 0.45 mm.
 
 | Offset | Tolerance | Kind | At the CG (mm) |
 | --- | --- | --- | --- |
@@ -201,40 +211,43 @@ tolerances are illustrative. The requirement: 99.73% of motors within 0.45 mm.
 | Nozzle pilot in its bore | 0.100–0.203 clearance | shift | 0.102 |
 | Throat to the nozzle pilot | coaxiality ⌀0.10 | zone | 0.050 |
 
-1. **Worst case: 0.610 mm** — 18.0 N·m, the same as tilting the thrust 0.050°. It fails 0.45 mm. The two squareness
-   tilts and the closure clearance are 58% of it.
-2. **RSS of the radii: 0.246 mm.** It looks like an easy pass — and **26% of motors exceed it**. Do not use it.
-3. **Monte Carlo, assembled vertically,** with both clearance shifts in random directions: 99.73% of motors lie within
-   **0.442 mm** (13.1 N·m). It passes, just: 0.20% exceed 0.45.
-4. **Assembled horizontally,** the nozzle and the closure settle onto the bottom of their clearances before the bolts are
-   torqued — change both shifts to “fixed”. The 99.73% value grows to **0.474 mm** and 0.81% of motors exceed the limit.
-   It fails, though no part has changed.
-5. **The fix.** Tighten the nozzle pilot to H7/g6 ([Fits & limits](../fits-and-limits/)), a 0.0395 mm shift: even
-   horizontal, 99.73% are within **0.415 mm**. Or centre the nozzle in a fixture while torquing. Then re-run the seal
-   stack, because the plug pilot is one of its arrows, and measure each motor's nozzle alignment anyway — a statistical
-   requirement is best closed by inspection.
+1. **Worst case: 0.610 mm.** This gives 18.0 N·m, which is the same as a thrust tilt of 0.050°. It does not meet
+   0.45 mm. The two squareness tilts and the closure clearance are 58% of the total.
+2. **RSS of the radii: 0.246 mm.** This seems to pass easily, but **26% of motors are more than this value**. Do not
+   use it.
+3. **Monte Carlo, vertical assembly.** The two clearance shifts are in random directions. 99.73% of motors are within
+   **0.442 mm** (13.1 N·m). This passes by a small margin: 0.20% are more than 0.45 mm.
+4. **Horizontal assembly.** The nozzle and the closure move to the bottom of their clearances before the bolts are
+   torqued. Change the two shifts to “fixed”. The 99.73% value increases to **0.474 mm**, and 0.81% of motors are more
+   than the limit. The stack fails, but no part has changed.
+5. **The solution.** Change the nozzle pilot to H7/g6 ([Fits & limits](../fits-and-limits/)), which gives a 0.0395 mm
+   shift. Then 99.73% of motors are within **0.415 mm**, also with horizontal assembly. Another solution is to centre
+   the nozzle in a fixture during torquing. After the change, do the seal stack again, because the plug pilot is one
+   of its arrows. Also measure the nozzle alignment of each motor. Inspection is the best way to show that a statistical
+   requirement is met.
 
 ## Where this stops
 
-- **Independent contributors.** Correlated features — one setup, one tool, one batch — must be grouped by hand.
-- **Linear sensitivities** in the linear tab; nonlinear results need their own function, as the library's Monte Carlo
-  allows.
-- **One lever arm for every tilt** in the radial tab. Tilts that pivot far apart need their own, and the centre of
-  gravity moves as propellant burns.
-- **Geometry only.** Loads, pressure, deflection and temperature change gaps too — the joint opening on the O-ring page,
-  [Differential expansion](../../joints/differential-expansion/) for temperature. Thrust misalignment also comes from
-  the flow and the nozzle's erosion, which tolerances do not capture.
-- **Normal and uniform parts.** Real distributions — skewed, truncated by inspection, bimodal from two machines — belong
-  in a Monte Carlo of their own, from measured data.
+- **Independent contributors.** You must put correlated features (one setup, one tool, one batch) in groups yourself.
+- **Linear sensitivities** in the linear tab. Nonlinear results need their own function. The Monte Carlo in the library
+  permits this.
+- **One lever arm for all tilts** in the radial tab. Tilts about points far apart need their own lever arms. Also, the
+  centre of gravity moves as the propellant burns.
+- **Geometry only.** Loads, pressure, deflection and temperature also change gaps. See the joint opening on the O-ring
+  page, and [Differential expansion](../../joints/differential-expansion/) for temperature. Thrust misalignment also
+  comes from the flow and from nozzle erosion. Tolerances do not include these.
+- **Normal and uniform parts only.** Real distributions can be skewed, cut off by inspection, or have two peaks from two
+  machines. Use a separate Monte Carlo with measured data for these.
 
 ## On the drawing
 
-- **Datums chosen so the loop is short,** each critical dimension from the datum it stacks from.
-- **The tolerances the stack depends on,** and none left to the general tolerances by accident — like the groove runout.
-- **Assembly instructions** where the stack assumes a position: centring, orientation, the order of tightening.
-- **The stack itself** in the design record: the loop, the method, the distributions assumed and the data behind them.
-- **Inspection** of the assembled result where the requirement is statistical — alignment, a gap, a squeeze measured or
-  gauged.
+- **Datums that make the loop short.** Give each critical dimension from the datum that the stack uses.
+- **All the tolerances that the stack uses.** Do not leave one to the general tolerances by accident, as could occur
+  with the groove runout.
+- **Assembly instructions** where the stack assumes a position: centring, orientation and the tightening sequence.
+- **The stack** in the design record: the loop, the method, the distributions that you assumed and the data for them.
+- **Inspection of the assembled result** where the requirement is statistical: measure or gauge the alignment, the gap
+  or the squeeze.
 
 ## References and further reading
 
@@ -248,6 +261,7 @@ tolerances are illustrative. The requirement: 99.73% of motors within 0.45 mm.
 - ASME Y14.5-2018, *Dimensioning and Tolerancing*; ISO 22514, *Statistical methods in process management — Capability and performance*.
 
 <Aside type="note">
-  Guidance on method from general practice. The worked example's capability, coverage and limits are illustrative —
-  stack methods, distributions and acceptance criteria for flight hardware come from your programme's requirements.
+  This is guidance on method from general practice. The capability, coverage and limits in the worked example are
+  illustrative. For flight hardware, the stack methods, distributions and acceptance criteria come from the requirements
+  of your programme.
 </Aside>

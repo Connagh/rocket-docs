@@ -209,7 +209,7 @@
         "lox": "no"
       },
       "note": "The default, cheapest and most available. Excellent in mineral oil, fuel and grease.",
-      "watch": "Poor ozone and UV resistance — cracks even in storage. Not for phosphate esters, ketones or hot water."
+      "watch": "Poor ozone and UV resistance: cracks even in storage. Not for phosphate esters, ketones or hot water."
     },
     {
       "code": "HNBR",
@@ -247,7 +247,7 @@
         "lox": "no"
       },
       "note": "The aerospace and high-temperature workhorse. Wide chemical range, low gas permeability, excellent compression set hot.",
-      "watch": "Check the COLD end — standard grades stiffen around −20 °C. Not for steam, hot water, ketones, amines or phosphate esters. Low-temperature grades (GLT) exist."
+      "watch": "Check the COLD end: standard grades stiffen around −20 °C. Not for steam, hot water, ketones, amines or phosphate esters. Low-temperature grades (GLT) exist."
     },
     {
       "code": "FFKM",
@@ -266,7 +266,7 @@
         "lox": "no"
       },
       "note": "Near-universal chemical resistance with the highest temperature capability of any elastomer.",
-      "watch": "Extraordinarily expensive — often priced per seal. Poor low-temperature flexibility. Specify only where nothing else works."
+      "watch": "Extraordinarily expensive: often priced per seal. Poor low-temperature flexibility. Specify only where nothing else works."
     },
     {
       "code": "EPDM",
@@ -285,7 +285,7 @@
         "lox": "no"
       },
       "note": "The correct choice for phosphate ester hydraulic fluid (Skydrol), brake fluid, hot water and steam. Excellent weathering.",
-      "watch": "Completely unsuitable for mineral oils, fuels and greases — it swells and disintegrates. The single most common misapplication in the seal world."
+      "watch": "Completely unsuitable for mineral oils, fuels and greases: it swells and disintegrates. The single most common misapplication in the seal world."
     },
     {
       "code": "VMQ",
@@ -304,7 +304,7 @@
         "lox": "no"
       },
       "note": "Widest temperature range of the common elastomers, physiologically inert, excellent compression set when hot.",
-      "watch": "Poor tear, abrasion and tensile strength — STATIC DUTY ONLY. Permeable to gases. Silicone contamination destroys adhesive bonds nearby."
+      "watch": "Poor tear, abrasion and tensile strength. STATIC DUTY ONLY. Permeable to gases. Silicone contamination destroys adhesive bonds nearby."
     },
     {
       "code": "FVMQ",
@@ -322,7 +322,7 @@
         "ozone": "ok",
         "lox": "no"
       },
-      "note": "Silicone's cold capability with fuel resistance — a classic aerospace fuel-system seal for cold environments.",
+      "note": "Silicone's cold capability with fuel resistance: a classic aerospace fuel-system seal for cold environments.",
       "watch": "Weak mechanically like silicone; static duty. Expensive."
     },
     {
@@ -342,7 +342,7 @@
         "lox": "no"
       },
       "note": "Good all-rounder with genuine weather and ozone resistance. Common in refrigerants and marine service.",
-      "watch": "Middling at everything — usually beaten by NBR on oil or EPDM on water. Chosen mainly for refrigerant compatibility."
+      "watch": "Middling at everything: usually beaten by NBR on oil or EPDM on water. Chosen mainly for refrigerant compatibility."
     },
     {
       "code": "AU/EU",
@@ -360,7 +360,7 @@
         "ozone": "ok",
         "lox": "no"
       },
-      "note": "Outstanding extrusion and abrasion resistance — the high-pressure hydraulic choice where an elastomer would extrude.",
+      "note": "Outstanding extrusion and abrasion resistance: the high-pressure hydraulic choice where an elastomer would extrude.",
       "watch": "Hydrolyses in hot or humid conditions (polyester grades especially). Narrow temperature range."
     },
     {
@@ -398,7 +398,7 @@
         "ozone": "ok",
         "lox": "no"
       },
-      "note": "Exceptionally low gas permeability — the vacuum and gas-retention choice.",
+      "note": "Exceptionally low gas permeability: the vacuum and gas-retention choice.",
       "watch": "Not for hydrocarbons. Poor rebound (that's why it damps well)."
     },
     {
@@ -417,8 +417,8 @@
         "ozone": "ok",
         "lox": "lim"
       },
-      "note": "A silicone or FKM core inside a seamless fluoropolymer jacket — near-universal chemical resistance with elastomeric recovery.",
-      "watch": "Cannot be stretched much on assembly — needs a split or dismountable groove. Higher squeeze forces; check the gland can generate them. STATIC duty."
+      "note": "A silicone or FKM core inside a seamless fluoropolymer jacket: near-universal chemical resistance with elastomeric recovery.",
+      "watch": "Cannot be stretched much on assembly: needs a split or dismountable groove. Higher squeeze forces; check the gland can generate them. STATIC duty."
     }
   ],
   "media": [

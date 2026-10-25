@@ -1,6 +1,6 @@
 ---
 title: GD&T
-description: Geometric dimensioning and tolerancing for motor hardware — the geometric characteristics and what each controls, the feature control frame, datums and datum reference frames, size and form, MMC and bonus tolerance, virtual condition and the fastener formulas, and how to tolerance a case, a closure and a seal groove.
+description: Geometric dimensioning and tolerancing for motor hardware. The geometric characteristics and what each one controls, the feature control frame, datums and datum reference frames, size and form, MMC and bonus tolerance, virtual condition and the fastener formulas, and how to tolerance a case, a closure and a seal groove.
 sidebar:
   order: 0
 ---
@@ -12,88 +12,92 @@ import GdtFrame from '../../../components/GdtFrame.astro';
 import GdtCalc from '../../../components/GdtCalc.astro';
 
 <div class="glance">
-  <div><b>In one line</b>GD&T states what each feature must do relative to the features it mates with — and gives tolerance back wherever the function allows.</div>
+  <div><b>In one line</b>GD&T tells what each feature must do relative to the features that it mates with. Where the function permits, it gives more tolerance.</div>
   <div><b>Before this</b><a href="../../joints/bolted-joints/">Bolted joints</a> · <a href="../../seals/o-ring-design/">O-ring design</a></div>
   <div><b>Used by</b><a href="../datums-and-position/">Datums & position</a> · <a href="../tolerance-stack/">Tolerance stack</a></div>
 </div>
 
 ## Why this matters
 
-A dimension and a ± tolerance say how big a feature is and roughly where. They do not say how flat, round, square or
-coaxial it must be, or where it is measured from — and every inspector, machinist and supplier fills that gap
-differently. Geometric dimensioning and tolerancing (GD&T) closes it: each feature is controlled relative to **datums**
-chosen from how the part fits and works, with tolerance zones shaped like the function.
+A dimension with a ± tolerance tells the size of a feature and its approximate position. It does not tell how flat,
+round, square or coaxial the feature must be, or where to measure it from. Each inspector, machinist and supplier then
+makes a different assumption. Geometric dimensioning and tolerancing (GD&T) removes this problem. It controls each
+feature relative to **datums**, which you select from how the part fits and operates. The tolerance zones have the shape
+that the function needs.
 
-On a motor that is the difference between a seal that keeps its squeeze and one that does not, a closure whose 30 bolts
-all start, and a nozzle that sits on the axis. It also saves money: tolerance that the function does not need is given
-back, often automatically as the features move away from their tightest size.
+On a motor, GD&T can decide if a seal keeps its squeeze, if all 30 bolts of a closure start, and if a nozzle is on the
+axis. It also decreases cost. It gives back the tolerance that the function does not need, and it often does this
+automatically as features move away from their tightest size.
 
 <Analogy title="Darts">
-  A dart counts by how far it lands from the bull, not by how far left and how far up separately. A ± tolerance on x
-  and y is a square box: it rejects a dart in the corner of the circle that would have scored, and accepts nothing it
-  should not. A position tolerance is the circle — for the same worst case, 57% more area to land in.
+  The score of a dart depends on its distance from the bull, not on separate distances to the left and up. A ± tolerance
+  on x and y is a square box. It rejects a dart in the corner of the circle that would have scored, and it accepts no
+  dart that it must reject. A position tolerance is the circle. For the same worst case, it gives 57% more area.
 </Analogy>
 
 ## The geometric characteristics
 
 <GdtSymbols />
 
-Two rules of thumb pick between them. Use the **least control that guarantees the function**: flatness where a face only
-has to seal, perpendicularity where it must also square to an axis, profile where it must also be in the right place.
-And prefer controls that **a gauge or a measuring machine can check against the same datums the assembly uses**.
+Two rules help you select between them. First, use the **smallest control that makes sure of the function**: flatness
+where a face only seals, perpendicularity where it must also be square to an axis, and profile where it must also be in
+the correct position. Second, use controls that **a gauge or a measuring machine can check against the same datums
+that the assembly uses**.
 
 ## The feature control frame
 
 <GdtFrame />
 
-The frame reads as a sentence: *the position of these holes must be within a ⌀0.5 cylinder at MMC, relative to datums
-A, B at MMB, and C.* The modifiers that most often matter on motor hardware:
+You read the frame as a sentence: *the position of these holes must be in a ⌀0.5 cylinder at MMC, relative to datums
+A, B at MMB, and C.* These are the modifiers that are most frequently important on motor hardware:
 
-- **Ⓜ︎ maximum material condition** — tolerance grows as the feature departs from its tightest size. For clearance:
-  bolt holes, pilots that only have to assemble.
-- **Ⓛ least material condition** — the reverse, to protect a minimum wall or edge distance.
-- **No modifier — regardless of feature size**, the default. For features that locate precisely.
-- **Ⓟ projected tolerance zone** — the zone extends above a threaded hole, where the fastener actually is.
-- **Ⓕ free state** — for non-rigid parts measured without restraint.
+- **Ⓜ︎ Maximum material condition.** The tolerance increases as the feature moves away from its tightest size. Use it
+  for clearance: bolt holes, and pilots that only have to assemble.
+- **Ⓛ Least material condition.** The opposite. Use it to protect a minimum wall or edge distance.
+- **No modifier: regardless of feature size.** This is the default. Use it for features that locate accurately.
+- **Ⓟ Projected tolerance zone.** The zone extends above a threaded hole, where the fastener is.
+- **Ⓕ Free state.** Use it for non-rigid parts that you measure without restraint.
 
 ## Datums
 
-A **datum feature** is a real surface on the part; the **datum** is the perfect plane, axis or point it establishes,
-in the gauge or fixture that contacts it (the datum feature simulator). Three datums in order of precedence make a
-**datum reference frame**:
+A **datum feature** is a real surface on the part. The **datum** is the perfect plane, axis or point that it gives in
+the gauge or fixture that touches it (the datum feature simulator). Three datums in order of precedence make a **datum
+reference frame**:
 
-- **Primary** — the part rests on it at three points: it fixes three degrees of freedom. Usually the largest
+- **Primary.** The part sits on it at three points, which fixes three degrees of freedom. It is usually the largest
   mating face.
-- **Secondary** — two points, or the axis of a pilot: two more.
-- **Tertiary** — one point, or a clocking hole: the last.
+- **Secondary.** Two points, or the axis of a pilot, which fix two more degrees of freedom.
+- **Tertiary.** One point, or a clocking hole, which fixes the last degree of freedom.
 
-Choose datums from **assembly and function**, not from convenience in the machine shop: the face a closure seats on,
-the pilot that centres it, the dowel that clocks it. A datum feature that is itself loosely controlled makes everything
-referenced to it loose — so the datum features get their own form controls (flatness of A, perpendicularity of B to A).
-When a secondary datum such as a pilot is referenced at **maximum material boundary (MMB)**, the pattern may also shift
-by the pilot's clearance — tolerance that only applies if the mating part really has that clearance.
+Select datums from **assembly and function**, not from what is easy in the machine shop. Examples are the face that a
+closure sits on, the pilot that centres it, and the dowel that clocks it. If a datum feature has a loose control, all
+the features that refer to it are also loose. Thus the datum features get their own form controls (flatness of A, and
+perpendicularity of B to A). If a secondary datum such as a pilot is at **maximum material boundary (MMB)**, the pattern
+can also shift by the clearance of the pilot. This tolerance is only applicable if the mating part really has that
+clearance.
 
 ## Size and form
 
-- **ASME: Rule #1.** Unless stated otherwise, a feature of size must have perfect form at MMC: the size limits also
-  limit form (the envelope principle).
+- **ASME: Rule #1.** If the drawing does not say differently, a feature of size must have perfect form at MMC. The size
+  limits also limit the form (the envelope principle).
 - **ISO: independency.** Under ISO 8015, size and form are independent unless the envelope requirement Ⓔ is applied.
-  The same drawing can mean different things under the two systems — say which one governs.
-- **Non-rigid parts.** A thin case wall is not round in the free state; it becomes round when the closure pilot goes
-  in. Control it as it works: an average diameter (AVG) and circularity in the restrained condition, with any free-state
-  limits marked Ⓕ, and a note saying how it is restrained for inspection (ASME Y14.5; ISO 10579).
+  The same drawing can have different meanings in the two systems. Tell which system applies.
+- **Non-rigid parts.** A thin case wall is not round in the free state. It becomes round when the closure pilot goes
+  in. Control it in the condition where it operates: an average diameter (AVG) and circularity in the restrained
+  condition, with free-state limits marked Ⓕ, and a note that tells how to restrain it for inspection (ASME Y14.5;
+  ISO 10579).
 
 ## MMC, bonus tolerance and virtual condition
 
-With a feature of size controlled at MMC, the allowed tolerance is the stated value plus the **bonus** — how far the
-actual size has moved from MMC:
+When a feature of size has a control at MMC, the permitted tolerance is the stated value plus the **bonus**. The bonus
+is the distance of the actual size from MMC:
 
 $$
 t_{allowed} = t + |\,d_{actual} - d_{MMC}\,|
 $$
 
-Measured position from coordinate deviations is $2\sqrt{\Delta x^2 + \Delta y^2}$. The **virtual condition** is the
-worst-case boundary the mating part must clear:
+The measured position from coordinate deviations is $2\sqrt{\Delta x^2 + \Delta y^2}$. The **virtual condition** is
+the worst-case boundary that the mating part must clear:
 
 $$
 VC_{hole} = MMC - t
@@ -103,32 +107,33 @@ $$
 VC_{pin} = MMC + t
 $$
 
-so a functional gauge is simply a set of pins at the holes' virtual condition, on the datums. For fastener patterns
-with largest fastener diameter $F$ and clearance holes at MMC $H$:
+Thus a functional gauge is a set of pins at the virtual condition of the holes, on the datums. For fastener patterns,
+$F$ is the largest fastener diameter and $H$ is the clearance hole at MMC:
 
-- **Floating fasteners** (clearance holes in both parts): each part may have $T = H - F$.
-- **Fixed fasteners** (one part threaded): the two share it, $T_1 + T_2 = H - F$ — with a **projected tolerance
-  zone** on the threaded holes. Without one, a leaning thread throws the fastener further off over the height $P$ it
-  projects, and the hole must grow to $H = F + T_1 + T_2\,(1 + 2P/D)$, with $D$ the least thread engagement.
+- **Floating fasteners** (clearance holes in the two parts): each part can have $T = H - F$.
+- **Fixed fasteners** (one part has the thread): the two parts share the tolerance, $T_1 + T_2 = H - F$. Put a
+  **projected tolerance zone** on the threaded holes. Without it, a tilted thread moves the fastener further over the
+  height $P$ that it projects. The hole must then increase to $H = F + T_1 + T_2\,(1 + 2P/D)$, where $D$ is the minimum
+  thread engagement.
 
 ## Tolerancing motor hardware
 
 | Feature | Control | Why |
 | --- | --- | --- |
-| Case bore at a seal | AVG diameter; circularity restrained | Squeeze depends on the bore as the closure holds it |
+| Case bore at a seal | AVG diameter; circularity restrained | The squeeze depends on the bore as the closure holds it |
 | Case flange face | Flatness; perpendicularity to the case axis | Seal seating; closure squareness |
-| Case flange threaded holes | Position at MMC, projected zone, to face, axis and clocking | Bolts must start and seat without bending |
+| Case flange threaded holes | Position at MMC, projected zone, to face, axis and clocking | Bolts must start and sit without bending |
 | Closure seating face (datum A) | Flatness | Primary datum and face-seal land |
 | Closure pilot (datum B) | Size; perpendicularity to A | Centres the closure and its seal groove |
 | Closure bolt holes | Position at MMC to A, B at MMB, C | Assembly; gauged with pins |
-| Seal groove root | Circular runout or position to B | Eccentricity eats squeeze |
+| Seal groove root | Circular runout or position to B | Eccentricity decreases the squeeze |
 | Groove walls | Parallelism or profile | Gland volume and ring stability |
-| Domes, nozzle contour | Profile of a surface to the case datums | Shape, thickness and location at once |
+| Domes, nozzle contour | Profile of a surface to the case datums | Shape, thickness and position together |
 | Ports and bosses | Position, and perpendicularity of their seal faces | Fitting alignment and sealing |
 
-Anything not controlled on the drawing falls to the **general tolerances** in the title block (ISO 22081, or the older
-ISO 2768-2). Those are coarse by design: class K of ISO 2768-2 allows 0.2 mm of runout on any round feature. Check every
-feature the function depends on has its own control.
+All features that the drawing does not control get the **general tolerances** in the title block (ISO 22081, or the
+older ISO 2768-2). These tolerances are coarse. Class K of ISO 2768-2 permits 0.2 mm of runout on any round feature.
+Make sure that each feature that the function needs has its own control.
 
 ## ASME and ISO
 
@@ -145,48 +150,53 @@ feature the function depends on has its own control.
 
 <GdtCalc />
 
-## Worked example — the aft closure, its bolts and the nozzle seal groove
+## Worked example: the aft closure, its bolts and the nozzle seal groove
 
-The calculator's starting values in each tab are this example's.
+The starting values in each tab of the calculator are the values of this example.
 
-1. **Datums for the closure.** The 30-bolt aft closure ([Bolted joints](../../joints/bolted-joints/#worked-example--the-aft-closure))
-   seats on the case flange and is centred by a pilot in the case bore. So: **A**, the seating face, with its own
-   flatness; **B**, the pilot diameter, perpendicular to A; **C**, a dowel hole for clocking.
-2. **The bolt holes.** M10 bolts in ⌀11.0–11.2 holes on a basic 285 mm bolt circle: position ⌀0.5 at MMC to A, B at
-   MMB, C. A hole made at ⌀11.15 earns a 0.15 bonus — ⌀0.65 allowed. Its axis measures 0.18 and 0.21 mm off true
-   position: ⌀0.553. It conforms, **only because of the bonus**; the same error in a ⌀11.0 hole would be rejected,
-   correctly, since a bolt might not pass. The functional gauge is 30 pins at the virtual condition, ⌀10.5.
-3. **The threaded holes.** The bolts screw into the case flange through the 24 mm closure: fixed fasteners. The
-   clearance is $11.0 - 10.0 = 1.0$, so ⌀0.5 for the closure holes leaves ⌀0.5 for the threaded holes — **with a
-   projected tolerance zone 24 mm high**. Without it, over 15 mm of thread engagement, the threaded holes could have
-   only ⌀0.12, or the closure holes would have to open to ⌀12.6, which the bolt heads and the seal land cannot spare.
-4. **The nozzle seal groove.** The [O-ring page's](../../seals/o-ring-design/#worked-example--a-nozzle-to-case-radial-seal)
-   radial seal: 150 mm bore, pilot ⌀149.860–149.900, groove root ⌀141.45–141.55. That page assumed the groove
-   coaxial with its pilot, and found 10.8% minimum squeeze at end of life — just above its 10% floor. The drawing has
-   to make that true. With **circular runout 0.05 of the groove root to B**, the gland grows from 4.408 to 4.433 mm at
-   worst, and the same analysis gives **10.4%**. With no runout specified, the general tolerance allows 0.2: gland
-   4.508 mm and **9.2%** — below the floor, on a part that passes every dimension on the drawing.
+1. **Datums for the closure.** The 30-bolt aft closure ([Bolted joints](../../joints/bolted-joints/#worked-example-the-aft-closure))
+   sits on the case flange, and a pilot in the case bore centres it. Thus: **A** is the seating face, with its own
+   flatness. **B** is the pilot diameter, perpendicular to A. **C** is a dowel hole for clocking.
+2. **The bolt holes.** M10 bolts go in ⌀11.0–11.2 holes on a basic 285 mm bolt circle, with position ⌀0.5 at MMC to
+   A, B at MMB, C. A hole made at ⌀11.15 gets a 0.15 bonus, so ⌀0.65 is permitted. Its axis is 0.18 mm and 0.21 mm from
+   true position, which is ⌀0.553. The hole conforms **only because of the bonus**. The same error in a ⌀11.0 hole
+   would be rejected, and this is correct, because a bolt possibly could not go through. The functional gauge has 30
+   pins at the virtual condition, ⌀10.5.
+3. **The threaded holes.** The bolts go through the 24 mm closure into threads in the case flange, so they are fixed
+   fasteners. The clearance is $11.0 - 10.0 = 1.0$. If the closure holes get ⌀0.5, the threaded holes also get ⌀0.5,
+   **with a projected tolerance zone 24 mm high**. Without this zone and with 15 mm of thread engagement, the threaded
+   holes can have only ⌀0.12. Alternatively, the closure holes must increase to ⌀12.6, and the bolt heads and the seal
+   land do not have space for this.
+4. **The nozzle seal groove.** This is the radial seal of the [O-ring page](../../seals/o-ring-design/#worked-example-a-nozzle-to-case-radial-seal):
+   a 150 mm bore, a pilot of ⌀149.860–149.900 and a groove root of ⌀141.45–141.55. That page assumed that the groove is
+   coaxial with its pilot. It found a minimum squeeze of 10.8% at the end of life, which is just above its 10% minimum.
+   The drawing must make this assumption true. With a **circular runout of 0.05 for the groove root to B**, the worst
+   gland increases from 4.408 to 4.433 mm, and the same analysis gives **10.4%**. If the drawing gives no runout, the
+   general tolerance permits 0.2. The gland is then 4.508 mm and the squeeze is **9.2%**. This is below the minimum, on
+   a part that passes all the dimensions on the drawing.
 5. **The case.** A 1.377 mm wall on a 300 mm bore is not round until the pilot goes in. Specify the bore at the seal as
-   an average diameter with circularity in the restrained condition — restrained by a plug gauge standing in for the
-   closure pilot — and the flange face perpendicular to the case axis, which carries the closure's datum B.
+   an average diameter, with circularity in the restrained condition. A plug gauge restrains the bore in place of the
+   closure pilot. Also specify the flange face as perpendicular to the case axis, because it carries datum B of the
+   closure.
 
 ## Where this stops
 
-- **An introduction to the language.** Datum schemes, composite and pattern position, profile with datum shift and
-  inspection planning go further on [Datums & position](../datums-and-position/).
-- **One feature at a time.** How tolerances add up across an assembly is a
-  [tolerance stack](../tolerance-stack/).
-- **ASME Y14.5 conventions** in the calculator; ISO differs in places — check which standard your drawing invokes.
-- **Squeeze from geometry alone** in the gland tab; the full seal check is on [O-ring design](../../seals/o-ring-design/).
+- **An introduction to the language.** Datum schemes, composite and pattern position, profile with datum shift, and
+  inspection planning are on [Datums & position](../datums-and-position/).
+- **One feature at a time.** How tolerances add across an assembly is a [tolerance stack](../tolerance-stack/).
+- **ASME Y14.5 conventions** in the calculator. ISO is different in some places. Check which standard your drawing
+  uses.
+- **Squeeze from geometry only** in the gland tab. The full seal check is on [O-ring design](../../seals/o-ring-design/).
 
 ## On the drawing
 
-- **The governing standard** — ASME Y14.5-2018 or ISO GPS — named in the title block.
-- **Datum features** chosen from assembly, each with its own form control.
-- **Basic dimensions** for every true position and profile.
-- **A geometric control on every feature the function depends on** — none left to the general tolerances by accident.
+- **The applicable standard** (ASME Y14.5-2018 or ISO GPS) in the title block.
+- **Datum features** selected from the assembly, each with its own form control.
+- **Basic dimensions** for each true position and profile.
+- **A geometric control on each feature that the function needs.** Do not leave one to the general tolerances by
+  accident.
 - **Projected zones** on threaded holes and press-fit pins.
-- **Restraint notes** for non-rigid features, saying how the part is held for inspection.
+- **Restraint notes** for non-rigid features, which tell how to hold the part for inspection.
 
 ## References and further reading
 
@@ -200,6 +210,6 @@ The calculator's starting values in each tab are this example's.
   Butterworth-Heinemann (2020).
 
 <Aside type="note">
-  Guidance on method from general practice. Your drawing standard, your organisation's drafting practice and your
-  inspection capability govern how features are toleranced.
+  This is guidance on method from general practice. Your drawing standard, the drafting practice of your organisation
+  and your inspection capability decide how to tolerance features.
 </Aside>
