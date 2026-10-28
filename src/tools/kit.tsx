@@ -911,12 +911,16 @@ export type PlotScale = { X: (v: number) => number; Y: (v: number) => number; W:
  * drawn by `children`, a function of the scales. Shared by the tools' line charts.
  */
 export function Plot({
-  x0, x1, y0, y1, xl, yl, legend, label, caption, width = 420, height = 250, margin = { L: 64, R: 20, T: 30, B: 40 }, children,
+  x0, x1, y0, y1, xl, yl, legend, label, caption, width = 420, height = 250, margin = { L: 64, R: 20, T: 30, B: 40 }, zeroX, noY, children,
 }: {
   x0: number; x1: number; y0: number; y1: number; xl: string; yl: string;
   legend?: [name: string, color: string, dash?: string][];
   label: string; caption?: React.ReactNode; width?: number; height?: number;
   margin?: { L: number; R: number; T: number; B: number };
+  /** Also draw the x = 0 line when it is in range. */
+  zeroX?: boolean;
+  /** No y tick labels (a bar layout that only uses the x axis). */
+  noY?: boolean;
   children: (s: PlotScale) => React.ReactNode;
 }) {
   const W = width, H = height, { L, R, T, B } = margin;
@@ -927,7 +931,7 @@ export function Plot({
   const sy = nice(y1 - y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : s >= 0.01 ? 2 : 3);
   const z = (v: number) => (Math.abs(v) < 1e-12 ? 0 : v), xFirst = Math.ceil(x0 / sx - 1e-9) * sx;
   const xs: number[] = []; for (let v = xFirst; v <= x1 + 1e-9; v += sx) xs.push(v);
-  const ys: number[] = []; for (let v = Math.ceil(y0 / sy - 1e-9) * sy; v <= y1 + 1e-9; v += sy) if (!(Math.abs(v - y0) < 1e-9 && Math.abs(xFirst - x0) < 1e-9)) ys.push(v);
+  const ys: number[] = []; for (let v = Math.ceil(y0 / sy - 1e-9) * sy; v <= y1 + 1e-9; v += sy) if (!noY && !(Math.abs(v - y0) < 1e-9 && Math.abs(xFirst - x0) < 1e-9)) ys.push(v);
   let lx = 8;
   return (
     <Figure label={label} caption={caption}>
@@ -940,6 +944,7 @@ export function Plot({
         ))}
         {ys.map((v) => <text key={`y${v}`} x={L - 6} y={Y(v) + 4} textAnchor="end" fontSize={12} fill="var(--rd-muted)">{fmt(z(v), dp(sy))}</text>)}
         {y0 < 0 && y1 > 0 ? <line x1={L} x2={W - R} y1={Y(0)} y2={Y(0)} stroke="var(--rd-ink)" strokeOpacity={0.6} /> : null}
+        {zeroX && x0 < 0 && x1 > 0 ? <line x1={X(0)} x2={X(0)} y1={T} y2={H - B} stroke="var(--rd-ink)" strokeOpacity={0.5} /> : null}
         <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" fontSize={12} fill="var(--rd-ink)">{xl}</text>
         <text x={12} y={(T + H - B) / 2} textAnchor="middle" fontSize={12} fill="var(--rd-ink)" transform={`rotate(-90 12 ${(T + H - B) / 2})`}>{yl}</text>
         {children({ X, Y, W, H, L, R, T, B })}
