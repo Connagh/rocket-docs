@@ -1,0 +1,38 @@
+---
+// Taylor's principle: the GO gauge checks the full form (the envelope), the NOGO gauge checks one local size.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', steel = 'var(--rd-steel)', bad = 'var(--rd-accent)', blue = 'var(--rd-blue)';
+---
+
+<figure class="viz taylor">
+  <p class="viz-title">Taylor's principle</p>
+  <svg viewBox="0 0 360 250" role="img" aria-labelledby="taylor-desc" style="max-width: 520px; margin: 0 auto;">
+    <desc id="taylor-desc">
+      Left: a bowed shaft and a full-length GO ring gauge. Each local diameter of the shaft is in tolerance, but the bow
+      makes the shaft larger than its envelope, and the shaft hits the ring wall. The GO ring rejects it. Right: an oval
+      hole. A round NOGO pin does not enter, because the small diameter of the oval is under the NOGO size, so a round pin
+      passes the hole. A two-point NOGO gauge across the large diameter enters and rejects the hole.
+    </desc>
+    <text x="88" y="20" text-anchor="middle" font-size="13" fill={ink}>GO: full form</text>
+    <rect x="34" y="52" width="108" height="12" fill={steel} fill-opacity="0.6"></rect>
+    <rect x="34" y="124" width="108" height="12" fill={steel} fill-opacity="0.6"></rect>
+    <path d="M14,74 Q88,46 162,74 L162,118 Q88,90 14,118 Z" fill={blue} fill-opacity="0.35" stroke={blue} stroke-width="1.5"></path>
+    <path d="M62,64 Q88,56 114,64 Z" fill={bad} stroke={bad} stroke-width="2"></path>
+    <text x="88" y="158" text-anchor="middle" font-size="13" fill={bad}>bow hits the ring</text>
+
+    <text x="268" y="20" text-anchor="middle" font-size="13" fill={ink}>NOGO: one size</text>
+    <ellipse cx="268" cy="94" rx="62" ry="40" fill="none" stroke={ink} stroke-width="2"></ellipse>
+    <circle cx="268" cy="94" r="46" fill="none" stroke={bad} stroke-width="1.5" stroke-dasharray="5 3"></circle>
+    <rect x="222" y="89" width="92" height="10" rx="2" fill={blue} fill-opacity="0.75"></rect>
+    <text x="268" y="158" text-anchor="middle" font-size="13" fill={blue}>two-point gauge enters</text>
+
+    <text x="6" y="190" font-size="13" fill={muted}>Left: every local size is in tolerance, but</text>
+    <text x="6" y="208" font-size="13" fill={muted}>the bent shaft does not fit its mating part.</text>
+    <text x="6" y="230" font-size="13" fill={muted}>Right: a round NOGO pin (dashed) does not</text>
+    <text x="6" y="248" font-size="13" fill={muted}>enter, so it passes the oval, oversize hole.</text>
+  </svg>
+  <figcaption>
+    The GO gauge represents the mating part, so it checks the full form over the full length. The NOGO gauge checks one
+    local size at a time, in each direction. ISO 8015 and ASME Y14.5 differ on whether the envelope applies by default,
+    so the drawing tells which one applies (see <a href="../gdt/">GD&amp;T</a>).
+  </figcaption>
+</figure>

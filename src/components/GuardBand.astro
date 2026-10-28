@@ -1,0 +1,51 @@
+---
+// ISO 14253-1 decision zones: the tolerance, the uncertainty U at each limit, and three measured values with ±U.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', ok = 'var(--rd-ok)', warn = 'var(--rd-warn)', bad = 'var(--rd-accent)';
+const L = 96, Uw = 30, R = 264; // LSL, the width of U, USL (x)
+const zones = [
+  { a: 14, b: L - Uw, c: bad }, { a: L - Uw, b: L + Uw, c: warn }, { a: L + Uw, b: R - Uw, c: ok },
+  { a: R - Uw, b: R + Uw, c: warn }, { a: R + Uw, b: 346, c: bad },
+];
+const pts = [
+  { x: 180, y: 128, t: 'A: accept', c: ok },
+  { x: 250, y: 158, t: 'B: not proven', c: warn },
+  { x: 318, y: 188, t: 'C: reject', c: bad },
+];
+---
+
+<figure class="viz gband">
+  <p class="viz-title">Decision zones with measurement uncertainty</p>
+  <svg viewBox="0 0 360 250" role="img" aria-labelledby="gband-desc" style="max-width: 520px; margin: 0 auto;">
+    <desc id="gband-desc">
+      A horizontal size scale with the lower and upper specification limits. A band of width U on each side of each limit
+      is the uncertainty range. Between the two bands is the conformance zone. Outside them is the non-conformance zone.
+      Three measured values with error bars of plus and minus U: value A is in the conformance zone and is accepted, value
+      B is in the uncertainty range of the upper limit and is not proven either way, value C is outside and is rejected.
+    </desc>
+    {zones.map((z) => <rect x={z.a} y="58" width={z.b - z.a} height="30" fill={z.c} fill-opacity="0.28" stroke={z.c}></rect>)}
+    <line x1={L} x2={L} y1="40" y2="92" stroke={ink} stroke-width="2"></line>
+    <line x1={L} x2={L} y1="92" y2="210" stroke={muted} stroke-width="1" stroke-dasharray="3 4"></line>
+    <line x1={R} x2={R} y1="40" y2="92" stroke={ink} stroke-width="2"></line>
+    <line x1={R} x2={R} y1="92" y2="210" stroke={muted} stroke-width="1" stroke-dasharray="3 4"></line>
+    <text x={L} y="32" text-anchor="middle" font-size="13" fill={ink}>LSL</text>
+    <text x={R} y="32" text-anchor="middle" font-size="13" fill={ink}>USL</text>
+    <text x="180" y="78" text-anchor="middle" font-size="13" fill={ink}>conformance</text>
+    <text x={R} y="106" text-anchor="middle" font-size="13" fill={muted}>±U</text>
+    <text x={L} y="106" text-anchor="middle" font-size="13" fill={muted}>±U</text>
+    {pts.map((p) => (
+      <g>
+        <line x1={p.x - Uw} x2={p.x + Uw} y1={p.y} y2={p.y} stroke={p.c} stroke-width="2"></line>
+        <line x1={p.x - Uw} x2={p.x - Uw} y1={p.y - 6} y2={p.y + 6} stroke={p.c} stroke-width="2"></line>
+        <line x1={p.x + Uw} x2={p.x + Uw} y1={p.y - 6} y2={p.y + 6} stroke={p.c} stroke-width="2"></line>
+        <circle cx={p.x} cy={p.y} r="4.5" fill={p.c}></circle>
+        <text x={p.x - Uw - 6} y={p.y + 5} text-anchor="end" font-size="13" fill={ink} stroke="var(--rd-panel)" stroke-width="4" paint-order="stroke" stroke-linejoin="round">{p.t}</text>
+      </g>
+    ))}
+    <text x="14" y="236" font-size="13" fill={muted}>measured value ± U (expanded uncertainty)</text>
+  </svg>
+  <figcaption>
+    ISO 14253-1: a supplier proves conformance only with a value in the green zone, and a customer proves non-conformance
+    only with a value in a red zone. In the amber bands, neither is proven. The drawing, the contract or the inspection
+    plan must say who carries that risk.
+  </figcaption>
+</figure>

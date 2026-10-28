@@ -1,0 +1,262 @@
+---
+title: Gauging
+description: How to measure motor hardware and decide if it conforms. Measurement uncertainty and the uncertainty budget, decision rules and guard bands (ISO 14253-1), the risk of false accept and false reject, gauge repeatability and reproducibility, plain limit gauges and functional gauges, and the measurements that motor hardware needs, with a calculator and a worked example on the nozzle seal bore.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import GuardBand from '../../../components/GuardBand.astro';
+import TaylorGauges from '../../../components/TaylorGauges.astro';
+import GaugeCalc from '../../../components/GaugeCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Each measurement has an uncertainty. Know how large it is, compare it with the tolerance, and agree before you measure who carries the risk at the limits.</div>
+  <div><b>Before this</b><a href="../fits-and-limits/">Fits & limits</a> · <a href="../datums-and-position/">Datums & position</a> · <a href="../surface-finish/">Surface finish</a></div>
+  <div><b>Used by</b><a href="../../legacy/?z=ndt">NDT</a> · <a href="../../legacy/?z=certs">Certs & trace</a> · <a href="../../verify/proof-testing/">Proof testing</a></div>
+</div>
+
+## Why this matters
+
+A drawing gives limits. An inspector gives a number and a decision. Between the two, there is the measurement, and no
+measurement is exact. When a part is near a limit, the measurement error decides if the part passes:
+
+- **A bad part can pass.** A seal bore that is 5 µm too large, measured with an error of −6 µm, is accepted. The seal
+  then has less squeeze than the design assumed.
+- **A good part can fail.** The same error in the other direction scraps a good part, or starts a nonconformance report
+  that costs more than the part.
+- **Two inspectors can disagree.** The supplier and the customer measure the same part with different gauges, at
+  different temperatures. Both are correct within their uncertainty, and the part is in dispute.
+
+Thus a measurement is complete only with its uncertainty, and a decision is complete only with its rule.
+
+<Analogy title="A bathroom scale at the limit">
+  A suitcase must be under 23 kg. Your scale reads 22.8 kg, but it is only good to ±0.5 kg. The suitcase can be 23.3 kg.
+  At the airport, the scale is better, and you pay. If the scale reads 21 kg, the uncertainty does not matter. The
+  uncertainty only matters near the limit, and that is where the arguments are.
+</Analogy>
+
+## Uncertainty: the budget
+
+The uncertainty of a measurement comes from several sources. Write each one in a list, the **uncertainty budget**,
+and convert each one to a standard uncertainty $u_i$ (one standard deviation):
+
+| How the value is given | Standard uncertainty |
+| --- | --- |
+| A standard deviation from repeated measurements | The value |
+| An expanded uncertainty from a calibration certificate, $k = 2$ | Value ÷ 2 |
+| A limit $\pm a$ with no other information (a temperature range, a specification of the instrument) | $a/\sqrt{3}$ |
+| The resolution $d$ of a digital display | $d/\sqrt{12}$ |
+
+For uncorrelated sources, the combined standard uncertainty and the expanded uncertainty are (GUM, JCGM 100):
+
+$$
+u_c = \sqrt{\textstyle\sum u_i^2}
+\qquad
+U = k\,u_c,\quad k = 2 \ (\text{approximately 95\%})
+$$
+
+The squares make the largest source dominate. If one source is two thirds of the variance, improve that source. An
+improvement to the others has almost no effect.
+
+**Temperature** is often the largest source on large parts. ISO 1 gives all dimensions at 20 °C. A part and its
+reference (a gauge, a setting ring, a scale) at different temperatures give a length error:
+
+$$
+\Delta L = L\,\big[\alpha_\text{part}(T_\text{part} - 20) - \alpha_\text{ref}(T_\text{ref} - 20)\big]
+$$
+
+On a 150 mm steel bore, a difference of 2 K between the part and a steel setting ring gives 3.7 µm. This is 6% of an
+H8 tolerance. A part that comes from the machine warm, or from a cold store, must soak to the temperature of the room
+before it is measured.
+
+**Other usual sources:** the calibration of the reference, the repeatability of the instrument, the resolution, the
+alignment and centring of the gauge in the feature, the form error of the part (a two-point gauge in an oval bore gives
+a different result in each direction), and the operator.
+
+## Decision rules and guard bands
+
+The **test uncertainty ratio** compares the tolerance with the uncertainty:
+
+$$
+\text{TUR} = \frac{USL - LSL}{2U}
+$$
+
+A usual minimum is 4:1, and 10:1 is better. Many quality systems give their own value. Below 4:1, a large part of the
+tolerance is uncertain.
+
+The **decision rule** tells how a measured value becomes a decision. ISO 14253-1 gives the default for proving
+conformance:
+
+<GuardBand />
+
+- **Guarded acceptance.** The acceptance limits move inside the tolerance by $U$. A part is accepted only if the
+  measured value is in the conformance zone. The supplier carries the risk, and the customer gets a low false-accept
+  rate. The cost is a smaller tolerance for manufacture.
+- **Simple acceptance.** The acceptance limits are the tolerance limits. The two parties share the risk at the limits.
+  It is acceptable when the TUR is high and the decision rule is agreed.
+- **Guarded rejection.** The customer moves the limits outside the tolerance by $U$ to prove that a part does not
+  conform.
+
+Agree the rule in the contract or the inspection plan (ISO/TR 14253-6, ASME B89.7.3.1), before the first part is measured.
+
+**False accept and false reject.** For a process with a normal distribution and a gauge with a normal error, the
+probabilities follow from the process capability and the uncertainty. A capable process (small spread, centred) has
+few parts near the limits, so the decision rule has a small effect. A process that is not capable puts many parts
+near the limits, and the rule decides how many bad parts go to the customer and how many good parts go to scrap.
+
+## Gauge repeatability and reproducibility
+
+The uncertainty budget is an analysis. A **gauge R&R study** is a test of the complete measurement system on real
+parts: two or three operators measure the same parts two or three times each, without seeing their previous results.
+The average and range method of the AIAG *Measurement Systems Analysis* manual separates:
+
+- **Repeatability (EV):** the scatter when one operator measures one part again. It comes from the gauge, the fixture
+  and the part (form, roughness).
+- **Reproducibility (AV):** the difference between operators. It comes from the method, the training and the
+  technique.
+- **Part variation (PV):** the real difference between the parts.
+
+$$
+GRR = \sqrt{EV^2 + AV^2}
+\qquad
+TV = \sqrt{GRR^2 + PV^2}
+$$
+
+The result is a percentage. **%GRR of the tolerance** ($6\,GRR$ ÷ tolerance) tells if the gauge can accept and reject
+parts. **%GRR of the total variation** tells if the gauge can see the process for SPC. The usual AIAG guidance is: under
+10% is acceptable, 10% to 30% can be acceptable for the application, and over 30% is not acceptable. The **number of
+distinct categories**, $1.41\,PV/GRR$, must be at least 5 for process control.
+
+Select parts that cover the range of the process. If the parts in the study are all almost the same, PV is small, and
+the gauge looks worse than it is.
+
+## Limit gauges
+
+A **plain limit gauge** gives a decision, not a number. A GO gauge must enter (or pass over) the feature. A NOGO gauge
+must not. Limit gauges are fast, robust and need little training. They do not give the data for SPC, and they cannot
+tell how near to a limit the part is.
+
+<TaylorGauges />
+
+**Taylor's principle.** The GO gauge represents the mating part. It has the full form and the full length of the
+feature, so it checks the envelope: size and form together. The NOGO gauge checks one local size at a time, so it
+must be a two-point gauge (a flat pin or a snap gauge), and it is used in more than one direction.
+
+**The gauge tolerances use part of the work tolerance.** The gauge-maker needs a tolerance, and a GO gauge wears, so it
+needs a wear allowance. If both are inside the work tolerance, a gauge in tolerance never accepts a bad part. But a
+good part near a limit can be rejected. With a gauge tolerance of 10% and a wear allowance of 5% of the work tolerance,
+only 75% of the tolerance is accepted by all gauges. ISO 1938-1 and ASME B89.1.5 give the gauge tolerances by size and
+by class (in US practice, the gauge-maker classes XX, X, Y, Z and ZZ).
+
+**Functional gauges** check the position of a pattern of features at MMC. Each pin of the gauge is at the virtual
+condition of its hole: the MMC size minus the position tolerance. A part that goes onto the gauge will assemble with
+its mating part. With absolute tolerancing (ASME Y14.43), the gauge tolerance goes on the product side, so the gauge
+never accepts a bad part. A functional gauge does not check the size of the holes. Use GO and NOGO plugs for that. See
+[Datums & position](../datums-and-position/).
+
+## Measuring motor hardware
+
+| Feature | Usual method | What to watch |
+| --- | --- | --- |
+| Seal bores and spigots | Two-point or three-point bore gauge set on a ring, or CMM | Temperature; form error (oval, taper) on thin walls; measure at several heights and angles |
+| O-ring groove depth and width | Groove gauge, CMM, or a cast replica | The squeeze depends on the depth: see [O-ring design](../../seals/o-ring-design/) |
+| Case wall thickness | Ultrasonic thickness gauge; mechanical gauge at open ends | Velocity calibration on the same material; coatings; minimum thickness of the probe |
+| Threads | GO and NOGO thread plug and ring gauges (ISO 1502, ASME B1.2) | A thread gauge checks function, not the pitch diameter directly |
+| Bolt-hole patterns | Functional gauge or CMM | The datum reference frame of the drawing |
+| Surface finish | Stylus instrument | The cutoff and the rule: see [Surface finish](../surface-finish/) |
+| Large diameters | Pi tape, CMM, laser tracker | Temperature over a large part; the part can be out of round when it is not supported |
+
+**A thin case is flexible.** A 300 mm case with a 1.4 mm wall can be several tenths of a millimetre oval when it lies
+on a bench, and round when it is pressurised. Measure on a defined support, or measure the circumference (pi tape) and
+the form separately. The drawing must say in which condition the part is measured (ISO 10579, the "free state" notes of
+ASME Y14.5).
+
+**Ultrasonic thickness** is the time of flight multiplied by the sound velocity, divided by two. An error of 1% in the
+velocity is an error of 1% in the thickness. Calibrate the gauge on a step block of the same material and heat
+treatment, at the same temperature. Thin walls need a high-frequency probe with a delay line.
+
+**CMM.** A coordinate measuring machine can measure size, form and position in one setup, but its result depends on
+the number of points, the filter and the fitting algorithm (least squares, minimum zone, maximum inscribed). Give the
+evaluation method in the inspection plan, because two machines with different settings give different results on the
+same part.
+
+## Calculator
+
+<GaugeCalc />
+
+## Worked example: the nozzle seal bore
+
+The bore of the radial seal on the [O-ring page](../../seals/o-ring-design/#worked-example-a-nozzle-to-case-radial-seal)
+is ⌀150 H8: 150.000 to 150.063 mm, a tolerance of 63 µm ([Fits & limits](../fits-and-limits/#worked-example-four-fits-on-the-motor)).
+The starting values in each tab of the calculator are the values of this example. The criteria (TUR at least 4, %GRR
+at most 20% of the tolerance) are **for this example only**. Push **Load worked example** to apply them.
+
+1. **The budget.** The bore is measured with a two-point bore gauge, set on a ring with a certificate of ±1.5 µm
+   ($k = 2$). The repeatability is 1.2 µm, the display resolution is 1 µm, and alignment is ±1 µm. The part can be up
+   to 2 K warmer than the ring: $150\,000 \times 12.3\times10^{-6} \times 2 = 3.7$ µm. Thus $u_c = 2.64$ µm,
+   **U = 5.3 µm** and **TUR = 6.0**. The TUR is above 4, but the temperature is 65% of the variance.
+2. **The decision.** With guarded acceptance, the bore is accepted from 150.0053 to 150.0577 mm. The process is
+   centred at 31.5 µm with a standard deviation of 9 µm ($C_p = 1.17$). With simple acceptance, **119 ppm** of the bores
+   are bad but accepted. With the guard bands, this decreases to **3 ppm**, and 0.47% of the good bores are rejected.
+   For a gas seal, the guarded rule is the correct choice.
+3. **Improve the largest source.** Soak the part next to the ring until the two are within 0.5 K. The temperature
+   contribution decreases to 0.9 µm, U decreases to **3.3 µm**, the TUR increases to 9.6, and the false rejects
+   decrease to 0.16%. This costs time on the bench, not a new gauge.
+4. **The gauge R&R study.** Three operators measure ten bores three times each (the readings are in the calculator).
+   %GRR is **16.3% of the tolerance** and 12.9% of the total variation, with 10 distinct categories. This passes the 20%
+   limit of the example. It is in the "can be acceptable" band of AIAG, so the inspection plan keeps it under review.
+   Repeatability (1.26 µm) and reproducibility (1.16 µm) are almost equal: the method and the gauge need the same
+   attention.
+5. **Limit gauges for the shop floor.** With a gauge tolerance of 10% and a wear allowance of 5%, the GO plug is
+   150.0032 to 150.0095 mm when new and is scrapped at 150.000 mm. The NOGO plug is 150.0567 to 150.0630 mm. All
+   gauges in tolerance accept 150.0095 to 150.0567 mm: **75% of the tolerance**. The bore gauge with guard bands keeps
+   83%, and it gives the numbers for SPC. Thus the plugs are a quick check at the machine, and the bore gauge gives the
+   acceptance.
+6. **The case wall.** The minimum wall of the [case](../../motor/case-sizing/#worked-example) is 1.377 mm. An
+   ultrasonic gauge with a velocity error of 1% gives an error of 0.014 mm. Against a minimum wall, this is a large
+   uncertainty. Calibrate the gauge on a step block of D6AC in the same heat-treated condition, and include the
+   calibration in the budget.
+
+## Where this stops
+
+- **Normal distributions.** The risk calculation assumes a normal process and a normal gauge error. Real processes can
+  be skewed, drift, or have two populations (two machines, two tools).
+- **Uncorrelated sources.** Correlated sources (for example, the temperature of the part and of the ring when they
+  change together) need the covariance terms of the GUM.
+- **Average and range method.** The ANOVA method of the AIAG manual also gives the operator-part interaction, and it is
+  better for small studies.
+- **Simplified gauge tolerances.** The percentages for limit gauges are a simplification. Use ISO 1938-1, ASME B89.1.5
+  or your gauge standard for the real values.
+- **Screening guidance.** TUR and %GRR limits come from your quality system and your customer.
+
+## On the drawing and in the inspection plan
+
+- **The decision rule** (guarded or simple acceptance), and the standard that defines it.
+- **The measurement temperature,** or the soak time before measurement, for features with fine tolerances.
+- **The condition of the part:** free state or restrained, and how it is supported.
+- **The method for critical features:** the instrument, the number and position of the measurements, and for a CMM
+  the fitting algorithm.
+- **The gauge** for features that a limit gauge or a functional gauge accepts, with its identity and calibration.
+- **The data to keep:** the values, not only "accept", for features that SPC or a later investigation needs. See
+  [Proof testing](../../verify/proof-testing/) for the records of a test.
+
+## References and further reading
+
+- ISO 14253-1, *Decision rules for verifying conformity or nonconformity with specifications*; ISO/TR 14253-6
+  (generalized decision rules).
+- JCGM 100 (GUM), *Evaluation of measurement data: Guide to the expression of uncertainty in measurement*.
+- ASME B89.7.3.1, *Guidelines for Decision Rules: Considering Measurement Uncertainty in Determining Conformance to
+  Specifications*.
+- AIAG, *Measurement Systems Analysis (MSA)*, 4th ed. (2010).
+- ISO 1, *Standard reference temperature for the specification of geometrical and dimensional properties*.
+- ISO 1938-1, *Dimensional measuring equipment: Plain limit gauges of linear size*; ASME B89.1.5, *Measurement of
+  Plain External Diameters for Use as Master Discs or Cylindrical Plug Gages*.
+- ASME Y14.43, *Dimensioning and Tolerancing Principles for Gages and Fixtures*.
+- ISO 1502 and ASME B1.2 (thread gauges); ISO 10579 (non-rigid parts).
+
+<Aside type="note">
+  This is guidance on method from general practice, with typical values. The decision rules, TUR and %GRR limits and
+  gauge tolerances for your hardware come from your quality system, your customer and the applicable standards.
+</Aside>
