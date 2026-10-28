@@ -1,13 +1,16 @@
 ---
 // Leak before break: grow a surface flaw through the case wall, then test the through crack it becomes.
 // Maths in src/lib/lbb.ts (unit-tested); this file is UI only.
-import data from '../data/materials.json';
+import MaterialSelect from './MaterialSelect.astro';
+import { MATERIALS, DEFAULTS as D, type Material } from '../lib/materials';
 import { PARIS_CLASSES } from '../lib/proof';
 
-const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
-const metals = data.materials.filter((m) => m.family in FAM && m.kic && m.yield > 100);
-const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
-const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yield, u: m.uts, fam: m.family, def: !!m.kicIsFamilyDefault }]));
+// Alloys from the material library, in the families this method covers.
+const FAM = ['steel', 'ss', 'ti', 'al', 'ni'];
+const raw = (m: Material) => ({ key: m.key, name: m.name, family: m.family, spec: m.spec, uts: m.Ftu!, yield: m.Fty!, density: m.rho! / 1000,
+  kic: m.kic, kicIsFamilyDefault: m.kicDefault, maxServiceTemp: m.maxT, weldable: m.weldable });
+const metals = MATERIALS.filter((m) => FAM.includes(m.family) && m.kic && m.Fty! > 100).map(raw);
+const MATS = Object.fromEntries(metals.map((m) => [m.key, { kic: m.kic, y: m.yield, u: m.uts, fam: m.family, def: !!m.kicIsFamilyDefault }]));
 ---
 
 <div class="calc lbbcalc" data-lbbcalc>
@@ -17,11 +20,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { kic: m.kic, y: m.yi
       <fieldset>
         <legend>Material</legend>
         <label>Alloy
-          <select name="m">
-            {groups.map((g) => (
-              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
-            ))}
-          </select>
+          <MaterialSelect name="m" list={metals} selected={D.caseSteel} />
         </label>
         <div class="row2">
           <label>K<sub>IC</sub> (MPa√m)<input name="k" type="number" min="1" step="any" /></label>

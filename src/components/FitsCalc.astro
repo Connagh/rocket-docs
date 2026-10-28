@@ -2,6 +2,8 @@
 // ISO 286 fits in two tabs: limits and the clearance band across a temperature range for two materials, and an
 // interference fit's contact pressure, stress, holding and shrink-fit temperature. Maths in src/lib/fits.ts and
 // src/lib/expansion.ts (unit-tested); UI only here.
+import MaterialSelect from './MaterialSelect.astro';
+import { DEFAULTS as D } from '../lib/materials';
 import { HOLE_LETTERS, SHAFT_LETTERS, GRADES } from '../lib/fits';
 import { EXP_MATERIALS } from '../lib/expansion';
 
@@ -16,7 +18,7 @@ const sel = (name: string, opts: readonly (string | number)[], v: string | numbe
   </div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
-      {[{ p: 'f', d: 150, hl: 'H', hg: 7, sl: 'g', sg: 6, hm: 'steel', sm: 'al', panel: 'fit', legend: 'Hole and shaft' }, { p: 'p', d: 310, hl: 'H', hg: 7, sl: 's', sg: 6, hm: 'al', sm: 'steel', panel: 'press', legend: 'Interference fit' }].map((c, k) => (
+      {[{ p: 'f', d: 150, hl: 'H', hg: 7, sl: 'g', sg: 6, hm: D.caseSteel, sm: D.aluminium, panel: 'fit', legend: 'Hole and shaft' }, { p: 'p', d: 310, hl: 'H', hg: 7, sl: 's', sg: 6, hm: D.aluminium, sm: D.caseSteel, panel: 'press', legend: 'Interference fit' }].map((c, k) => (
         <fieldset data-panel={c.panel} hidden={k > 0}>
           <legend>{c.legend}</legend>
           <div class="row2">
@@ -25,8 +27,8 @@ const sel = (name: string, opts: readonly (string | number)[], v: string | numbe
             {[sel(`${c.p}_hl`, HOLE_LETTERS, c.hl), sel(`${c.p}_hg`, GRADES, c.hg), sel(`${c.p}_sl`, SHAFT_LETTERS, c.sl), sel(`${c.p}_sg`, GRADES, c.sg)].map((s, i) => (
               <label>{['Hole letter', 'Hole grade (IT)', 'Shaft letter', 'Shaft grade (IT)'][i]}<select name={s.name}>{s.opts.map((o) => <option value={o} selected={o === s.v}>{o}</option>)}</select></label>
             ))}
-            <label>{c.panel === 'press' ? 'Outer part (hub)' : 'Hole part'}<select name={`${c.p}_hm`}>{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === c.hm}>{m.name}</option>)}</select></label>
-            <label>{c.panel === 'press' ? 'Inner part' : 'Shaft part'}<select name={`${c.p}_sm`}>{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === c.sm}>{m.name}</option>)}</select></label>
+            <label>{c.panel === 'press' ? 'Outer part (hub)' : 'Hole part'}<MaterialSelect name={`${c.p}_hm`} list={EXP_MATERIALS} selected={c.hm} /></label>
+            <label>{c.panel === 'press' ? 'Inner part' : 'Shaft part'}<MaterialSelect name={`${c.p}_sm`} list={EXP_MATERIALS} selected={c.sm} /></label>
             <label>Coldest (°C)<input name={`${c.p}_tc`} type="number" step="any" value="-40" /></label>
             <label>Hottest (°C)<input name={`${c.p}_th`} type="number" step="any" value="60" /></label>
             {c.panel === 'press' && <>

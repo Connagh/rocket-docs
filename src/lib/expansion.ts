@@ -1,16 +1,14 @@
 // Differential expansion: fits that change with temperature (Lamé thick cylinders), a thin layer bonded to a
 // substrate, the adhesive shear at the ends of a bonded overlap (shear lag), and relative slip across a bolt pattern.
 // Uniform temperature, linear elastic. Units: mm, MPa, °C (temperature changes), N.
+import { withProps } from './materials.ts';
 
-/** Typical room-temperature properties; use your own data for design. Yield is a typical value, not an allowable. */
-export const EXP_MATERIALS = [
-  { key: 'steel', name: 'Alloy steel (4340, D6AC)', E: 205000, nu: 0.29, alpha: 12.0e-6, Fy: 1450 },
-  { key: 'stainless', name: 'Austenitic stainless (304)', E: 193000, nu: 0.29, alpha: 17.3e-6, Fy: 215 },
-  { key: 'ti', name: 'Titanium Ti-6Al-4V', E: 114000, nu: 0.34, alpha: 8.8e-6, Fy: 880 },
-  { key: 'al', name: 'Aluminium 7075-T6', E: 71700, nu: 0.33, alpha: 23.4e-6, Fy: 500 },
-  { key: 'inconel', name: 'Nickel alloy 718', E: 200000, nu: 0.29, alpha: 13.0e-6, Fy: 1030 },
-  { key: 'cfrp', name: 'CFRP, quasi-isotropic (in plane)', E: 50000, nu: 0.3, alpha: 2.0e-6, Fy: NaN },
-] as const;
+/**
+ * The materials of the library (src/lib/materials.ts) that have a modulus, Poisson's ratio and expansion: room
+ * temperature, typical values. Yield is typical, not an allowable.
+ */
+export const EXP_MATERIALS = withProps(['E', 'nu', 'alpha']).map((m) => ({ key: m.key, name: m.name, family: m.family, E: m.E!, nu: m.nu!, alpha: m.alpha!, Fy: m.Fty ?? NaN }));
+export { DEFAULTS as EXP_DEFAULTS } from './materials.ts';
 
 /** Change of diametral fit with temperature: positive grows the interference (inner part expanding more). */
 export const fitChange = (d: number, alphaInner: number, alphaOuter: number, dT: number) => d * (alphaInner - alphaOuter) * dT;

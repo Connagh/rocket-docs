@@ -1,6 +1,8 @@
 ---
 // Differential expansion across a temperature range: an interference or clearance fit between dissimilar parts, a bonded
 // overlap, and slip across a bolt pattern. Maths in src/lib/expansion.ts (unit-tested); UI only here.
+import MaterialSelect from './MaterialSelect.astro';
+import { DEFAULTS as D } from '../lib/materials';
 import { EXP_MATERIALS } from '../lib/expansion';
 ---
 
@@ -19,8 +21,8 @@ import { EXP_MATERIALS } from '../lib/expansion';
       <fieldset>
         <legend>Fit between two parts</legend>
         <div class="row2">
-          <label>Inner part<select name="mi">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
-          <label>Outer part<select name="mo">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'al'}>{m.name}</option>)}</select></label>
+          <label>Inner part<MaterialSelect name="mi" list={EXP_MATERIALS} selected={D.caseSteel} /></label>
+          <label>Outer part<MaterialSelect name="mo" list={EXP_MATERIALS} selected={D.aluminium} /></label>
           <label>Interface ⌀ (mm)<input name="d" type="number" min="1" step="any" value="310" /></label>
           <label>Outer part OD (mm)<input name="D" type="number" min="1" step="any" value="330" /></label>
           <label>Inner part bore (mm)<input name="di" type="number" min="0" step="any" value="290" /></label>
@@ -34,9 +36,9 @@ import { EXP_MATERIALS } from '../lib/expansion';
       <fieldset>
         <legend>Bonded overlap</legend>
         <div class="row2">
-          <label>Part 1<select name="m1">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
+          <label>Part 1<MaterialSelect name="m1" list={EXP_MATERIALS} selected={D.caseSteel} /></label>
           <label>Thickness (mm)<input name="t1" type="number" min="0.01" step="any" value="1.37" /></label>
-          <label>Part 2<select name="m2">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'cfrp'}>{m.name}</option>)}</select></label>
+          <label>Part 2<MaterialSelect name="m2" list={EXP_MATERIALS} selected={D.cfrpLaminate} /></label>
           <label>Thickness (mm)<input name="t2" type="number" min="0.01" step="any" value="3" /></label>
           <label>Adhesive shear modulus (MPa)<input name="G" type="number" min="1" step="any" value="800" /></label>
           <label>Bondline (mm)<input name="ta2" type="number" min="0.01" step="any" value="0.2" /></label>
@@ -47,8 +49,8 @@ import { EXP_MATERIALS } from '../lib/expansion';
       <fieldset>
         <legend>Bolt pattern</legend>
         <div class="row2">
-          <label>Plate 1<select name="p1">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'al'}>{m.name}</option>)}</select></label>
-          <label>Plate 2<select name="p2">{EXP_MATERIALS.map((m) => <option value={m.key} selected={m.key === 'steel'}>{m.name}</option>)}</select></label>
+          <label>Plate 1<MaterialSelect name="p1" list={EXP_MATERIALS} selected={D.aluminium} /></label>
+          <label>Plate 2<MaterialSelect name="p2" list={EXP_MATERIALS} selected={D.caseSteel} /></label>
           <label>Distance from fixed point (mm)<input name="R" type="number" min="0" step="any" value="140" /></label>
           <label>Hole clearance, radial (mm)<input name="c" type="number" min="0" step="any" value="0.5" /></label>
         </div>

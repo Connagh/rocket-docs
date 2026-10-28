@@ -2,6 +2,7 @@
 // depth), bondline temperature including soak-back, and thickness sizing.
 // SI internally (m, s, °C); public inputs use mm where noted.
 // Shown and derived on /motor/insulation/.
+import { MATERIALS, has } from './materials.ts';
 
 import { burnBack, performance, throatForPeak, type GrainGeometry, type Propellant } from './grain.ts';
 
@@ -60,33 +61,20 @@ export interface LinerMaterial {
   note: string;
 }
 
-export const LINER_MATERIALS: LinerMaterial[] = [
-  { key: 'epdm', name: 'EPDM, aramid-fibre filled', role: 'case', k: 0.25, rho: 1100, cp: 2000, tPyro: 450, erosion: 0.1,
-    note: 'Today’s default case insulation: low density, low conductivity, good ageing, bonds well. Fibre filler holds the char together under flow.' },
-  { key: 'epdm-cf', name: 'EPDM, carbon-fibre filled', role: 'case', k: 0.35, rho: 1150, cp: 1800, tPyro: 450, erosion: 0.07,
-    note: 'Tougher char for aft domes and other high-flow regions. Higher conductivity than aramid-filled grades.' },
-  { key: 'nbr', name: 'NBR, silica filled', role: 'case', k: 0.25, rho: 1250, cp: 1600, tPyro: 420, erosion: 0.12,
-    note: 'Nitrile rubber. Historically asbestos/silica filled; asbestos has been phased out across the industry.' },
-  { key: 'sil', name: 'Silicone, silica filled', role: 'case', k: 0.3, rho: 1400, cp: 1250, tPyro: 500, erosion: 0.15,
-    note: 'Forms a silica-rich char; flexible over a wide temperature range. Bonding needs care.' },
-  { key: 'cp', name: 'Carbon phenolic', role: 'nozzle', k: 0.85, rho: 1450, cp: 1600, tPyro: 400, erosion: 0.09,
-    note: 'Nozzle throat and entrance standard for large motors. Rayon-precursor supply has been a long-running constraint.' },
-  { key: 'sp', name: 'Silica phenolic', role: 'nozzle', k: 0.55, rho: 1750, cp: 1200, tPyro: 400, erosion: 0.16,
-    note: 'Exit cones and insulation behind throat inserts. Cheaper than carbon phenolic; adequate at lower heat flux.' },
-  { key: 'gp', name: 'Glass phenolic', role: 'nozzle', k: 0.6, rho: 1800, cp: 1150, tPyro: 400, erosion: 0.22,
-    note: 'Exit cone liners and blast tubes where heat flux is lower still.' },
-  { key: 'cc', name: 'Carbon-carbon', role: 'nozzle', k: 35, rho: 1750, cp: 1200, tPyro: null, erosion: 0.02,
-    note: 'Very low recession and light, but conducts heat readily: protects the surface, not the structure behind it.' },
-  { key: 'gr', name: 'Bulk graphite', role: 'nozzle', k: 85, rho: 1800, cp: 1000, tPyro: null, erosion: 0.05,
-    note: 'Cheap throat inserts for small motors. Thermal-shock sensitive and highly conductive: always needs an insulator behind it.' },
-];
+/** Ablative liners: the materials of the library with ablation data (charring onset or erosion rate) and a role. */
+export const LINER_MATERIALS: LinerMaterial[] = MATERIALS.filter((m) => m.role && has(m, ['k', 'rho', 'cp']) && (m.tPyro !== undefined || m.erosion !== undefined))
+  .map((m) => ({ key: m.key, name: m.name, role: m.role!, k: m.k!, rho: m.rho!, cp: m.cp!, tPyro: m.tPyro ?? null, erosion: m.erosion ?? 0, note: m.spec }));
 
-export interface BackupMaterial { key: string; name: string; k: number; rho: number; cp: number; tLimit: number; }
-export const BACKUP_MATERIALS: BackupMaterial[] = [
-  { key: 'steel', name: 'Steel case', k: 45, rho: 7850, cp: 480, tLimit: 150 },
-  { key: 'al', name: 'Aluminium case', k: 150, rho: 2700, cp: 900, tLimit: 120 },
-  { key: 'cfrp', name: 'Carbon/epoxy case', k: 5, rho: 1600, cp: 1000, tLimit: 120 },
-];
+export interface BackupMaterial { key: string; name: string; k: number; rho: number; cp: number; tLimit: number; wall: number; }
+/**
+ * Case walls behind the insulation: the metals and composites of the library with thermal data. The bondline limit and
+ * the starting wall thickness are typical by class (aluminium and composite cases run cooler bondlines and thicker walls).
+ */
+export const BACKUP_MATERIALS: BackupMaterial[] = MATERIALS.filter((m) => (m.kind === 'metal' || m.kind === 'composite') && has(m, ['k', 'rho', 'cp']))
+  .map((m) => {
+    const light = m.family === 'al' || m.family === 'mg', comp = m.kind === 'composite';
+    return { key: m.key, name: m.name, k: comp && m.kz !== undefined ? m.kz : m.k!, rho: m.rho!, cp: m.cp!, tLimit: light || comp ? 120 : 150, wall: comp ? 5 : light ? 3 : m.family === 'ti' ? 2 : 1.4 };
+  });
 
 // ---------------------------------------------------------------------------
 // 1-D transient model: insulation + case, receding hot face, then soak-back

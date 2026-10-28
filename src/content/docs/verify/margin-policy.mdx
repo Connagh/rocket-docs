@@ -158,14 +158,17 @@ The rows of the calculator are the 300 mm D6AC case from the other pages, plus i
 1. **Hoop yield at proof:** $1305 / (1.10 \times 1094) - 1 = +0.08$.
 2. **Hoop burst:** $1368 / (1.25 \times 1094) - 1 = 0.00$. The margin is exactly zero, because the case was sized to
    burst.
-3. **Buckling of the empty case under vacuum:** $0.127 / (1.25 \times 0.101) - 1 = +0.00$. See
+3. **Buckling of the empty case under vacuum:** $0.1262 / (1.25 \times 0.101) - 1 = -0.0004$, shown as −0.00. This
+   is a fail. A negative margin fails, however small. See
    [shell buckling](../shell-buckling/#worked-example-the-300-mm-case-unpressurised).
 4. **Closure bolt, tension and shear:** 18 kN on a 60 kN allowable, and 4 kN on 40 kN (illustrative). The factor is
    $1.25 \times 1.15 = 1.44$, so $R_1 = 0.431$ and $R_2 = 0.144$. Elliptical interaction gives
    $\lambda = 1/\sqrt{0.431^2 + 0.144^2} = 2.20$, so **MS = +1.20**. Linear interaction would give +0.74. The incorrect
    shortcut $1/(R_1^2 + R_2^2) - 1$ would give +3.84.
 
-The lowest margin is the hoop burst at 0.00, so the case governs. The bolt margin of +1.20 is a finding under the
+The lowest margin is the buckling of the empty case at −0.00, so the case governs and the report has a fail. Add a
+ring or a thicker wall (as on the shell-buckling page), or support the case on a mandrel during the vacuum check. The
+hoop burst at 0.00 is next. The bolt margin of +1.20 is a finding under the
 heavy-part rule. Either a different check sizes these bolts (preload, joint separation or thread engagement) and needs
 its own row, or the bolts could be smaller. [Bolted joints](../../joints/bolted-joints/) does those checks for the same
 closure.

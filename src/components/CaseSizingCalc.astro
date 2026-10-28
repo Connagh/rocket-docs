@@ -1,21 +1,16 @@
 ---
 // Metallic motor case / pressure vessel screening calculator.
 // Calculations live in src/lib/pv.ts (unit-tested); this file is UI only.
-import data from '../data/materials.json';
+import MaterialSelect from './MaterialSelect.astro';
+import { MATERIALS, DEFAULTS as D, type Material } from '../lib/materials';
 
-const FAMILIES: Record<string, string> = {
-  steel: 'Steels',
-  ss: 'Stainless steels',
-  ti: 'Titanium',
-  al: 'Aluminium',
-  ni: 'Nickel alloys',
-};
-const metals = data.materials.filter((m) => m.family in FAMILIES && m.uts > 0 && m.yield > 0);
-const groups = Object.entries(FAMILIES).map(([fam, label]) => ({
-  label,
-  items: metals.filter((m) => m.family === fam).sort((a, b) => b.uts / b.density - a.uts / a.density),
-}));
-const DEFAULT = 'D6AC (AMS 6431)';
+// Case alloys: the steel, stainless, titanium, aluminium and nickel entries of the material library with yield and
+// ultimate, best specific strength first in each family.
+const FAMILIES = ['steel', 'ss', 'ti', 'al', 'ni'];
+const raw = (m: Material) => ({ key: m.key, name: m.name, family: m.family, spec: m.spec, uts: m.Ftu!, yield: m.Fty!, density: m.rho! / 1000,
+  kic: m.kic, kicIsFamilyDefault: m.kicDefault, maxServiceTemp: m.maxT, weldable: m.weldable });
+const metals = MATERIALS.filter((m) => FAMILIES.includes(m.family) && m.Ftu! > 0 && m.Fty! > 0 && m.rho)
+  .sort((a, b) => b.Ftu! / b.rho! - a.Ftu! / a.rho!).map(raw);
 ---
 
 <div class="calc pvcalc" data-pvcalc>
@@ -31,13 +26,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
       <fieldset>
         <legend>Material</legend>
         <label>Alloy
-          <select name="m">
-            {groups.map((g) => (
-              <optgroup label={g.label}>
-                {g.items.map((m) => <option value={m.name} selected={m.name === DEFAULT}>{m.name}</option>)}
-              </optgroup>
-            ))}
-          </select>
+          <MaterialSelect name="m" list={metals} selected={D.caseSteel} />
         </label>
         <p class="hint" data-matinfo></p>
       </fieldset>
@@ -132,7 +121,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
     skirts or joints, where real cases usually fail. K<sub>IC</sub> values are indicative. Verify against your governing
     standard and get stress sign-off before anything is built.
   </div>
-  <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.name, m])))}></script>
+  <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.key, m])))}></script>
 </div>
 
 <style is:global>
@@ -156,6 +145,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
 <script>
   import { sizeCase, units, type PressureUnit, type DomeType } from '../lib/pv';
   import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+  import { DEFAULTS } from '../lib/materials';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -351,7 +341,7 @@ const DEFAULT = 'D6AC (AMS 6431)';
     wireWorkedExample({
       root, onLoad: run, factorFields: ['pf', 'bf'],
       note: 'Worked-example factors loaded: proof 1.10, burst 1.25',
-      values: { m: 'D6AC (AMS 6431)', id: '300', L: '1000', dome: 'hemi', p: '10', u: 'MPa', pf: '1.10', bf: '1.25', e: '0.9', t: '' },
+      values: { m: DEFAULTS.caseSteel, id: '300', L: '1000', dome: 'hemi', p: '10', u: 'MPa', pf: '1.10', bf: '1.25', e: '0.9', t: '' },
     });
     run();
   });

@@ -8,8 +8,9 @@ import {
 const close = (a: number, b: number, rel = 1e-3) =>
   assert.ok(Math.abs(a - b) <= rel * Math.abs(b), `${a} ≉ ${b}`);
 
-const epdm = LINER_MATERIALS.find((m) => m.key === 'epdm')!;
-const steel = BACKUP_MATERIALS.find((m) => m.key === 'steel')!;
+import { DEFAULTS } from '../src/lib/materials.ts';
+const epdm = LINER_MATERIALS.find((m) => m.key === DEFAULTS.epdm)!;
+const steel = BACKUP_MATERIALS.find((m) => m.key === DEFAULTS.caseSteel)!;
 const alpha = epdm.k / (epdm.rho * epdm.cp);
 const thetaP = (450 - 20) / (1200 - 20);
 

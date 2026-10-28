@@ -1,12 +1,15 @@
 ---
 // Proof-test flaw screening and the crack-growth life it buys.
 // Calculations in src/lib/proof.ts (unit-tested); this file is UI only.
-import data from '../data/materials.json';
+import MaterialSelect from './MaterialSelect.astro';
+import { MATERIALS, DEFAULTS as D, type Material } from '../lib/materials';
 import { PARIS_CLASSES } from '../lib/proof';
 
-const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
-const metals = data.materials.filter((m) => m.family in FAM && m.kic && m.yield > 300);
-const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
+// Alloys from the material library, in the families this method covers.
+const FAM = ['steel', 'ss', 'ti', 'al', 'ni'];
+const raw = (m: Material) => ({ key: m.key, name: m.name, family: m.family, spec: m.spec, uts: m.Ftu!, yield: m.Fty!, density: m.rho! / 1000,
+  kic: m.kic, kicIsFamilyDefault: m.kicDefault, maxServiceTemp: m.maxT, weldable: m.weldable });
+const metals = MATERIALS.filter((m) => FAM.includes(m.family) && m.kic && m.Fty! > 300).map(raw);
 ---
 
 <div class="calc pscalc" data-pscalc>
@@ -16,11 +19,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
       <fieldset>
         <legend>Material</legend>
         <label>Alloy
-          <select name="m">
-            {groups.map((g) => (
-              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
-            ))}
-          </select>
+          <MaterialSelect name="m" list={metals} selected={D.caseSteel} />
         </label>
         <div class="row2">
           <label>K<sub>IC</sub> at proof temp<input name="kp" type="number" min="1" step="any" /></label>
@@ -88,7 +87,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
     sustained-load (environment-assisted) growth. A released proof-test argument uses measured toughness and growth
     data at the service condition, realistic flaw shapes, and the governing standard's factors.
   </div>
-  <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.name, m])))}></script>
+  <script type="application/json" data-mats set:html={JSON.stringify(Object.fromEntries(metals.map((m) => [m.key, m])))}></script>
 </div>
 
 <style is:global>
@@ -104,6 +103,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
 <script>
   import { proofScreen, PARIS_CLASSES, stressIntensity, type ScreenInputs } from '../lib/proof';
   import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+  import { DEFAULTS } from '../lib/materials';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -271,7 +271,7 @@ const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals
     wireWorkedExample({
       root, onLoad: run, factorFields: ['R', 'lf'],
       note: 'Worked-example factors loaded: proof 1.10, life 4',
-      values: { m: 'D6AC (AMS 6431)', paris: 'mart', s: '1094', t: '1.377', R: '1.10', Y: '1.12', n: '2', lf: '4', rf: '1', ndt: '1.27' },
+      values: { m: DEFAULTS.caseSteel, paris: 'mart', s: '1094', t: '1.377', R: '1.10', Y: '1.12', n: '2', lf: '4', rf: '1', ndt: '1.27' },
     });
     applyMat();
     run();

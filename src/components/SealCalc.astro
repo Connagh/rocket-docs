@@ -1,6 +1,8 @@
 ---
 // Seal check for a motor joint: does a bore seal's gland stay closed when the case dilates under pressure, what seat
 // wall keeps it closed, and how sensitive is a pressure-decay leak check between two seals. Maths in src/lib/sealing.ts.
+import MaterialSelect from './MaterialSelect.astro';
+import { DEFAULTS as D } from '../lib/materials';
 import { MATERIALS } from '../lib/bolts';
 ---
 
@@ -14,7 +16,7 @@ import { MATERIALS } from '../lib/bolts';
           <label>Pressure (MPa)<input name="p" type="number" min="0" step="any" value="10" /></label>
           <label>Bore radius (mm)<input name="r" type="number" min="1" step="any" value="150" /></label>
           <label>Wall at the seal seat (mm)<input name="t" type="number" min="0.1" step="any" value="10" /></label>
-          <label>Material<select name="mat">{MATERIALS.map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+          <label>Material<MaterialSelect name="mat" list={MATERIALS} selected={D.caseSteel} /></label>
           <label>Mating part's growth (mm)<input name="mate" type="number" step="any" value="0.02" /></label>
           <label>Ring section (mm)<input name="cs" type="number" min="0.5" step="any" value="5.33" /></label>
           <label>Minimum squeeze (%)<input name="smin" type="number" min="0" max="50" step="any" value="10.8" /></label>
@@ -98,14 +100,14 @@ import { MATERIALS } from '../lib/bolts';
       const okSeal = [p, rad, t, cs].every((v) => v > 0) && sMin >= 0;
       let comp = NaN, gap = NaN, left = NaN;
       if (okSeal) {
-        const grow = radialGrowth(p, rad, t, mat.E);
+        const grow = radialGrowth(p, rad, t, mat.E, mat.nu ?? 0.3);
         gap = grow - mate; comp = cs * sMin;
         const sq = squeezeAtPressure(cs, sMin, Math.max(0, gap)); left = sq * cs;
         r('grow').innerHTML = `${f(grow, 3)} mm <small>hoop strain ${f((grow / rad) * 100, 3)}%</small>`;
         r('gap').innerHTML = `${f(Math.max(0, gap), 3)} mm <small>case growth less the mating part's</small>`;
         r('sq').innerHTML = `${f(sq * 100, 1)}% <small>of ${f(sMin * 100, 1)}% at assembly · ${f(left, 2)} mm compression left</small>`;
         cls('sq', sq <= 0 ? 'bad' : Number.isFinite(floor) && sq < floor ? 'warn' : 'ok');
-        const tw = Number.isFinite(floor) ? seatWallFor(p, rad, mat.E, 0.3, cs, sMin, floor, mate) : NaN;
+        const tw = Number.isFinite(floor) ? seatWallFor(p, rad, mat.E, mat.nu ?? 0.3, cs, sMin, floor, mate) : NaN;
         r('tw').innerHTML = Number.isFinite(tw) ? `${f(tw, 1)} mm <small>for ${f(floor * 100, 0)}% squeeze at pressure</small>` : '<small>the floor is above the minimum squeeze</small>';
         if (sq <= 0) notes.push(['bad', `The gland opens ${f(gap, 2)} mm: more than the ${f(comp, 2)} mm the ring is compressed. The seal unloads at pressure and leaks. Seat it in a thicker, stiffer ring (${Number.isFinite(tw) ? `at least ${f(tw, 1)} mm` : 'much thicker'}), or on a part that grows with the case.`]);
         else if (Number.isFinite(floor) && sq < floor) notes.push(['warn', `Squeeze at pressure, ${f(sq * 100, 1)}%, is below your ${f(floor * 100, 0)}% floor. A ${f(tw, 1)} mm seat would hold it.`]);

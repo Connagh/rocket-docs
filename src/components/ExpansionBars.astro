@@ -1,12 +1,13 @@
 ---
-// How far a 300 mm diameter grows over 100 °C, by material — typical expansion coefficients from src/lib/expansion.ts,
-// plus composite propellant at 100 × 10⁻⁶/K (the value used on the propellant-grain page).
-import { EXP_MATERIALS } from '../lib/expansion';
+// How far a 300 mm diameter grows over 100 °C, by material: the expansion coefficients of the material library for the
+// materials of the site's worked examples, plus the illustrative composite propellant of the propellant-grain page.
+import { material, DEFAULTS as D } from '../lib/materials';
 
-const rows = [
-  { name: 'Composite propellant', alpha: 100e-6, color: 'var(--rd-accent)' },
-  ...EXP_MATERIALS.map((m) => ({ name: m.name.replace(/ \(.*\)/, '').replace(', quasi-isotropic', ''), alpha: m.alpha, color: m.key === 'cfrp' ? 'var(--rd-ok)' : 'var(--rd-blue)' })),
-].sort((a, b) => b.alpha - a.alpha);
+const keys = [D.propellant, D.aluminium, D.stainless, D.nickel, D.caseSteel, D.titanium, D.cfrpLaminate];
+const rows = keys.map((k) => material(k)!).map((m) => ({
+  name: m.name.replace(/ \(.*\)/, '').replace(', quasi-isotropic laminate', ' laminate').replace(', HTPB type', ''),
+  alpha: m.alpha!, color: m.kind === 'propellant' ? 'var(--rd-accent)' : m.kind === 'composite' ? 'var(--rd-ok)' : 'var(--rd-blue)',
+})).sort((a, b) => b.alpha - a.alpha);
 const growth = (a: number) => 300 * a * 100; // mm
 const W = 320, L = 6, BW = 308, ROW = 30, MAX = 0.8; // bars to 0.8 mm; propellant runs off the scale
 ---
@@ -15,9 +16,8 @@ const W = 320, L = 6, BW = 308, ROW = 30, MAX = 0.8; // bars to 0.8 mm; propella
   <p class="viz-title">Growth of a 300 mm diameter over 100 °C</p>
   <svg viewBox={`0 0 ${W} ${rows.length * ROW + 30}`} role="img" aria-labelledby="eb-desc" style="max-width: 400px; margin: 0 auto;">
     <desc id="eb-desc">
-      Bar chart of how much a 300 millimetre diameter grows over 100 degrees: composite propellant 3.0 mm, off the scale;
-      aluminium 0.70 mm; austenitic stainless 0.52; nickel alloy 0.39; alloy steel 0.36; titanium 0.26; carbon-fibre
-      composite 0.06 mm.
+      Bar chart of how much a 300 millimetre diameter grows over 100 degrees. Propellant is off the scale:
+      {rows.map((r) => `${r.name} ${growth(r.alpha).toFixed(2)} mm`).join('; ')}.
     </desc>
     {rows.map((r, i) => {
       const y = 8 + i * ROW, g = growth(r.alpha), off = g > MAX, w = (Math.min(g, MAX) / MAX) * BW;

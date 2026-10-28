@@ -269,15 +269,15 @@ already present when ignition adds its share.
 
 This is the same 300 mm D6AC case as the [case-sizing worked example](../case-sizing/#worked-example) (wall 1.377 mm,
 MEOP 10 MPa), with a 100 mm circular bore ($m = 3$). The composite propellant has $\alpha_p = 100 \times 10^{-6}$/K, a
-relaxed modulus of 3.6 MPa and a bulk modulus of 3.5 GPa. The steel has $\alpha_c = 12 \times 10^{-6}$/K. The
+relaxed modulus of 3.6 MPa and a bulk modulus of 3.5 GPa. The steel has $\alpha_c = 12.3 \times 10^{-6}$/K and $\nu_c = 0.29$ (from the material library). The
 stress-free temperature is 60 °C and the coldest firing is at −40 °C, so $\Delta T = -100$ K. The safety factor of 1.5
 below is for this example only. Push **Load worked example** in the structural calculator to load these inputs.
 
-1. **Cool-down strain.** $100 \times \left[\frac{300 - 12}{2} \times 8 - 9 \times 12\right] \times 10^{-6} = 10.4\%$.
+1. **Cool-down strain.** $100 \times \left[\frac{300 - 12.3}{2} \times 8 - 9 \times 12.3\right] \times 10^{-6} = 10.4\%$.
 2. **Case strain at MEOP.** $\frac{p b}{E_c h} = \frac{10 \times 150}{205{,}000 \times 1.377} = 0.531\%$. Thus the hoop
-   strain is $0.452\%$ and the axial strain is $0.106\%$.
-3. **Ignition strain.** $9 \times 0.452\% + 4 \times (0.106\% + 10/3500) = 4.07\% + 1.57\% = 5.6\%$.
-4. **Cold ignition.** $10.4\% + 5.6\% = 16.1\%$. Against the illustrative capability of 39.6%, with a safety factor of
+   strain is $0.454\%$ and the axial strain is $0.112\%$.
+3. **Ignition strain.** $9 \times 0.454\% + 4 \times (0.112\% + 10/3500) = 4.09\% + 1.59\% = 5.7\%$.
+4. **Cold ignition.** $10.4\% + 5.7\% = 16.1\%$. Against the illustrative capability of 39.6%, with a safety factor of
    1.5, the margin is $39.6 / (1.5 \times 16.1) - 1 = +0.64$.
 5. **Bond tension.** $3.6 \times 8 \times 88 \times 10^{-6} \times 100 = 0.25$ MPa.
 

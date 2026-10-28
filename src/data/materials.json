@@ -1044,7 +1044,10 @@
       "k": 95,
       "cte": 4.5,
       "kic": 1.5,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "cp": 1000,
+      "erosion": 0.05,
+      "role": "nozzle"
     },
     {
       "name": "Carbon-carbon (2D / 3D)",
@@ -1063,7 +1066,10 @@
       "k": 40,
       "cte": 1,
       "kic": 15,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "cp": 1200,
+      "erosion": 0.02,
+      "role": "nozzle"
     },
     {
       "name": "C/SiC ceramic composite",
@@ -1101,7 +1107,11 @@
       "k": 0.8,
       "cte": 10,
       "kic": 5,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "cp": 1600,
+      "tPyro": 400,
+      "erosion": 0.09,
+      "role": "nozzle"
     },
     {
       "name": "Silica phenolic (ablative)",
@@ -1120,7 +1130,11 @@
       "k": 0.6,
       "cte": 12,
       "kic": 4,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "cp": 1200,
+      "tPyro": 400,
+      "erosion": 0.16,
+      "role": "nozzle"
     },
     {
       "name": "EPDM insulation",
@@ -1158,7 +1172,10 @@
       "k": 5,
       "cte": 0.5,
       "kic": 25,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "nu": 0.3,
+      "cp": 1000,
+      "kz": 0.8
     },
     {
       "name": "Aramid/epoxy (Kevlar)",
@@ -1785,7 +1802,11 @@
       "k": 0.6,
       "cte": 12,
       "kic": 4,
-      "kicIsFamilyDefault": false
+      "kicIsFamilyDefault": false,
+      "cp": 1150,
+      "tPyro": 400,
+      "erosion": 0.22,
+      "role": "nozzle"
     },
     {
       "name": "Reinforced carbon-carbon (RCC)",
@@ -2964,6 +2985,135 @@
       "cte": 18,
       "kic": 30,
       "kicIsFamilyDefault": false
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "EPDM insulation (aramid filled)",
+      "summary": "Default case insulation",
+      "family": "elast",
+      "density": 1.1,
+      "k": 0.25,
+      "cp": 2000,
+      "tPyro": 450,
+      "erosion": 0.1,
+      "role": "case",
+      "maxServiceTemp": 150,
+      "pricePerKg": 25,
+      "spec": "Today’s default case insulation: low density, low conductivity, good ageing, bonds well. The fibre filler holds the char together under flow."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "EPDM insulation (carbon-fibre filled)",
+      "summary": "Tough-char case insulation",
+      "family": "elast",
+      "density": 1.15,
+      "k": 0.35,
+      "cp": 1800,
+      "tPyro": 450,
+      "erosion": 0.07,
+      "role": "case",
+      "maxServiceTemp": 150,
+      "pricePerKg": 30,
+      "spec": "Tougher char for aft domes and other high-flow regions. Higher conductivity than aramid-filled grades."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "NBR insulation (silica filled)",
+      "summary": "Nitrile case insulation",
+      "family": "elast",
+      "density": 1.25,
+      "k": 0.25,
+      "cp": 1600,
+      "tPyro": 420,
+      "erosion": 0.12,
+      "role": "case",
+      "maxServiceTemp": 120,
+      "pricePerKg": 20,
+      "spec": "Nitrile rubber insulation. Asbestos-filled grades were used before; asbestos is no longer used."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "Silicone insulation (silica filled)",
+      "summary": "Wide-temperature case insulation",
+      "family": "elast",
+      "density": 1.4,
+      "k": 0.3,
+      "cp": 1250,
+      "tPyro": 500,
+      "erosion": 0.15,
+      "role": "case",
+      "maxServiceTemp": 200,
+      "pricePerKg": 40,
+      "spec": "Makes a char with much silica; flexible over a wide temperature range. Bonding needs special primers."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "Carbon/epoxy, quasi-isotropic laminate",
+      "summary": "In-plane laminate properties",
+      "family": "comp",
+      "density": 1.57,
+      "E": 50,
+      "nu": 0.3,
+      "cte": 2,
+      "k": 5,
+      "kz": 0.8,
+      "cp": 1000,
+      "uts": 600,
+      "yield": 600,
+      "maxServiceTemp": 120,
+      "pricePerKg": 80,
+      "spec": "Quasi-isotropic carbon/epoxy laminate, in-plane values. For a ply-by-ply analysis use the ply data and the lay-up."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "Carbon/epoxy, filament-wound case (hoop)",
+      "summary": "Hoop-dominated case laminate",
+      "family": "comp",
+      "density": 1.57,
+      "E": 60,
+      "nu": 0.3,
+      "cte": 2,
+      "k": 5,
+      "kz": 0.8,
+      "cp": 1000,
+      "maxServiceTemp": 120,
+      "pricePerKg": 80,
+      "spec": "Hoop-direction properties of a filament-wound case laminate, for growth and strain estimates. Strength depends on the winding pattern."
+    },
+    {
+      "weldable": false,
+      "corrosion": 5,
+      "machinability": 3,
+      "kicIsFamilyDefault": false,
+      "name": "Composite propellant, HTPB type (illustrative)",
+      "summary": "Illustrative grain properties",
+      "family": "prop",
+      "density": 1.77,
+      "E": 0.0036,
+      "cte": 100,
+      "k": 0.4,
+      "cp": 1300,
+      "maxServiceTemp": 60,
+      "pricePerKg": 0,
+      "spec": "Illustrative relaxed modulus, expansion and thermal properties of a composite propellant grain, as used on the propellant pages. Real values come from the propellant specification and tests."
     }
   ]
 }

@@ -1,0 +1,16 @@
+---
+// A material dropdown fed by the material library, grouped by family. Every tool uses this, so a material added to
+// src/data/materials.json appears in every tool that has the properties it needs.
+import { grouped, type Material } from '../lib/materials';
+
+interface Props { name: string; list: { key: string; name: string; family: string }[]; selected?: string; blank?: string }
+const { name, list, selected, blank } = Astro.props;
+const groups = grouped(list as Material[]);
+---
+
+<select name={name} data-material-select>
+  {blank !== undefined && <option value="">{blank}</option>}
+  {groups.map((g) => (
+    <optgroup label={g.label}>{g.items.map((m) => <option value={m.key} selected={m.key === selected}>{m.name}</option>)}</optgroup>
+  ))}
+</select>

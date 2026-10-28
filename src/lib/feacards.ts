@@ -107,3 +107,88 @@ export function expansion(T1: number, a1: number, T2: number, a2: number) {
 /** Re-reference a secant coefficient from data reference Tref to the model's stress-free temperature T0. */
 export const rereference = (aSec: (T: number) => number, Tref: number, T0: number, T: number) =>
   (aSec(T) * (T - Tref) - aSec(T0) * (T0 - Tref)) / (T - T0);
+
+// ---------- Solver cards from the material library ----------
+
+/** Conductivity and specific heat in each unit system, per W/m·K and per J/kg·K. Temperatures stay in °C (K). */
+const THERMAL_UNITS: Record<UnitKey, { k: number; cp: number; kUnit: string; cpUnit: string }> = {
+  'mm-t': { k: 1, cp: 1e6, kUnit: 'mW/mm·K', cpUnit: 'mJ/t·K' },
+  'm-kg': { k: 1, cp: 1, kUnit: 'W/m·K', cpUnit: 'J/kg·K' },
+  'mm-kg-ms': { k: 1e-6, cp: 1, kUnit: 'kW/mm·K', cpUnit: 'J/kg·K' },
+  'in-lbf': { k: 0.2248089, cp: 1550.0031, kUnit: 'lbf/s·K', cpUnit: 'in²/s²·K' },
+};
+
+/** A library material, as the card needs it: SI-style units (MPa, kg/m³, 1/K, W/m·K, J/kg·K). */
+export interface CardMaterial {
+  name: string; E?: number; nu?: number; rho?: number; alpha?: number; k?: number; cp?: number;
+  Fty?: number; Ftu?: number; defaults?: string[];
+}
+
+/** The material's properties converted to a consistent unit system. Missing properties stay undefined. */
+export function cardInUnits(m: CardMaterial, units: UnitKey) {
+  const u = UNIT_SYSTEMS.find((s) => s.key === units)!, t = THERMAL_UNITS[units];
+  const c = (v: number | undefined, f: number) => (v === undefined ? undefined : v * f);
+  return {
+    E: c(m.E, 1 / u.toMPa), nu: m.nu, rho: c(m.rho, 1 / u.toKgM3), alpha: m.alpha, k: c(m.k, t.k), cp: c(m.cp, t.cp),
+    stress: (MPa: number) => MPa / u.toMPa, units: { ...u, kUnit: t.kUnit, cpUnit: t.cpUnit },
+  };
+}
+
+/** A number with six significant figures, always with a decimal point (Nastran reads an integer as a different type). */
+export function cardNumber(v: number) {
+  if (v === 0) return '0.';
+  const a = Math.abs(v);
+  let s = a >= 1e-3 && a < 1e7 ? String(Number(v.toPrecision(6))) : v.toExponential(5).replace(/\.?0+e/, 'e');
+  if (!/[.e]/.test(s)) s += '.';
+  else if (/^-?\d+e/.test(s)) s = s.replace('e', '.e');
+  return s;
+}
+
+export type Solver = 'abaqus' | 'ansys' | 'nastran';
+export const SOLVERS: { key: Solver; name: string }[] = [
+  { key: 'abaqus', name: 'Abaqus' }, { key: 'ansys', name: 'Ansys MAPDL' }, { key: 'nastran', name: 'Nastran' },
+];
+
+/**
+ * Solver input text for an isotropic material: elastic, density, secant expansion from tref, conductivity and specific
+ * heat when the library has them, and an optional true-stress plastic table (MPa, true plastic strain). Properties
+ * that the library does not have are left out and listed in `missing`; family defaults get a comment line.
+ */
+export function solverCard(solver: Solver, m: CardMaterial, units: UnitKey, o: { id: number; tref: number; plastic?: { trueStress: number; truePlastic: number }[] }) {
+  const c = cardInUnits(m, units), n = cardNumber, lines: string[] = [], missing: string[] = [];
+  const cm = solver === 'abaqus' ? '**' : solver === 'ansys' ? '!' : '$';
+  const say = (s: string) => lines.push(`${cm} ${s}`);
+  for (const [p, label] of [['E', 'E'], ['nu', 'Poisson\'s ratio'], ['rho', 'density'], ['alpha', 'expansion']] as const) if (c[p] === undefined) missing.push(label);
+  const elastic = c.E !== undefined && c.nu !== undefined;
+  say(`${m.name}: typical values from the REF·DB material library, not allowables`);
+  say(`units: ${c.units.name}; stress ${c.units.stress}, density ${c.units.density}, temperature °C`);
+  for (const d of m.defaults ?? []) if (d === 'nu' || d === 'cp') say(`${d === 'nu' ? 'Poisson\'s ratio' : 'specific heat'}: family default, not a value for this alloy`);
+  if (missing.length) say(`not in the library: ${missing.join(', ')}`);
+  const plastic = o.plastic?.length ? o.plastic : undefined;
+
+  if (solver === 'abaqus') {
+    const name = m.name.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 80) || `MAT${o.id}`;
+    lines.push(`*MATERIAL, NAME=${/^[A-Za-z]/.test(name) ? name : `M_${name}`}`);
+    if (elastic) lines.push('*ELASTIC', `${n(c.E!)}, ${n(c.nu!)}`);
+    if (c.rho !== undefined) lines.push('*DENSITY', `${n(c.rho)},`);
+    if (c.alpha !== undefined) lines.push(`*EXPANSION, ZERO=${n(o.tref)}`, `${n(c.alpha)},`);
+    if (c.k !== undefined) lines.push('*CONDUCTIVITY', `${n(c.k)},`);
+    if (c.cp !== undefined) lines.push('*SPECIFIC HEAT', `${n(c.cp)},`);
+    if (plastic) lines.push('*PLASTIC', ...plastic.map((r) => `${n(c.stress(r.trueStress))}, ${n(r.truePlastic)}`));
+  } else if (solver === 'ansys') {
+    const id = o.id;
+    if (c.E !== undefined) lines.push(`MP,EX,${id},${n(c.E)}`);
+    if (c.nu !== undefined) lines.push(`MP,PRXY,${id},${n(c.nu)}`);
+    if (c.rho !== undefined) lines.push(`MP,DENS,${id},${n(c.rho)}`);
+    if (c.alpha !== undefined) lines.push(`MP,ALPX,${id},${n(c.alpha)}`, `MP,REFT,${id},${n(o.tref)}`);
+    if (c.k !== undefined) lines.push(`MP,KXX,${id},${n(c.k)}`);
+    if (c.cp !== undefined) lines.push(`MP,C,${id},${n(c.cp)}`);
+    if (plastic) lines.push(`TB,PLAS,${id},1,${plastic.length},MISO`, ...plastic.map((r) => `TBPT,,${n(r.truePlastic)},${n(c.stress(r.trueStress))}`));
+  } else {
+    const id = o.id, f = (v: number | undefined) => (v === undefined ? '' : n(v).replace('e', 'E'));
+    if (c.E !== undefined || c.rho !== undefined) lines.push(`MAT1,${id},${f(c.E)},,${f(c.nu)},${f(c.rho)},${f(c.alpha)},${c.alpha !== undefined ? f(o.tref) : ''}`);
+    if (c.k !== undefined) lines.push(`MAT4,${id},${f(c.k)},${f(c.cp)},${f(c.rho)}`);
+    if (plastic) say('plasticity (MATS1 with TABLES1) is not written: take the table from the Plastic curve tab');
+  }
+  return { text: lines.join('\n'), missing, units: c.units };
+}

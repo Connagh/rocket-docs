@@ -1,12 +1,10 @@
 ---
 // Proof-test rig: stored energy by medium, expected expansion, hold drift, and acceptance checks.
 import { MEDIA } from '../lib/proof';
-const VESSELS = [
-  { key: 'steel', name: 'Steel', E: 205000, nu: 0.3, alpha: 12 },
-  { key: 'ti', name: 'Titanium', E: 114000, nu: 0.34, alpha: 8.6 },
-  { key: 'al', name: 'Aluminium', E: 72000, nu: 0.33, alpha: 23 },
-  { key: 'cfrp', name: 'Carbon/epoxy (hoop-dominated)', E: 60000, nu: 0.3, alpha: 2 },
-];
+import MaterialSelect from './MaterialSelect.astro';
+import { withProps, DEFAULTS as D } from '../lib/materials';
+// Vessel materials: the metals and composites of the material library with E, ν and α (α in µm/m·K here).
+const VESSELS = withProps(['E', 'nu', 'alpha'], ['metal', 'composite']).map((m) => ({ key: m.key, name: m.name, family: m.family, E: m.E!, nu: m.nu!, alpha: +(m.alpha! * 1e6).toPrecision(4) }));
 ---
 
 <div class="calc prcalc" data-prcalc>
@@ -20,7 +18,7 @@ const VESSELS = [
           <label>Cylinder length (mm)<input name="L" type="number" min="0" step="any" value="1000" /></label>
           <label>Wall (mm)<input name="t" type="number" min="0.1" step="any" value="1.377" /></label>
           <label>Material
-            <select name="mat">{VESSELS.map((v) => <option value={v.key}>{v.name}</option>)}</select>
+            <MaterialSelect name="mat" list={VESSELS} selected={D.caseSteel} />
           </label>
         </div>
       </fieldset>

@@ -2,6 +2,7 @@
 // tightening stress, the change of preload with temperature, and margins. Methods after VDI 2230 and Shigley,
 // simplified to one bolt, concentric axial load and one clamped material. Units: mm, N, MPa, °C.
 // Factors and preload uncertainty are always inputs — they come from the programme's requirements.
+import { withProps } from './materials.ts';
 
 export interface Thread { name: string; d: number; P: number; d2: number; d3: number; As: number }
 
@@ -23,13 +24,8 @@ export const GRADES = [
   { key: 'A4-80', name: 'Stainless A4-80', Rp: 600, Rm: 800 },
 ] as const;
 
-/** Elastic modulus (MPa) and expansion coefficient (1/°C), room temperature. */
-export const MATERIALS = [
-  { key: 'steel', name: 'Steel', E: 205000, alpha: 11.5e-6 },
-  { key: 'stainless', name: 'Austenitic stainless', E: 193000, alpha: 16.0e-6 },
-  { key: 'ti', name: 'Titanium Ti-6Al-4V', E: 114000, alpha: 8.8e-6 },
-  { key: 'al', name: 'Aluminium 7075 / 2024', E: 71700, alpha: 23.2e-6 },
-] as const;
+/** Elastic modulus (MPa) and expansion coefficient (1/°C) at room temperature: the metals of the material library. */
+export const MATERIALS = withProps(['E', 'alpha'], ['metal']).map((m) => ({ key: m.key, name: m.name, family: m.family, E: m.E!, alpha: m.alpha!, nu: m.nu }));
 
 /**
  * Torque to preload, long form: T = F·[P/2π + μt·d2/(2 cos 30°) + μb·Dkm/2].

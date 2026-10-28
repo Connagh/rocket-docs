@@ -1,13 +1,16 @@
 ---
 // Stress-life fatigue workbench: Marin-corrected endurance, notch, mean stress, Miner's rule over a spectrum.
 // Maths in src/lib/fatigue.ts (unit-tested); this file is UI only.
-import data from '../data/materials.json';
+import MaterialSelect from './MaterialSelect.astro';
+import { MATERIALS, DEFAULTS as D, type Material } from '../lib/materials';
 import { SURFACES, LOADS, RELIABILITY } from '../lib/fatigue';
 
-const FAM: Record<string, string> = { steel: 'Steels', ss: 'Stainless steels', ti: 'Titanium', al: 'Aluminium', ni: 'Nickel alloys' };
-const metals = data.materials.filter((m) => m.family in FAM && m.uts > 150 && m.yield > 100);
-const groups = Object.entries(FAM).map(([fam, label]) => ({ label, items: metals.filter((m) => m.family === fam) }));
-const MATS = Object.fromEntries(metals.map((m) => [m.name, { uts: m.uts, y: m.yield, fam: m.family }]));
+// Alloys from the material library, in the families this method covers.
+const FAM = ['steel', 'ss', 'ti', 'al', 'ni'];
+const raw = (m: Material) => ({ key: m.key, name: m.name, family: m.family, spec: m.spec, uts: m.Ftu!, yield: m.Fty!, density: m.rho! / 1000,
+  kic: m.kic, kicIsFamilyDefault: m.kicDefault, maxServiceTemp: m.maxT, weldable: m.weldable });
+const metals = MATERIALS.filter((m) => FAM.includes(m.family) && m.Ftu! > 150 && m.Fty! > 100).map(raw);
+const MATS = Object.fromEntries(metals.map((m) => [m.key, { uts: m.uts, y: m.yield, fam: m.family }]));
 const ROWS = [
   { label: 'Transport vibration', sa: 90, sm: 50, n: 5e6 },
   { label: 'Handling', sa: 250, sm: 250, n: 2000 },
@@ -24,11 +27,7 @@ const ROWS = [
       <fieldset>
         <legend>Material</legend>
         <label>Alloy
-          <select name="m">
-            {groups.map((g) => (
-              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === '4340 / EN24T'}>{m.name}</option>)}</optgroup>
-            ))}
-          </select>
+          <MaterialSelect name="m" list={metals} selected={D.boltSteel} />
         </label>
         <div class="row2">
           <label>UTS (MPa)<input name="u" type="number" min="1" step="any" /></label>

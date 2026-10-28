@@ -1,6 +1,8 @@
 ---
 // Case-bonded cylindrical grain: closed-form structural screening.
 // Formulas in src/lib/grain.ts (unit-tested); this file is UI only.
+import MaterialSelect from './MaterialSelect.astro';
+import { withProps, DEFAULTS as D } from '../lib/materials';
 
 // Propellant classes carried over from REF·DB v1. Illustrative, not measured data.
 const PROPS = [
@@ -8,11 +10,9 @@ const PROPS = [
   { key: 'cmdb', name: 'Composite-modified double-base', alpha: 85, E: 105, capWarm: 25, capCold: 3, tg: -5 },
   { key: 'db', name: 'Double-base', alpha: 80, E: 180, capWarm: 22, capCold: 2, tg: 5 },
 ];
-const CASES = [
-  { key: 'steel', name: 'Steel', alpha: 12, E: 205, nu: 0.3 },
-  { key: 'al', name: 'Aluminium', alpha: 23, E: 72, nu: 0.33 },
-  { key: 'cfrp', name: 'Carbon/epoxy, filament-wound (hoop)', alpha: 2, E: 60, nu: 0.3 },
-];
+// Case materials: the metals and composites of the material library with E, ν and α (α in µm/m·K, E in GPa here).
+const CASES = withProps(['E', 'nu', 'alpha'], ['metal', 'composite']).map((m) => ({ key: m.key, name: m.name, family: m.family, alpha: +(m.alpha! * 1e6).toPrecision(4), E: m.E! / 1000, nu: m.nu! }));
+const steel = CASES.find((c) => c.key === D.caseSteel)!;
 ---
 
 <div class="calc gscalc" data-gscalc>
@@ -30,12 +30,12 @@ const CASES = [
           <label>Bulk modulus K (MPa)<input name="K" type="number" step="any" value="3500" /></label>
         </div>
         <label>Case
-          <select name="case">{CASES.map((c) => <option value={c.key}>{c.name}</option>)}</select>
+          <MaterialSelect name="case" list={CASES} selected={D.caseSteel} />
         </label>
         <div class="row2">
-          <label>CTE α<sub>c</sub> (µm/m·K)<input name="ac" type="number" step="any" value="12" /></label>
-          <label>Modulus (GPa)<input name="Ec" type="number" step="any" value="205" /></label>
-          <label>Poisson's ratio<input name="nu" type="number" step="any" value="0.3" /></label>
+          <label>CTE α<sub>c</sub> (µm/m·K)<input name="ac" type="number" step="any" value={steel.alpha} /></label>
+          <label>Modulus (GPa)<input name="Ec" type="number" step="any" value={steel.E} /></label>
+          <label>Poisson's ratio<input name="nu" type="number" step="any" value={steel.nu} /></label>
           <label>Case wall (mm)<input name="h" type="number" step="any" value="1.377" /></label>
         </div>
       </fieldset>
@@ -92,7 +92,7 @@ const CASES = [
     pressurisation). Ignores grain ends, stress-relief flaps, gravity slump, acceleration, thermal gradients, ageing and
     cumulative damage. Default capabilities are an illustrative curve from REF·DB v1, not data for any real propellant.
   </div>
-  <script type="application/json" data-presets set:html={JSON.stringify({ PROPS, CASES })}></script>
+  <script type="application/json" data-presets set:html={JSON.stringify({ PROPS, CASES, STEEL: steel })}></script>
 </div>
 
 <style is:global>
@@ -122,7 +122,7 @@ const CASES = [
   const capCurve = (T: number, warm: number, cold: number, tg: number) => cold + (warm - cold) / (1 + Math.exp(-(T - tg) / 12));
 
   document.querySelectorAll<HTMLElement>('[data-gscalc]').forEach((root) => {
-    const { PROPS, CASES } = JSON.parse(root.querySelector('[data-presets]')!.textContent!);
+    const { PROPS, CASES, STEEL } = JSON.parse(root.querySelector('[data-presets]')!.textContent!);
     const form = root.querySelector<HTMLFormElement>('[data-form]')!;
     const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement;
     const num = (n: string) => +field(n).value;
@@ -239,7 +239,7 @@ const CASES = [
       root, onLoad: () => { applyCap(); run(); }, factorFields: ['sf'],
       note: 'Worked-example safety factor loaded: 1.5',
       values: {
-        prop: 'comp', case: 'steel', ap: '100', E: '3.6', K: '3500', ac: '12', Ec: '205', nu: '0.3', h: '1.377',
+        prop: 'comp', case: STEEL.key, ap: '100', E: '3.6', K: '3500', ac: String(STEEL.alpha), Ec: String(STEEL.E), nu: String(STEEL.nu), h: '1.377',
         od: '300', bore: '100', tsf: '60', tlow: '-40', p: '10', kt: '1', bond: '0.7', sf: '1.5',
       },
     });

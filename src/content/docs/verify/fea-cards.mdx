@@ -176,11 +176,40 @@ Put the source, its basis, the temperature and the material condition on the car
 
 ## Calculator
 
+The first tab writes a card for any material in the site's material library. Select the material, the solver and the
+unit system. The tab writes the input text for Abaqus, Ansys MAPDL or Nastran, and you can copy it or download it.
+**Use in the check tabs** copies the same values into the other tabs, so that you can check them there.
+
+- The card contains the elastic constants, the density, the secant expansion, and the conductivity and specific heat
+  when the library has them.
+- For a metal, enter the uniform elongation from your material data to add a true-stress plastic table.
+- A comment line in the card identifies each value that comes from a family default. The card leaves out each value
+  that is not in the library, and the tab tells you which values these are.
+- The library values are typical room-temperature values. They are applicable to stiffness, mass and correlation. For
+  a strength check, use the allowables from your material specification.
+
 <CardCalc />
+
+### Adding a material
+
+All the tools on the site use one material library, `src/data/materials.json`. When you add an entry to this file,
+the new material appears in each tool that can use it: the material chart, case sizing, buckling, fatigue, fracture,
+proof testing, differential expansion, fits, bolted joints, sealing, transient thermal, insulation, the grain screen
+and this card generator. A tool shows a material only when the entry has the properties that the tool needs.
+
+1. Copy an entry of the same family and change the values. The units are g/cm³ for density, GPa for $E$, MPa for the
+   yield and the ultimate, µm/m·K for expansion, W/m·K for conductivity and MPa√m for toughness.
+2. Add the optional values that you have: `nu` (Poisson's ratio), `cp` (J/kg·K), `eu` (uniform elongation, %) and
+   `kz` (conductivity through the thickness of a laminate). If you do not give `nu` or `cp`, the tools use the family
+   default and mark it.
+3. Give the source of the values in `spec` or `summary`.
+4. Run `npm test`. The tests make sure that each material has a unique name and a known family, and that the values
+   are in a physical range.
 
 ## Worked example: cards for the 300 mm motor's model
 
-The starting values in each tab of the calculator are the values of this example. The uniform elongation, the ply
+The starting values in each tab of the calculator are the values of this example. The library card starts with the
+D6AC case in mm, N, tonne and seconds. The uniform elongation, the ply
 constants and the expansion coefficients are illustrative.
 
 1. **D6AC case, elastic values and units.** In mm, N, tonne and seconds: $E = 205\,000$ MPa and $\nu = 0.29$, so
@@ -203,7 +232,7 @@ constants and the expansion coefficients are illustrative.
    ([Propellant grain](../../motor/propellant-grain/)). Thus $\nu = 0.499829$, $G = 1.20$ MPa, $C_{10} = 0.600$ MPa and
    $D_1 = 5.7 \times 10^{-4}$ MPa⁻¹. An estimated $\nu = 0.49$ gives $K = 60$ MPa, which is **58 times too soft** in
    volume. At 10 MPa, the volume of the grain would decrease by 16.7%, not 0.29%. The ignition-strain term that uses
-   $p/K$ on the grain page would be $10/60$, not $10/3500$, and the predicted bore strain would increase from 5.6% to
+   $p/K$ on the grain page would be $10/60$, not $10/3500$, and the predicted bore strain would increase from 5.7% to
    71%. If you round in the other direction, to 0.4999, $K$ is 1.7 times too stiff.
 5. **Aluminium closure, thermal values.** After burnout, heat goes back into an aluminium closure and it gets to
    150 °C. The instantaneous $\alpha$ increases from $21 \times 10^{-6}$/K at −50 °C to $25 \times 10^{-6}$/K at

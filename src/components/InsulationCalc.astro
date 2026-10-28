@@ -2,6 +2,8 @@
 // Insulation / ablative liner thickness sizing at one location.
 // Physics in src/lib/insulation.ts (unit-tested); this file is UI only.
 import { LINER_MATERIALS, BACKUP_MATERIALS } from '../lib/insulation';
+import MaterialSelect from './MaterialSelect.astro';
+import { material, DEFAULTS as D } from '../lib/materials';
 
 const REGIMES = [
   { key: 'none', label: 'No erosion: char only', f: 0 },
@@ -9,7 +11,7 @@ const REGIMES = [
   { key: 'mod', label: 'Moderate flow', f: 1 },
   { key: 'high', label: 'High velocity / particle impingement (aft dome)', f: 4 },
 ];
-const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
+const CASE_WALL = Object.fromEntries(BACKUP_MATERIALS.map((c) => [c.key, c.wall]));
 ---
 
 <div class="calc inscalc" data-inscalc>
@@ -21,7 +23,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
         <label>Material
           <select name="mat">
             <optgroup label="Case insulation">
-              {LINER_MATERIALS.filter((m) => m.role === 'case').map((m) => <option value={m.key}>{m.name}</option>)}
+              {LINER_MATERIALS.filter((m) => m.role === 'case').map((m) => <option value={m.key} selected={m.key === D.epdm}>{m.name}</option>)}
             </optgroup>
             <optgroup label="Nozzle ablatives">
               {LINER_MATERIALS.filter((m) => m.role === 'nozzle').map((m) => <option value={m.key}>{m.name}</option>)}
@@ -52,7 +54,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
       <fieldset>
         <legend>Behind it</legend>
         <label>Structure
-          <select name="case">{BACKUP_MATERIALS.map((c) => <option value={c.key}>{c.name}</option>)}</select>
+          <MaterialSelect name="case" list={BACKUP_MATERIALS.map((c) => ({ ...c, family: material(c.key)!.family }))} selected={D.caseSteel} />
         </label>
         <div class="row2">
           <label>Wall (mm)<input name="cw" type="number" min="0.1" step="any" value="1.4" /></label>
@@ -128,6 +130,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
 <script>
   import { sizeInsulation, simulateWall, type SizingInputs, type WallResult } from '../lib/insulation';
   import { readFactor, awaitingMessage, wireWorkedExample } from '../lib/factors';
+  import { DEFAULTS as D } from '../lib/materials';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -296,7 +299,7 @@ const CASE_WALL: Record<string, number> = { steel: 1.4, al: 3, cfrp: 5 };
       root, onLoad: schedule, factorFields: ['sf'],
       note: 'Worked-example safety factor loaded: 1.5',
       values: {
-        mat: 'epdm', regime: 'low', case: 'steel', er: '0.025', te: '20', ts: '1200', t0: '20',
+        mat: D.epdm, regime: 'low', case: D.caseSteel, er: '0.025', te: '20', ts: '1200', t0: '20',
         cw: '1.4', lim: '150', sf: '1.5', min: '1', chk: '',
       },
     });

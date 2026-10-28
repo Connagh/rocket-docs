@@ -1,12 +1,12 @@
 ---
 // Unpressurised cylinder buckling check: axial compression, bending, external pressure.
 // Maths in src/lib/buckling.ts (unit-tested); this file is UI only.
-import data from '../data/materials.json';
+import MaterialSelect from './MaterialSelect.astro';
+import { withProps, DEFAULTS as D } from '../lib/materials';
 
-const FAM: Record<string, [string, number]> = { steel: ['Steels', 0.3], ss: ['Stainless steels', 0.3], ti: ['Titanium', 0.34], al: ['Aluminium', 0.33], ni: ['Nickel alloys', 0.31], mg: ['Magnesium', 0.35] };
-const metals = data.materials.filter((m) => m.family in FAM && m.E && m.yield);
-const groups = Object.entries(FAM).map(([fam, [label]]) => ({ label, items: metals.filter((m) => m.family === fam) }));
-const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.family][1], y: m.yield }]));
+// Shell materials: every metal in the material library with E, ν and yield (E in GPa here).
+const metals = withProps(['E', 'nu', 'Fty'], ['metal']);
+const MATS = Object.fromEntries(metals.map((m) => [m.key, { E: +(m.E! / 1000).toPrecision(6), nu: m.nu!, y: m.Fty! }]));
 ---
 
 <div class="calc bkcalc" data-bkcalc>
@@ -16,11 +16,7 @@ const MATS = Object.fromEntries(metals.map((m) => [m.name, { E: m.E, nu: FAM[m.f
       <fieldset>
         <legend>Material</legend>
         <label>Alloy
-          <select name="m">
-            {groups.map((g) => (
-              <optgroup label={g.label}>{g.items.map((m) => <option value={m.name} selected={m.name === 'D6AC (AMS 6431)'}>{m.name}</option>)}</optgroup>
-            ))}
-          </select>
+          <MaterialSelect name="m" list={metals} selected={D.caseSteel} />
         </label>
         <div class="row2">
           <label>E (GPa)<input name="E" type="number" min="1" step="any" /></label>

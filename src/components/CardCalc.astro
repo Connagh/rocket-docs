@@ -1,11 +1,20 @@
 ---
-// Material-card checks in five tabs: units and isotropic constants, orthotropic stability, nearly incompressible
-// materials, a true-stress plastic table built from tensile properties, and secant thermal expansion.
-// Maths in src/lib/feacards.ts (unit-tested); UI only here.
-import { UNIT_SYSTEMS } from '../lib/feacards';
+// Material cards in six tabs: a solver card for any material in the library, units and isotropic constants,
+// orthotropic stability, nearly incompressible materials, a true-stress plastic table built from tensile properties,
+// and secant thermal expansion. Maths in src/lib/feacards.ts (unit-tested); UI only here.
+import { UNIT_SYSTEMS, SOLVERS } from '../lib/feacards';
+import MaterialSelect from './MaterialSelect.astro';
+import { MATERIALS, DEFAULTS as D } from '../lib/materials';
+
+// Every library material with a modulus or a density can make a card; a new entry in materials.json appears here.
+const CARD_MATS = MATERIALS.filter((m) => m.E !== undefined || m.rho !== undefined);
+const CARD_DATA = Object.fromEntries(CARD_MATS.map((m) => [m.key, {
+  name: m.name, kind: m.kind, familyName: m.familyName, E: m.E, nu: m.nu, rho: m.rho, alpha: m.alpha,
+  k: m.kz ?? m.k, kIsZ: m.kz !== undefined, cp: m.cp, Fty: m.Fty, Ftu: m.Ftu, eu: m.eu, defaults: m.defaults,
+}]));
 
 const TABS = [
-  { key: 'units', name: 'Units & elastic' }, { key: 'ortho', name: 'Orthotropic' }, { key: 'incomp', name: 'Near-incompressible' },
+  { key: 'gen', name: 'Card from library' }, { key: 'units', name: 'Units & elastic' }, { key: 'ortho', name: 'Orthotropic' }, { key: 'incomp', name: 'Near-incompressible' },
   { key: 'plastic', name: 'Plastic curve' }, { key: 'cte', name: 'Thermal expansion' },
 ];
 ---
@@ -17,7 +26,21 @@ const TABS = [
   </div>
   <div class="calc-body">
     <form data-form onsubmit="return false">
-      <fieldset data-panel="units">
+      <fieldset data-panel="gen">
+        <legend>Material and solver</legend>
+        <label>Material<MaterialSelect name="g_m" list={CARD_MATS} selected={D.caseSteel} /></label>
+        <div class="row2">
+          <label>Solver<select name="g_sol">{SOLVERS.map((x) => <option value={x.key}>{x.name}</option>)}</select></label>
+          <label>Unit system<select name="g_sys">{UNIT_SYSTEMS.map((u) => <option value={u.key}>{u.name}</option>)}</select></label>
+          <label>Material ID<input name="g_id" type="number" min="1" step="1" value="1" /></label>
+          <label>Expansion reference (°C)<input name="g_tref" type="number" step="any" value="20" /></label>
+          <label>Uniform elongation (%)<input name="g_eu" type="number" min="0.1" step="any" placeholder="for a plastic table" autocomplete="off" /></label>
+          <label>Plastic rows<input name="g_n" type="number" min="3" max="20" step="1" value="8" /></label>
+        </div>
+        <p class="hint">The library holds typical room-temperature values, and its expansion is the secant value from 20 °C. Enter the uniform elongation from your material data to add a plastic table. <button type="button" class="chip" data-use>Use in the check tabs</button></p>
+      </fieldset>
+
+      <fieldset data-panel="units" hidden>
         <legend>Isotropic card, as typed</legend>
         <label>Unit system<select name="u_sys">{UNIT_SYSTEMS.map((u) => <option value={u.key}>{u.name}</option>)}</select></label>
         <div class="row2">
@@ -84,17 +107,22 @@ const TABS = [
     </form>
     <div>
       <dl class="readouts" data-out></dl>
+      <div class="cd-table" data-card hidden>
+        <div class="cd-table-head"><span data-cardhead>Solver card</span><span class="head-btns"><button type="button" class="chip" data-copycard>Copy</button><button type="button" class="chip" data-save>Download</button></span></div>
+        <textarea readonly rows="14" data-cardtext aria-label="Solver card text" spellcheck="false"></textarea>
+      </div>
       <div class="cd-table" data-table hidden>
         <div class="cd-table-head"><span>Plastic table: true stress (MPa), true plastic strain</span><button type="button" class="chip" data-copy>Copy</button></div>
         <textarea readonly rows="8" data-csv aria-label="Plastic table as comma-separated values"></textarea>
       </div>
-      <figure class="hc-fig">
+      <figure class="hc-fig" data-fig>
         <svg viewBox="0 0 420 250" data-chart role="img" aria-label="Chart for the selected card check"></svg>
         <figcaption data-cap></figcaption>
       </figure>
       <ul class="pv-notes" data-notes></ul>
     </div>
   </div>
+  <script type="application/json" data-cardmats set:html={JSON.stringify(CARD_DATA)}></script>
   <div class="calc-foot">
     Checks, not material data: every value here is an example. Units: bar wave speed √(E/ρ). Orthotropic: symmetry,
     Lempriere's bounds and the compliance determinant. Plastic: Ramberg–Osgood through yield and the ultimate, converted to
@@ -110,6 +138,10 @@ const TABS = [
   .cdcalc .nc { text-transform: none; } /* uppercase labels would turn ν, ρ and α into capitals */
   .cd-table { margin: 0.75rem 0 0 !important; }
   .cd-table-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .cd-table .head-btns { display: flex; gap: 0.35rem; }
+  .cd-table .head-btns > * { margin: 0 !important; }
+  .cd-table textarea[data-cardtext] { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+  .cdcalc [data-panel='gen'] .hint .chip { margin: 0.35rem 0 0 !important; display: inline-block; }
   .cd-table textarea { width: 100%; margin-top: 0.35rem; font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); background: var(--rd-panel2, var(--rd-panel)); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; resize: vertical; }
   .hc-fig { margin: 0.9rem 0 0 !important; }
   .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
@@ -118,7 +150,7 @@ const TABS = [
 </style>
 
 <script>
-  import { UNIT_SYSTEMS, cardUnits, shearModulus, bulkModulus, poissonFromEG, poissonFromEK, neoHookean, orthotropic, plasticTable, rambergOsgoodStress, expansion, type UnitKey } from '../lib/feacards';
+  import { UNIT_SYSTEMS, SOLVERS, solverCard, cardInUnits, cardNumber, type Solver, cardUnits, shearModulus, bulkModulus, poissonFromEG, poissonFromEK, neoHookean, orthotropic, plasticTable, rambergOsgoodStress, expansion, type UnitKey } from '../lib/feacards';
 
   const NS = 'http://www.w3.org/2000/svg';
   const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
@@ -141,7 +173,7 @@ const TABS = [
       return e;
     };
     const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
-    let mode = 'units';
+    let mode = 'gen';
     let draw: (() => void) | null = null;
 
     // ---- chart helpers (as in the hand-calc calculator) ----
@@ -191,6 +223,72 @@ const TABS = [
       });
       el('text', { x: W / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--rd-ink)' }, xl);
     };
+
+    // ---- solver card from the material library ----
+    type CardMat = { name: string; kind: string; familyName: string; E?: number; nu?: number; rho?: number; alpha?: number; k?: number; kIsZ: boolean; cp?: number; Fty?: number; Ftu?: number; eu?: number; defaults: string[] };
+    const CARD: Record<string, CardMat> = JSON.parse(root.querySelector('[data-cardmats]')!.textContent!);
+    const cardBox = root.querySelector<HTMLElement>('[data-card]')!, cardText = root.querySelector<HTMLTextAreaElement>('[data-cardtext]')!;
+    const fig = root.querySelector<HTMLElement>('[data-fig]')!;
+    const EXT: Record<Solver, string> = { abaqus: 'inp', ansys: 'mac', nastran: 'bdf' };
+    const cardMat = () => CARD[field('g_m').value];
+    const fillEu = () => { const m = cardMat(); field('g_eu').value = m?.eu !== undefined ? String(m.eu) : ''; };
+    function runGen(rows: Row[], notes: [string, string][]) {
+      const m = cardMat();
+      if (!m) { cardBox.hidden = true; return null; }
+      const sol = field('g_sol').value as Solver, units = field('g_sys').value as UnitKey;
+      const id = Math.max(1, Math.round(num('g_id')) || 1), tref = Number.isFinite(num('g_tref')) ? num('g_tref') : 20;
+      const eu = num('g_eu') / 100, nRows = Math.min(20, Math.max(3, Math.round(num('g_n')) || 8));
+      const pt = m.kind === 'metal' && m.E && m.Fty && m.Ftu && eu > 0 ? plasticTable(m.E, m.Fty, m.Ftu, eu, nRows) : null;
+      const card = solverCard(sol, m, units, { id, tref, plastic: pt?.table });
+      const c = cardInUnits(m, units), u = c.units, fam = (p: string) => (m.defaults.includes(p) ? ' <small>family default</small>' : '');
+      const val = (v: number | undefined, unit: string, extra = '') => (v === undefined ? '<small>not in the library</small>' : `${cardNumber(v)} ${unit}${extra}`);
+      rows.push(
+        { dt: 'Material', dd: `${m.name} <small>${m.familyName}</small>`, primary: true },
+        { dt: 'E', dd: val(c.E, u.stress), cls: c.E === undefined ? 'warn' : '' },
+        { dt: '<span class="nc">ν</span>', dd: val(c.nu, '') + fam('nu'), cls: c.nu === undefined ? 'warn' : '' },
+        { dt: '<span class="nc">ρ</span>', dd: val(c.rho, u.density), cls: c.rho === undefined ? 'warn' : '' },
+        { dt: '<span class="nc">α</span>, secant', dd: val(c.alpha, '/K', ` <small>from ${deg(tref)} °C</small>`) },
+        { dt: 'k', dd: val(c.k, u.kUnit, m.kIsZ ? ' <small>through the thickness</small>' : '') },
+        { dt: 'c<sub>p</sub>', dd: val(c.cp, u.cpUnit) + fam('cp') },
+      );
+      if (c.E !== undefined && c.rho !== undefined) rows.push({ dt: 'Wave speed <span class="nc">√(E/ρ)</span>', dd: `${g3(cardUnits(units, c.E, c.rho).wave)} m/s <small>units check</small>` });
+      if (pt) rows.push({ dt: 'Plastic table', dd: `${pt.table.length} rows <small>n = ${f(pt.n, 1)}, to ${g3(pt.table[pt.table.length - 1].trueStress)} MPa true stress at necking</small>` });
+      cardBox.hidden = false;
+      cardText.value = card.text;
+      root.querySelector('[data-cardhead]')!.textContent = `${SOLVERS.find((x) => x.key === sol)!.name} · ${u.name}`;
+      if (Math.abs(tref - 20) > 1e-9) notes.push(['warn', `The library's α is the secant value from 20 °C. With a reference of ${deg(tref)} °C the card is correct only if α is constant over the range. If it is not, re-reference it on the Thermal expansion tab.`]);
+      if (card.missing.length) notes.push(['warn', `Not in the library: ${card.missing.join(', ')}. The card leaves these out. Add them to the entry in materials.json, or type them into the model from your own data.`]);
+      if (m.defaults.length) notes.push(['', `The ${m.defaults.map((d) => (d === 'nu' ? 'Poisson\'s ratio' : 'specific heat')).join(' and ')} ${m.defaults.length > 1 ? 'come' : 'comes'} from the ${m.familyName.toLowerCase()} family default, because the entry does not give a value.`]);
+      if (m.kind === 'metal' && !pt) notes.push(['', m.Fty && m.Ftu ? 'Enter the uniform elongation to add a plastic table (true stress, true plastic strain) made from the library yield and ultimate.' : 'The library has no yield and ultimate for this material, so there is no plastic table.']);
+      if (m.kind === 'elastomer' || m.kind === 'propellant') notes.push(['warn', 'Rubber and propellant are nearly incompressible, and their modulus changes with rate and temperature. Get the bulk modulus from a test and use the Near-incompressible tab, or a viscoelastic model.']);
+      if (m.kind === 'composite') notes.push(['warn', 'This is an isotropic equivalent of a laminate. It is acceptable for stiffness and mass in a coarse model. For the stresses in the plies, use orthotropic constants or a layup, and check them on the Orthotropic tab.']);
+      if (units === 'in-lbf') notes.push(['', 'Temperatures and α are in °C and 1/K. If the model is in °F, divide α by 1.8 and convert the reference temperature.']);
+      notes.push(['', 'Typical values, not allowables. For a strength check, use A- or B-basis values from your material specification at the temperature of the load case. See <a href="../../materials/allowables/">Allowables</a>.']);
+      return null;
+    }
+    root.querySelector('[data-copycard]')!.addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget as HTMLButtonElement;
+      try { await navigator.clipboard.writeText(cardText.value); btn.textContent = 'Copied'; }
+      catch { cardText.focus(); cardText.select(); btn.textContent = 'Select and copy'; }
+      window.setTimeout(() => (btn.textContent = 'Copy'), 1500);
+    });
+    root.querySelector('[data-save]')!.addEventListener('click', () => {
+      const sol = field('g_sol').value as Solver, name = (cardMat()?.name ?? 'material').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([cardText.value + '\n'], { type: 'text/plain' }));
+      a.download = `${name}.${EXT[sol]}`;
+      document.body.append(a); a.click(); a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+    // copy the library values into the check tabs, in the chosen unit system
+    root.querySelector('[data-use]')!.addEventListener('click', () => {
+      const m = cardMat(); if (!m) return;
+      const units = field('g_sys').value as UnitKey, c = cardInUnits(m, units);
+      const set = (n: string, v: number | undefined) => { if (v !== undefined) field(n).value = cardNumber(v).replace(/\.$/, ''); };
+      field('u_sys').value = units; set('u_E', c.E); set('u_nu', c.nu); set('u_rho', c.rho); field('u_G').value = '';
+      set('p_E', m.E); set('p_fty', m.Fty); set('p_ftu', m.Ftu); if (num('g_eu') > 0) field('p_eu').value = field('g_eu').value;
+      select('units', true);
+    });
 
     // ---- units and isotropic constants ----
     function runUnits(rows: Row[], notes: [string, string][]) {
@@ -339,8 +437,9 @@ const TABS = [
       };
     }
 
-    const RUN: Record<string, typeof runUnits> = { units: runUnits, ortho: runOrtho, incomp: runIncomp, plastic: runPlastic, cte: runCte };
+    const RUN: Record<string, typeof runUnits> = { gen: runGen, units: runUnits, ortho: runOrtho, incomp: runIncomp, plastic: runPlastic, cte: runCte };
     const CAPS: Record<string, string> = {
+      gen: '',
       units: 'Bar wave speed √(E/ρ) on a log scale, with typical bands. A density in the wrong units moves the line by orders of magnitude.',
       ortho: 'Each Poisson\'s ratio as a share of its bound; the det bar fills only if the compliance determinant is not positive. Any full bar means the constants are not a material.',
       incomp: 'Bulk-to-shear modulus ratio against Poisson\'s ratio. Near 0.5 a tiny change in ν changes K many times over.',
@@ -351,6 +450,8 @@ const TABS = [
     function run() {
       const rows: Row[] = [], notes: [string, string][] = [];
       if (mode !== 'plastic') tableBox.hidden = true;
+      if (mode !== 'gen') cardBox.hidden = true;
+      fig.hidden = mode === 'gen';
       draw = RUN[mode](rows, notes);
       root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
       root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
@@ -386,7 +487,9 @@ const TABS = [
     }
     let timer = 0;
     form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 120); });
+    field('g_m').addEventListener('change', fillEu);
     form.addEventListener('change', run);
+    fillEu();
     run();
   });
 </script>

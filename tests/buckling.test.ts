@@ -4,9 +4,9 @@ import { classicalCoeff, sigmaClassical, kdAxial, kdBending, lateralPressure, bu
 
 const close = (a: number, b: number, tol: number, msg?: string) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} vs ${b}`);
 
-// The page's worked example: the 300 mm D6AC case, unpressurised, 1.377 mm wall, 1000 mm between domes.
+// The page's worked example: the 300 mm D6AC case (ν 0.29 from the material library), unpressurised, 1.377 mm wall, 1000 mm between domes.
 const t = 1.377, r = 150 + t / 2;
-const base = { E: 205000, nu: 0.3, yieldStrength: 1450, r, t, L: 1000, P: 0, M: 0, q: 0, endPressure: true, gammaP: 0.56 };
+const base = { E: 205000, nu: 0.29, yieldStrength: 1450, r, t, L: 1000, P: 0, M: 0, q: 0, endPressure: true, gammaP: 0.56 };
 
 test('classical coefficient is 0.605 for ν = 0.3', () => close(classicalCoeff(0.3), 0.6052, 0.0001));
 
@@ -31,23 +31,23 @@ test('lateral pressure: long-tube limit and moderate-length formula', () => {
 test('worked example: capacities', () => {
   const b = bucklingCheck(base);
   close(b.rt, 109.4, 0.1);
-  close(b.sClassical, 1133.8, 0.1);
+  close(b.sClassical, 1130.1, 0.1);
   close(b.gammaA, 0.5675, 0.0005);
   close(b.gammaB, 0.6492, 0.0005);
-  close(b.axial.allow, 643, 1);
-  close(b.axial.capacity / 1000, 839.0, 0.1);
-  close(b.bending.capacity / 1e6, 72.3, 0.1);
-  close(b.pressure.allow, 0.1268, 0.0005);
+  close(b.axial.allow, 641, 1);
+  close(b.axial.capacity / 1000, 836.3, 0.1);
+  close(b.bending.capacity / 1e6, 72.06, 0.01);
+  close(b.pressure.allow, 0.1262, 0.0003);
   assert.equal(b.axial.governs, 'shell');
 });
 
 test('worked example: flight loads and the evacuated case', () => {
   const flight = bucklingCheck({ ...base, P: 20000, M: 3e6, endPressure: false });
-  close(flight.sum, 20 / 839 + 3 / 72.3, 0.001);
+  close(flight.sum, 20 / 836 + 3 / 72.06, 0.001);
   const vac = bucklingCheck({ ...base, q: 0.101325 });
-  close(vac.pressure.R, 0.799, 0.002);
+  close(vac.pressure.R, 0.803, 0.002);
   close(vac.axial.load, 0.101325 * Math.PI * r * r, 1e-6); // end load from pressure on the closures
-  close(vac.reserve, 1.236, 0.003);
+  close(vac.reserve, 1.232, 0.003);
 });
 
 test('a thick wall yields before it buckles', () => {

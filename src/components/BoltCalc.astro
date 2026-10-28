@@ -1,6 +1,8 @@
 ---
 // Bolted joint: torque → preload with its scatter, stiffness and load factor, separation, yield and ultimate margins,
 // tightening stress, temperature change, and the joint diagram. Maths in src/lib/bolts.ts (unit-tested); UI only here.
+import MaterialSelect from './MaterialSelect.astro';
+import { DEFAULTS as D } from '../lib/materials';
 import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
 ---
 
@@ -16,7 +18,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
           <label>Yield, R<sub>p0.2</sub> (MPa)<input name="rp" type="number" min="1" step="any" value="1100" /></label>
           <label>Tensile, R<sub>m</sub> (MPa)<input name="rm" type="number" min="1" step="any" value="1220" /></label>
         </div>
-        <label>Bolt material<select name="bm">{MATERIALS.filter((m) => m.key !== 'al').map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+        <label>Bolt material<MaterialSelect name="bm" list={MATERIALS.filter((m) => m.family !== 'al' && m.family !== 'mg')} selected={D.boltSteel} /></label>
       </fieldset>
       <fieldset>
         <legend>Joint</legend>
@@ -26,7 +28,7 @@ import { THREADS, GRADES, MATERIALS } from '../lib/bolts';
           <label>Bearing face ⌀ (mm)<input name="dw" type="number" min="1" step="any" value="15" /></label>
           <label>Hole ⌀ (mm)<input name="dh" type="number" min="1" step="any" value="11" /></label>
         </div>
-        <label>Clamped material<select name="mm">{MATERIALS.map((m) => <option value={m.key}>{m.name}</option>)}</select></label>
+        <label>Clamped material<MaterialSelect name="mm" list={MATERIALS} selected={D.caseSteel} /></label>
       </fieldset>
       <fieldset>
         <legend>Tightening</legend>

@@ -1,24 +1,19 @@
 ---
 // Transient thermal workbench: lumped capacitance against 1-D conduction, heating then an after-phase (soak-back).
 // Maths in src/lib/thermal.ts (unit-tested); this file is UI only.
-const MATS = {
-  steel: { name: 'Steel', k: 45, rho: 7850, cp: 480 },
-  ss: { name: 'Stainless steel', k: 16, rho: 8000, cp: 500 },
-  al: { name: 'Aluminium alloy', k: 150, rho: 2700, cp: 900 },
-  ti: { name: 'Titanium (Ti-6Al-4V)', k: 7, rho: 4430, cp: 560 },
-  cfrp: { name: 'Carbon/epoxy, through-thickness', k: 0.8, rho: 1600, cp: 1000 },
-  epdm: { name: 'EPDM insulation', k: 0.25, rho: 1100, cp: 2000 },
-  cp: { name: 'Carbon phenolic', k: 0.85, rho: 1450, cp: 1600 },
-  sp: { name: 'Silica phenolic', k: 0.55, rho: 1750, cp: 1200 },
-  prop: { name: 'Propellant (HTPB-like)', k: 0.4, rho: 1770, cp: 1300 },
-};
+import MaterialSelect from './MaterialSelect.astro';
+import { withProps, DEFAULTS as D } from '../lib/materials';
+// Materials of the library with conductivity, density and specific heat. For a laminate, the through-thickness
+// conductivity is used, because heat crosses the wall.
+const thermal = withProps(['k', 'rho', 'cp']);
+const MATS = Object.fromEntries(thermal.map((m) => [m.key, { name: m.name, k: m.kz ?? m.k!, rho: m.rho!, cp: m.cp! }]));
 const UNITS: [string, number][] = [['s', 1], ['min', 60], ['h', 3600], ['days', 86400]];
 const PRESETS = {
-  weather: { label: 'Thin case, weather', geo: 'slab', m1: 'steel', t1: 1.377, m2: '', t2: 0, t0: 20,
+  weather: { label: 'Thin case, weather', geo: 'slab', m1: D.caseSteel, t1: 1.377, m2: '', t2: 0, t0: 20,
     p1: { te: 40, h: 8, d: 1, u: 3600, hold: false }, p2: { te: 40, h: 8, d: 0, u: 60 }, lim: 39 },
-  grain: { label: 'Conditioning a grain', geo: 'cylinder', m1: 'prop', t1: 150, m2: '', t2: 0, t0: 20,
+  grain: { label: 'Conditioning a grain', geo: 'cylinder', m1: D.propellant, t1: 150, m2: '', t2: 0, t0: 20,
     p1: { te: 60, h: 10, d: 3, u: 86400, hold: false }, p2: { te: 60, h: 10, d: 0, u: 3600 }, lim: 58 },
-  soak: { label: 'Soak-back into a boss', geo: 'slab', m1: 'epdm', t1: 6, m2: 'steel', t2: 20, t0: 20,
+  soak: { label: 'Soak-back into a boss', geo: 'slab', m1: D.epdm, t1: 6, m2: D.caseSteel, t2: 20, t0: 20,
     p1: { te: 1200, h: 1e7, d: 20, u: 1, hold: true }, p2: { te: 20, h: 10, d: 60, u: 60 }, lim: 150 },
 };
 ---
@@ -40,13 +35,13 @@ const PRESETS = {
           </select>
         </label>
         <div class="row2">
-          <label>Material (heated side)<select name="m1">{Object.entries(MATS).map(([k, m]) => <option value={k}>{m.name}</option>)}</select></label>
+          <label>Material (heated side)<MaterialSelect name="m1" list={thermal} selected={D.caseSteel} /></label>
           <label><span data-r="t1label">Thickness (mm)</span><input name="t1" type="number" min="0.01" step="any" /></label>
           <label>k (W/m·K)<input name="k1" type="number" min="0.001" step="any" /></label>
           <label>ρ (kg/m³) · c<sub>p</sub> (J/kg·K)<span class="th-pair"><input name="r1" type="number" min="1" step="any" aria-label="density" /><input name="c1" type="number" min="1" step="any" aria-label="specific heat" /></span></label>
         </div>
         <div class="row2" data-layer2>
-          <label>Second layer behind it<select name="m2"><option value="">none</option>{Object.entries(MATS).map(([k, m]) => <option value={k}>{m.name}</option>)}</select></label>
+          <label>Second layer behind it<MaterialSelect name="m2" list={thermal} blank="none" /></label>
           <label>Thickness (mm)<input name="t2" type="number" min="0" step="any" /></label>
         </div>
       </fieldset>

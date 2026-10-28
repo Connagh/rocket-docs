@@ -151,23 +151,23 @@ is too high, and a plasticity correction is necessary. The calculator tells you 
 ## Worked example: the 300 mm case, unpressurised
 
 This is the D6AC case from [case sizing](../../motor/case-sizing/#worked-example): 300 mm internal diameter, 1.377 mm
-wall, and 1000 mm of cylinder between the domes that hold it round. $E = 205$ GPa, $\nu = 0.3$ and the yield is
-1450 MPa. The mean radius is $r = 150 + 1.377/2 = 150.69$ mm.
+wall, and 1000 mm of cylinder between the domes that hold it round. $E = 205$ GPa, $\nu = 0.29$ (from the [material library](../../materials/selection/)) and the
+yield is 1450 MPa. The mean radius is $r = 150 + 1.377/2 = 150.69$ mm.
 
 1. **Slenderness.** $r/t = 150.69 / 1.377 = 109.4$.
-2. **Classical stress.** $\sigma_\text{cl} = 0.6052 \times 205{,}000 \times 1.377 / 150.69 = 1134$ MPa.
+2. **Classical stress.** $\sigma_\text{cl} = 0.6033 \times 205{,}000 \times 1.377 / 150.69 = 1130$ MPa.
 3. **Knockdowns.** $\phi = \sqrt{109.4}/16 = 0.654$, so $\gamma_\text{axial} = 1 - 0.901(1 - e^{-0.654}) = 0.5675$
    and $\gamma_\text{bending} = 0.649$.
-4. **Axial capacity.** $\sigma_\text{cr} = 0.5675 \times 1134 = 643$ MPa. This is 44% of yield, so elastic buckling
-   governs. $P_\text{cr} = 643 \times 2\pi \times 150.69 \times 1.377 = 839$ kN.
-5. **Bending capacity.** $\sigma_\text{cr} = 0.649 \times 1134 = 736$ MPa, so
-   $M_\text{cr} = 736 \times \pi \times 150.69^2 \times 1.377 = 72.3$ kN·m.
+4. **Axial capacity.** $\sigma_\text{cr} = 0.5675 \times 1130 = 641$ MPa. This is 44% of yield, so elastic buckling
+   governs. $P_\text{cr} = 641 \times 2\pi \times 150.69 \times 1.377 = 836$ kN.
+5. **Bending capacity.** $\sigma_\text{cr} = 0.649 \times 1130 = 734$ MPa, so
+   $M_\text{cr} = 734 \times \pi \times 150.69^2 \times 1.377 = 72.1$ kN·m.
 6. **Flight loads.** Assume 20 kN axial and 3 kN·m bending (from [Load paths & joints](../../joints/load-paths/)):
-   $R = 20/839 + 3/72.3 = 0.024 + 0.041 = 0.065$. The loads could increase by 15 times before the case buckles.
+   $R = 20/836 + 3/72.1 = 0.024 + 0.042 = 0.066$. The loads could increase by 15 times before the case buckles.
 7. **Empty case with a vacuum inside,** for example for a vacuum leak check before the propellant is loaded. There is
-   one atmosphere outside, 0.101 MPa. $Z = \frac{1000^2}{150.69 \times 1.377}\sqrt{0.91} = 4597$ (moderate length), so
-   $p_\text{cl} = 0.226$ MPa. With the 0.56 correlation factor, $p_\text{allow} = 0.127$ MPa. Thus
-   $R_p = 0.101 / 0.127 = 0.80$. The pressure on the closures adds 7.2 kN of axial load ($R_a = 0.009$). The total is
+   one atmosphere outside, 0.101 MPa. $Z = \frac{1000^2}{150.69 \times 1.377}\sqrt{0.916} = 4612$ (moderate length), so
+   $p_\text{cl} = 0.225$ MPa. With the 0.56 correlation factor, $p_\text{allow} = 0.126$ MPa. Thus
+   $R_p = 0.101 / 0.126 = 0.80$. The pressure on the closures adds 7.2 kN of axial load ($R_a = 0.009$). The total is
    0.81. The loads could increase only **1.24 times** before the case buckles.
 
 The case that holds 12.5 MPa from inside has a reserve of only 1.24 against 0.1 MPa from outside. If this passes
