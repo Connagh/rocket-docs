@@ -2,7 +2,8 @@
 //
 // The data are in src/data/materials.json. To add a material, add one entry there. Every tool that can use it then
 // lists it: the material chart, the case, buckling, fatigue, fracture and proof tools, differential expansion, fits,
-// bolted joints, sealing, transient thermal, insulation, the grain screen, and the FEA card generator.
+// bolted joints, sealing, transient thermal, insulation, the grain screen, the FEA card generator, and the
+// "Fill from the material library" pickers of the hand-calc, FEA & test, residual-stress and vibration tools.
 //
 // Fields of an entry (units as in the JSON file):
 //   name, family, summary, spec          text; family is one of the keys of FAMILIES below

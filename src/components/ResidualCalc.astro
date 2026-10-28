@@ -1,4 +1,5 @@
 ---
+import MaterialFill from './MaterialFill.astro';
 // Residual stress in three tabs: as a mean stress in fatigue (with relaxation on the first cycle), as crack driving
 // force in fracture and stress-corrosion cracking (with relaxation by a proof test), and the residual stresses left by
 // autofrettage of a thick cylinder. Maths in src/lib/residual.ts (unit-tested); UI only here.
@@ -14,6 +15,7 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
     <form data-form onsubmit="return false">
       <fieldset data-panel="fatigue">
         <legend>Surface point in fatigue</legend>
+        <MaterialFill fields={{ Fty: 'f_fty', Ftu: 'f_uts' }} />
         <div class="row2">
           <label>Alternating stress (MPa)<input name="f_sa" type="number" min="0" step="any" value="444" /></label>
           <label>Mean stress (MPa)<input name="f_sm" type="number" step="any" value="444" /></label>
@@ -29,6 +31,7 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
 
       <fieldset data-panel="fracture" hidden>
         <legend>Surface flaw</legend>
+        <MaterialFill fields={{ Fty: 'k_fty', kic: 'k_kic' }} />
         <div class="row2">
           <label>Service stress (MPa)<input name="k_s" type="number" min="0" step="any" value="1094" /></label>
           <label>Residual stress (MPa)<input name="k_sr" type="number" step="any" value="290" /></label>
@@ -44,6 +47,7 @@ const TABS = [{ key: 'fatigue', name: 'Fatigue' }, { key: 'fracture', name: 'Fra
 
       <fieldset data-panel="af" hidden>
         <legend>Thick cylinder</legend>
+        <MaterialFill fields={{ Fty: 'a_fty' }} />
         <div class="row2">
           <label>Bore radius (mm)<input name="a_a" type="number" min="0.1" step="any" value="5" /></label>
           <label>Outside radius (mm)<input name="a_b" type="number" min="0.1" step="any" value="12.5" /></label>

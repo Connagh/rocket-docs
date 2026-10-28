@@ -1,6 +1,7 @@
 ---
 // Hand calcs in five tabs — beam, flat plate, thin shell, lug and pin, column — each with its readouts, margins once the
 // programme's factors are entered, and a chart. Maths in src/lib/handcalc.ts (unit-tested); UI only here.
+import MaterialFill from './MaterialFill.astro';
 import { BEAM_CASES } from '../lib/handcalc';
 
 const TABS = [
@@ -22,6 +23,7 @@ const SECTIONS = [
     <form data-form onsubmit="return false">
       <fieldset data-panel="beam">
         <legend>Beam</legend>
+        <MaterialFill fields={{ E: 'b_E', Fty: 'b_fty', Ftu: 'b_ftu' }} />
         <label>Supports and load<select name="b_case">{BEAM_CASES.map((c) => <option value={c.key} selected={c.key === 'ss-udl'}>{c.name}</option>)}</select></label>
         <div class="row2">
           <label>Load, or total uniform load (N)<input name="b_W" type="number" min="0" step="any" value="4054" /></label>
@@ -40,6 +42,7 @@ const SECTIONS = [
 
       <fieldset data-panel="plate" hidden>
         <legend>Flat plate, uniform pressure</legend>
+        <MaterialFill fields={{ E: 'p_E', nu: 'p_nu', Fty: 'p_fty', Ftu: 'p_ftu' }} />
         <div class="row2">
           <label>Shape<select name="p_shape"><option value="circ">Circular</option><option value="rect">Rectangular</option></select></label>
           <label>Edges<select name="p_edge"><option value="ss">Simply supported</option><option value="clamped">Clamped</option></select></label>
@@ -57,6 +60,7 @@ const SECTIONS = [
 
       <fieldset data-panel="shell" hidden>
         <legend>Thin cylinder, internal pressure</legend>
+        <MaterialFill fields={{ E: 's_E', nu: 's_nu', Fty: 's_fty', Ftu: 's_ftu' }} />
         <div class="row2">
           <label>Pressure (MPa)<input name="s_p" type="number" min="0" step="any" value="10" /></label>
           <label>Mean radius (mm)<input name="s_r" type="number" min="0.1" step="any" value="150.69" /></label>
@@ -92,6 +96,7 @@ const SECTIONS = [
 
       <fieldset data-panel="column" hidden>
         <legend>Column, end load</legend>
+        <MaterialFill fields={{ E: 'c_E', Fty: 'c_fty' }} />
         <div class="row2">
           <label>Load (N)<input name="c_P" type="number" min="0" step="any" value="29452" /></label>
           <label>Length (mm)<input name="c_L" type="number" min="0.1" step="any" value="600" /></label>

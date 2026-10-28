@@ -1,4 +1,5 @@
 ---
+import MaterialFill from './MaterialFill.astro';
 // Checking a finite-element model, in four tabs: mesh convergence (on a small built-in model of the case's clamped edge,
 // or on your own three results), equilibrium and far-field checks, stress at details (singular corners, averaged and
 // unaveraged peaks, weld hot spots), and strain-gauge rosettes for comparing with a test.
@@ -39,6 +40,7 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
 
       <fieldset data-panel="free" hidden>
         <legend>What the model reports, against what it must</legend>
+        <MaterialFill fields={{ E: 'q_E', nu: 'q_nu' }} />
         <div class="row2">
           <label>Pressure (MPa)<input name="q_p" type="number" min="0" step="any" value="10" /></label>
           <label>End seal or bore ⌀ (mm)<input name="q_D" type="number" min="0" step="any" value="300" /></label>
@@ -68,6 +70,7 @@ const TABS = [{ key: 'conv', name: 'Mesh convergence' }, { key: 'free', name: 'E
 
       <fieldset data-panel="gauge" hidden>
         <legend>Rectangular rosette, 0°/45°/90°</legend>
+        <MaterialFill fields={{ E: 'g_E', nu: 'g_nu' }} />
         <div class="row2">
           <label>Gauge a, 0° (µε)<input name="g_a" type="number" step="any" value="1260" /></label>
           <label>Gauge b, 45° (µε)<input name="g_b" type="number" step="any" value="3170" /></label>

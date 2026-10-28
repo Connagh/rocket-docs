@@ -1,4 +1,5 @@
 ---
+import MaterialFill from './MaterialFill.astro';
 // Random vibration of a single-degree-of-freedom part: input PSD → Grms, Miles vs exact response, 3σ load and
 // margin, 3σ displacement against a clearance, and Steinberg three-band fatigue.
 // Maths in src/lib/vibration.ts (unit-tested); this file is UI only.
@@ -50,6 +51,7 @@ const BP = [
       </fieldset>
       <fieldset>
         <legend>Fatigue: Steinberg three-band</legend>
+        <MaterialFill fields={{ Ftu: 'uts' }} />
         <div class="row2">
           <label>Stress per g of response (MPa/g)<input name="spg" type="number" min="0" step="any" value="4" /></label>
           <label>UTS (MPa)<input name="uts" type="number" min="1" step="any" value="310" /></label>
