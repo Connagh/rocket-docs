@@ -114,3 +114,7 @@
   text-decoration: underline;
   text-underline-offset: 0.18em;
 }
+.tool-table tr.on td {
+  color: var(--brand);
+  font-weight: 650;
+}

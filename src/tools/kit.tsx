@@ -8,7 +8,7 @@
 //
 // Form values are strings keyed by field name (exactly what goes in the share link); tools parse them with num().
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, Text as RNText, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, Text as RNText, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
 import {
   Accordion,
   AccordionItem,
@@ -326,6 +326,50 @@ export function Num({
       keyboardType="decimal-pad"
       autoCapitalize="none"
     />
+  );
+}
+
+/**
+ * Multi-line data entry (one record per line). Cast's Input is single-line, so this is react-native's TextInput styled
+ * with Cast's input tokens.
+ */
+export function Lines({ name, label, rows = 8, helper }: { name: string; label: string; rows?: number; helper?: string }) {
+  const { v, set } = useForm();
+  const { scheme, spacing } = useTheme();
+  const [focus, setFocus] = useState(false);
+  return (
+    <View style={{ gap: 2 }}>
+      <Text type="label-md" color={scheme.text.primary}>
+        {label}
+      </Text>
+      <TextInput
+        multiline
+        numberOfLines={rows}
+        value={v[name] ?? ''}
+        onChangeText={(t) => set(name, t)}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        accessibilityLabel={label}
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
+        style={{
+          fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+          fontSize: 12.5,
+          lineHeight: 19,
+          color: scheme.text.primary,
+          backgroundColor: scheme.surface.base,
+          borderWidth: 1,
+          borderColor: focus ? scheme.focusRing.color : scheme.intents.neutral.default.default.border,
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          minHeight: rows * 19 + 16,
+          outlineWidth: 0,
+        } as never}
+      />
+      {helper ? <Hint style={{ marginTop: spacing.xs }}>{helper}</Hint> : null}
+    </View>
   );
 }
 
@@ -669,10 +713,13 @@ export function DataTable({
   columns,
   rows,
   caption,
+  highlight,
 }: {
   columns: { label: string; numeric?: boolean }[];
   rows: (React.ReactNode | { value: React.ReactNode; tone?: Tone })[][];
   caption?: string;
+  /** Rows to emphasise (e.g. the basis the check uses). */
+  highlight?: (row: number) => boolean;
 }) {
   const cell = (c: (typeof rows)[number][number]) =>
     c !== null && typeof c === 'object' && 'value' in (c as object) ? (c as { value: React.ReactNode; tone?: Tone }) : { value: c as React.ReactNode };
@@ -691,7 +738,7 @@ export function DataTable({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i}>
+            <tr key={i} className={highlight?.(i) ? 'on' : undefined}>
               {r.map((c, j) => {
                 const { value, tone } = cell(c);
                 return (
@@ -842,3 +889,75 @@ export function BarGroups({ groups, label, caption, width = 420 }: { groups: Bar
     </Figure>
   );
 }
+
+/** A round axis step (1, 2 or 5 × 10ⁿ) giving at most `max` intervals over `span`. */
+export const niceStep = (span: number, max = 6) => {
+  const m = 10 ** Math.floor(Math.log10(Math.abs(span) / 4 || 1));
+  return [1, 2, 5, 10].map((x) => x * m).find((x) => span / x <= max) ?? 10 * m;
+};
+
+/** Tick values from lo to hi at `step`, starting on a multiple of the step. */
+export const ticks = (lo: number, hi: number, step: number) => {
+  const out: number[] = [];
+  for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+  return out;
+};
+
+export type PlotScale = { X: (v: number) => number; Y: (v: number) => number; W: number; H: number; L: number; R: number; T: number; B: number };
+
+/**
+ * An x–y chart frame: gridlines and tick labels on round steps, axis titles, an optional legend row, and the data
+ * drawn by `children`, a function of the scales. Shared by the tools' line charts.
+ */
+export function Plot({
+  x0, x1, y0, y1, xl, yl, legend, label, caption, width = 420, height = 250, margin = { L: 64, R: 20, T: 30, B: 40 }, children,
+}: {
+  x0: number; x1: number; y0: number; y1: number; xl: string; yl: string;
+  legend?: [name: string, color: string, dash?: string][];
+  label: string; caption?: React.ReactNode; width?: number; height?: number;
+  margin?: { L: number; R: number; T: number; B: number };
+  children: (s: PlotScale) => React.ReactNode;
+}) {
+  const W = width, H = height, { L, R, T, B } = margin;
+  const X = (v: number) => L + ((v - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + ((y1 - v) / (y1 - y0)) * (H - T - B);
+  const nice = (span: number) => { const m = 10 ** Math.floor(Math.log10(span / 5)); return [1, 2, 2.5, 5, 10].map((x) => x * m).find((x) => span / x <= 6)!; };
+  let sx = nice(x1 - x0);
+  while ((x1 - x0) / sx > (W - L - R) / 46) sx *= 2;
+  const sy = nice(y1 - y0), dp = (s: number) => (s >= 1 ? 0 : s >= 0.1 ? 1 : s >= 0.01 ? 2 : 3);
+  const z = (v: number) => (Math.abs(v) < 1e-12 ? 0 : v), xFirst = Math.ceil(x0 / sx - 1e-9) * sx;
+  const xs: number[] = []; for (let v = xFirst; v <= x1 + 1e-9; v += sx) xs.push(v);
+  const ys: number[] = []; for (let v = Math.ceil(y0 / sy - 1e-9) * sy; v <= y1 + 1e-9; v += sy) if (!(Math.abs(v - y0) < 1e-9 && Math.abs(xFirst - x0) < 1e-9)) ys.push(v);
+  let lx = 8;
+  return (
+    <Figure label={label} caption={caption}>
+      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        {xs.map((v) => (
+          <g key={`x${v}`}>
+            <line x1={X(v)} x2={X(v)} y1={T} y2={H - B} stroke="var(--rd-line)" />
+            <text x={X(v)} y={H - B + 15} textAnchor="middle" fontSize={12} fill="var(--rd-muted)">{fmt(z(v), dp(sx))}</text>
+          </g>
+        ))}
+        {ys.map((v) => <text key={`y${v}`} x={L - 6} y={Y(v) + 4} textAnchor="end" fontSize={12} fill="var(--rd-muted)">{fmt(z(v), dp(sy))}</text>)}
+        {y0 < 0 && y1 > 0 ? <line x1={L} x2={W - R} y1={Y(0)} y2={Y(0)} stroke="var(--rd-ink)" strokeOpacity={0.6} /> : null}
+        <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" fontSize={12} fill="var(--rd-ink)">{xl}</text>
+        <text x={12} y={(T + H - B) / 2} textAnchor="middle" fontSize={12} fill="var(--rd-ink)" transform={`rotate(-90 12 ${(T + H - B) / 2})`}>{yl}</text>
+        {children({ X, Y, W, H, L, R, T, B })}
+        {legend?.map(([name, color, dash]) => {
+          const x = lx;
+          lx += 37 + name.length * 7.2;
+          return (
+            <g key={name}>
+              <line x1={x} x2={x + 18} y1={13} y2={13} stroke={color} strokeWidth={2.2} strokeDasharray={dash || undefined} />
+              <text x={x + 23} y={17} fontSize={12} fill="var(--rd-ink)">{name}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </Figure>
+  );
+}
+
+/** SVG polyline from data-space points through a plot's scales. */
+export const Poly = ({ pts, s, color, w = 2.2, dash }: { pts: [number, number][]; s: PlotScale; color: string; w?: number; dash?: string }) => (
+  <polyline points={pts.map(([x, y]) => `${s.X(x).toFixed(1)},${s.Y(y).toFixed(1)}`).join(' ')} fill="none" stroke={color} strokeWidth={w} strokeDasharray={dash} />
+);
