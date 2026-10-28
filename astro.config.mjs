@@ -1,60 +1,47 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import starlight from '@astrojs/starlight';
+import mdx from '@astrojs/mdx';
+import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 import { unified } from '@astrojs/markdown-remark';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { PHASES, BRIEFING, route } from './src/data/zones.mjs';
-
-// The visible rail is rendered by src/components/overrides/Sidebar.astro from the
-// zone plan; this config mirrors the same plan (v2 pages only) as Starlight's fallback.
-const sidebar = [
-  { label: 'Briefing', items: BRIEFING.map((b) => ({ label: b.label, slug: b.slug })) },
-  ...PHASES.map((p) => ({
-    label: p.n,
-    items: route()
-      .filter((z) => z.phase === p.k && z.slug)
-      .map((z) => ({ label: `${z.tag} ${z.label}`, slug: /** @type {string} */ (z.slug) })),
-  })).filter((g) => g.items.length > 0),
-];
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
 // SITE_URL / BASE_PATH are set by the GitHub Pages workflow so the same config
 // works for https://<user>.github.io/<repo>/ and for a custom domain at "/".
 export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
   base: process.env.BASE_PATH || '/',
+  trailingSlash: 'always',
   markdown: {
-    processor: unified({ remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }),
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [
+        rehypeKatex,
+        rehypeSlug,
+        // A "#" link after each section heading, so a reader can copy a link to any section. The "#" is drawn by CSS
+        // so it stays out of the heading text (the table of contents and the search index read that text).
+        [rehypeAutolinkHeadings, {
+          behavior: 'append',
+          test: ['h2', 'h3'],
+          properties: { class: 'heading-link', ariaLabel: 'Link to this section' },
+          content: [],
+        }],
+      ],
+    }),
   },
   integrations: [
-    starlight({
-      title: 'REF·DB',
-      description:
-        'Solid rocket motor and mechanical design reference. Learn the concepts, then use the tools.',
-      favicon: '/favicon.svg',
-      customCss: [
-        '@fontsource/ibm-plex-sans/400.css',
-        '@fontsource/ibm-plex-sans/600.css',
-        '@fontsource/ibm-plex-mono/400.css',
-        '@fontsource/ibm-plex-mono/600.css',
-        'katex/dist/katex.min.css',
-        './src/styles/custom.css',
-        './src/styles/hud.css',
-      ],
-      lastUpdated: true,
-      pagination: false,
-      tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
-      components: {
-        ThemeProvider: './src/components/overrides/ThemeProvider.astro',
-        ThemeSelect: './src/components/overrides/ThemeSelect.astro',
-        SocialIcons: './src/components/overrides/SocialIcons.astro',
-        SiteTitle: './src/components/overrides/SiteTitle.astro',
-        PageFrame: './src/components/overrides/PageFrame.astro',
-        Sidebar: './src/components/overrides/Sidebar.astro',
-        PageTitle: './src/components/overrides/PageTitle.astro',
-        Footer: './src/components/overrides/Footer.astro',
-      },
-      sidebar,
-    }),
+    mdx(),
+    react(),
+    // The frozen classic site and the v1 archive are kept for old links, not for search engines.
+    sitemap({ filter: (page) => !/\/(classic|legacy)\//.test(page) }),
   ],
+  vite: {
+    // Cast UI is a React Native library. "react-native" is installed as an npm alias of react-native-web (see
+    // package.json), so Cast's own require('react-native') and our imports resolve to the same single copy.
+    resolve: { extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'] },
+    define: { __DEV__: 'false', global: 'globalThis' },
+  },
 });

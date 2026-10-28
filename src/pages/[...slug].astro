@@ -1,0 +1,35 @@
+---
+import { execFileSync } from 'node:child_process';
+import { getCollection, render } from 'astro:content';
+import Doc from '../layouts/Doc.astro';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((entry) => ({ params: { slug: entry.id === 'index' ? undefined : entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+
+/** Date of the last commit that touched this page (null outside a git checkout). */
+function lastCommit(file: string | undefined): string | null {
+  if (!file) return null;
+  try {
+    return execFileSync('git', ['log', '-1', '--format=%cI', '--', file], { encoding: 'utf8' }).trim() || null;
+  } catch {
+    return null;
+  }
+}
+const home = entry.id === 'index';
+---
+
+<Doc
+  title={entry.data.title}
+  description={entry.data.description}
+  headings={headings}
+  toc={entry.data.tableOfContents && !home}
+  updated={lastCommit(entry.filePath)}
+  home={home}
+>
+  <Content />
+</Doc>

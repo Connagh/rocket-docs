@@ -1,0 +1,20 @@
+---
+// Note / tip / caution / danger callout inside the prose. Static on purpose: Cast's <Alert> is announced as a live
+// alert, which suits a status message but not a paragraph of reference text.
+interface Props {
+  type?: 'note' | 'tip' | 'caution' | 'danger';
+  title?: string;
+}
+const { type = 'note', title } = Astro.props;
+const meta = {
+  note: { icon: 'info', label: 'Note' },
+  tip: { icon: 'lightbulb', label: 'Tip' },
+  caution: { icon: 'warning', label: 'Caution' },
+  danger: { icon: 'dangerous', label: 'Danger' },
+}[type];
+---
+
+<aside class={`aside aside-${type}`} aria-label={title ?? meta.label}>
+  <p class="aside-title"><span class="material-symbols" aria-hidden="true">{meta.icon}</span>{title ?? meta.label}</p>
+  <div class="aside-body"><slot /></div>
+</aside>

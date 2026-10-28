@@ -1,0 +1,63 @@
+---
+// Document shell shared by every page: head, theme, fonts, the site header and the starfield canvas.
+import '@fontsource-variable/inter';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import 'katex/dist/katex.min.css';
+import '../styles/site.css';
+import '../styles/prose.css';
+import '../styles/figures.css';
+import '../styles/tools-legacy.css';
+import SiteHeader from '../islands/SiteHeader';
+import { themeCss, resolved } from '../cast/theme';
+import { navFor } from '../data/nav';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const nav = await navFor(Astro.url.pathname);
+const pageTitle = Astro.url.pathname === base ? 'REF·DB: solid rocket motor & mechanical design reference' : `${title} · REF·DB`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const navProps = { start: nav.start, sections: nav.sections, currentSection: nav.currentSection, classicHref: `${base}classic/`, legacyHref: `${base}legacy/` };
+---
+
+<!doctype html>
+<html lang="en-GB" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={canonical} />
+    <meta name="theme-color" content={resolved('dark', 'surface.base')} media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content={resolved('light', 'surface.base')} media="(prefers-color-scheme: light)" />
+    <link rel="preload" href={`${base}fonts/material-symbols-outlined.woff2`} as="font" type="font/woff2" crossorigin />
+    <style is:inline set:html={`@font-face{font-family:'Material Symbols Outlined';font-style:normal;font-weight:400;font-display:block;src:url(${base}fonts/material-symbols-outlined.woff2) format('woff2')}`}></style>
+    <style is:inline set:html={themeCss}></style>
+    <script is:inline>
+      // Apply the saved colour mode before first paint (dark is the default).
+      try {
+        const t = localStorage.getItem('refdb-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="starfield" aria-hidden="true" style={`--stars-near:url(${base}images/stars-near.svg);--stars-far:url(${base}images/stars-far.svg)`}></div>
+    <header class="site-header">
+      <SiteHeader client:load base={base} githubHref="https://github.com/Connagh/rocket-docs" nav={navProps} />
+    </header>
+    <slot />
+  </body>
+</html>

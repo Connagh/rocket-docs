@@ -4,15 +4,15 @@ description: Learn solid rocket motor and mechanical design from first principle
 tableOfContents: false
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-import MissionHome from '../../components/hud/MissionHome.astro';
+import Aside from '../../components/Aside.astro';
+import Home from '../../components/site/Home.astro';
 
-<MissionHome />
+<Home />
 
 ## How every page works
 
-All rebuilt zones use the same sequence. When you have read one page, you know where to find all the items on the
-other pages: **intuition → analogy → diagram → equations → interactive tool → worked example → where it stops → on the
+Every topic follows the same sequence. When you have read one page, you know where to find everything on the
+others: **intuition → analogy → diagram → equations → interactive tool → worked example → where it stops → on the
 drawing → references.** The calculations use unit-tested code, and the same tests check each worked example.
 
 <Aside type="tip" title="The drawing philosophy in one paragraph">
@@ -21,9 +21,9 @@ drawing → references.** The calculations use unit-tested code, and the same te
   tolerance only as tight as the function needs, and give the standard that applies.
 </Aside>
 
-<Aside type="note" title="v2 is rebuilt zone by zone">
-  Zones with the mark **v1** in the rail open the complete original reference at that zone, so no content is lost
-  while the other zones are rebuilt. The [roadmap](start/roadmap/) shows the sequence.
+<Aside type="note" title="Still being rebuilt">
+  Topics marked **v1 archive** in the menu open the complete original reference at that topic, so no content is lost
+  while the rest are rebuilt. The [roadmap](start/roadmap/) shows the order.
 </Aside>
 
 <Aside type="caution" title="Reference aid only">

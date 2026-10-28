@@ -1,0 +1,178 @@
+/* Figures, callouts and the "at a glance" strip that sit inside the prose.
+   The diagrams in src/components draw with the --rd-* palette (defined per mode in src/cast/theme.ts). */
+
+:root {
+  /* Names the diagram components were written against (Starlight / v2 HUD), mapped onto the Cast theme. */
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+  --sl-text-xs: 0.8125rem;
+  --sl-text-sm: 0.875rem;
+  --sl-color-accent: var(--brand);
+  --sl-color-white: var(--text);
+  --sl-color-black: var(--surface);
+  --sl-color-gray-2: var(--text);
+  --sl-color-gray-3: var(--text-2);
+  --sl-color-gray-4: var(--text-2);
+  --sl-color-gray-5: var(--border);
+  --hud-plate: var(--rd-panel);
+  --hud-edge: var(--border);
+  --hud-edge-strong: var(--rd-line);
+}
+
+/* ---------- Figures ---------- */
+.viz {
+  margin: 1.75rem 0;
+  padding: 1.1rem 1.1rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--rd-panel);
+}
+.viz svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-mono);
+}
+.viz figcaption {
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.viz .viz-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .viz .flow {
+    animation: none !important;
+  }
+}
+
+/* ---------- "Think of it like…" ---------- */
+.analogy {
+  margin: 1.75rem 0;
+  padding: 1rem 1.2rem 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--site-info) 35%, transparent);
+  border-left: 4px solid var(--site-info);
+  border-radius: var(--radius);
+  background: var(--site-info-bg);
+}
+.analogy .analogy-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--site-info);
+}
+.analogy .analogy-title {
+  margin: 0.4rem 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--text);
+}
+.analogy > :not(:first-child) {
+  margin-top: 0.5rem;
+}
+.analogy > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Asides (note / tip / caution / danger) ---------- */
+.aside {
+  --a: var(--text-2);
+  --a-bg: var(--surface-2);
+  margin: 1.75rem 0;
+  padding: 0.95rem 1.15rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--a) 35%, transparent);
+  border-left: 4px solid var(--a);
+  border-radius: var(--radius);
+  background: var(--a-bg);
+}
+.aside-note {
+  --a: var(--site-info);
+  --a-bg: var(--site-info-bg);
+}
+.aside-tip {
+  --a: var(--site-ok);
+  --a-bg: var(--site-ok-bg);
+}
+.aside-caution {
+  --a: var(--site-warn);
+  --a-bg: var(--site-warn-bg);
+}
+.aside-danger {
+  --a: var(--cast-intents-danger-default-default-fg);
+  --a-bg: var(--site-danger-bg);
+}
+.aside-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem !important;
+  font-weight: 650;
+  color: var(--text);
+}
+.aside-title .material-symbols {
+  color: var(--a);
+}
+.aside > :last-child {
+  margin-bottom: 0;
+}
+.aside-body > :last-child {
+  margin-bottom: 0;
+}
+
+.material-symbols {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ---------- At a glance ---------- */
+.glance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 2rem;
+}
+.glance > div {
+  margin: 0 !important;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.97rem;
+  line-height: 1.6;
+}
+.glance > div:first-child {
+  border-top: 3px solid var(--brand-fill);
+}
+.glance b {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}

@@ -3,34 +3,36 @@ title: How to use this site
 description: How topic pages are arranged, how to search, and how to read the numbers.
 ---
 
+import Aside from '../../../components/Aside.astro';
+
 ## Two ways in
 
 - **Do you want to learn a topic?** Start at the top of a page and read down. All topics are written in the same
   sequence. When you have read one page, you know where to find all the items on the other pages.
-- **Do you need a number or a tool?** Push <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, or go directly to
-  the calculator from the table of contents of the page.
+- **Do you need a number or a tool?** Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, or jump straight
+  to the calculator from the **On this page** list.
 
 ## Finding your way
 
-- **The mission rail** (on the left; the ☰ menu on a phone) shows all 64 zones in workflow sequence, in eight phases.
-  Each phase has its own colour. Bright entries are rebuilt v2 pages. Entries with the tag **v1** open the original
-  reference at that zone, so no content is missing.
-- **The orbit map** at the top of the rail shows the eight phases as planets, with your current zone in the sun. Select
-  a planet to go to that phase in the list.
-- **The zone banner** at the top of each page shows your location, for example *PHASE 3 OF 8 · SIZE · STEP 5 OF 10 ·
-  Z25*. It has a dot for each zone in the phase (filled = v2, dashed = v1), and **PREV / NEXT** links through the
-  rebuilt pages. The same links are also at the bottom of each page.
-- **Zone numbers** are the same as in REF·DB v1. Thus a number on an old note still refers to the same topic. Primer
-  pages such as *How a solid motor works* have the mark **P** and no number.
-- **MODE** changes between the dark mission view (the default) and a light drawing-office view. **PAUSE MOTION** stops
-  the background and all animations. The site remembers your selection, and it always obeys the reduced-motion setting
-  of your system.
+- **The topic menu** (on the left; the ☰ button on a phone or tablet) lists every topic in the order a component is
+  designed, grouped into eight phases: *Orient, Select, Size, Verify, Detail, Features, Make* and *Specify*. Open a
+  phase to see its topics. The phase you are in opens by itself.
+- **Topics in the v1 archive** are listed under their phase with a clock icon. They open the original single-file
+  reference at that topic, so no content is missing while they are rebuilt. The [roadmap](../roadmap/) shows the
+  order.
+- **On this page** (on the right, or folded above the article on smaller screens) lists the sections of the page you
+  are reading and highlights the one in view.
+- **Previous and next** at the bottom of each page step through the rebuilt topics in design order.
+- **Light and dark mode:** the sun and moon button in the header switches between the dark deep-field view (the
+  default) and a light drawing-office view. The site remembers your choice.
+- **The classic site** is kept as it was at [/classic/](../../classic/), and the original v1 reference at
+  [/legacy/](../../legacy/).
 
 ## How every topic page is laid out
 
 1. **At a glance:** the idea in one line, and what to read first.
 2. **Why it matters:** what goes wrong on real hardware if this is incorrect.
-3. **Intuition:** an analogy from daily life (the blue *Think of it like…* boxes) and a diagram.
+3. **Intuition:** an analogy from daily life (the *Think of it like…* boxes) and a diagram.
 4. **The physics:** the equations, each one explained in words.
 5. **The tool:** an interactive calculator that uses the same equations. *Copy link* shares your exact inputs.
 6. **Worked example:** the result of the tool calculated by hand, step by step, so that you can check the two.
@@ -51,8 +53,8 @@ description: How topic pages are arranged, how to search, and how to read the nu
   toughness ($K_{IC}$) changes much with heat treatment, orientation, thickness and temperature. The site always shows
   it as indicative.
 
-:::caution[Screening values, not design allowables]
-All the content is for learning and early sizing. Before you build anything, verify against the current issue of the
-applicable standard, the design rules of your organisation and approved allowables. The responsible authority must
-approve the analysis.
-:::
+<Aside type="caution" title="Screening values, not design allowables">
+  All the content is for learning and early sizing. Before you build anything, verify against the current issue of the
+  applicable standard, the design rules of your organisation and approved allowables. The responsible authority must
+  approve the analysis.
+</Aside>

@@ -1,0 +1,64 @@
+---
+// Home: what the site is, the questions it answers, and the eight-phase route. All counts derive from the zone plan.
+import { TaskGrid, PhaseGrid, type HomeTask, type HomePhase } from '../../islands/Home';
+import HomeActions from '../../islands/HomeActions';
+import { navFor } from '../../data/nav';
+import { route, hrefOf } from '../../data/zones.mjs';
+
+const base = import.meta.env.BASE_URL;
+const nav = await navFor(Astro.url.pathname);
+const items = route();
+const titleOf = (key: string) => nav.sections.flatMap((s) => s.links).find((l) => l.href === hrefOf(items.find((i) => i.key === key)!, base));
+
+// The questions REF·DB v1 opened with; each lands on its topic (rebuilt page or v1 archive).
+const TASKS: [string, string, string][] = [
+  ['Which alloy should I use?', 'materials', 'Every material on one property chart, ranked by what the part actually needs.'],
+  ['How thick does the case wall have to be?', 'pv', 'Thin wall, Lamé, proof and burst, and the failure mode that governs.'],
+  ['Will the grain survive cold soak?', 'grain', 'Bore strain and bond stress against capability at temperature.'],
+  ['How thick does the insulation need to be?', 'ablative', 'Erosion, char and soak-back, with the bondline limit.'],
+  ['What does the proof test actually buy me?', 'proof', 'Screened flaw size, life to critical, and the test-rig energy.'],
+  ['Will this O-ring seal at −40 °C?', 'oring', 'Squeeze and fill at the worst tolerance corner, cold, with the joint open.'],
+  ['How do I call this material up on a drawing?', 'matspec', 'Form standard, condition, finish: a copy-ready callout.'],
+  ['Does it leak or does it burst?', 'lbb', 'Critical flaw size against the wall you just sized.'],
+  ['Will it survive the ride?', 'vibration', 'Miles’ equation, and where the damage actually accumulates.'],
+  ['How tight do I torque this bolt?', 'bolts', 'VDI 2230, and what the joint does with the load.'],
+  ['Will my tolerances stack up?', 'stack', 'Worst case, RSS and Monte Carlo, side by side.'],
+  ['Can these two metals touch?', 'galvanic', 'Anodic index, area ratio and the environment.'],
+];
+const tasks: HomeTask[] = TASKS.flatMap(([q, key, d]) => {
+  const l = titleOf(key);
+  return l ? [{ q, d, href: l.href, topic: l.label, archived: l.archived }] : [];
+});
+const phases: HomePhase[] = nav.sections.map((s, i) => {
+  const first = s.links.find((l) => !l.archived) ?? s.links[0];
+  return {
+    n: i + 1, key: s.key, label: s.label, summary: s.summary, icon: s.icon, href: first.href,
+    count: s.links.filter((l) => !l.archived).length, archived: s.links.filter((l) => l.archived).length,
+  };
+});
+const rebuilt = phases.reduce((n, p) => n + p.count, 0);
+const primer = nav.sections[0].links.find((l) => !l.archived)!;
+---
+
+<section class="home-hero">
+  <p class="home-eyebrow">Solid rocket motor &amp; mechanical design reference</p>
+  <h1>Learn the concept, see it, then run the numbers.</h1>
+  <p class="home-lede">
+    A working reference for solid rocket motor hardware: cases, grains, insulation, seals and materials, and the
+    mechanical design that holds them together. A newcomer can learn from it and an engineer can use it.
+  </p>
+  <HomeActions client:load startHref={primer.href} startLabel={`Start with: ${primer.label}`} />
+  <ul class="home-facts">
+    <li><strong>{rebuilt}</strong> topics, each with a tool</li>
+    <li><strong>8</strong> design phases, in build order</li>
+    <li>Open literature only, every number sourced</li>
+  </ul>
+</section>
+
+<h2 id="start-a-task">Start with a question</h2>
+<p>Pick the question you are trying to answer. It lands on the tool, not on a menu.</p>
+<TaskGrid tasks={tasks} />
+
+<h2 id="the-design-route">Follow the design route</h2>
+<p>Eight phases in the order a component is actually designed, from understanding the problem to releasing the drawing.</p>
+<PhaseGrid phases={phases} />

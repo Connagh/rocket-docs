@@ -1,0 +1,91 @@
+---
+// Topic page frame: topics on the left, the page in the middle, its sections on the right.
+import Base from './Base.astro';
+import SideNav from '../islands/SideNav';
+import PageToc, { PageTocCollapsible } from '../islands/PageToc';
+import { navFor } from '../data/nav';
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  headings: MarkdownHeading[];
+  toc?: boolean;
+  /** ISO date of the last commit that touched the page source. */
+  updated?: string | null;
+  /** Home page: no title block, no pager, wide column. */
+  home?: boolean;
+}
+const { title, description, headings, toc = true, updated, home = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const nav = await navFor(Astro.url.pathname);
+const navProps = { start: nav.start, sections: nav.sections, currentSection: nav.currentSection, classicHref: `${base}classic/`, legacyHref: `${base}legacy/` };
+const tocHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3).map(({ depth, slug, text }) => ({ depth, slug, text }));
+const showToc = toc && tocHeadings.length > 1;
+const updatedText = updated ? new Date(updated).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+---
+
+<Base title={title} description={description}>
+  <div class:list={['doc-frame', { 'has-toc': showToc, home }]}>
+    <aside class="doc-nav" aria-label="Topics">
+      <div class="doc-nav-inner">
+        <SideNav client:idle {...navProps} />
+      </div>
+    </aside>
+
+    <main id="main" class="doc-main" tabindex="-1">
+      <article class="doc-article" data-pagefind-body>
+        {!home && (
+          <header class="doc-head">
+            {nav.sectionLabel && <p class="doc-eyebrow" data-pagefind-ignore>{nav.sectionLabel}</p>}
+            <h1 data-pagefind-meta="title">{title}</h1>
+            {description && <p class="doc-lede">{description}</p>}
+          </header>
+        )}
+        {showToc && (
+          <div class="doc-toc-inline" data-pagefind-ignore>
+            <PageTocCollapsible client:idle headings={tocHeadings} />
+          </div>
+        )}
+        <div class="prose">
+          <slot />
+        </div>
+      </article>
+
+      {!home && (
+        <footer class="doc-foot" data-pagefind-ignore>
+          {(nav.prev || nav.next) && (
+            <nav class="pager" aria-label="Previous and next topic">
+              {nav.prev ? (
+                <a class="pager-card prev" href={nav.prev.href} rel="prev">
+                  <span class="pager-k">Previous · {nav.prev.section}</span>
+                  <span class="pager-t">{nav.prev.label}</span>
+                </a>
+              ) : <span />}
+              {nav.next && (
+                <a class="pager-card next" href={nav.next.href} rel="next">
+                  <span class="pager-k">Next · {nav.next.section}</span>
+                  <span class="pager-t">{nav.next.label}</span>
+                </a>
+              )}
+            </nav>
+          )}
+          {updatedText && <p class="doc-updated">Last updated <time datetime={updated}>{updatedText}</time></p>}
+          <p class="doc-disclaimer">
+            Reference aid for learning and early design. Values are typical published data and screening methods. Before release, verify
+            against the current issue of the applicable standard, the approved data of your organisation and the requirements of your
+            programme.
+          </p>
+        </footer>
+      )}
+    </main>
+
+    {showToc && (
+      <aside class="doc-toc" aria-label="On this page">
+        <div class="doc-toc-inner">
+          <PageToc client:idle headings={tocHeadings} />
+        </div>
+      </aside>
+    )}
+  </div>
+</Base>

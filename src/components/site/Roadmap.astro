@@ -1,0 +1,51 @@
+---
+// Roadmap, derived from the zone plan: status comes from REBUILT/PRIMERS. Only the wave order is written here,
+// by zone key.
+import { RoadmapTable, RoadmapSummary } from '../../islands/RoadmapTable';
+import { route, hrefOf } from '../../data/zones.mjs';
+import { navFor } from '../../data/nav';
+
+const items = route();
+const nav = await navFor(Astro.url.pathname);
+const linkOf = new Map(nav.sections.flatMap((s) => s.links.map((l) => [l.href, { ...l, phase: s.label }])));
+const base = import.meta.env.BASE_URL;
+const byKey = Object.fromEntries(items.map((i) => [i.key, i]));
+
+const WAVES = [
+  { n: 'Wave 1: Solid rocket motor core', why: 'The reason this site exists, so it goes first.',
+    keys: ['primer-srm', 'pv', 'grain', 'ablative', 'proof', 'rocket', 'propellant', 'thermal', 'lbb', 'buckling', 'visco', 'ageing'] },
+  { n: 'Wave 2: Materials', why: 'Selection, data and how to call it up.',
+    keys: ['materials', 'xref', 'matspec', 'trade', 'sheet', 'allow', 'metal', 'fatigue', 'cryo', 'density', 'plastics', 'elast', 'coat', 'galvanic'] },
+  { n: 'Wave 3: Joints, seals and features', why: 'Where pressure hardware actually leaks or loosens.',
+    keys: ['oring', 'sealstrat', 'bolts', 'threads', 'locking', 'loadpath', 'diffexp', 'residual', 'handcalc'] },
+  { n: 'Wave 4: Verification', why: 'Proving it survives.',
+    keys: ['margins', 'vibration', 'feamat', 'fea', 'correl'] },
+  { n: 'Wave 5: Drawing, manufacture and inspection', why: 'Turning the design into parts that pass inspection.',
+    keys: ['gdt', 'gdtprac', 'fits', 'stack', 'surf', 'gauge', 'process', 'cost', 'weld', 'ndt', 'leak', 'certs'] },
+  { n: 'Wave 6: Process, standards and tools', why: 'Everything around the design itself.',
+    keys: ['reqs', 'duty', 'risk', 'sandbox', 'worked', 'read', 'access', 'standards', 'guides', 'drawing', 'release', 'export'] },
+];
+
+// Every topic must appear in exactly one wave (guards against one being forgotten). The v1 "home" zone is this
+// site's home page, so it is not listed.
+const listed = new Set(WAVES.flatMap((w) => w.keys));
+const missing = items.filter((i) => i.key !== 'home' && !listed.has(i.key)).map((i) => i.key);
+if (missing.length) throw new Error(`Roadmap is missing zones: ${missing.join(', ')}`);
+const topics = items.filter((i) => !i.primer && i.key !== 'home');
+const done = topics.filter((i) => i.slug !== null).length;
+---
+
+<RoadmapSummary done={done} total={topics.length} primers={items.filter((i) => i.primer).length} />
+
+{WAVES.map((w) => (
+  <section class="roadmap-wave">
+    <h2>{w.n}</h2>
+    <p>{w.why}</p>
+    <RoadmapTable
+      rows={w.keys.map((k) => {
+        const l = linkOf.get(hrefOf(byKey[k], base))!;
+        return { label: l.label, href: l.href, phase: l.phase, done: !l.archived };
+      })}
+    />
+  </section>
+))}

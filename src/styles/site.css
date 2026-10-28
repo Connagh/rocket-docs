@@ -1,0 +1,377 @@
+/* REF·DB site shell: page canvas, header, the three-column docs frame and the pager.
+   Colours come from the Cast theme variables (src/cast/theme.ts); nothing here hard-codes a colour. */
+
+:root {
+  --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --header-h: 60px;
+  --nav-w: 288px;
+  --toc-w: 240px;
+  --measure: 46rem;
+  --radius: 10px;
+  --surface: var(--cast-surface-base);
+  --surface-2: var(--cast-surface-subtle);
+  --border: var(--cast-list-separator);
+  --text: var(--cast-text-primary);
+  --text-2: var(--cast-text-description);
+  --brand: var(--cast-intents-brand-default-default-fg);
+  --brand-fill: var(--cast-intents-brand-bold-default-bg);
+  --focus: var(--cast-focusRing-color);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--site-canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1.5rem);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* No background here: the fixed .starfield (z-index -1) sits between the root canvas and the page. */
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* One visible focus style for everything, including react-native-web anchors and buttons. */
+:focus-visible {
+  outline: 2px solid var(--focus) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: var(--brand-fill);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+/* ---------- Canvas: deep field in dark mode, drafting grid in light ---------- */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at 85% -5%, var(--site-glow), transparent 70%),
+    radial-gradient(ellipse 50% 40% at -10% 100%, rgba(92, 192, 210, 0.07), transparent 70%),
+    var(--stars-far),
+    var(--stars-near),
+    var(--site-canvas);
+  background-size: auto, auto, 733px 733px, 420px 420px, auto;
+}
+:root[data-theme='light'] .starfield {
+  background:
+    radial-gradient(ellipse 60% 45% at 85% -5%, var(--site-glow), transparent 70%),
+    linear-gradient(var(--border) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--site-canvas);
+  opacity: 0.55;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-h);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--site-canvas) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.site-header > astro-island > div {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* The header island marks responsive pieces with data attributes; react-native-web writes layout as inline
+   styles, so these overrides need !important. */
+[data-only='narrow'] {
+  display: none !important;
+}
+@media (max-width: 1023.98px) {
+  [data-only='narrow'] {
+    display: flex !important;
+  }
+  [data-only='wide'] {
+    display: none !important;
+  }
+}
+[data-search-slot] {
+  align-items: center !important;
+}
+[data-search-button] {
+  width: min(100%, 26rem);
+}
+@media (max-width: 600px) {
+  [data-kbd] {
+    display: none !important;
+  }
+  [data-search-slot] {
+    align-items: flex-end !important;
+  }
+  [data-search-button] {
+    width: 40px;
+  }
+  [data-search-button] > div:nth-child(2) {
+    display: none !important;
+  }
+}
+
+/* ---------- Docs frame ---------- */
+.doc-frame {
+  display: grid;
+  grid-template-columns: var(--nav-w) minmax(0, 1fr);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.doc-frame.has-toc {
+  grid-template-columns: var(--nav-w) minmax(0, 1fr) var(--toc-w);
+}
+
+.doc-nav,
+.doc-toc {
+  position: sticky;
+  top: var(--header-h);
+  align-self: start;
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.doc-nav-inner {
+  padding: 1rem 0.75rem 3rem 1rem;
+}
+.doc-toc-inner {
+  padding: 2.25rem 1.25rem 3rem 0.5rem;
+}
+
+.doc-main {
+  min-width: 0;
+  padding: 1.5rem 2.5rem 4rem;
+  outline: none;
+}
+.doc-article,
+.doc-foot {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+.home .doc-article {
+  max-width: 68rem;
+}
+.doc-toc-inline {
+  display: none;
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 1279.98px) {
+  .doc-frame.has-toc {
+    grid-template-columns: var(--nav-w) minmax(0, 1fr);
+  }
+  .doc-toc {
+    display: none;
+  }
+  .doc-toc-inline {
+    display: block;
+  }
+}
+@media (max-width: 1023.98px) {
+  .doc-frame,
+  .doc-frame.has-toc {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .doc-nav {
+    display: none;
+  }
+  .doc-main {
+    padding: 1.25rem 1rem 3rem;
+  }
+}
+
+/* ---------- Page header ---------- */
+.doc-head {
+  margin: 1rem 0 2rem;
+}
+.doc-eyebrow {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.doc-head h1 {
+  margin: 0;
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--text);
+  text-wrap: balance;
+}
+.doc-lede {
+  margin: 0.85rem 0 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+/* ---------- Footer: pager, date, disclaimer ---------- */
+.doc-foot {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.pager-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.pager-card:hover {
+  border-color: var(--brand);
+  background: var(--surface-2);
+}
+.pager-card.next {
+  text-align: right;
+  grid-column: 2;
+}
+.pager-k {
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+.pager-card.prev .pager-k::before {
+  content: '← ';
+}
+.pager-card.next .pager-k::after {
+  content: ' →';
+}
+.pager-t {
+  font-weight: 600;
+  color: var(--brand);
+}
+@media (max-width: 600px) {
+  .pager {
+    grid-template-columns: 1fr;
+  }
+  .pager-card.next {
+    grid-column: 1;
+  }
+}
+.doc-updated,
+.doc-disclaimer {
+  margin: 1.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+.doc-disclaimer {
+  margin-top: 0.75rem;
+}
+
+/* ---------- Home ---------- */
+.home-hero {
+  position: relative;
+  margin: 1.5rem 0 1rem;
+  padding: 3.25rem 0 2.5rem;
+}
+.home-eyebrow {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.home-hero h1 {
+  max-width: 18ch;
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.4rem, 1.6rem + 3.4vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 750;
+  text-wrap: balance;
+}
+.home-lede {
+  max-width: 40rem;
+  margin: 0 0 2rem !important;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.home-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin: 2rem 0 0 !important;
+  padding: 0 !important;
+  list-style: none;
+  font-size: 0.95rem;
+  color: var(--text-2);
+}
+.home-facts li {
+  margin: 0 !important;
+  padding-left: 1.1rem;
+  position: relative;
+}
+.home-facts li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-fill);
+  box-shadow: 0 0 8px var(--brand-fill);
+}
+.home-facts strong {
+  color: var(--text);
+}
+.home .prose > h2:first-of-type {
+  margin-top: 1.5rem;
+}
