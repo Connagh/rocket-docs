@@ -22,13 +22,16 @@ light_mode
 lightbulb
 link
 menu
+pause
 person
+play_arrow
 precision_manufacturing
 remove
 science
 search
 small
 straighten
+table
 toc
 verified
 warning
