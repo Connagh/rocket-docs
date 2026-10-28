@@ -7,7 +7,7 @@
 //   </Calc>
 //
 // Form values are strings keyed by field name (exactly what goes in the share link); tools parse them with num().
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text as RNText, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
 import {
   Accordion,
@@ -45,6 +45,11 @@ export function useForm(): FormCtx {
   const f = useContext(Form);
   if (!f) throw new Error('useForm must be used inside <Calc>');
   return f;
+}
+
+/** Form values for expensive results (Monte Carlo, optimisers): they lag a keystroke behind so typing stays smooth. */
+export function useSlowValues(): Values {
+  return useDeferredValue(useForm().v);
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -597,7 +602,7 @@ export function Readout({
   tone?: Tone;
   primary?: boolean;
   /** A short qualifier under the value, e.g. "thin wall". */
-  sub?: string;
+  sub?: React.ReactNode;
 }) {
   const { scheme, colors } = useTheme();
   const t = toneColor(scheme, tone);
@@ -638,11 +643,7 @@ export function Readout({
         {value}
         {unit ? <RNText style={{ fontSize: 12, color: scheme.text.description, fontWeight: '400' }}>{` ${unit}`}</RNText> : null}
       </RNText>
-      {sub ? (
-        <Text type="caption" color={scheme.text.description}>
-          {sub}
-        </Text>
-      ) : null}
+      {sub ? <RNText style={{ fontSize: 11.5, lineHeight: 16, color: scheme.text.description }}>{sub}</RNText> : null}
     </View>
   );
 }

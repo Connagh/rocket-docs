@@ -118,3 +118,63 @@
   color: var(--brand);
   font-weight: 650;
 }
+
+/* Hardware atlas (src/tools/HardwareAtlas.tsx) */
+.ha-svg .ha-part {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ha-svg.has-sel .ha-part:not(.on) {
+  opacity: 0.55;
+}
+.ha-svg .ha-part.on > * {
+  stroke: var(--text);
+  stroke-width: 1.6;
+}
+.ha-svg .ha-badge {
+  cursor: pointer;
+}
+.ha-svg .ha-badge circle {
+  fill: var(--rd-panel);
+  stroke: var(--brand);
+  stroke-width: 2;
+}
+.ha-svg .ha-badge text {
+  fill: var(--rd-ink);
+  pointer-events: none;
+}
+.ha-svg .ha-badge.on circle {
+  fill: var(--brand-fill);
+}
+.ha-svg .ha-badge.on text {
+  fill: #fff;
+}
+[data-atlas-grid] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem 1rem;
+}
+[data-atlas-wide] {
+  grid-column: 1 / -1;
+}
+.tool-table .wrap {
+  display: inline-block;
+  min-width: 12rem;
+  white-space: normal;
+}
+.tool-table small {
+  color: var(--text-2);
+}
+.tool-table .flag {
+  color: var(--site-warn);
+}
+.tool-copytext {
+  width: 100%;
+  font: 0.8rem/1.4 var(--font-mono);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  white-space: pre;
+}
