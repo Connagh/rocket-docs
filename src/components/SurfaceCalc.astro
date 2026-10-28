@@ -1,0 +1,296 @@
+---
+// Surface finish in three tabs: a simulated profile, filtered and measured as an instrument does it; the requirement
+// for a function, the processes that can give it, acceptance of measured values and the drawing callout; and the loss
+// of interference in a press fit. The drawing limit is the user's requirement and starts blank. Maths in
+// src/lib/surface.ts (unit-tested); UI only here.
+import { FUNCTIONS, PROCESSES } from '../lib/surface';
+
+const TABS = [{ key: 'profile', name: 'Profile & parameters' }, { key: 'spec', name: 'Requirement & acceptance' }, { key: 'fit', name: 'Press fit' }];
+const READINGS = '0.31, 0.29, 0.36, 0.42, 0.33, 0.30\n0.34, 0.28, 0.32, 0.35, 0.30, 0.33';
+---
+
+<div class="calc sfcalc" data-sfcalc>
+  <div class="calc-head"><span>Surface finish</span><span class="head-btns"><span>profile · requirement · fit</span><button type="button" class="chip" data-load-example>Load worked example</button></span></div>
+  <div class="hc-tabs" role="tablist" aria-label="Surface finish check">
+    {TABS.map((t, i) => <button type="button" role="tab" class="chip" data-tab={t.key} aria-selected={i === 0 ? 'true' : 'false'}>{t.name}</button>)}
+  </div>
+  <div class="calc-body">
+    <form data-form onsubmit="return false">
+      <fieldset data-panel="profile">
+        <legend>A simulated surface</legend>
+        <div class="row2">
+          <label>Process<select name="p_kind">
+            <option value="turned" selected>Turned or bored</option>
+            <option value="ground">Ground</option>
+            <option value="honed">Plateau honed</option>
+            <option value="blasted">Grit blasted</option>
+          </select></label>
+          <label>Cutoff λc (mm)<select name="p_lc">
+            <option value="0.25">0.25</option><option value="0.8" selected>0.8</option><option value="2.5">2.5</option><option value="8">8</option>
+          </select></label>
+          <label data-sub="turned">Feed (mm/rev)<input name="p_f" type="number" min="0.005" step="any" value="0.08" /></label>
+          <label data-sub="turned">Tool nose radius (mm)<input name="p_r" type="number" min="0.05" step="any" value="0.8" /></label>
+          <label data-sub="random" hidden>Roughness Ra (µm)<input name="p_ra" type="number" min="0.01" step="any" value="0.4" /></label>
+          <label>Waviness amplitude (µm)<input name="p_wa" type="number" min="0" step="any" value="2" /></label>
+          <label>Waviness wavelength (mm)<input name="p_wl" type="number" min="0.1" step="any" value="3" /></label>
+          <label>Cut depth c for Rmr (% of Rz)<input name="p_c" type="number" min="0" max="100" step="any" value="25" /></label>
+        </div>
+        <p class="hint">The profile is 7 cutoffs long. The filter uses one cutoff at each end, so 5 cutoffs are evaluated, as in a standard measurement. Change the cutoff to see how the waviness gets into the result.</p>
+      </fieldset>
+
+      <fieldset data-panel="spec" hidden>
+        <legend>The requirement and the measurements</legend>
+        <div class="row2">
+          <label>Function<select name="s_fn">
+            {FUNCTIONS.map((f, i) => <option value={f.key} selected={i === 0}>{f.name}</option>)}
+          </select></label>
+          <label>Drawing limit, Ra max (µm)<input name="s_lim" type="number" min="0" step="any" placeholder="your requirement" autocomplete="off" /></label>
+          <label>Comparison rule<select name="s_rule"><option value="16%">16% rule</option><option value="max">Max rule</option></select></label>
+          <label>Process for the callout<select name="s_proc">
+            <option value="">(not stated)</option>
+            {PROCESSES.map((p) => <option value={p.key} selected={p.key === 'turn'}>{p.name}</option>)}
+          </select></label>
+        </div>
+        <label>Measured Ra values (µm)<textarea name="s_vals" rows="3" spellcheck="false">{READINGS}</textarea></label>
+        <p class="hint">Measure in the direction that crosses the lay, at the positions that the inspection plan gives. Typical ranges below are screening guidance. The seal maker, the bearing maker or your programme sets the real limit.</p>
+      </fieldset>
+
+      <fieldset data-panel="fit" hidden>
+        <legend>Interference fit</legend>
+        <div class="row2">
+          <label>Rz of the inner part (µm)<input name="f_rzi" type="number" min="0" step="any" value="6.3" /></label>
+          <label>Rz of the outer part (µm)<input name="f_rzo" type="number" min="0" step="any" value="6.3" /></label>
+          <label>Smallest interference (µm)<input name="f_min" type="number" step="any" value="118" /></label>
+          <label>Largest interference (µm)<input name="f_max" type="number" step="any" value="202" /></label>
+        </div>
+        <p class="hint">Interference as measured on the parts, at the assembly temperature. Defaults: the ⌀310 H7/s6 ring of the Fits page. A turned Ra 1.6 surface usually has an Rz of approximately 6 to 10 µm.</p>
+      </fieldset>
+      <p class="hint example-note" data-example-note hidden></p>
+    </form>
+    <div>
+      <dl class="readouts" data-out></dl>
+      <figure class="hc-fig">
+        <svg viewBox="0 0 420 250" data-chart role="img" aria-label="Chart for the selected surface check"></svg>
+        <figcaption data-cap></figcaption>
+      </figure>
+      <ul class="pv-notes" data-notes></ul>
+    </div>
+  </div>
+  <div class="calc-foot">
+    Gaussian profile filter (ISO 16610-21) with a kernel to ±λc. Parameters to the ISO 4287 definitions, Rz as the mean of
+    five sampling lengths. Cutoff table and the 16% rule from ISO 4288. Simulated profiles, not measurements. Smoothing
+    loss after DIN 7190-1.
+  </div>
+</div>
+
+<style is:global>
+  .hc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.75rem 1rem 0; }
+  .hc-tabs > * { margin: 0 !important; }
+  .calc .hc-tabs button.chip[aria-selected='true'] { border-color: var(--rd-accent); color: var(--rd-accent); background: color-mix(in srgb, var(--rd-accent) 12%, transparent); }
+  .sfcalc .readout dd small { display: block; margin-top: 0.15rem; }
+  .sfcalc textarea { width: 100%; font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); background: var(--rd-panel2, var(--rd-panel)); color: var(--rd-ink); border: 1px solid var(--rd-line); border-radius: 4px; padding: 0.4rem; resize: vertical; }
+  .hc-fig { margin: 0.9rem 0 0 !important; }
+  .hc-fig svg { width: 100%; height: auto; font-family: var(--sl-font-mono); }
+  .hc-fig figcaption { font-size: var(--sl-text-xs); color: var(--rd-muted); }
+  .sfcalc .pv-notes { font-size: var(--sl-text-sm); margin-top: 0.75rem !important; padding-left: 1.1rem; }
+</style>
+
+<script>
+  import { makeProfile, gaussianFilter, roughnessParams, materialRatio, turnedRoughness, feedForRa, cutoffFor, acceptance, smoothingLoss, processesFor, parseValues, FUNCTIONS, PROCESSES } from '../lib/surface';
+  import { wireWorkedExample } from '../lib/factors';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) : '–');
+  const g3 = (v: number) => (Math.abs(v) >= 10 ? f(v, 1) : Math.abs(v) >= 1 ? f(v, 2) : f(v, 3));
+  type Row = { dt: string; dd: string; cls?: string; primary?: boolean };
+  const DONE: Record<string, string> = { sand: 'cast', forge: 'forged', invest: 'cast', am: 'as built', blast: 'grit blasted', mill: 'milled', turn: 'turned', drill: 'drilled', ream: 'reamed', edm: 'EDM', grind: 'ground', hone: 'honed', burnish: 'burnished', lap: 'lapped' };
+  const num2 = (v: number) => String(+v.toPrecision(3));
+  const LAY: Record<string, string> = { C: 'C (circular)', '=': '= (parallel to the view)', M: 'M (multidirectional)' };
+
+  document.querySelectorAll<HTMLElement>('[data-sfcalc]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    const num = (n: string) => (field(n).value.trim() === '' ? NaN : +field(n).value);
+    const svg = root.querySelector<SVGSVGElement>('[data-chart]')!;
+    const el = (tag: string, a: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+      if (text !== undefined) e.textContent = text;
+      svg.append(e);
+      return e;
+    };
+    const size = () => Math.round(Math.min(420, Math.max(300, svg.clientWidth || 420)));
+    let mode = 'profile';
+    let draw: (() => void) | null = null;
+
+    // ---- profile ----
+    function runProfile(rows: Row[], notes: [string, string][]) {
+      const kind = field('p_kind').value as 'turned' | 'ground' | 'honed' | 'blasted', lc = num('p_lc'), turned = kind === 'turned';
+      root.querySelectorAll<HTMLElement>('[data-sub]').forEach((e) => (e.hidden = (e.dataset.sub === 'turned') !== turned));
+      const fd = num('p_f'), nr = num('p_r'), ra0 = num('p_ra'), wa = Math.max(0, num('p_wa') || 0), wl = num('p_wl') || 3, cPct = Number.isFinite(num('p_c')) ? num('p_c') : 25;
+      if (turned ? !(fd > 0 && nr > 0) : !(ra0 > 0)) { notes.push(['bad', turned ? 'Enter a feed and a nose radius.' : 'Enter a roughness Ra.']); return null; }
+      const dx = lc / 1600;
+      const z = makeProfile({ kind, length: 7 * lc, dx, feed: fd, nose: nr, rq: 1.25 * ra0, corr: kind === 'blasted' ? 0.03 : 0.01, plateau: 0.3, wavAmp: wa, wavLen: wl, seed: 3 });
+      const flt = gaussianFilter(z, dx, lc), p = roughnessParams(flt.roughness, dx, lc), mr = materialRatio(flt.roughness, (cPct / 100) * p.Rz);
+      const rec = cutoffFor(p.Ra);
+      rows.push(
+        { dt: 'Ra', dd: `${g3(p.Ra)} µm <small>Rq ${g3(p.Rq)} µm · over ${p.segments} sampling lengths</small>`, primary: true },
+        { dt: 'Rz', dd: `${g3(p.Rz)} µm <small>Rt ${g3(p.Rt)} µm · Rp ${g3(p.Rp)} · Rv ${g3(p.Rv)} · Rz/Ra ${f(p.Rz / p.Ra, 1)}</small>` },
+        { dt: 'Shape', dd: `Rsk ${f(p.Rsk, 2)} <small>Rku ${f(p.Rku, 2)} · ${p.Rsk < -0.4 ? 'plateaus with deep valleys: good bearing' : p.Rsk > 0.4 ? 'sharp peaks' : 'approximately symmetric'}</small>` },
+        { dt: `Rmr at c = ${f(cPct, 0)}% of Rz`, dd: `${f(100 * mr, 0)}% <small>c = ${g3((cPct / 100) * p.Rz)} µm below the highest peak</small>` },
+        { dt: 'Cutoff for this Ra', dd: `${rec} mm <small>ISO 4288, non-periodic profile${rec !== lc ? ` · you selected ${lc} mm` : ''}</small>`, cls: rec === lc ? 'ok' : 'warn' },
+      );
+      if (turned) {
+        const th = turnedRoughness(fd, nr);
+        rows.push({ dt: 'Kinematic roughness', dd: `Ra ${g3(th.Ra)} µm <small>Rt ${g3(th.Rt)} µm from f²/8r · feed for Ra 0.4: ${f(feedForRa(0.4, nr), 3)} mm/rev</small>` });
+        notes.push(['', 'The kinematic value is the best that the tool geometry can give. Tool wear, vibration and built-up edge make real surfaces rougher, usually by 1.5 to 3 times at fine feeds.']);
+        if (fd * 2 > lc) notes.push(['warn', 'The feed marks are longer than half the cutoff: the filter removes part of the roughness. Use a longer cutoff for a periodic profile with this spacing.']);
+      }
+      if (rec !== lc && wa > 0 && lc > rec) notes.push(['warn', `With a ${lc} mm cutoff, part of the waviness is counted as roughness, and Ra is too high. For Ra near ${g3(p.Ra)} µm, ISO 4288 uses ${rec} mm.`]);
+      if (rec !== lc && lc < rec) notes.push(['warn', `A ${lc} mm cutoff is too short for this roughness: the filter removes some of it, and Ra is too low.`]);
+      if (kind === 'honed') notes.push(['', 'Plateau honing cuts the peaks and keeps the valleys for oil or grease. The material ratio near the top is high for the same Ra. Specify it with Rmr, or with Rpk, Rk and Rvk (ISO 13565-2).']);
+      notes.push(['', 'Ra does not show the shape. Two surfaces with the same Ra can seal or wear very differently. Add Rz, Rmr or Rsk where the function depends on the peaks.']);
+      return () => {
+        svg.replaceChildren();
+        const W = size(), H = 250, L = 50, R = 14, T = 26, mid = 128;
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const n = flt.roughness.length, step = Math.max(1, Math.floor(n / 600)), X = (i: number) => L + (i / (n - 1)) * (W - L - R);
+        const raw = Array.from({ length: n }, (_, i) => z[i + flt.offset]);
+        const rmax = Math.max(...raw.map(Math.abs)) || 1, qmax = Math.max(...Array.from(flt.roughness).map(Math.abs)) || 1;
+        const Y1 = (v: number) => (T + mid) / 2 + 6 - (v / rmax) * ((mid - T) / 2 - 6), Y2 = (v: number) => (mid + 18 + H - 14) / 2 - (v / qmax) * ((H - 14 - mid - 18) / 2 - 4);
+        const pts = (arr: ArrayLike<number>, Y: (v: number) => number) => { const s: string[] = []; for (let i = 0; i < n; i += step) s.push(`${X(i).toFixed(1)},${Y(arr[i]).toFixed(1)}`); return s.join(' '); };
+        el('polyline', { points: pts(raw, Y1), fill: 'none', stroke: 'var(--rd-steel)', 'stroke-width': 1.2 });
+        el('polyline', { points: pts(flt.waviness, Y1), fill: 'none', stroke: 'var(--rd-blue)', 'stroke-width': 2 });
+        el('line', { x1: L, x2: W - R, y1: Y2(0), y2: Y2(0), stroke: 'var(--rd-ink)', 'stroke-opacity': 0.5 });
+        el('polyline', { points: pts(flt.roughness, Y2), fill: 'none', stroke: 'var(--rd-ink)', 'stroke-width': 1.2 });
+        const top = Math.max(...Array.from(flt.roughness)), cut = top - (cPct / 100) * p.Rz;
+        el('line', { x1: L, x2: W - R, y1: Y2(cut), y2: Y2(cut), stroke: 'var(--rd-accent)', 'stroke-dasharray': '4 3' });
+        for (let s = 1; s < p.segments; s++) el('line', { x1: X((s * n) / p.segments), x2: X((s * n) / p.segments), y1: mid + 18, y2: H - 14, stroke: 'var(--rd-line)' });
+        el('text', { x: L, y: 16, 'font-size': 12, fill: 'var(--rd-ink)' }, 'profile');
+        el('text', { x: W - R, y: 16, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-blue)' }, 'mean line');
+        el('text', { x: L, y: mid + 12, 'font-size': 12, fill: 'var(--rd-ink)' }, 'roughness');
+        el('text', { x: W - R, y: mid + 12, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-accent)' }, 'cut level c');
+        el('text', { x: 6, y: (T + mid) / 2 + 10, 'font-size': 11, fill: 'var(--rd-muted)' }, `±${g3(rmax)}`);
+        el('text', { x: 6, y: (mid + H) / 2 + 6, 'font-size': 11, fill: 'var(--rd-muted)' }, `±${g3(qmax)}`);
+        el('text', { x: W / 2, y: H - 2, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-muted)' }, `${f(5 * lc, 1)} mm evaluated · heights in µm`);
+      };
+    }
+
+    // ---- requirement and acceptance ----
+    function runSpec(rows: Row[], notes: [string, string][]) {
+      const fn = FUNCTIONS.find((x) => x.key === field('s_fn').value)!, lim = num('s_lim'), rule = field('s_rule').value as '16%' | 'max';
+      const vals = parseValues(field('s_vals').value), proc = PROCESSES.find((x) => x.key === field('s_proc').value);
+      rows.push({ dt: 'Typical finish', dd: `Ra ${fn.ra[0]} to ${fn.ra[1]} µm <small>${fn.note}</small>`, primary: true });
+      const target = lim > 0 ? lim : fn.ra[1];
+      const pf = processesFor(target), usual = pf.filter((x) => x.fit === 'usual').map((x) => x.name), poss = pf.filter((x) => x.fit === 'possible').map((x) => x.name);
+      rows.push({ dt: `Processes for Ra ${num2(target)}`, dd: `<small><b>usually:</b> ${usual.join(', ') || 'none'}${poss.length ? `<br><b>with care:</b> ${poss.join(', ')}` : ''}</small>` });
+      if (lim > 0) {
+        if (vals.length) {
+          const a = acceptance(vals, lim, rule);
+          rows.push({ dt: `Acceptance, ${rule} rule`, dd: `${a.pass ? 'accept' : 'reject'} <small>${a.reason} · largest ${g3(Math.max(...vals))} µm, mean ${g3(vals.reduce((s, v) => s + v, 0) / vals.length)} µm</small>`, cls: a.pass ? 'ok' : 'bad' });
+          const other = acceptance(vals, lim, rule === 'max' ? '16%' : 'max');
+          if (other.pass !== a.pass) notes.push(['warn', `The same values ${other.pass ? 'pass' : 'fail'} under the ${rule === 'max' ? '16%' : 'max'} rule. The rule decides the result. Write it on the drawing.`]);
+        } else rows.push({ dt: 'Acceptance', dd: '<small>Enter the measured values.</small>' });
+        if (lim > fn.ra[1]) notes.push(['warn', `The limit is rougher than the typical upper value for this function (Ra ${fn.ra[1]} µm).`]);
+        if (lim < fn.ra[0]) notes.push(['', `The limit is finer than the typical range. It costs more, and for seals a very smooth face can let the ring slide.`]);
+        const call = [proc ? DONE[proc.key] : '', `Ra${rule === 'max' ? ' max' : ''} ${num2(lim)}`, fn.lay ? `lay ${fn.lay}` : ''].filter(Boolean);
+        rows.push({ dt: 'Callout', dd: `<code>MRR ${call.join(' · ')}</code> <small>${fn.lay ? `lay ${LAY[fn.lay] ?? fn.lay}` : 'no lay requirement'}; add the cutoff ${cutoffFor(lim)} mm if the standard on the drawing does not set it</small>` });
+      } else rows.push({ dt: 'Acceptance', dd: '<small>Enter the drawing limit: your requirement, from the seal maker, the bearing maker or your programme. Or push “Load worked example”.</small>' });
+      notes.push(['', 'The 16% rule accepts a surface if no more than 16% of the measured values are above the limit (ISO 4288 gives the sequence of measurements). The max rule accepts no value above the limit. Check which default the standard on your drawing uses, because ISO 21920 changed some defaults of ISO 1302 and ISO 4288.']);
+      return () => {
+        svg.replaceChildren();
+        const W = size(), H = 250, Lx = 128, R = 12, T = 22, B = 30, list = PROCESSES.slice().sort((a, b) => a.ra[1] - b.ra[1]);
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const lo = Math.log10(0.0125), hi = Math.log10(50), X = (v: number) => Lx + ((Math.log10(v) - lo) / (hi - lo)) * (W - Lx - R), row = (H - T - B) / list.length;
+        for (const v of [0.025, 0.1, 0.4, 1.6, 6.3, 25]) {
+          el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: 'var(--rd-line)' });
+          el('text', { x: X(v), y: H - B + 13, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-muted)' }, String(v));
+        }
+        list.forEach((p, i) => {
+          const y = T + i * row;
+          el('rect', { x: X(p.ra[0]), y: y + row * 0.3, width: X(p.ra[3]) - X(p.ra[0]), height: row * 0.4, fill: 'var(--rd-steel)', 'fill-opacity': 0.35 });
+          el('rect', { x: X(p.ra[1]), y: y + row * 0.15, width: X(p.ra[2]) - X(p.ra[1]), height: row * 0.7, rx: 2, fill: proc && proc.key === p.key ? 'var(--rd-blue)' : 'var(--rd-steel)', 'fill-opacity': 0.85 });
+          el('text', { x: Lx - 6, y: y + row * 0.5 + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--rd-ink)' }, p.name.length > 18 ? `${p.name.slice(0, 17)}…` : p.name);
+        });
+        el('rect', { x: X(fn.ra[0]), y: T, width: X(fn.ra[1]) - X(fn.ra[0]), height: H - T - B, fill: 'var(--rd-ok)', 'fill-opacity': 0.12 });
+        if (lim > 0) el('line', { x1: X(lim), x2: X(lim), y1: T - 6, y2: H - B, stroke: 'var(--rd-accent)', 'stroke-width': 2 });
+        el('text', { x: Lx, y: 13, 'font-size': 11, fill: 'var(--rd-ok)' }, 'typical for the function');
+        if (lim > 0) el('text', { x: W - R, y: 13, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--rd-accent)' }, 'your limit');
+        el('text', { x: (Lx + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'Ra (µm), log scale');
+      };
+    }
+
+    // ---- press fit ----
+    function runFit(rows: Row[], notes: [string, string][]) {
+      const rzi = num('f_rzi'), rzo = num('f_rzo'), mn = num('f_min'), mx = num('f_max');
+      if (![rzi, rzo, mn, mx].every(Number.isFinite)) { notes.push(['bad', 'Enter the two Rz values and the interference range.']); return null; }
+      const loss = smoothingLoss(rzi, rzo), emn = mn - loss, emx = mx - loss;
+      rows.push(
+        { dt: 'Interference lost', dd: `${f(loss, 1)} µm <small>0.8 × (Rz inner + Rz outer), DIN 7190-1</small>`, primary: true },
+        { dt: 'Effective interference', dd: `${f(emn, 0)} to ${f(emx, 0)} µm <small>from ${f(mn, 0)} to ${f(mx, 0)} µm measured · ${mn > 0 ? `${f((100 * loss) / mn, 1)}% of the smallest` : ''}</small>`, cls: emn > 0 ? 'ok' : 'bad' },
+      );
+      if (emn <= 0) notes.push(['bad', 'At the smallest interference, nothing is left after smoothing: the fit can be loose.']);
+      notes.push(['', 'Use the effective interference for the contact pressure and the holding force on the Fits and Differential expansion pages. A finer finish loses less, and it also gives a more repeatable press force.']);
+      return () => {
+        svg.replaceChildren();
+        const W = size(), H = 250, L = 120, R = 16, T = 40, B = 40;
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const top = Math.max(mx, 1) * 1.1, x0 = Math.min(0, emn) * 1.1, X = (v: number) => L + ((v - x0) / (top - x0)) * (W - L - R);
+        const bar = (y: number, a: number, b: number, c: string, t: string) => {
+          el('rect', { x: X(a), y, width: Math.max(2, X(b) - X(a)), height: 34, rx: 3, fill: c, 'fill-opacity': 0.75 });
+          el('text', { x: L - 8, y: y + 22, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--rd-ink)' }, t);
+        };
+        bar(T + 10, mn, mx, 'var(--rd-steel)', 'measured');
+        bar(T + 74, emn, emx, 'var(--rd-blue)', 'effective');
+        el('line', { x1: X(0), x2: X(0), y1: T, y2: H - B, stroke: 'var(--rd-ink)', 'stroke-opacity': 0.6 });
+        for (const v of [0, Math.round(top / 2 / 10) * 10, Math.round(top / 10) * 10]) el('text', { x: X(v), y: H - B + 16, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-muted)' }, String(v));
+        el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--rd-ink)' }, 'interference (µm)');
+      };
+    }
+
+    const RUN: Record<string, typeof runFit> = { profile: runProfile, spec: runSpec, fit: runFit };
+    const CAPS: Record<string, string> = {
+      profile: 'Top: the simulated measured profile and its mean line from the Gaussian filter. Bottom: the roughness that is left, with the five sampling lengths and the cut level for Rmr.',
+      spec: 'The Ra that each process usually gives (dark bars) and can give with care or at extra cost (light bars), with the typical range for the selected function.',
+      fit: 'The interference measured on the parts, and the effective interference after the roughness peaks flatten on assembly.',
+    };
+
+    function run() {
+      const rows: Row[] = [], notes: [string, string][] = [];
+      draw = RUN[mode](rows, notes);
+      root.querySelector('[data-out]')!.innerHTML = rows.map((r) => `<div class="readout${r.primary ? ' primary' : ''}${r.cls ? ` ${r.cls}` : ''}"><dt>${r.dt}</dt><dd>${r.dd}</dd></div>`).join('');
+      root.querySelector('[data-notes]')!.innerHTML = notes.map(([c, x]) => `<li class="${c}">${x}</li>`).join('');
+      root.querySelector('[data-cap]')!.textContent = CAPS[mode];
+      if (draw) draw(); else svg.replaceChildren();
+    }
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const select = (key: string, focus = false) => {
+      mode = key;
+      tabs.forEach((b) => { const on = b.dataset.tab === key; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== key));
+      run();
+    };
+    tabs.forEach((b, i) => {
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', () => select(b.dataset.tab!));
+      b.addEventListener('keydown', (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { ev.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.tab!, true); }
+      });
+    });
+    if ('ResizeObserver' in window) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (draw && Math.abs(nw - w) > 8) { w = nw; draw(); } }).observe(svg);
+    }
+    wireWorkedExample({
+      root, onLoad: run, factorFields: ['s_lim'],
+      note: 'Worked-example limit loaded: Ra 0.4 µm for the nozzle seal bore',
+      values: { s_lim: '0.4', s_fn: 'sealGas' },
+    });
+    let timer = 0;
+    form.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(run, 200); });
+    form.addEventListener('change', run);
+    run();
+  });
+</script>

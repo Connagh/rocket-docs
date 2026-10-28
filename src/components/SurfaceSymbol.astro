@@ -1,0 +1,39 @@
+---
+// The surface texture symbol of ISO 1302 / ISO 21920-1, with its positions a to e filled in for a static seal face.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)';
+const ox = 60, oy = 160; // the vertex of the symbol, on the surface
+const items = [
+  { t: 'turned', x: 122, y: 66, c: blue },          // c: process
+  { t: 'Ra max 0.4', x: 122, y: 94, c: hot },       // a: requirement
+  { t: 'Rmr(0.2) 60', x: 122, y: 116, c: hot },     // b: second requirement
+  { t: 'C', x: 104, y: 148, c: blue },              // d: lay
+  { t: '0.3', x: 12, y: 148, c: muted },            // e: machining allowance
+];
+const tags = [{ t: 'c', x: 230, y: 66 }, { t: 'a', x: 230, y: 94 }, { t: 'b', x: 230, y: 116 }, { t: 'd', x: 122, y: 148 }, { t: 'e', x: 12, y: 132 }];
+---
+
+<figure class="viz ssy">
+  <p class="viz-title">The surface texture symbol</p>
+  <svg viewBox="0 0 360 246" role="img" aria-labelledby="ssy-desc" style="max-width: 440px; margin: 0 auto;">
+    <desc id="ssy-desc">
+      The surface texture symbol: a short leg and a long leg that meet at the surface, with a bar that closes the short leg
+      to show that material removal is required. A line extends from the long leg. Above it, position c gives the process,
+      turned. Below it, position a gives the requirement Ra max 0.4 and position b a second requirement Rmr. Position d
+      gives the lay, C for circular. Position e at the left gives the machining allowance.
+    </desc>
+    <line x1="4" x2="200" y1={oy} y2={oy} stroke={muted} stroke-width="2"></line>
+    <path d={`M${ox - 22},${oy - 38} L${ox},${oy} L${ox + 52},${oy - 90} L250,${oy - 90}`} fill="none" stroke={ink} stroke-width="2"></path>
+    <line x1={ox - 22} x2={ox + 22} y1={oy - 38} y2={oy - 38} stroke={ink} stroke-width="2"></line>
+    {items.map((i) => <text x={i.x} y={i.y} font-size="13" font-weight="600" fill={i.c}>{i.t}</text>)}
+    {tags.map((g) => <text x={g.x} y={g.y} font-size="13" fill={muted} font-style="italic">{g.t}</text>)}
+    <text x="206" y={oy + 4} font-size="13" fill={muted}>the surface</text>
+    <text x="4" y="196" font-size="13" fill={muted}>a: requirement · b: next requirement</text>
+    <text x="4" y="216" font-size="13" fill={muted}>c: process · d: lay · e: allowance (mm)</text>
+    <text x="4" y="238" font-size="13" fill={ink}>bar: material removal required</text>
+  </svg>
+  <figcaption>
+    The bar across the short leg means that material must be removed (MRR). A circle in the same position means that
+    material must not be removed (NMR). Without either, any process is permitted. A requirement without "max" uses the
+    default rule of the standard on the drawing. Write the rule and, when necessary, the cutoff.
+  </figcaption>
+</figure>

@@ -77,6 +77,7 @@ export const REBUILT = {
   gdtprac: 'drawing/datums-and-position',
   fits: 'drawing/fits-and-limits',
   stack: 'drawing/tolerance-stack',
+  surf: 'drawing/surface-finish',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',

@@ -1,0 +1,274 @@
+---
+title: Surface finish
+description: Surface texture on motor hardware. The roughness parameters Ra, Rz and Rmr, how a stylus instrument measures them and why the cutoff is important, the finish that seal faces, bearing seats, press fits, fatigue-critical fillets and bonded surfaces need, what each process can give, and how to write the callout.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import SurfaceProfile from '../../../components/SurfaceProfile.astro';
+import SurfaceSymbol from '../../../components/SurfaceSymbol.astro';
+import SurfaceCalc from '../../../components/SurfaceCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Specify the finish that the function needs, with a parameter that describes that function. Then make sure that the drawing tells the inspector how to measure it and how to accept it.</div>
+  <div><b>Before this</b><a href="../fits-and-limits/">Fits & limits</a> · <a href="../../seals/o-ring-design/">O-ring design</a></div>
+  <div><b>Used by</b><a href="../../fundamentals/fatigue/">Fatigue</a> · <a href="../../legacy/?z=gauge">Gauging</a></div>
+</div>
+
+## Why this matters
+
+The surface is where a part touches its environment. A seal face that is too rough leaks. A seal face with a scratch
+across it leaks, even if its Ra is correct. A fatigue-critical fillet with tool marks across the load direction cracks
+sooner. A press fit loses part of its interference when the roughness peaks flatten. A bond on a surface that is too
+smooth, or not clean, peels.
+
+A finer finish is not always better. It costs more, it can need an additional process, and some functions need a
+rough surface. Adhesives and insulation bond better to a blasted surface. A very smooth static seal face can let the
+ring slide. Thus the drawing must give the correct finish, not the finest finish.
+
+<Analogy title="Sandpaper grades">
+  You can feel the difference between coarse sandpaper and fine sandpaper, but your finger cannot give a number. Two
+  sheets can also feel the same and still be different: one has a few sharp grains, and the other has many round
+  grains. Surface parameters do the same work as your finger, with numbers. Ra is the average height of the grains. Rz
+  and Rmr tell you about the tallest grains, which decide how the surface scratches, seals or wears.
+</Analogy>
+
+## The profile and its parameters
+
+A stylus instrument moves a diamond tip, usually with a 2 µm radius, across the surface and records the heights. The
+result is the **primary profile**. It contains the form error, the waviness and the roughness together. A filter
+separates them. The **Gaussian filter** (ISO 16610-21) calculates a mean line, which is the waviness. The difference
+between the profile and the mean line is the **roughness profile**. The **cutoff** λc is the wavelength where the
+filter passes 50%. Shorter waves are roughness. Longer waves are waviness.
+
+<SurfaceProfile />
+
+The parameters are calculated on the roughness profile, over an evaluation length that is usually five cutoffs:
+
+$$
+Ra = \frac{1}{l}\int_0^l |z(x)|\,dx
+$$
+
+$$
+Rq = \sqrt{\frac{1}{l}\int_0^l z^2(x)\,dx}
+$$
+
+| Parameter | What it is | What it tells |
+| --- | --- | --- |
+| **Ra** | The mean distance of the profile from its mean line | The usual control value. It does not show the shape: a few deep scratches and many small peaks can give the same Ra |
+| **Rq** | The root-mean-square height | Approximately 1.25 Ra for a random surface |
+| **Rz** | The mean of the peak-to-valley heights of the five sampling lengths (ISO 4287) | Sensitive to the peaks and valleys. Approximately 4 to 7 Ra for machined surfaces. The old DIN Rz and the old ISO "ten-point" Rz are different parameters |
+| **Rt** | The peak-to-valley height over the full evaluation length | The largest single feature, for example one scratch |
+| **Rsk** | The skewness of the height distribution | Negative: plateaus with valleys, good for bearing and sealing. Positive: sharp peaks |
+| **Rmr(c)** | The material ratio: the fraction of the length that is solid at a depth c below the highest peak | How much of the surface carries load or seals after the peaks are worn or flattened |
+
+For a turned surface, the tool geometry gives the smallest possible roughness. With a feed $f$ and a tool nose radius
+$r$:
+
+$$
+Rt \approx \frac{f^2}{8r}
+\qquad
+Ra \approx 0.0321\,\frac{f^2}{r}
+$$
+
+Tool wear, vibration and built-up edge make the real surface rougher, usually by 1.5 to 3 times at fine feeds.
+
+## Measuring it
+
+- **Measure across the lay.** The stylus must move perpendicular to the machining marks. Along the marks, the result
+  is much too low.
+- **Select the cutoff.** ISO 4288 gives the cutoff from the expected value for a non-periodic profile. A cutoff that
+  is too long counts waviness as roughness. A cutoff that is too short removes some of the roughness.
+
+| Expected Ra (µm) | Expected Rz (µm) | Cutoff λc (mm) | Evaluation length (mm) |
+| --- | --- | --- | --- |
+| over 0.006 to 0.02 | over 0.025 to 0.1 | 0.08 | 0.4 |
+| over 0.02 to 0.1 | over 0.1 to 0.5 | 0.25 | 1.25 |
+| over 0.1 to 2 | over 0.5 to 10 | 0.8 | 4 |
+| over 2 to 10 | over 10 to 50 | 2.5 | 12.5 |
+| over 10 to 80 | over 50 to 200 | 8 | 40 |
+
+- **The comparison rule.** ISO 1302 and ISO 4288 use the **16% rule** as the default: the surface passes if no more
+  than 16% of the measured values are above the upper limit. The **max rule** ("Ra max 0.4") accepts no value above the
+  limit. ISO 21920, which replaced ISO 1302, ISO 4287 and ISO 4288, changed some defaults. It also selects the default
+  cutoff from the tolerance value. Thus write the rule, and the cutoff where it is important, on the drawing. Do not
+  depend on a default that the supplier can read differently.
+- **Other methods.** Optical areal methods (ISO 25178, parameters such as Sa and Sz) measure an area and do not touch
+  the surface. Comparison specimens are sufficient for a quick check on the shop floor, but not for acceptance of a
+  critical surface. Replica compounds let you measure inside a bore that the instrument cannot get into.
+
+## The finish that each function needs
+
+The values below are typical screening values. The seal maker, the bearing maker or the requirements of your programme
+give the real limits.
+
+| Function on motor hardware | Typical Ra (µm) | Notes |
+| --- | --- | --- |
+| Static O-ring face, gas or vacuum | 0.2–0.4 | Circular lay (C). No radial scratch across the seal path |
+| Static O-ring face, liquid | 0.4–0.8 | Circular lay. A finer face is not always better |
+| Dynamic seal counterface | 0.1–0.4 | Also limit the peaks, for example Rmr at least 50–70% near the top |
+| O-ring groove walls and root | 0.8–1.6 | Up to Ra 3.2 on the side walls of static grooves |
+| Rolling-bearing seat on a shaft | 0.4–0.8 | Housing bores Ra 1.6. Precision bearings need the values of the bearing maker |
+| Press fit or shrink fit | 0.8–1.6 | The peaks flatten on assembly and decrease the interference |
+| Fatigue-critical fillet | 0.2–0.8 | Lay along the principal stress. See [Fatigue](../../fundamentals/fatigue/) |
+| Bonded or insulated surface | 1.6–6.3 | Grit blasted and clean. The process specification is more important than the Ra |
+| Bolt bearing face | 0.8–3.2 | Rougher faces embed more and lose preload ([Bolted joints](../../joints/bolted-joints/)) |
+| General machined surface | 1.6–3.2 | The usual default in the title block |
+
+### Seal faces
+
+A static O-ring fills the small valleys of the surface. Thus the typical limit is Ra 0.8 µm for liquids and Ra 0.4 µm
+for gases. The **lay** is as important as the Ra. A circular lay on a face seal, or a lay around the bore of a radial
+seal, makes no path across the seal. A radial scratch is a leak path that Ra does not show, because one scratch has
+almost no effect on an average. Specify the lay, specify "no radial scratches", and inspect the face visually.
+
+### Bearing seats and fits
+
+On a fit, the measured size includes the peaks. When the parts are assembled, the peaks flatten. DIN 7190-1 estimates
+the loss of interference as:
+
+$$
+\Delta U = 0.8\,(Rz_{inner} + Rz_{outer})
+$$
+
+On a small fit with a fine tolerance, this loss can be a large part of the interference. On a clearance fit, the peaks
+wear in the first hours of operation, and the clearance increases. See [Fits & limits](../fits-and-limits/).
+
+### Fatigue-critical fillets
+
+Fatigue cracks usually start at the surface. Machining marks are small notches. The surface factor of Marin
+([Fatigue](../../fundamentals/fatigue/)) decreases from approximately 0.86 for a ground surface to 0.68 for a machined
+surface on a 1280 MPa steel. The stronger the steel, the larger the effect. Put the lay along the principal stress, so
+that the marks are not across the load. Shot peening adds compressive residual stress
+([Residual stress](../../materials/residual-stress/)), but it also makes the surface rougher. Peen after the last
+machining operation.
+
+### Bonded and insulated surfaces
+
+Adhesives, liners and insulation need a surface that is clean, chemically active and rough enough to grip. Grit
+blasting gives Ra of approximately 1.6 to 6.3 µm. The Ra alone does not make a good bond. The process specification
+controls the media, the pressure, the cleaning, and the maximum time between preparation and bonding. Measure blasted
+surfaces with a 2.5 mm cutoff, because their Ra is usually above 2 µm.
+
+## What each process can give
+
+The calculator plots these ranges. The usual range is what a shop gives without special effort. The best values need
+sharp tools, fine feeds, rigid setups and more time.
+
+| Process | Usual Ra (µm) | Best Ra (µm) |
+| --- | --- | --- |
+| Sand casting | 12.5–25 | 6.3 |
+| Forging | 3.2–12.5 | 1.6 |
+| Investment casting | 1.6–3.2 | 0.8 |
+| Powder-bed AM, as built | 6.3–12.5 | 3.2 |
+| Milling | 0.8–6.3 | 0.4 |
+| Turning and boring | 0.4–3.2 | 0.2 |
+| Reaming | 0.4–1.6 | 0.2 |
+| Grinding | 0.1–1.6 | 0.05 |
+| Honing | 0.05–0.4 | 0.025 |
+| Roller burnishing | 0.05–0.4 | 0.025 |
+| Lapping and polishing | 0.025–0.2 | 0.0125 |
+
+Each step to a finer finish usually needs an additional operation. Thus specify the fine finish only on the features
+that need it, and use the general default for all other surfaces.
+
+## The callout
+
+<SurfaceSymbol />
+
+- **The symbol** points to the surface, or to an extension line from it. The bar means that material removal is
+  required (MRR). The circle means that material removal is not permitted (NMR).
+- **Position a** gives the requirement: the parameter, the rule if it is not the default, and the value. "Ra max 0.4"
+  uses the max rule. "Ra 0.4" uses the default rule of the standard on the drawing.
+- **An upper and a lower limit** use U and L: "U Ra 0.8" and "L Ra 0.2".
+- **The filter** can be given before the parameter, for example "0.0025-0.8/Ra 0.4" for λs 2.5 µm and λc 0.8 mm.
+- **Position c** gives the process (for example "ground"), and **position d** gives the lay: = parallel to the plane
+  of the view, ⊥ perpendicular, X crossed, M multidirectional, C circular, R radial, P particulate (no direction).
+- **The default** for all surfaces without a symbol goes in the title block or in a general note, for example
+  "All surfaces Ra 3.2 unless otherwise stated".
+- **Standards.** ISO 21920-1 (which replaced ISO 1302) or ASME Y14.36 for the symbol. ISO 21920-2 and -3 (which
+  replaced ISO 4287 and ISO 4288) or ASME B46.1 for the parameters and the measurement. The drawing must tell which
+  standard applies.
+
+## Calculator
+
+<SurfaceCalc />
+
+## Worked example: the surfaces of the 300 mm motor
+
+The starting values in each tab of the calculator are the values of this example. The limit of Ra 0.4 µm is **for this
+example only**. Push **Load worked example** to apply it.
+
+1. **The nozzle seal bore.** The radial seal of the [O-ring page](../../seals/o-ring-design/#worked-example-a-nozzle-to-case-radial-seal)
+   seals combustion gas at 10 MPa. The typical finish for a static gas seal is Ra 0.2–0.4 µm with a circular lay. The
+   bore is finish-turned with a feed of 0.08 mm/rev and a 0.8 mm nose radius. The kinematic roughness is Ra 0.26 µm
+   (Rt 1.0 µm). The simulated surface gives Ra 0.26 µm and Rz 1.24 µm. Real tool wear can increase this to
+   approximately Ra 0.4 µm. Thus the supplier must control the tool, or hone the bore. The callout is
+   "MRR turned · Ra max 0.4 · lay C", plus the note "no radial scratches in the seal path".
+2. **The cutoff.** The bore also has 2 µm of waviness with a 3 mm wavelength. With the correct 0.8 mm cutoff, the
+   instrument gives Ra 0.26 µm. If the inspector uses a 2.5 mm cutoff, the filter keeps part of the waviness, and the
+   result is **Ra 0.52 µm**. A good part fails a 0.4 µm limit. Write the cutoff on the drawing or in the inspection
+   plan.
+3. **The acceptance rule.** Twelve readings around the bore are 0.28 to 0.42 µm, and one reading is above 0.4 µm. The
+   first reading (0.31 µm) is more than 70% of the limit, so the inspector must take more readings. One of twelve is
+   8%. The **16% rule accepts** the bore, and the **max rule rejects** it. Both decisions are correct for their rule.
+   For a gas seal, a local rough area can leak. Thus this example uses the max rule, and writes it on the drawing.
+4. **The actuator bracket fillet.** The 4340 bracket of the
+   [Fatigue page](../../fundamentals/fatigue/#worked-example-an-actuator-bracket) lasts 6.2 service lives as machined.
+   If the fillet is ground to Ra 0.4 µm, the surface factor increases from 0.68 to 0.86, and the life increases to
+   **14.8 service lives**. The callout is "MRR ground · Ra 0.4 · lay =", with the lay along the bracket, parallel to the
+   bending stress.
+5. **The aluminium ring on the steel attach ring.** This is the ⌀310 H7/s6 fit of the
+   [Fits page](../fits-and-limits/#worked-example-four-fits-on-the-motor), with an interference of 118–202 µm at 20 °C.
+   The two parts are turned to Ra 1.6 µm, which gives Rz of approximately 6.3 µm. On assembly, **10 µm** of the
+   interference is lost (8.5% of the smallest value), so the effective range is 108–192 µm. At +60 °C the fit was
+   already −23 to +61 µm. With the smoothing loss, it becomes −33 to +51 µm, and it is more often loose. A finer finish
+   (Rz 3.2 µm) loses only 5 µm. The conclusion of the Fits page does not change: pins or bolts must carry the load.
+6. **The bonded skirt.** The aft skirt of the [Load paths page](../../joints/load-paths/) is bonded to the case through a
+   shear ply. The case surface is grit blasted to the bonding process specification, which typically gives Ra 1.6 to
+   6.3 µm. Measure it with a 2.5 mm cutoff. The drawing refers to the process specification. The Ra is a check, not the
+   requirement.
+
+## Where this stops
+
+- **Simulated profiles.** The calculator makes typical profiles for each process. Real surfaces depend on the tool,
+  the machine and the material. Use measured values for acceptance.
+- **Profile parameters only.** Areal parameters (ISO 25178) and the functional parameters of ISO 13565-2 (Rk, Rpk,
+  Rvk) describe some surfaces better, especially plateau-honed and run-in surfaces.
+- **Typical values for functions.** They are screening values. The seal maker, the bearing maker, the adhesive
+  specification and your programme give the real limits.
+- **Standards change.** ISO 21920 replaced ISO 1302, ISO 4287 and ISO 4288, and some defaults changed. Check the
+  edition that your drawing refers to.
+
+## On the drawing
+
+- **A requirement on each functional surface,** with the parameter, the rule and the value, and a general default in
+  the title block.
+- **The lay** where the direction is important: seal faces and fatigue-critical fillets.
+- **The cutoff** where the default can be misunderstood, and the standard that applies.
+- **The process** only where the function needs it, for example "ground" on a fatigue-critical fillet, or a reference
+  to the surface preparation specification for a bond.
+- **Notes for defects that Ra cannot see:** "no radial scratches in the seal path", "no tool marks across the
+  fillet".
+- **The order of operations** where it is important: finish before plating or after it, and peen after the last
+  machining.
+
+## References and further reading
+
+- ISO 21920-1, -2 and -3, *Geometrical product specifications (GPS) — Surface texture: Profile* (indication,
+  parameters, specification operators).
+- ISO 1302, ISO 4287 and ISO 4288 (the previous standards, still on many drawings).
+- ISO 16610-21, *Filtration — Linear profile filters: Gaussian filters*.
+- ISO 13565-2, *Surfaces having stratified functional properties* (Rk, Rpk, Rvk).
+- ISO 25178-2, *Surface texture: Areal — Terms, definitions and surface texture parameters*.
+- ASME B46.1, *Surface Texture (Surface Roughness, Waviness, and Lay)*; ASME Y14.36, *Surface Texture Symbols*.
+- DIN 7190-1, *Interference fits — Calculation and design rules* (smoothing loss).
+- Parker Hannifin, *O-Ring Handbook* (ORD 5700) (seal surface finish).
+- D. J. Whitehouse, *Handbook of Surface and Nanometrology*, 2nd ed., CRC Press (2011).
+
+<Aside type="note">
+  This is guidance on method from general practice, with typical values. Surface requirements for your hardware come
+  from the requirements of your programme, the component makers and the applicable standards.
+</Aside>
