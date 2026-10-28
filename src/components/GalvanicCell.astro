@@ -1,0 +1,49 @@
+---
+// The galvanic cell at a joint, and the effect of the area ratio.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', steel = 'var(--rd-steel)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)';
+const halo = { stroke: 'var(--rd-panel)', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' };
+const arrowsL = [60, 95, 130]; // current from a small cathode spreads over a large anode
+const arrowsR = [210, 235, 290, 315]; // current from a large cathode goes into a small anode
+---
+
+<figure class="viz gcell">
+  <p class="viz-title">The galvanic cell</p>
+  <svg viewBox="0 0 360 260" role="img" aria-labelledby="gcell-desc" style="max-width: 520px; margin: 0 auto;">
+    <desc id="gcell-desc">
+      Top: an aluminium plate and a steel plate in contact, with a film of water over the joint. Electrons go through the
+      metal contact from the aluminium to the steel. The aluminium dissolves at the anode, and oxygen is reduced at the
+      steel cathode. Bottom left: a small steel bolt head in a large aluminium plate, with the current spread over a large
+      anode area, so the attack is mild. Bottom right: a small aluminium rivet head in a large steel plate, with all the
+      current from the large cathode going into the small anode, so the attack is severe.
+    </desc>
+    <defs>
+      <marker id="gc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill={hot}></path></marker>
+    </defs>
+    <path d="M50,78 Q180,22 310,78 Z" fill={blue} fill-opacity="0.25" stroke={blue}></path>
+    <text x="180" y="62" text-anchor="middle" font-size="13" fill={blue}>water film</text>
+    <rect x="20" y="78" width="160" height="22" fill={hot} fill-opacity="0.45"></rect>
+    <rect x="180" y="78" width="160" height="22" fill={steel} fill-opacity="0.7"></rect>
+    <line x1="150" x2="210" y1="89" y2="89" stroke={ink} stroke-width="2" marker-end="url(#gc-arrow)"></line>
+    <text x="128" y="94" text-anchor="end" font-size="13" fill={ink}>e⁻</text>
+    <text x="24" y="118" font-size="13" fill={hot}>anode: Al</text>
+    <text x="336" y="118" text-anchor="end" font-size="13" fill={ink}>cathode: steel</text>
+    <text x="24" y="138" font-size="13" fill={muted}>Al → Al³⁺ + 3e⁻</text>
+    <text x="336" y="138" text-anchor="end" font-size="13" fill={muted}>O₂ + 2H₂O + 4e⁻ → 4OH⁻</text>
+
+    <rect x="20" y="198" width="150" height="14" fill={hot} fill-opacity="0.45"></rect>
+    <rect x="85" y="188" width="20" height="10" fill={steel}></rect>
+    {arrowsL.map((x) => <line x1="95" x2={x} y1="186" y2="196" stroke={hot} stroke-width="1.5" marker-end="url(#gc-arrow)" opacity="0.6"></line>)}
+    <rect x="190" y="198" width="150" height="14" fill={steel} fill-opacity="0.7"></rect>
+    <rect x="255" y="188" width="20" height="10" fill={hot}></rect>
+    {arrowsR.map((x) => <line x1={x} x2={x < 265 ? 256 : 274} y1="176" y2="188" stroke={hot} stroke-width="2" marker-end="url(#gc-arrow)"></line>)}
+    <text x="95" y="232" text-anchor="middle" font-size="13" fill={ink} {...halo}>small cathode</text>
+    <text x="95" y="250" text-anchor="middle" font-size="13" fill={muted}>mild attack</text>
+    <text x="265" y="232" text-anchor="middle" font-size="13" fill={ink} {...halo}>small anode</text>
+    <text x="265" y="250" text-anchor="middle" font-size="13" fill={hot}>severe attack</text>
+  </svg>
+  <figcaption>
+    Three things make a galvanic cell: two different metals, an electrical contact between them, and an electrolyte that
+    touches both. Remove one of the three and the cell stops. The cathode area sets the current, and the anode area
+    carries it. A small anode next to a large cathode corrodes fast.
+  </figcaption>
+</figure>

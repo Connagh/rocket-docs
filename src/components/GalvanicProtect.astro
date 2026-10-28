@@ -1,0 +1,49 @@
+---
+// How to break the cell at a fastener and at a bonded composite skirt.
+const ink = 'var(--rd-ink)', muted = 'var(--rd-muted)', steel = 'var(--rd-steel)', hot = 'var(--rd-accent)', blue = 'var(--rd-blue)', ok = 'var(--rd-ok)';
+const tag = (n: number, x: number, y: number) => ({ n, x, y });
+const tags = [tag(1, 62, 86), tag(2, 128, 50), tag(3, 300, 103), tag(4, 206, 96)];
+const legend = ['1 sealant on the shank and under the head', '2 isolating washer (non-conductive)', '3 glass barrier ply between CFRP and steel', '4 sealant fillet over the edge of the bond'];
+---
+
+<figure class="viz gprot">
+  <p class="viz-title">Breaking the cell</p>
+  <svg viewBox="0 0 360 250" role="img" aria-labelledby="gprot-desc" style="max-width: 520px; margin: 0 auto;">
+    <desc id="gprot-desc">
+      Left: a bolt through an aluminium closure into a steel flange, with sealant on the shank and under the head, and an
+      isolating washer under the head. Right: a carbon-fibre skirt bonded to the steel case through a glass-fibre barrier
+      ply, with a fillet of sealant over the edge of the bond. Numbered tags identify each feature.
+    </desc>
+    <text x="90" y="20" text-anchor="middle" font-size="13" fill={ink}>Fastener</text>
+    <rect x="20" y="70" width="140" height="30" fill={hot} fill-opacity="0.4"></rect>
+    <rect x="20" y="100" width="140" height="30" fill={steel} fill-opacity="0.7"></rect>
+    <text x="24" y="90" font-size="13" fill={ink}>Al</text>
+    <text x="24" y="122" font-size="13" fill={ink}>steel</text>
+    <rect x="66" y="58" width="48" height="8" fill={ok} fill-opacity="0.8"></rect>
+    <rect x="70" y="46" width="40" height="12" fill={blue}></rect>
+    <rect x="82" y="66" width="16" height="78" fill={blue}></rect>
+    <line x1="80" x2="80" y1="66" y2="130" stroke={ok} stroke-width="3"></line>
+    <line x1="100" x2="100" y1="66" y2="130" stroke={ok} stroke-width="3"></line>
+
+    <text x="270" y="20" text-anchor="middle" font-size="13" fill={ink}>Bonded skirt</text>
+    <rect x="232" y="74" width="114" height="26" fill={ink} fill-opacity="0.55"></rect>
+    <text x="340" y="92" text-anchor="end" font-size="13" fill="var(--rd-panel)">CFRP</text>
+    <rect x="232" y="100" width="114" height="6" fill={ok} fill-opacity="0.8"></rect>
+    <rect x="190" y="106" width="156" height="18" fill={steel} fill-opacity="0.7"></rect>
+    <text x="194" y="120" font-size="13" fill={ink}>steel case</text>
+    <path d="M232,74 L232,106 L214,106 Z" fill={ok} fill-opacity="0.8"></path>
+
+    {tags.map((t) => (
+      <g>
+        <circle cx={t.x} cy={t.y} r="9" fill="var(--rd-panel)" stroke={ink}></circle>
+        <text x={t.x} y={t.y + 4.5} text-anchor="middle" font-size="12" fill={ink}>{t.n}</text>
+      </g>
+    ))}
+    {legend.map((l, i) => <text x="6" y={170 + i * 22} font-size="13" fill={muted}>{l}</text>)}
+  </svg>
+  <figcaption>
+    Sealant keeps the electrolyte out of the joint, and the washer, the sleeve or the barrier ply breaks the electrical
+    path. Green: the features that break the cell. Where the vehicle needs electrical bonding, the bonding path must be
+    designed and protected, not removed.
+  </figcaption>
+</figure>

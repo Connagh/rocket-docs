@@ -1,0 +1,215 @@
+---
+title: Galvanic corrosion
+description: Dissimilar metals on motor hardware. How a galvanic cell works, the anodic index and the usual limits for each environment, why the area ratio decides the attack, how coatings, platings and carbon fibre change the result, and how to break the cell with sealant, isolation and the correct finishes, with a calculator and a worked example on the closure bolts and the composite skirt.
+sidebar:
+  order: 0
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Analogy from '../../../components/Analogy.astro';
+import GalvanicCell from '../../../components/GalvanicCell.astro';
+import GalvanicProtect from '../../../components/GalvanicProtect.astro';
+import GalvanicCalc from '../../../components/GalvanicCalc.astro';
+
+<div class="glance">
+  <div><b>In one line</b>Two different metals, an electrical contact and water make a battery, and the more anodic metal is consumed. Keep the potential difference small, keep the water out, or break the contact.</div>
+  <div><b>Before this</b><a href="../selection/">Materials</a> · <a href="../../joints/bolted-joints/">Bolted joints</a></div>
+  <div><b>Related</b><a href="../../verify/storage-ageing/">Storage & ageing</a> · <a href="../../joints/load-paths/">Load paths & joints</a></div>
+</div>
+
+## Why this matters
+
+A motor uses many metals together: a steel case, aluminium closures and skirts, titanium or stainless fasteners,
+carbon-fibre structure and carbon nozzle parts. Each pair that touches can be a galvanic cell. The motor can be in
+storage for ten years or more, often in a place where the humidity is not controlled. Thus galvanic corrosion is a
+real risk to a motor that does nothing:
+
+- **Fasteners seize or lose preload.** Corrosion products fill the threads, or the bearing face under the head
+  corrodes away.
+- **Seal grooves and seal faces pit.** A pit across the path of an O-ring is a leak path
+  ([O-ring design](../../seals/o-ring-design/)).
+- **Walls get thinner.** A thin case wall is designed with little margin. A local loss of a few tenths of a millimetre
+  can be a large part of it ([Case sizing](../../motor/case-sizing/)).
+- **Bonds fail.** Corrosion under the edge of a bonded skirt or liner lifts the bond.
+
+## The galvanic cell
+
+<GalvanicCell />
+
+In an electrolyte, each metal has a potential. When two metals with different potentials touch, electrons flow
+through the contact from the more anodic metal to the more noble metal. The anode dissolves. On the cathode, the
+electrons reduce the oxygen in the water. The cathode is protected: it corrodes less than it would alone.
+
+Three conditions are necessary: two metals with different potentials, an electrical path between them, and an
+electrolyte that touches both. A film of condensed water with some salt in it is sufficient. Remove any one of the
+three, and the cell stops.
+
+<Analogy title="A lemon battery">
+  Push a copper coin and a zinc-plated nail into a lemon and connect them with a wire. The wire carries a current, and
+  the zinc slowly dissolves. A bolted joint in damp air is the same battery. The bolt and the plate are the coin and
+  the nail, the contact is the wire, and a drop of condensation is the lemon juice.
+</Analogy>
+
+## The anodic index
+
+The **galvanic series** lists metals by their potential in a given electrolyte, usually seawater (ASTM G82). The
+**anodic index** of MIL-STD-889 and the older MIL-F-14072 gives each metal or finish a value in volts relative to gold.
+A higher value is more anodic. The difference between two values is the driving voltage of the couple.
+
+| Metal or finish | Anodic index (V) |
+| --- | --- |
+| Carbon-fibre composite, graphite; gold | 0.00 |
+| Titanium alloys; nickel | 0.30 |
+| Copper; nickel-chromium alloys | 0.35 |
+| Stainless, 18% Cr type (300 series), passive | 0.50 |
+| Stainless, 12% Cr type (400 series); chromium plate | 0.60 |
+| Aluminium, 2000 series | 0.75 |
+| Carbon and low-alloy steel | 0.85 |
+| Aluminium, other wrought (7000, 6000 series) | 0.90 |
+| Cadmium plate, chromated | 0.95 |
+| Zinc plate | 1.25 |
+| Magnesium alloys | 1.75 |
+
+The calculator has the full table. The usual design guidance on the difference is:
+
+| Environment | Largest difference (V) |
+| --- | --- |
+| Harsh: salt spray, outdoors, unprotected | 0.15 |
+| Normal: sheltered, humidity not controlled | 0.25 |
+| Controlled: sealed, temperature and humidity controlled | 0.50 |
+
+These are screening values. Your programme, MIL-STD-889 or ECSS-Q-ST-70-71 can give other limits, or require a
+specific protection for each couple.
+
+**The table is not exact.** Potentials depend on the electrolyte, the temperature and the surface. Stainless steel is
+noble while its passive film is intact. In a crevice without oxygen, the film breaks down, and the same steel becomes
+active and much more anodic.
+
+## The area ratio
+
+The voltage tells which metal corrodes. The **area ratio** tells how fast. In water, the cathode reaction is usually
+the reduction of dissolved oxygen, and the rate of this reaction is limited by the diffusion of oxygen to the cathode
+surface. Thus the cathode area sets the total current, and the anode area carries it:
+
+$$
+i_a = i_c\,\frac{A_c}{A_a}
+\qquad
+\text{rate} = 3.27\times10^{-3}\,\frac{i_a\,EW}{\rho}\ \text{mm/year}
+$$
+
+with $i$ in µA/cm², the equivalent weight $EW$ in g and the density $\rho$ in g/cm³ (Faraday's law). For aluminium,
+1 µA/cm² is 0.011 mm/year. For steel, it is 0.012 mm/year.
+
+- **A small cathode on a large anode is mild.** A steel bolt in an aluminium plate: the current from the small bolt
+  head spreads over the large plate.
+- **A small anode on a large cathode is severe.** An aluminium rivet in a steel or carbon-fibre part: all the current
+  from the large cathode goes into the small rivet.
+- **Only the wetted area counts.** In a thin film of condensation, the cell works only a few millimetres from the
+  contact. Under immersion, the full area counts.
+- **Time of wetness.** A joint that is wet for 10% of the time corrodes for 10% of the time.
+
+## Coatings, platings and carbon fibre
+
+- **Use the finish that is in contact.** A cadmium-plated steel bolt is cadmium for galvanic purposes. Cadmium and
+  zinc platings are sacrificial: they protect the steel and the aluminium around them while they last. Cadmium is
+  restricted by environmental regulations in many countries, and zinc-nickel or aluminium coatings often replace it.
+- **Anodizing and paint are barriers,** not finishes with a potential. They work while they are intact. Damage at a
+  fastener hole or an edge exposes the base metal.
+- **Coat the cathode, or both.** If only the anode is coated, a small damage in the coating becomes a small anode next
+  to a large, bare cathode. This is the worst case of the area ratio.
+- **Carbon fibre is a cathode.** It is as noble as gold, and it conducts. Carbon-fibre composite against aluminium is a
+  couple of 0.90 V, and against steel 0.85 V. A glass-fibre barrier ply or an adhesive film between them, sealed edges,
+  and titanium or stainless fasteners installed wet are the usual protection.
+- **Carbon nozzle parts are cathodes too.** Graphite, carbon-carbon and carbon-phenolic in contact with a steel or
+  aluminium housing make a cell at the interface. Seal the bond line and store the motor in a controlled environment.
+
+## Breaking the cell
+
+<GalvanicProtect />
+
+In order of preference:
+
+1. **Select compatible materials and finishes,** with a difference inside the limit for the environment.
+2. **Keep the electrolyte out.** Install fasteners wet with sealant, seal the faying surfaces and the edges, and give
+   water a path to drain. A joint that cannot get wet cannot corrode.
+3. **Break the electrical path.** Use non-conductive washers, sleeves and bushings, or a barrier ply. The isolation
+   must stay intact under the preload and the vibration.
+4. **Coat the cathode** (and the anode), and make the anode the large part.
+5. **Control the environment:** a sealed container with desiccant, or a store with controlled humidity. See
+   [Storage & ageing](../../verify/storage-ageing/).
+
+**Isolation and electrical bonding conflict.** A vehicle usually needs an electrical bond between its structural parts
+for static discharge, electromagnetic compatibility and lightning. Isolating every joint can break that bond. Design a
+bonding path (a strap or a defined contact area) that is compatible with its two parts, and protect it.
+
+## Calculator
+
+<GalvanicCalc />
+
+## Worked example: the closure bolts and the composite skirt
+
+The starting values in each tab of the calculator are the values of this example. The environment is **normal**
+(sheltered storage without humidity control, limit 0.25 V), and the limits are the usual guidance, for this example
+only.
+
+1. **The bolts for an aluminium closure.** The 7075-T6 closure of [Bolted joints](../../joints/bolted-joints/) has an
+   anodic index of 0.90 V. In the **Two metals** tab:
+   - Bare low-alloy steel (0.85 V): 0.05 V, **passes**. But the steel rusts by itself, so it needs a plating anyway.
+   - Cadmium-plated steel (0.95 V): 0.05 V, **passes**, and the plating protects the hole.
+   - 300-series stainless (0.50 V): 0.40 V, **fails** normal and passes only a controlled environment.
+   - Titanium (0.30 V): 0.60 V, **fails** all three environments.
+
+   The aluminium is the anode in each case. Plated steel bolts installed wet with sealant are the simple solution. If
+   the design needs titanium or stainless fasteners (for strength at temperature, or for no magnetism), isolate them
+   and install them wet.
+2. **The joint stack.** A titanium bolt, a 300-series stainless washer, the aluminium closure and the steel case flange.
+   In the **Joint stack** tab, the contacts are 0.20 V, **0.40 V** and 0.05 V. The washer on the aluminium is the
+   failed contact. A titanium bolt directly on the aluminium (0.60 V) is worse, so removing the washer does not help.
+   With a cadmium-plated steel bolt and washer, every contact is 0.05 V, and the joint passes even the harsh limit.
+3. **The carbon-fibre skirt on the steel case.** The skirt of [Load paths](../../joints/load-paths/) is bonded to the
+   D6AC case. Steel against carbon fibre is 0.85 V, which fails every environment. The design puts a glass-fibre ply
+   between the two, and a fillet of sealant over the edge of the bond. If the edge seal is damaged, the **Area &
+   attack** tab estimates the result: 2 cm² of bare steel next to 20 cm² of wetted CFRP, 10 µA/cm², wet 10% of the
+   time. The steel loses **0.12 mm per year**, or **1.16 mm in 10 years**. That is 84% of the 1.377 mm wall. Thus the
+   edge seal is a safety-critical feature: inspect it at each storage inspection, and repair it.
+4. **The area ratio.** A steel bolt head of 1 cm² in 100 cm² of wetted aluminium loses only 0.001 mm of aluminium in
+   ten years. The opposite case, an aluminium rivet head of 1 cm² in 100 cm² of steel or CFRP, loses **1.1 mm per
+   year**. The same couple gives ten thousand times more attack when the areas are reversed.
+
+## Where this stops
+
+- **Seawater potentials.** The anodic index is for seawater. Other electrolytes (de-icing fluid, fuels, cleaning
+  agents, condensate with industrial pollution) can change the order.
+- **Screening rates.** The attack estimate assumes a current limited by oxygen at the cathode, spread uniformly over
+  the wetted anode. Crevices, pits and the edge of the contact concentrate the attack.
+- **Passive metals.** Stainless steels and aluminium alloys can pit or corrode in crevices without a second metal.
+  Galvanic coupling makes this worse.
+- **Test the real joint.** Salt spray (ASTM B117), cyclic corrosion tests, or a galvanic test to ASTM G71 on the real
+  finishes and sealants give the evidence for a design.
+
+## On the drawing
+
+- **The finish of each part:** plating, anodizing, conversion coating, primer and topcoat, with the specifications.
+- **The installation:** "install wet with sealant to [specification]", on fasteners, faying surfaces and edges.
+- **Isolation parts** (washers, sleeves, barrier plies) as items on the drawing, with their material.
+- **A dissimilar metals note** that refers to the requirement of your programme (for example MIL-STD-889), and lists
+  the couples that are accepted with protection.
+- **The electrical bonding path** and its resistance limit, where the vehicle needs one.
+- **Storage requirements:** the environment for which the protection is designed.
+
+## References and further reading
+
+- MIL-STD-889, *Dissimilar Metals* (galvanic compatibility and the anodic index).
+- ASTM G82, *Standard Guide for Development and Use of a Galvanic Series for Predicting Galvanic Corrosion
+  Performance*.
+- ASTM G71, *Standard Guide for Conducting and Evaluating Galvanic Corrosion Tests in Electrolytes*.
+- ASTM B117, *Standard Practice for Operating Salt Spray (Fog) Apparatus*.
+- NASA-STD-6012, *Corrosion Protection for Space Flight Hardware*.
+- ECSS-Q-ST-70-71, *Materials, processes and their data selection* (galvanic compatibility data).
+- D. A. Jones, *Principles and Prevention of Corrosion*, 2nd ed., Prentice Hall (1996).
+- M. G. Fontana, *Corrosion Engineering*, 3rd ed., McGraw-Hill (1986).
+
+<Aside type="note">
+  This is guidance on method from general practice, with typical values. The accepted couples, finishes and
+  protection for your hardware come from your programme requirements and the applicable standards.
+</Aside>

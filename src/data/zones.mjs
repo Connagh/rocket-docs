@@ -79,6 +79,7 @@ export const REBUILT = {
   stack: 'drawing/tolerance-stack',
   surf: 'drawing/surface-finish',
   gauge: 'drawing/gauging',
+  galvanic: 'materials/galvanic',
   margins: 'verify/margin-policy',
   vibration: 'verify/random-vibration',
   buckling: 'verify/shell-buckling',
