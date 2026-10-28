@@ -1,0 +1,1 @@
+var e=(e,t)=>e.rhoP*e.kn*(e.a/1e3)*t**+e.n,t=(e,t)=>t*1e6/e.cStar;function n(e){return e.n>=1?NaN:(e.rhoP*e.kn*e.a*e.cStar/1e9)**(1/(1-e.n))}var r=e=>1/(1-e);export{r as i,e as n,t as r,n as t};

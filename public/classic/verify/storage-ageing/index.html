@@ -1,0 +1,1026 @@
+<!DOCTYPE html><html lang="en" dir="ltr" data-theme="dark" data-has-toc data-has-sidebar class="astro-g5ptsecz"><head><meta name="robots" content="noindex"><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Storage & ageing | REF·DB</title><link rel="canonical" href="https://rocketengdatabase.com/classic/verify/storage-ageing/"/><link rel="shortcut icon" href="/classic/favicon.svg" type="image/svg+xml"/><meta name="generator" content="Astro v7.4.2"/><meta name="generator" content="Starlight v0.42.6"/><meta property="og:title" content="Storage &amp; ageing"/><meta property="og:type" content="article"/><meta property="og:url" content="https://rocketengdatabase.com/classic/verify/storage-ageing/"/><meta property="og:locale" content="en"/><meta property="og:description" content="How motor hardware ages in storage and how to predict it. Arrhenius acceleration, the mean kinetic temperature of a storage record, service-life prediction from accelerated tests and its possible errors, and the surveillance that checks the prediction."/><meta property="og:site_name" content="REF·DB"/><meta name="twitter:card" content="summary_large_image"/><meta name="description" content="How motor hardware ages in storage and how to predict it. Arrhenius acceleration, the mean kinetic temperature of a storage record, service-life prediction from accelerated tests and its possible errors, and the surveillance that checks the prediction."/><script>
+  (() => {
+    const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const root = document.documentElement;
+    root.dataset.theme = get('starlight-theme') === 'light' ? 'light' : 'dark';
+    if (get('refdb-motion') === 'off') root.classList.add('motion-off');
+    // Starlight components call this; our theme switch keeps its own state.
+    window.StarlightThemeProvider = { updatePickers() {} };
+  })();
+</script><link rel="stylesheet" href="/classic/_astro/print.ehPL0gv-.css" media="print"><link rel="stylesheet" href="/classic/_astro/common.CXf3znGd.css"><style>@layer starlight.components{svg:where(.astro-hkc32dio){color:var(--sl-icon-color);font-size:var(--sl-icon-size,1em);width:1em;height:1em;overflow:visible}}
+</style><script type="module" src="/classic/_astro/page.cNngjUgL.js"></script><style>.agcalc .pv-sub{font-family:var(--sl-font-mono);font-size:var(--sl-text-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--rd-muted);margin:1rem 0 .4rem!important}.agcalc .ag-rows{grid-template-columns:1fr 1fr;gap:.35rem .6rem;display:grid}.agcalc .ag-rows>*{margin:0!important}.agcalc .ag-h{font-size:var(--sl-text-sm);color:var(--rd-muted)}.agcalc .ag-presets{flex-wrap:wrap;gap:.35rem;display:flex}.agcalc .ag-presets>*{margin:0!important}.agcalc textarea{width:100%;font-family:var(--sl-font-mono);background:var(--rd-panel2);color:var(--rd-ink);border:1px solid var(--rd-line);border-radius:4px;margin-top:.2rem;padding:.4rem;display:block}.ag-fig{margin:.9rem 0 0!important}.ag-fig svg{width:100%;height:auto;font-family:var(--sl-font-mono)}.ag-fig figcaption{font-size:var(--sl-text-xs);color:var(--rd-muted)}.agcalc .pv-notes{font-size:var(--sl-text-sm);padding-left:1.1rem;margin-top:.75rem!important}
+</style></head><body class="astro-g5ptsecz"><div style="position:relative;z-index:1000;background:#FC3D21;color:#fff;font:600 13px/1.4 system-ui,sans-serif;text-align:center;padding:6px 12px">You are viewing the classic REF·DB site, kept as it was in October 2026. <a href="/" style="color:#fff;text-decoration:underline">Go to the current site</a></div><a class="sl-skip-link astro-qb7clj6f" href="#_top">Skip to content</a><style>:root{--ph-orient:#7BA7C7;--ph-select:#5BC48A;--ph-size:#FC3D21;--ph-verify:#3EC5D3;--ph-detail:#E0A94E;--ph-feature:#C77BAA;--ph-make:#B98BD9;--ph-spec:#8CA0AC;}:root[data-theme='light']{--ph-orient:#3E6F94;--ph-select:#1E7A46;--ph-size:#C2261A;--ph-verify:#13808C;--ph-detail:#9A6A10;--ph-feature:#8F3F72;--ph-make:#6E44A0;--ph-spec:#4F616B;}:root{--pc:var(--ph-verify);}</style><canvas id="cxSky" aria-hidden="true"></canvas><script>
+/* eslint-disable */
+(function(){
+  "use strict";
+  const doc = document.documentElement;
+  const cv = document.getElementById("cxSky");
+  if(!cv) return;
+  const ctx = cv.getContext && cv.getContext("2d");
+  /* Probe real capability, not just presence: test harnesses hand back stub
+     contexts whose methods return nothing. Decoration must never throw. */
+  const capable = (() => { try{ const g = ctx && ctx.createRadialGradient(0,0,0,0,0,1);
+    return !!(g && typeof g.addColorStop === "function" && typeof ctx.ellipse === "function"); }catch(e){ return false; } })();
+  if(!capable){ cv.remove(); return; }
+  doc.classList.add("cx-sky");
+  let dead = false;
+  const kill = err => { dead = true; doc.classList.remove("cx-sky"); cv.remove();
+    try{ console.warn("Deep field disabled:", err && err.message); }catch(e){} };
+
+  const reduce = () => { try{ return matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } };
+  const paused = () => doc.classList.contains("motion-off") || reduce();
+  const dark   = () => doc.getAttribute("data-theme") !== "light";
+  const labOpen = () => { const o = document.getElementById("labOverlay"); return o && !o.hidden; };
+
+  /* deterministic random so the sky is the same every visit */
+  let seed = 20260814;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const gauss = () => { let u = 0; while(!u) u = rnd(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*rnd()); };
+
+  let W = 0, H = 0, DPR = 1, F = 600;
+  let stars = [], nebula = null, backdrop = null, layerVer = 0, rects = null;
+
+  /* ---------- camera ---------- */
+  /* the camera turns (yaw, pitch) and also moves (px, py): moving gives real depth parallax — near stars slide, far ones barely */
+  const cam = {yaw:0, pitch:0, tYaw:0, tPitch:0, px:0, py:0, tPx:0, tPy:0};
+  function project(x, y, z){
+    x -= cam.px; y -= cam.py;
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const x1 = x*cy - z*sy, z1 = x*sy + z*cy;
+    const y1 = y*cp - z1*sp, z2 = y*sp + z1*cp;
+    if(z2 < 0.2) return null;
+    return {x: W/2 + F*x1/z2, y: H/2 + F*y1/z2, z: z2, s: F/z2};
+  }
+
+  /* ---------- star colours by temperature ---------- */
+  const STAR_COL = ["#9bb4ff","#aabfff","#cad7ff","#f8f7ff","#fff4ea","#ffd2a1","#ffcc6f"];
+  const rgba = (hex, a) => `rgba(${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)},${a})`;
+
+  /* glow sprites with diffraction spikes for the bright stars, one per colour */
+  let SPRITES = [];
+  function makeSprites(){
+    SPRITES = STAR_COL.map(col => {
+      const s = 64, c = document.createElement("canvas"); c.width = c.height = s;
+      const g = c.getContext("2d"), m = s/2;
+      const r = g.createRadialGradient(m, m, 0, m, m, m);
+      r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.06, rgba(col, 0.95)); r.addColorStop(0.18, rgba(col, 0.28));
+      r.addColorStop(0.45, rgba(col, 0.06)); r.addColorStop(1, rgba(col, 0));
+      g.fillStyle = r; g.fillRect(0, 0, s, s);
+      g.globalCompositeOperation = "lighter";
+      for(const [w, a] of [[1.2, 0.55], [3, 0.12]]){
+        const h = g.createLinearGradient(0, m, s, m); h.addColorStop(0, rgba(col, 0)); h.addColorStop(0.5, rgba(col, a)); h.addColorStop(1, rgba(col, 0));
+        g.fillStyle = h; g.fillRect(0, m - w/2, s, w);
+        const v = g.createLinearGradient(m, 0, m, s); v.addColorStop(0, rgba(col, 0)); v.addColorStop(0.5, rgba(col, a)); v.addColorStop(1, rgba(col, 0));
+        g.fillStyle = v; g.fillRect(m - w/2, 0, w, s);
+      }
+      return c;
+    });
+  }
+
+  /* ---------- value noise for the nebulae and the Milky Way (built only on resize) ---------- */
+  const NG = 256; let NV = null;
+  function vnoise(x, y){
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf*xf*(3 - 2*xf), v = yf*yf*(3 - 2*yf);
+    const i0 = xi & (NG-1), i1 = (xi + 1) & (NG-1), j0 = (yi & (NG-1))*NG, j1 = ((yi + 1) & (NG-1))*NG;
+    const a = NV[j0+i0], b = NV[j0+i1], c = NV[j1+i0], d = NV[j1+i1];
+    return a + (b - a)*u + (c - a)*v + (a - b - c + d)*u*v;
+  }
+  function fbm(x, y, o){ let s = 0, a = 0.5, f = 1, n = 0; for(let i = 0; i < o; i++){ s += a*vnoise(x*f, y*f); n += a; f *= 2.03; a *= 0.5; } return s/n; }
+  const smooth = (e0, e1, x) => { const k = Math.min(1, Math.max(0, (x - e0)/(e1 - e0))); return k*k*(3 - 2*k); };
+  /* paint a low-resolution field, fn(fx, fy) → [r, g, b, a] in 0..1, to be scaled up smoothly */
+  function field(w, h, fn){
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d"), img = g.createImageData(w, h), D = img.data;
+    for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
+      const p = fn(x/w, y/h), i = (y*w + x)*4;
+      D[i] = 255*p[0]; D[i+1] = 255*p[1]; D[i+2] = 255*p[2]; D[i+3] = 255*p[3];
+    }
+    g.putImageData(img, 0, 0); return c;
+  }
+
+  /* galaxy palettes, rgb: core, disk, arms */
+  const PALS = [
+    ["255,240,215", "150,180,255", "190,210,255"],   /* blue spiral */
+    ["255,232,190", "255,175,110", "255,205,150"],   /* golden */
+    ["255,236,246", "255,110,185", "255,160,215"],   /* pink starburst */
+    ["230,255,250", "80,210,200", "140,235,225"],    /* teal */
+    ["245,235,255", "165,125,255", "200,170,255"],   /* violet */
+    ["255,225,200", "255,120,90", "255,170,130"]     /* red-orange */
+  ];
+  /* small distant galaxies: 0 elliptical, 1 spiral, 2 edge-on with a dust lane, 3 irregular starburst, 4 ring, 5 barred, 6 interacting pair */
+  function smallGalaxy(g, x, y, size, kind, ang, pal){
+    const [core, disk, arm] = PALS[pal];
+    g.save(); g.translate(x, y); g.rotate(ang); g.globalCompositeOperation = "lighter";
+    const blob = (r, a0, a1) => {
+      const gr = g.createRadialGradient(0, 0, 0, 0, 0, r);
+      gr.addColorStop(0, `rgba(${core},${a0})`); gr.addColorStop(0.18, `rgba(${disk},${a1})`);
+      gr.addColorStop(0.6, `rgba(${disk},${a1*0.3})`); gr.addColorStop(1, `rgba(${disk},0)`);
+      g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, 6.2832); g.fill();
+    };
+    if(kind === 0){ g.scale(1, 0.5 + rnd()*0.45); blob(size, 0.9, 0.4); }
+    else if(kind === 1){
+      g.scale(1, 0.3 + rnd()*0.65); blob(size, 0.95, 0.35);
+      g.strokeStyle = `rgba(${arm},.45)`; g.lineWidth = Math.max(0.6, size*0.09);
+      for(const a0 of [0, Math.PI]){
+        g.beginPath();
+        for(let k = 0; k <= 24; k++){
+          const th = a0 + k*0.16, rr = size*0.12*Math.exp(0.42*k*0.16);
+          if(k) g.lineTo(rr*Math.cos(th), rr*Math.sin(th)); else g.moveTo(rr*Math.cos(th), rr*Math.sin(th));
+        }
+        g.stroke();
+      }
+      if(size > 8) for(let k = 0; k < 8; k++){                    /* knots of star formation along the arms */
+        const th = rnd()*6.283, rr = size*(0.3 + rnd()*0.5);
+        g.fillStyle = "rgba(255,160,215,.6)"; g.fillRect(rr*Math.cos(th), rr*Math.sin(th), 1.2, 1.2);
+      }
+    } else if(kind === 2){
+      g.scale(1, 0.14); blob(size, 0.9, 0.35);
+      g.globalCompositeOperation = "source-over"; g.fillStyle = "rgba(10,8,16,.55)"; g.fillRect(-size*0.8, -size*0.12, size*1.6, size*0.24);
+    } else if(kind === 3){                                        /* irregular starburst */
+      for(let k = 0; k < 6; k++){ g.save(); g.translate(gauss()*size*0.35, gauss()*size*0.25); blob(size*(0.25 + rnd()*0.3), 0.8, 0.45); g.restore(); }
+    } else if(kind === 4){                                        /* ring galaxy */
+      g.scale(1, 0.4 + rnd()*0.55); blob(size*0.35, 0.95, 0.5);
+      g.strokeStyle = `rgba(${arm},.55)`; g.lineWidth = Math.max(0.8, size*0.16);
+      g.beginPath(); g.arc(0, 0, size*0.85, 0, 6.2832); g.stroke();
+    } else if(kind === 5){                                        /* barred spiral */
+      g.scale(1, 0.4 + rnd()*0.55); blob(size*0.7, 0.95, 0.35);
+      g.fillStyle = `rgba(${core},.45)`; g.fillRect(-size*0.45, -size*0.07, size*0.9, size*0.14);
+      g.strokeStyle = `rgba(${arm},.45)`; g.lineWidth = Math.max(0.6, size*0.09);
+      for(const sg of [1, -1]){ g.beginPath(); g.moveTo(sg*size*0.45, 0); g.quadraticCurveTo(sg*size*0.95, sg*size*0.55, -sg*size*0.1, sg*size*0.85); g.stroke(); }
+    } else {                                                      /* interacting pair with tidal tails */
+      g.save(); g.translate(-size*0.45, 0); blob(size*0.55, 0.9, 0.4); g.restore();
+      g.save(); g.translate(size*0.5, size*0.15); blob(size*0.4, 0.85, 0.4); g.restore();
+      g.strokeStyle = `rgba(${arm},.3)`; g.lineWidth = Math.max(0.6, size*0.12);
+      g.beginPath(); g.moveTo(-size*0.45, 0); g.quadraticCurveTo(-size*1.4, -size*0.9, -size*0.2, -size*1.5); g.stroke();
+      g.beginPath(); g.moveTo(size*0.5, size*0.15); g.quadraticCurveTo(size*1.5, size*0.6, size*1.1, size*1.3); g.stroke();
+    }
+    g.restore();
+  }
+
+  function build(){
+    DPR = Math.min(1.5, window.devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight; F = Math.max(W, H) * 0.9;
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    seed = 20260814;
+    NV = new Float32Array(NG*NG); for(let i = 0; i < NV.length; i++) NV[i] = rnd();
+    if(!SPRITES.length) makeSprites();
+    const n = Math.round(Math.min(6000, 1600 + W*H/450));
+    stars = Array.from({length:n}, () => {
+      const ci = Math.floor(Math.pow(rnd(),1.6)*STAR_COL.length);
+      return {x:(rnd()*2-1)*60, y:(rnd()*2-1)*36, z:2 + rnd()*58, ci, c:STAR_COL[ci], tw:rnd()*6.283, m:0.4 + rnd()*0.9, big:rnd() < 0.06};
+    });
+    /* particle galaxies of several kinds, each with its own palette; w is how fast each part turns */
+    for(const G of GALS){
+      G.parts = [];
+      const N = Math.round(Math.min(3400, 1400 + W*H/800) * G.n), P = G.pal;
+      for(let i = 0; i < N; i++){
+        let r, th, h, core = false, hot = false, w;
+        const u = rnd();
+        if(G.type === "elliptical"){                          /* a smooth, warm swarm, densest at the centre */
+          r = Math.abs(gauss())*1.4 + Math.abs(gauss())*0.6; th = rnd()*6.283; h = gauss()*r*0.55; core = r < 0.7; w = 0.5;
+        } else if(G.type === "ring"){                         /* a bright core and a clean outer ring, nothing between */
+          core = u < 0.32; r = core ? Math.abs(gauss())*0.55 : 4.2 + gauss()*0.32; th = rnd()*6.283;
+          h = gauss()*(core ? 0.3 : 0.06); hot = !core && rnd() < 0.12; w = 0.7;
+        } else if(G.type === "barred"){                       /* a straight bar turning as one, arms trailing from its ends */
+          core = u < 0.16;
+          if(core){ r = Math.abs(gauss())*0.6; th = rnd()*6.283; w = 0.7; }
+          else if(u < 0.4){ r = Math.pow(rnd(), 0.7)*2.1; th = (rnd() < 0.5 ? 0 : Math.PI) + gauss()*0.09/(r + 0.25); w = 0.7; }
+          else { r = 2.1 + Math.pow(rnd(), 0.8)*4.6; th = (i & 1)*Math.PI + Math.log(r/2.1)*2.4 + gauss()*0.2; w = 1.6/(0.6 + r*0.35); hot = rnd() < 0.08; }
+          h = gauss()*(core ? 0.3 : 0.1);
+        } else {                                              /* grand-design spiral */
+          core = u < 0.22;
+          r = core ? Math.abs(gauss())*0.9 : 0.6 + Math.pow(rnd(), 0.75)*6.4;
+          th = core ? rnd()*6.283 : (i & 1)*Math.PI + Math.log(r + 1)*2.6 + gauss()*0.28;
+          h = gauss()*(core ? 0.35 : 0.12)*(1.2 - r/8); hot = !core && rnd() < 0.06; w = 1.6/(0.6 + r*0.35);
+        }
+        G.parts.push({r: r*G.k, th, h: h*G.k, w, c: core ? P.core[rnd() < .5 ? 0 : 1] : hot ? P.hot : P.arm[rnd() < .6 ? 0 : 1],
+          a: core ? 0.55 : hot ? 0.9 : 0.35 + rnd()*0.4, sz: core ? 1.1 : hot ? 1.4 : 0.6 + rnd()*0.8});
+      }
+    }
+    /* static backdrop: the Milky Way with dust lanes, faint stars too far to move, and distant galaxy clusters */
+    backdrop = document.createElement("canvas");
+    backdrop.width = Math.round(W*1.2); backdrop.height = Math.round(H*1.2);
+    const b2 = backdrop.getContext("2d"), BW = backdrop.width, BH2 = backdrop.height;
+    const band = (x) => BH2*(0.78 - 0.55*x/BW);                       /* diagonal band */
+    const cosB = Math.cos(Math.atan2(0.55*BH2, BW));
+    const milky = field(Math.round(BW/4), Math.round(BH2/4), (fx, fy) => {
+      const d = (fy*BH2 - band(fx*BW))*cosB/BH2;                       /* distance across the band */
+      const m = Math.exp(-d*d/0.024);
+      const bulge = Math.exp(-(fx - 0.73)*(fx - 0.73)/0.010 - d*d/0.007); /* the bright core, just beside the black hole: lensed into an arc */
+      if(m < 0.01 && bulge < 0.01) return [0, 0, 0, 0];
+      const asp = BH2/BW, nz = fbm(fx*7, fy*7*asp, 5), lane = fbm(fx*11 + 20, fy*11*asp + 7, 4), knots = fbm(fx*19 + 3, fy*19*asp + 9, 3);
+      const dust = smooth(0.52, 0.70, lane)*Math.exp(-d*d/0.004);
+      const hii = smooth(0.66, 0.82, knots)*m;                          /* pink star-forming knots */
+      const b = (m*(0.4 + 0.9*nz*nz) + bulge*0.65)*(1 - 0.8*dust), warm = Math.min(1, Math.exp(-d*d/0.006) + bulge);
+      const c = v => Math.max(0, Math.min(1, v));
+      return [c(0.78 + 0.2*warm + 0.2*hii), c(0.74 + 0.1*warm - 0.25*hii), c(0.95 - 0.25*warm - 0.05*hii), Math.min(0.75, b*0.6 + hii*0.25)];
+    });
+    b2.drawImage(milky, 0, 0, BW, BH2);
+    for(let i = 0; i < Math.round(BW*BH2/70); i++){
+      const inBand = rnd() < 0.62, x = rnd()*BW;
+      const y = inBand ? band(x) + gauss()*BH2*0.07 : rnd()*BH2;
+      b2.globalAlpha = (inBand ? 0.18 : 0.28) + rnd()*0.45;
+      b2.fillStyle = STAR_COL[Math.floor(rnd()*STAR_COL.length)];
+      const s = rnd() < 0.04 ? 1.6 : rnd() < 0.3 ? 1.0 : 0.7;
+      b2.fillRect(x, y, s, s);
+    }
+    b2.globalAlpha = 1;
+    /* star clusters: dense warm globulars, and loose blue open clusters (two still in their birth nebula) */
+    for(let c = 0; c < 9; c++){
+      const x0 = rnd()*BW, y0 = rnd()*BH2, R = 3 + rnd()*6, n = 120 + Math.floor(rnd()*180);
+      const g = b2.createRadialGradient(x0, y0, 0, x0, y0, R*3);
+      g.addColorStop(0, "rgba(255,236,200,.22)"); g.addColorStop(1, "rgba(255,236,200,0)");
+      b2.fillStyle = g; b2.fillRect(x0 - R*3, y0 - R*3, R*6, R*6);
+      for(let i = 0; i < n; i++){
+        const rr = R*Math.abs(gauss())*Math.pow(rnd(), 0.4), a = rnd()*6.283;
+        b2.globalAlpha = 0.35 + rnd()*0.5; b2.fillStyle = rnd() < 0.7 ? "#ffe8c4" : "#fff7ec";
+        b2.fillRect(x0 + rr*Math.cos(a), y0 + rr*Math.sin(a), 0.8, 0.8);
+      }
+      b2.globalAlpha = 1;
+    }
+    for(let c = 0; c < 7; c++){
+      const x0 = rnd()*BW, y0 = rnd()*BH2, R = 14 + rnd()*24, n = 14 + Math.floor(rnd()*26);
+      if(c < 2){
+        const g = b2.createRadialGradient(x0, y0, 0, x0, y0, R*1.6);
+        g.addColorStop(0, "rgba(120,170,255,.18)"); g.addColorStop(1, "rgba(120,170,255,0)");
+        b2.fillStyle = g; b2.fillRect(x0 - R*1.6, y0 - R*1.6, R*3.2, R*3.2);
+      }
+      b2.globalCompositeOperation = "lighter";
+      for(let i = 0; i < n; i++){
+        const rr = R*Math.sqrt(rnd()), a = rnd()*6.283, x = x0 + rr*Math.cos(a), y = y0 + rr*Math.sin(a);
+        if(rnd() < 0.25){ b2.globalAlpha = 0.9; b2.drawImage(SPRITES[1], x - 7, y - 7, 14, 14); }
+        else { b2.globalAlpha = 0.6 + rnd()*0.4; b2.fillStyle = rnd() < 0.75 ? "#bcd2ff" : "#ffffff"; b2.fillRect(x, y, 1.2, 1.2); }
+      }
+      b2.globalCompositeOperation = "source-over"; b2.globalAlpha = 1;
+    }
+    /* galaxy clusters, field galaxies in every colour, and a few close enough to show their shape */
+    const kind = () => { const u = rnd(); return u < 0.3 ? 0 : u < 0.58 ? 1 : u < 0.68 ? 2 : u < 0.76 ? 3 : u < 0.84 ? 4 : u < 0.94 ? 5 : 6; };
+    const pick = k => k === 0 ? (rnd() < 0.7 ? 1 : 5) : Math.floor(rnd()*PALS.length);
+    const at = (sx, sy) => [(sx + 0.1)/1.2*BW, (sy + 0.1)/1.2*BH2];          /* screen fraction → backdrop */
+    for(const [sx, sy, spread, count] of [[0.26, 0.55, 0.045, 40], [0.93, 0.92, 0.03, 16], [0.31, 0.10, 0.028, 14]]){
+      const [x0, y0] = at(sx, sy), R = spread*BW*1.8, g = b2.createRadialGradient(x0, y0, 0, x0, y0, R);
+      g.addColorStop(0, "rgba(255,225,190,.10)"); g.addColorStop(1, "rgba(255,225,190,0)");      /* intracluster light */
+      b2.fillStyle = g; b2.fillRect(x0 - R, y0 - R, 2*R, 2*R);
+      for(let i = 0; i < count; i++){
+        const k = i === 0 ? 0 : kind();
+        smallGalaxy(b2, x0 + gauss()*spread*BW, y0 + gauss()*spread*BW*0.8, i === 0 ? 9 + rnd()*4 : 2.2 + Math.pow(rnd(), 2)*6, k, rnd()*3.1416, pick(k));
+      }
+    }
+    for(let i = 0; i < 90; i++){ const k = kind(); smallGalaxy(b2, rnd()*BW, rnd()*BH2, 2 + Math.pow(rnd(), 3)*7, k, rnd()*3.1416, pick(k)); }
+    for(const [sx, sy, size, k, pal] of [[0.22, 0.68, 18, 6, 2], [0.95, 0.70, 19, 5, 3], [0.30, 0.42, 14, 4, 4], [0.97, 0.10, 16, 1, 4],
+        [0.18, 0.95, 14, 2, 5], [0.84, 0.97, 13, 3, 2], [0.36, 0.06, 12, 0, 1], [0.24, 0.20, 15, 5, 0], [0.90, 0.55, 12, 4, 3]]){
+      const [x, y] = at(sx, sy); smallGalaxy(b2, x, y, size, k, rnd()*3.1416, pal);
+    }
+    /* nebulae: glowing clouds shaped by noise, cut by dark filaments */
+    const asp = W/H;
+    const CLOUDS = [
+      {x:0.22, y:0.80, r:0.32, a:[1.0,0.30,0.48], b:[1.0,0.62,0.36], k:0.95},   /* emission nebula, lower left */
+      {x:0.20, y:0.18, r:0.28, a:[0.27,0.67,0.82], b:[0.47,0.36,1.0], k:0.80},  /* blue-teal cloud, upper left */
+      {x:0.60, y:0.97, r:0.34, a:[0.47,0.35,1.0], b:[1.0,0.35,0.24], k:0.60},   /* violet, along the bottom */
+      {x:0.93, y:0.64, r:0.30, a:[0.35,0.47,1.0], b:[0.63,0.35,0.86], k:0.55},  /* right, below the black hole */
+      {x:0.08, y:0.50, r:0.22, a:[0.95,0.45,0.25], b:[1.0,0.25,0.55], k:0.60},  /* orange-red, far left */
+      {x:0.97, y:0.20, r:0.22, a:[0.30,0.85,0.75], b:[0.40,0.55,1.0], k:0.50},  /* teal, top right */
+      {x:0.45, y:0.05, r:0.30, a:[0.55,0.40,1.0], b:[0.95,0.45,0.75], k:0.45}   /* magenta-violet, across the top */
+    ];
+    nebula = field(Math.max(160, Math.round(W/4)), Math.max(100, Math.round(H/4)), (fx, fy) => {
+      const X = fx*6*asp, Y = fy*6;
+      const nz = fbm(X, Y, 5), tint = fbm(X*1.9 + 17, Y*1.9 + 5, 3), lane = fbm(X*3.1 + 40, Y*3.1 + 11, 4);
+      let r = 0, g = 0, b = 0;
+      for(const c of CLOUDS){
+        const dx = (fx - c.x)*asp, dy = fy - c.y, m = Math.exp(-(dx*dx + dy*dy)/(c.r*c.r));
+        if(m < 0.01) continue;
+        const d = m*smooth(0.30, 0.85, nz + 0.3*m - 0.15)*(1 - 0.75*smooth(0.55, 0.78, lane))*c.k;
+        r += d*(c.a[0] + (c.b[0] - c.a[0])*tint); g += d*(c.a[1] + (c.b[1] - c.a[1])*tint); b += d*(c.a[2] + (c.b[2] - c.a[2])*tint);
+      }
+      const a = Math.min(1, Math.max(r, g, b));
+      return a < 0.004 ? [0, 0, 0, 0] : [r/a, g/a, b/a, a*0.68];
+    });
+    layerVer++;                                       /* tells the black hole to re-read the far sky */
+  }
+
+  /* ---------- scene objects (world units; camera looks down +z) ---------- */
+  const BH = {x:15.1, y:-5.8, z:40, r:1.05};
+  /* particle galaxies: kind, position, orientation, size (k), share of particles (n) and palette */
+  const GALS = [
+    {type:"spiral", x:-12.3, y:-7.8, z:48, tilt:1.05, roll:0.35, k:0.75, n:0.85, glow:"255,236,200",            /* blue grand design */
+      pal:{core:["#ffe9c4","#fff6e0"], arm:["#a9c3ff","#dfe8ff"], hot:"#ff8fb4"}},
+    {type:"spiral", x:26.2, y:12.4, z:62, tilt:0.7, roll:-0.55, k:0.55, n:0.4, glow:"235,215,255",           /* teal and violet */
+      pal:{core:["#fff0f8","#ffe0f0"], arm:["#8ff0e2","#c3b2ff"], hot:"#ff6fd8"}},
+    {type:"barred", x:-15.6, y:11.9, z:56, tilt:0.55, roll:0.9, k:0.7, n:0.55, glow:"255,214,160",            /* golden barred spiral, blue knots */
+      pal:{core:["#ffe2b0","#fff1d6"], arm:["#ffc48a","#ffdcae"], hot:"#7fd7ff"}},
+    {type:"ring", x:-13.2, y:2.6, z:70, tilt:0.9, roll:-0.3, k:0.55, n:0.25, glow:"255,210,140",               /* gold core, blue ring */
+      pal:{core:["#ffd28a","#ffe7bf"], arm:["#8fb8ff","#b9d0ff"], hot:"#ff8fd0"}},
+    {type:"spiral", x:-29.9, y:2.6, z:84, tilt:0.07, roll:0.18, k:0.6, n:0.22, glow:"230,235,255",           /* edge-on */
+      pal:{core:["#ffe9c4","#fff6e0"], arm:["#c7d4ff","#e6ecff"], hot:"#ffb08f"}},
+    {type:"elliptical", x:39.5, y:22.2, z:74, tilt:0.4, roll:0.6, k:0.6, n:0.3, glow:"255,200,150",           /* giant elliptical, red-gold */
+      pal:{core:["#ffd6a0","#ffe4c0"], arm:["#ffb98a","#ffcfa3"], hot:"#ffb98a"}}
+  ];
+
+  function drawBlackHole(t){
+    if(window.REFDB_HOLE_GL) return;                        /* the ray-traced one is running */
+    const c = project(BH.x, BH.y, BH.z); if(!c) return;
+    const R = BH.r * c.s; if(R < 1) return;
+    const tilt = 0.24, spin = t*0.35;
+    /* faint lensing halo darkens and bends the field around it */
+    const halo = ctx.createRadialGradient(c.x, c.y, R*1.2, c.x, c.y, R*6);
+    halo.addColorStop(0, "rgba(0,0,0,.55)"); halo.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(c.x, c.y, R*6, 0, 6.2832); ctx.fill();
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    const disk = (front) => {
+      const segs = 72;
+      for(let ring = 0; ring < 9; ring++){
+        const rr = R*(1.9 + ring*0.42);
+        for(let i = 0; i < segs; i++){
+          const a0 = i/segs*6.2832, a1 = (i+1)/segs*6.2832, mid = (a0 + a1)/2;
+          const isFront = Math.sin(mid) > 0;
+          if(isFront !== front) continue;
+          /* Doppler beaming: the side moving toward us is brighter */
+          const beam = 0.55 + 0.45*Math.cos(mid + 0.3);
+          const clump = 0.75 + 0.25*Math.sin(mid*5 - spin*(3.2 - ring*0.22) + ring);
+          const heat = 1 - ring/9;
+          const r = Math.round(255), gC = Math.round(150 + 90*heat), b = Math.round(70 + 150*heat*heat);
+          ctx.beginPath(); ctx.ellipse(c.x, c.y, rr, rr*tilt, 0, a0, a1);
+          ctx.strokeStyle = `rgba(${r},${gC},${b},${(0.10 + 0.32*heat) * beam * clump})`;
+          ctx.lineWidth = R*0.36; ctx.stroke();
+        }
+      }
+    };
+    disk(false);
+    /* lensed far side of the disk, bent up over the shadow */
+    for(let k = 0; k < 6; k++){
+      ctx.beginPath(); ctx.ellipse(c.x, c.y - R*0.08, R*(1.55 + k*0.14), R*(1.35 + k*0.16), 0, Math.PI*1.05, Math.PI*1.95);
+      ctx.strokeStyle = `rgba(255,${200 - k*14},${150 - k*15},${0.20 - k*0.025})`; ctx.lineWidth = R*0.16; ctx.stroke();
+    }
+    ctx.restore();
+    /* shadow + photon ring */
+    ctx.beginPath(); ctx.arc(c.x, c.y, R*1.35, 0, 6.2832); ctx.fillStyle = "#000"; ctx.fill();
+    ctx.beginPath(); ctx.arc(c.x, c.y, R*1.42, 0, 6.2832);
+    ctx.strokeStyle = "rgba(255,226,180,.85)"; ctx.lineWidth = Math.max(0.8, R*0.07); ctx.stroke();
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; disk(true); ctx.restore();
+  }
+
+  function drawGalaxy(G, t){
+    const ct = Math.cos(G.tilt), st = Math.sin(G.tilt), cr = Math.cos(G.roll), sr = Math.sin(G.roll);
+    const rot = t * 0.018;
+    const cc = project(G.x, G.y, G.z);
+    if(cc){
+      const R = cc.s*2.6*G.k, g = ctx.createRadialGradient(cc.x, cc.y, 0, cc.x, cc.y, R);
+      g.addColorStop(0, `rgba(${G.glow},.55)`); g.addColorStop(0.25, `rgba(${G.glow},.18)`); g.addColorStop(1, `rgba(${G.glow},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cc.x, cc.y, R, 0, 6.2832); ctx.fill();
+    }
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    for(const p of G.parts){
+      const th = p.th + rot * p.w;                           /* differential rotation; bars and rings turn as one */
+      let x = p.r*Math.cos(th), z = p.r*Math.sin(th), y = p.h;
+      const y2 = y*ct - z*st, z2 = y*st + z*ct;               /* tilt */
+      const x3 = x*cr - y2*sr, y3 = x*sr + y2*cr;              /* roll */
+      const q = project(G.x + x3, G.y + y3, G.z + z2); if(!q) continue;
+      const s = p.sz * Math.min(1.8, q.s/F*55);
+      ctx.fillStyle = p.c;
+      ctx.globalAlpha = p.a * 0.10; ctx.fillRect(q.x - s*2, q.y - s*2, s*5, s*5);   /* soft glow */
+      ctx.globalAlpha = p.a; ctx.fillRect(q.x, q.y, s, s);
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  }
+
+  /* ---------- comets and meteors (screen space, they cross the view) ---------- */
+  let comets = [], meteors = [], nextComet = 6, nextMeteor = 2;
+  function spawnComet(){
+    const fromLeft = rnd() < 0.5, y0 = H*(0.08 + rnd()*0.4);
+    const sp = 38 + rnd()*30;
+    comets.push({x: fromLeft ? -60 : W + 60, y: y0, vx: (fromLeft ? 1 : -1)*sp, vy: sp*(0.12 + rnd()*0.25), life:0, len: 140 + rnd()*120});
+  }
+  function spawnMeteor(){
+    const x = W*(0.1 + rnd()*0.8), y = H*(rnd()*0.35), sp = 700 + rnd()*500, ang = 0.5 + rnd()*0.6;
+    meteors.push({x, y, vx: Math.cos(ang)*sp*(rnd()<.5?-1:1), vy: Math.sin(ang)*sp, life:0, max:0.5 + rnd()*0.5});
+  }
+  function drawComet(c){
+    const v = Math.hypot(c.vx, c.vy), ux = -c.vx/v, uy = -c.vy/v;
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    /* dust tail: broad, curved, warm */
+    const tx = c.x + ux*c.len, ty = c.y + uy*c.len + c.len*0.18;
+    const gd = ctx.createLinearGradient(c.x, c.y, tx, ty);
+    gd.addColorStop(0, "rgba(255,236,200,.45)"); gd.addColorStop(1, "rgba(255,220,180,0)");
+    ctx.strokeStyle = gd; ctx.lineWidth = 7; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.quadraticCurveTo(c.x + ux*c.len*0.5, c.y + uy*c.len*0.5, tx, ty); ctx.stroke();
+    /* ion tail: thin, straight, blue */
+    const gi = ctx.createLinearGradient(c.x, c.y, c.x + ux*c.len*1.4, c.y + uy*c.len*1.4);
+    gi.addColorStop(0, "rgba(140,200,255,.7)"); gi.addColorStop(1, "rgba(140,200,255,0)");
+    ctx.strokeStyle = gi; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x + ux*c.len*1.4, c.y + uy*c.len*1.4); ctx.stroke();
+    /* coma */
+    const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 14);
+    g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(0.3, "rgba(190,230,255,.5)"); g.addColorStop(1, "rgba(150,210,255,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c.x, c.y, 14, 0, 6.2832); ctx.fill();
+    ctx.restore();
+  }
+  function drawMeteor(m){
+    const k = m.life / m.max, a = Math.sin(Math.PI*Math.min(1,k));
+    const len = 90, v = Math.hypot(m.vx, m.vy);
+    const ex = m.x - m.vx/v*len, ey = m.y - m.vy/v*len;
+    const g = ctx.createLinearGradient(m.x, m.y, ex, ey);
+    g.addColorStop(0, `rgba(255,255,255,${0.9*a})`); g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.strokeStyle = g; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(ex, ey); ctx.stroke();
+  }
+
+  /* ---------- frame ---------- */
+  let last = 0, t = 0, raf = 0, scrollPitch = 0, scrollShift = 0;
+  function frame(now, still){
+    const dt = still ? 0 : Math.min(0.1, (now - last)/1000 || 0);
+    last = now; t += dt;
+    cam.yaw += (cam.tYaw + Math.sin(t*0.02)*0.04 - cam.yaw) * Math.min(1, dt*2.2);
+    cam.pitch += (cam.tPitch + scrollPitch - cam.pitch) * Math.min(1, dt*2.2);
+    cam.px += (cam.tPx - cam.px) * Math.min(1, dt*2.2);
+    cam.py += (cam.tPy + scrollShift - cam.py) * Math.min(1, dt*2.2);
+    ctx.clearRect(0, 0, W, H);
+    /* deep space gradient */
+    const bg = ctx.createRadialGradient(W*0.5, H*0.35, 0, W*0.5, H*0.5, Math.max(W,H)*0.8);
+    bg.addColorStop(0, "#0b1324"); bg.addColorStop(1, "#03050b");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const bx = -W*0.1 - cam.yaw*W*0.25 - cam.px*4, by = -H*0.1 - cam.pitch*H*0.25 - cam.py*4;
+    const nx = -W*0.05 - cam.yaw*W*0.6 - cam.px*12, ny = -H*0.05 - cam.pitch*H*0.6 - cam.py*12;
+    rects = {bx, by, bw: W*1.2, bh: H*1.2, nx, ny, nw: W*1.1, nh: H*1.1, W, H};   /* the black hole lenses these */
+    if(backdrop) ctx.drawImage(backdrop, bx, by, W*1.2, H*1.2);
+    if(nebula){ ctx.globalCompositeOperation = "lighter"; ctx.drawImage(nebula, nx, ny, W*1.1, H*1.1); ctx.globalCompositeOperation = "source-over"; }
+    GALS.forEach(G => drawGalaxy(G, t));
+    /* stars: drift toward the camera — a slow cruise, not a warp */
+    for(const s of stars){
+      if(!still){ s.z -= dt*0.55; if(s.z < 1.5){ s.z += 58; s.x = (rnd()*2-1)*60; s.y = (rnd()*2-1)*36; } }
+      const q = project(s.x, s.y, s.z); if(!q || q.x < -4 || q.x > W+4 || q.y < -4 || q.y > H+4) continue;
+      const near = 1 - s.z/60;
+      const tw = still ? 1 : 0.75 + 0.25*Math.sin(s.tw + t*(1.5 + s.m));
+      if(s.big){                                             /* bright star: glow and diffraction spikes */
+        const S2 = (12 + near*30) * s.m * (0.85 + 0.15*tw);
+        ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = Math.min(1, 0.55 + near*0.6);
+        ctx.drawImage(SPRITES[s.ci], q.x - S2/2, q.y - S2/2, S2, S2);
+        ctx.globalCompositeOperation = "source-over"; continue;
+      }
+      ctx.globalAlpha = Math.min(1, (0.45 + near*0.9) * s.m * tw);
+      const sz = 0.9 + near*2.1*s.m;
+      ctx.fillStyle = s.c;
+      if(sz > 1.8){ ctx.beginPath(); ctx.arc(q.x, q.y, sz*0.6, 0, 6.2832); ctx.fill(); }
+      else ctx.fillRect(q.x, q.y, sz, sz);
+    }
+    ctx.globalAlpha = 1;
+    drawBlackHole(t);
+    if(!still){
+      nextComet -= dt; nextMeteor -= dt;
+      if(nextComet <= 0){ spawnComet(); nextComet = 18 + rnd()*20; }
+      if(nextMeteor <= 0){ spawnMeteor(); nextMeteor = 3 + rnd()*6; }
+      comets = comets.filter(c => { c.x += c.vx*dt; c.y += c.vy*dt; drawComet(c); return c.x > -400 && c.x < W + 400 && c.y < H + 300; });
+      meteors = meteors.filter(m => { m.life += dt; m.x += m.vx*dt; m.y += m.vy*dt; drawMeteor(m); return m.life < m.max; });
+    }
+    /* vignette keeps the edges calm behind text */
+    const vg = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.35, W/2, H/2, Math.max(W,H)*0.75);
+    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.45)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  const STEP = 1000/30;
+  let acc = 0, prev = 0;
+  function loop(now){
+    if(dead) return;
+    raf = requestAnimationFrame(loop);
+    if(document.hidden || !dark() || labOpen() || paused()) { prev = now; return; }
+    acc += now - (prev || now); prev = now;
+    if(acc < STEP) return;
+    acc = 0; try{ frame(now, false); }catch(e){ kill(e); }
+  }
+  function still(){ if(dead || !dark()) return; try{ frame(performance.now(), true); }catch(e){ kill(e); } }
+
+  /* ---------- inputs ---------- */
+  addEventListener("pointermove", e => {
+    cam.tYaw = (e.clientX/W - 0.5) * 0.10;
+    cam.tPitch = (e.clientY/H - 0.5) * 0.06;
+    cam.tPx = (e.clientX/W - 0.5) * 0.9;
+    cam.tPy = (e.clientY/H - 0.5) * 0.6;
+  }, {passive:true});
+  addEventListener("scroll", () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    scrollPitch = (scrollY/max - 0.5) * 0.08;
+    scrollShift = (scrollY/max - 0.5) * 2.0;            /* scrolling flies the camera down through the field */
+    if(paused()) still();
+  }, {passive:true});
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if(dead) return; try{ build(); }catch(e){ return kill(e); } still(); }, 150); });
+  new MutationObserver(() => { if(paused()) still(); }).observe(doc, {attributes:true, attributeFilter:["class","data-theme"]});
+
+  try{ build(); }catch(e){ kill(e); return; }
+  still();
+  raf = requestAnimationFrame(loop);
+  window.REFDB_SKY = {still, rebuild: () => { build(); still(); },
+    layers: () => ({back: backdrop, neb: nebula, ver: layerVer}), rects: () => rects};
+})();
+</script><canvas id="cxHole" aria-hidden="true"></canvas><script>
+/* eslint-disable */
+(function(){
+  "use strict";
+  const doc = document.documentElement;
+  const cv = document.getElementById("cxHole");
+  if(!cv) return;
+  let gl = null;
+  try{ gl = cv.getContext("webgl", {alpha:true, premultipliedAlpha:true, antialias:false, depth:false, stencil:false, powerPreference:"low-power"}); }catch(e){}
+  if(!gl){ cv.remove(); return; }
+
+  const VS = "attribute vec2 p; varying vec2 vUv; void main(){ vUv = p; gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uIncl, uAzim, uRoll, uBmax, uPix;
+uniform sampler2D uBack, uNeb;     // the page's own far sky: backdrop (Milky Way, galaxies) and nebulae
+uniform vec4 uBackR, uNebR;        // where the 2D sky draws them, CSS px: x, y, w, h
+uniform vec2 uScreen, uCenter;     // viewport, and this canvas's centre on it
+uniform float uHalf, uHasSky;      // canvas half-size, px; 1 when the far sky is available
+
+const float RIN = 3.0;      // innermost stable circular orbit, 3 r_s
+const float ROUT = 12.0;
+const float RCAM = 60.0;
+
+float hash13(vec3 p){ p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+float noise3(vec3 p){
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash13(i), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash13(i + vec3(0,0,1)), hash13(i + vec3(1,0,1)), f.x), mix(hash13(i + vec3(0,1,1)), hash13(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p){ float s = 0.0, a = 0.5; for(int i = 0; i < 4; i++){ s += a * noise3(p); p *= 2.07; a *= 0.5; } return s; }
+
+// blackbody colour (linear RGB) for a temperature in kelvin
+vec3 blackbody(float k){
+  float t = k / 100.0;
+  float r = t <= 66.0 ? 1.0 : 1.2929 * pow(t - 60.0, -0.1332);
+  float g = t <= 66.0 ? 0.3901 * log(t) - 0.6318 : 1.1299 * pow(t - 60.0, -0.0755);
+  float b = t >= 66.0 ? 1.0 : (t <= 19.0 ? 0.0 : 0.5432 * log(t - 10.0) - 1.1963);
+  return pow(clamp(vec3(r, g, b), 0.0, 1.0), vec3(2.2));
+}
+
+vec3 starLayer(vec3 d, float scale, float keep, float gain){
+  vec3 cell = floor(d * scale);
+  vec3 h = hash33(cell);
+  if(h.x < keep) return vec3(0.0);
+  vec3 s = normalize(cell + 0.15 + 0.7 * hash33(cell + 17.0));
+  float a2 = 2.0 * (1.0 - dot(d, s));                  // ≈ angle²
+  float w = max(uPix * 1.4, 0.18 / scale);
+  float b = exp(-a2 / (w * w)) * gain * (0.35 + 4.0 * pow(h.y, 14.0));
+  return mix(vec3(0.62, 0.74, 1.0), vec3(1.0, 0.80, 0.58), h.z) * b;
+}
+
+vec3 sky(vec3 d){
+  vec3 c = vec3(0.0018, 0.0035, 0.009) + starLayer(d, 150.0, 0.982, 1.3) + starLayer(d, 330.0, 0.995, 0.8);
+  float n = fbm(d * 2.6 + 4.0);
+  float band = exp(-pow(dot(d, normalize(vec3(0.35, 0.9, 0.25))), 2.0) * 14.0);
+  c += vec3(0.32, 0.22, 0.58) * pow(n, 2.6) * 0.09 + vec3(0.55, 0.48, 0.72) * band * pow(n, 1.6) * 0.10;
+  return c;
+}
+
+// the far sky at a point on the page, composited exactly as the 2D sky draws it (display colour)
+vec3 pageSky(vec2 p){
+  float R = max(uScreen.x, uScreen.y);
+  float gt = clamp(length(p - vec2(0.5 * uScreen.x, 0.35 * uScreen.y)) / (0.8 * R), 0.0, 1.0);
+  vec3 c = mix(vec3(0.043, 0.075, 0.141), vec3(0.012, 0.020, 0.043), gt);
+  vec4 b = texture2D(uBack, (p - uBackR.xy) / uBackR.zw);
+  c = mix(c, b.rgb, b.a);
+  vec4 n = texture2D(uNeb, (p - uNebR.xy) / uNebR.zw);
+  c += n.rgb * n.a;
+  float r0 = min(uScreen.x, uScreen.y) * 0.35;
+  float vg = clamp((length(p - 0.5 * uScreen) - r0) / (R * 0.75 - r0), 0.0, 1.0) * 0.45;
+  return c * (1.0 - vg);
+}
+
+// thin disk: emission (premultiplied by its opacity) and opacity at a crossing point
+vec4 disk(vec3 p, float r, vec3 rayDir){
+  float phi = atan(p.z, p.x);
+  float omega = sqrt(0.5 / (r * r * r));                 // Keplerian, M = r_s / 2
+  // two phase-shifted samples so differential rotation never winds the pattern up
+  float T = 60.0, t1 = mod(uTime, T), t2 = mod(uTime + 0.5 * T, T);
+  float w1 = 1.0 - abs(2.0 * t1 / T - 1.0);
+  float a1 = phi - omega * t1 * 2.4, a2 = phi - omega * t2 * 2.4;
+  vec3 q1 = vec3(r * 2.2, cos(a1) * 2.0, sin(a1) * 2.0), q2 = vec3(r * 2.2, cos(a2) * 2.0, sin(a2) * 2.0);
+  float n = mix(fbm(q2 + 11.0), fbm(q1), w1);
+  float streak = 0.5 + 0.5 * sin(r * 11.0 + n * 7.0);
+  float dens = clamp(pow(n, 2.0) * 2.4 * (0.55 + 0.45 * streak), 0.0, 1.0);
+  // Novikov–Thorne temperature profile, normalised to 1 at its peak (r ≈ 4.08 r_s)
+  float tp = pow(max(1e-5, (1.0 - sqrt(RIN / r)) / (r * r * r)), 0.25) / 0.2141;
+  // Doppler and gravitational shift of the orbiting gas, seen along the ray
+  float beta = sqrt(0.5 / (r - 1.0));
+  vec3 vdir = normalize(vec3(-p.z, 0.0, p.x));
+  float g = sqrt(1.0 - 1.0 / r) / ((1.0 - beta * dot(vdir, -rayDir)) / sqrt(1.0 - beta * beta));
+  float edge = smoothstep(RIN * 0.97, RIN * 1.25, r) * (1.0 - smoothstep(ROUT * 0.55, ROUT, r));
+  vec3 emit = blackbody(4400.0 * g * tp) * pow(g, 2.6) * tp * tp * tp * (0.45 + 1.4 * dens) * 4.2;
+  float a = edge * clamp(0.55 + 0.7 * dens, 0.0, 1.0) * (0.7 + 0.3 * tp);
+  return vec4(emit * a, a);
+}
+
+void main(){
+  float rho = length(vUv);
+  if(rho >= 1.0){ gl_FragColor = vec4(0.0); return; }
+  float cr = cos(uRoll), sr = sin(uRoll);
+  vec2 uv = vec2(cr * vUv.x - sr * vUv.y, sr * vUv.x + cr * vUv.y);
+  vec3 cam = RCAM * vec3(sin(uIncl) * sin(uAzim), cos(uIncl), sin(uIncl) * cos(uAzim));
+  vec3 fwd = normalize(-cam);
+  vec3 right = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(right, fwd);
+  vec3 dir = normalize(fwd + (uv.x * right + uv.y * up) * (uBmax / RCAM));
+
+  vec3 x = cam, v = dir;
+  vec3 hv = cross(x, v); float h2 = dot(hv, hv);
+  vec3 col = vec3(0.0), glow = vec3(0.0);
+  float alpha = 0.0;
+  float fate = 0.0;                                       // 1 escaped, -1 captured
+  for(int i = 0; i < 320; i++){
+    float r = length(x);
+    float dt = clamp(0.07 * r, 0.02, 3.0);
+    v += -1.5 * h2 * x / pow(r, 5.0) * (0.5 * dt);
+    vec3 xn = x + v * dt;
+    float rn = length(xn);
+    v += -1.5 * h2 * xn / pow(rn, 5.0) * (0.5 * dt);
+    if(x.y * xn.y < 0.0){
+      vec3 pc = mix(x, xn, x.y / (x.y - xn.y));
+      float rp = length(pc.xz);
+      if(rp > RIN * 0.95 && rp < ROUT){
+        vec4 e = disk(pc, rp, normalize(v));
+        col += (1.0 - alpha) * e.rgb;
+        alpha += (1.0 - alpha) * e.a;
+      }
+    }
+    // faint hot corona above and below the disk
+    float rr = length(xn.xz);
+    if(rr > RIN * 0.8 && rr < ROUT * 1.3){
+      float tp = pow(max(1e-5, (1.0 - sqrt(min(1.0, RIN / rr))) / (rr * rr * rr)), 0.25) / 0.2141;
+      float hz = xn.y / (0.07 * rr);                        // a thin, flared hot layer: glow along the disk, not a veil over the shadow
+      glow += (1.0 - alpha) * vec3(1.0, 0.55, 0.24) * tp * tp * exp(-hz * hz) * dt * 0.08 * smoothstep(RIN, RIN * 1.6, rr);
+    }
+    x = xn;
+    if(rn < 1.0){ fate = -1.0; break; }
+    if(rn > RCAM * 1.15 && dot(x, v) > 0.0){ fate = 1.0; break; }
+    if(alpha > 0.995) break;
+  }
+
+  // disk and glow, tone-mapped to display colour
+  vec3 cd = pow(1.0 - exp(-(col + glow) * 1.15), vec3(1.0 / 2.2));
+  vec3 bg = vec3(0.0); float abg = 0.0;
+  if(fate > 0.5){
+    vec3 d = normalize(v);
+    float fz = dot(d, fwd);
+    if(uHasSky > 0.5 && fz > 0.05){
+      // where the bent ray lands on the page's own sky; the bending fades to nothing at the canvas edge so the
+      // lensed sky joins the real one without a seam
+      vec2 tr = vec2(dot(d, right), dot(d, up)) / fz / (uBmax / RCAM);
+      vec2 uvl = vec2(cr * tr.x + sr * tr.y, -sr * tr.x + cr * tr.y);
+      vec2 uvs = vUv + (uvl - vUv) * (1.0 - smoothstep(0.45, 0.95, rho));
+      bg = pageSky(uCenter + vec2(uvs.x, -uvs.y) * uHalf);
+      abg = smoothstep(1.5, 10.0, length(uvs - vUv) * uHalf);   // only where the sky is visibly moved
+    } else {
+      bg = pow(1.0 - exp(-sky(d) * 1.15), vec3(1.0 / 2.2));
+      abg = fz > 0.05 ? 1.0 - smoothstep(0.22, 0.6, rho) : 1.0;
+    }
+  } else if(alpha < 0.995) {
+    abg = 1.0;                                            // the shadow: rays that never come back
+  }
+  vec3 c = cd + (1.0 - alpha) * bg * abg;
+  float a = alpha + (1.0 - alpha) * abg;
+  float m = 1.0 - smoothstep(0.80, 1.0, rho);
+  gl_FragColor = vec4(c * m, a * m);                      // premultiplied: glow beyond the alpha adds light
+}`;
+
+  function shader(type, src){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || "shader");
+    return s;
+  }
+  let prog, U = {};
+  try{
+    prog = gl.createProgram();
+    gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) || "link");
+    gl.useProgram(prog);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ["uTime","uIncl","uAzim","uRoll","uBmax","uPix","uBack","uNeb","uBackR","uNebR","uScreen","uCenter","uHalf","uHasSky"].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+  }catch(e){ try{ console.warn("Black hole disabled:", e && e.message); }catch(_){} cv.remove(); return; }
+
+  /* ---------- the page's far sky as textures, so the hole lenses what is really behind it ---------- */
+  const MAXT = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048;
+  const tex = [gl.createTexture(), gl.createTexture()];
+  tex.forEach((t, i) => {
+    gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+  });
+  gl.uniform1i(U.uBack, 0); gl.uniform1i(U.uNeb, 1);
+  let skyVer = -1;
+  function syncSky(){
+    const sky = window.REFDB_SKY;
+    if(!sky || !sky.layers || !doc.classList.contains("cx-sky")) return false;
+    const L = sky.layers(), r = sky.rects && sky.rects();
+    if(!L || !L.back || !L.neb || !r || L.back.width > MAXT || L.back.height > MAXT) return false;
+    if(L.ver !== skyVer){
+      skyVer = L.ver;
+      [L.back, L.neb].forEach((c, i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex[i]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c); });
+    }
+    gl.uniform4f(U.uBackR, r.bx, r.by, r.bw, r.bh); gl.uniform4f(U.uNebR, r.nx, r.ny, r.nw, r.nh); gl.uniform2f(U.uScreen, r.W, r.H);
+    return true;
+  }
+
+  /* from here on the 2D sky leaves the black hole to us */
+  window.REFDB_HOLE_GL = true;
+  let dead = false;
+  const kill = err => { dead = true; window.REFDB_HOLE_GL = false; cv.remove();
+    try{ console.warn("Black hole disabled:", err && err.message); }catch(e){}
+    try{ window.REFDB_SKY && window.REFDB_SKY.still(); }catch(e){} };
+  cv.addEventListener("webglcontextlost", e => { e.preventDefault(); kill(new Error("context lost")); });
+
+  const reduce = () => { try{ return matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } };
+  const paused = () => doc.classList.contains("motion-off") || reduce();
+  const dark = () => doc.getAttribute("data-theme") !== "light";
+  const labOpen = () => { const o = document.getElementById("labOverlay"); return o && !o.hidden; };
+
+  /* ---------- placement: the black hole lives in the widest gutter beside the text plate ---------- */
+  const BSH = 2.598;                  /* apparent shadow radius, 3√3/2 r_s */
+  const K = 7.0;                      /* canvas half-size in shadow radii */
+  let S = 0, R = 0, cx = 0, cy = 0, q = 0.7, on = false;
+  const rect = sel => { const el = document.querySelector(sel); if(!el) return null;
+    const r = el.getBoundingClientRect(); if(!(r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth)) return null;
+    return {left: Math.max(0, r.left), right: Math.min(innerWidth, r.right)}; };   /* only the part on screen */
+  function place(){
+    const W = innerWidth, H = innerHeight;
+    on = W >= 900;
+    if(!on){ cv.style.display = "none"; return; }
+    cv.style.display = "block";
+    const plate = rect(".main-pane .content-panel > .sl-container");
+    const toc = W >= 1152 ? rect(".right-sidebar") : null;
+    const side = rect(".sidebar-pane");
+    let gx0 = W * 0.82, gx1 = W, fallback = true;
+    if(plate){
+      const right = [plate.right, toc ? toc.left : W], left = [side ? side.right : 0, plate.left];
+      const best = (right[1] - right[0]) >= (left[1] - left[0]) ? right : left;
+      if(best[1] - best[0] >= 120){ gx0 = best[0]; gx1 = best[1]; fallback = false; }
+      else if(toc){ gx0 = toc.left; gx1 = toc.right; }
+    }
+    const w = gx1 - gx0;
+    R = Math.max(30, Math.min(fallback ? 60 : 90, w * 0.2));
+    cx = (gx0 + gx1) / 2;
+    cy = fallback ? H * 0.68 : Math.max(220, Math.min(H - 200, H * 0.36));
+    S = Math.round(2 * K * R);
+    const dpr = Math.min(1.25, window.devicePixelRatio || 1);
+    const px = Math.max(160, Math.min(Math.round(720 * q / 0.7), Math.round(S * dpr * q)));
+    cv.width = px; cv.height = px;
+    cv.style.width = S + "px"; cv.style.height = S + "px";
+    cv.style.left = Math.round(cx - S / 2) + "px"; cv.style.top = Math.round(cy - S / 2) + "px";
+    gl.viewport(0, 0, px, px);
+  }
+
+  /* ---------- camera: pointer and scroll tilt the view a little — real parallax in the lensing ---------- */
+  const view = {x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, s: 0};
+  addEventListener("pointermove", e => { view.tx = e.clientX / innerWidth; view.ty = e.clientY / innerHeight; }, {passive: true});
+  addEventListener("scroll", () => {
+    const max = Math.max(1, doc.scrollHeight - innerHeight); view.s = scrollY / max - 0.5;
+    if(paused()) still();
+  }, {passive: true});
+
+  let t = 37.0;
+  function render(){
+    const incl = 1.495 + (view.y - 0.5) * 0.05 + view.s * 0.03;
+    gl.uniform1f(U.uTime, t);
+    gl.uniform1f(U.uIncl, incl);
+    gl.uniform1f(U.uAzim, (view.x - 0.5) * 0.35);
+    gl.uniform1f(U.uRoll, -0.16);
+    gl.uniform1f(U.uBmax, BSH * K);
+    gl.uniform1f(U.uPix, (BSH * K / 60) / (cv.width / 2));
+    /* depth parallax: the hole is far, so it drifts against the pointer less than the near sky */
+    const ox = (0.5 - view.x) * 14, oy = (0.5 - view.y) * 10 - view.s * 30;
+    gl.uniform1f(U.uHasSky, syncSky() ? 1 : 0);
+    gl.uniform2f(U.uCenter, cx + ox, cy + oy); gl.uniform1f(U.uHalf, S / 2);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    cv.style.transform = `translate3d(${ox.toFixed(1)}px, ${oy.toFixed(1)}px, 0)`;
+  }
+  function still(){ if(dead || !on || !dark()) return; try{ view.x = view.tx; view.y = view.ty; render(); }catch(e){ kill(e); } }
+
+  /* ---------- loop: 30 fps; drop resolution if frames run long ---------- */
+  const STEP = 1000 / 30;
+  let prev = 0, acc = 0, lastDraw = 0, slow = 0;
+  function loop(now){
+    if(dead) return;
+    requestAnimationFrame(loop);
+    if(!on || document.hidden || !dark() || labOpen() || paused()){ prev = now; lastDraw = 0; return; }
+    acc += now - (prev || now); prev = now;
+    if(acc < STEP) return;
+    const dt = Math.min(0.1, acc / 1000); acc = 0;
+    t += dt;
+    view.x += (view.tx - view.x) * Math.min(1, dt * 2.5);
+    view.y += (view.ty - view.y) * Math.min(1, dt * 2.5);
+    if(lastDraw){ const gap = now - lastDraw; slow = gap > 55 ? slow + 1 : Math.max(0, slow - 1);
+      if(slow > 45 && q > 0.36){ q *= 0.8; slow = 0; place(); } }
+    lastDraw = now;
+    try{ render(); }catch(e){ kill(e); }
+  }
+
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if(dead) return; place(); still(); }, 150); });
+  new MutationObserver(() => { if(paused()) still(); }).observe(doc, {attributes: true, attributeFilter: ["class", "data-theme"]});
+  try{ place(); still(); }catch(e){ kill(e); return; }
+  setTimeout(() => { if(!dead){ place(); still(); } }, 600);   /* after fonts settle the plate edges */
+  try{ window.REFDB_SKY && window.REFDB_SKY.still(); }catch(e){}
+  window.REFDB_HOLE = {still, place, quality: v => { q = v; place(); still(); }};
+  requestAnimationFrame(loop);
+})();
+</script><div id="scrollTelemetry" aria-hidden="true"><i></i></div><div class="page sl-flex astro-yntsjkba"><header class="header astro-yntsjkba"><div class="header astro-by6fddyj"><div class="title-wrapper sl-flex astro-by6fddyj"><a href="/classic/" class="site-title astro-32trhkrv"><svg class="mark astro-32trhkrv" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="22" width="34" height="20" rx="3" fill="none" stroke="var(--sl-color-accent)" stroke-width="4" class="astro-32trhkrv"></rect><path d="M44 27 L52 24 V40 L44 37" fill="none" stroke="var(--sl-color-accent)" stroke-width="4" stroke-linejoin="round" class="astro-32trhkrv"></path><path d="M16 32 H38" stroke="var(--rd-blue)" stroke-width="4" stroke-linecap="round" class="astro-32trhkrv"></path></svg><span class="brand astro-32trhkrv">REF<span class="stamp astro-32trhkrv">·</span>DB</span><span class="brand-sub astro-32trhkrv">Rocket motor &amp; mechanical design reference</span></a></div><div class="sl-flex print:hidden astro-by6fddyj"><site-search class="astro-by6fddyj astro-b5kgnn7o" data-translations="{&quot;placeholder&quot;:&quot;Search&quot;}"><button data-open-modal disabled aria-label="Search" aria-keyshortcuts="Control+K" class="astro-b5kgnn7o"><svg aria-hidden="true" class="astro-b5kgnn7o astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.71 20.29 18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg><span class="sl-hidden md:sl-block astro-b5kgnn7o" aria-hidden="true">Search</span><kbd class="sl-hidden md:sl-flex astro-b5kgnn7o" style="display: none;"><kbd class="astro-b5kgnn7o">Ctrl</kbd><kbd class="astro-b5kgnn7o">K</kbd></kbd></button><dialog style="padding:0" aria-label="Search" class="astro-b5kgnn7o"><div class="dialog-frame sl-flex astro-b5kgnn7o"><button data-close-modal class="sl-flex md:sl-hidden astro-b5kgnn7o">Cancel</button><div class="search-container astro-b5kgnn7o"><div id="starlight__search" class="astro-b5kgnn7o"></div></div></div></dialog></site-search><script>
+	(() => {
+		const openBtn = document.querySelector('button[data-open-modal]');
+		const shortcut = openBtn?.querySelector('kbd');
+		if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+		const platformKey = shortcut.querySelector('kbd');
+		if (platformKey && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+			platformKey.textContent = '⌘';
+			openBtn.setAttribute('aria-keyshortcuts', 'Meta+K');
+		}
+		shortcut.style.display = '';
+	})();
+</script><script type="module" src="/classic/_astro/Search.astro_astro_type_script_index_0_lang.i_1rpMC0.js"></script></div><div class="sl-hidden md:sl-flex print:hidden right-group astro-by6fddyj"><div class="sl-flex social-icons astro-by6fddyj"><span class="hud-met" aria-hidden="true"><span class="k">MET</span><span data-met>T+00:00:00</span></span><button type="button" class="hud-chip" data-motion-switch aria-pressed="false" title="Pause the background and all animation"><span class="v" data-motion-label>PAUSE MOTION</span></button><a class="hud-icon" href="https://github.com/dashroyy/ref-db" rel="me" title="Source on GitHub"><span class="sr-only">Source on GitHub</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"></path></svg></a><script type="module">var e=document.documentElement,t=`refdb-motion`,n=()=>{let t=e.classList.contains(`motion-off`);document.querySelectorAll(`[data-motion-label]`).forEach(e=>e.textContent=t?`RESUME MOTION`:`PAUSE MOTION`),document.querySelectorAll(`[data-motion-switch]`).forEach(e=>e.setAttribute(`aria-pressed`,String(t)))};document.querySelectorAll(`[data-motion-switch]`).forEach(r=>r.addEventListener(`click`,()=>{let r=!e.classList.contains(`motion-off`);e.classList.toggle(`motion-off`,r);try{localStorage.setItem(t,r?`off`:`on`)}catch{}n()})),n();var r=performance.now(),i=e=>String(e).padStart(2,`0`);setInterval(()=>{let e=Math.floor((performance.now()-r)/1e3),t=`T+${i(Math.floor(e/3600))}:${i(Math.floor(e/60)%60)}:${i(e%60)}`;document.querySelectorAll(`[data-met]`).forEach(e=>e.textContent=t)},1e3);</script></div><button type="button" class="hud-chip mode-switch" data-mode-switch aria-label="Switch between dark and light theme"><span class="k">MODE</span><span class="v" data-mode-label>DARK</span></button><script type="module">var e=document.documentElement,t=t=>{e.dataset.theme=t;try{localStorage.setItem(`starlight-theme`,t)}catch{}document.querySelectorAll(`[data-mode-label]`).forEach(e=>e.textContent=t===`dark`?`DARK`:`LIGHT`),document.querySelectorAll(`[data-mode-switch]`).forEach(e=>e.setAttribute(`aria-pressed`,String(t===`light`)))};t(e.dataset.theme===`light`?`light`:`dark`),document.querySelectorAll(`[data-mode-switch]`).forEach(n=>n.addEventListener(`click`,()=>t(e.dataset.theme===`light`?`dark`:`light`)));</script><script type="module">var e=class extends HTMLElement{constructor(){super();let e=this.querySelector(`select`);e&&(e.addEventListener(`change`,e=>{e.currentTarget instanceof HTMLSelectElement&&(window.location.pathname=e.currentTarget.value)}),window.addEventListener(`pageshow`,t=>{if(!t.persisted)return;let n=e.querySelector(`option[selected]`)?.index;n!==e.selectedIndex&&(e.selectedIndex=n??0)}))}};customElements.define(`starlight-lang-select`,e);</script></div></div></header><nav class="sidebar print:hidden astro-yntsjkba" aria-label="Main"><button popovertarget="starlight__sidebar" class="sl-menu-button sl-flex md:sl-hidden print:hidden astro-r2osgdlg"><svg aria-hidden="true" class="open-menu astro-r2osgdlg astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z"/></svg><svg aria-hidden="true" class="close-menu astro-r2osgdlg astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="m13.41 12 6.3-6.29a1.004 1.004 0 1 0-1.42-1.42L12 10.59l-6.29-6.3a1.004 1.004 0 0 0-1.42 1.42l6.3 6.29-6.3 6.29a1 1 0 0 0 0 1.42.998.998 0 0 0 1.42 0l6.29-6.3 6.29 6.3a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.42L13.41 12Z"/></svg><span class="sr-only astro-r2osgdlg">Menu</span></button><script type="module">var e=class extends HTMLElement{constructor(){super();let e=matchMedia(`(min-width: 50em)`),t=()=>{this.popover=e.matches?null:`auto`};t(),e.addEventListener(`change`,()=>t()),this.addEventListener(`toggle`,({newState:e})=>this.trapFocus(e===`open`))}trapFocus(e){document.querySelectorAll(`.main-frame, .sl-skip-link`).forEach(t=>{t.toggleAttribute(`inert`,e)})}};customElements.define(`sl-sidebar-pane`,e);</script><script type="module">var e=document.querySelector(`.sidebar-pane`),t=(t,n=!1)=>{if(!e||!t)return;let r=t.getBoundingClientRect().top-e.getBoundingClientRect().top+e.scrollTop-e.clientHeight/3;e.scrollTo({top:Math.max(0,r),behavior:n?`smooth`:`auto`})};t(document.querySelector(`.rail-z.here`)),e?.addEventListener(`toggle`,e=>{e.newState===`open`&&requestAnimationFrame(()=>t(document.querySelector(`.rail-z.here`)))}),document.querySelectorAll(`.rail-orbit .orb-p`).forEach(e=>e.addEventListener(`click`,n=>{n.preventDefault();let r=matchMedia(`(prefers-reduced-motion: reduce)`).matches||document.documentElement.classList.contains(`motion-off`);t(document.getElementById(`rail-${e.dataset.phase}`),!r)}));</script><sl-sidebar-pane popover id="starlight__sidebar" class="sidebar-pane astro-yntsjkba"><div class="sidebar-content sl-flex astro-yntsjkba"><div class="rail"><div class="rail-brief"><a href="/classic/start/how-to-use/">How to use</a><a href="/classic/start/roadmap/">Roadmap</a><a href="/legacy/" title="The complete v1 reference, all 64 zones">v1 archive</a></div><figure class="rail-orbit" aria-label="Workflow phases"><svg viewBox="0 0 266 160" role="group" aria-label="Eight workflow phases. Select one to go to it in the list"><defs><radialGradient id="railSun"><stop offset="0" stop-color="#fff6d8"></stop><stop offset=".45" stop-color="#ffb347"></stop><stop offset="1" stop-color="#ff6a00" stop-opacity="0"></stop></radialGradient><radialGradient id="railP_orient" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-orient)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_select" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-select)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_size" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-size)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_verify" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-verify)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_detail" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-detail)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_feature" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-feature)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_make" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-make)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient><radialGradient id="railP_spec" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-spec)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient></defs><ellipse class="orb-path" cx="133" cy="76" rx="104" ry="44"></ellipse><circle cx="133" cy="76" r="19" fill="url(#railSun)"></circle><text class="orb-sun-label" x="133" y="80">Z39</text><a href="#rail-orient" class="orb-p" data-phase="orient" aria-label="ORIENT: Understand the problem, 3 of 10 zones rebuilt"><title>ORIENT · Understand the problem · 3/10 rebuilt</title><circle cx="133" cy="32" r="7.5" fill="url(#railP_orient)"></circle><text x="133" y="19.5">ORIENT</text></a><a href="#rail-select" class="orb-p" data-phase="select" aria-label="SELECT: Choose the material, 3 of 10 zones rebuilt"><title>SELECT · Choose the material · 3/10 rebuilt</title><circle cx="206.53910524340097" cy="44.88730162779191" r="7.5" fill="url(#railP_select)"></circle><text x="206.53910524340097" y="32.38730162779191">SELECT</text></a><a href="#rail-size" class="orb-p" data-phase="size" aria-label="SIZE: Structural design, 9 of 10 zones rebuilt"><title>SIZE · Structural design · 9/10 rebuilt</title><circle cx="237" cy="76" r="7.5" fill="url(#railP_size)"></circle><text x="237" y="63.5">SIZE</text></a><a href="#rail-verify" class="orb-p here" data-phase="verify" aria-label="VERIFY: Prove it survives, 9 of 9 zones rebuilt, current phase"><title>VERIFY · Prove it survives · 9/9 rebuilt</title><circle class="orb-ring" cx="206.53910524340097" cy="107.11269837220809" r="15" stroke="var(--ph-verify)"></circle><circle cx="206.53910524340097" cy="107.11269837220809" r="10" fill="url(#railP_verify)"></circle><text x="206.53910524340097" y="129.1126983722081">VERIFY</text></a><a href="#rail-detail" class="orb-p" data-phase="detail" aria-label="DETAIL: Define the drawing, 6 of 6 zones rebuilt"><title>DETAIL · Define the drawing · 6/6 rebuilt</title><circle cx="133" cy="120" r="7.5" fill="url(#railP_detail)"></circle><text x="133" y="139.5">DETAIL</text></a><a href="#rail-feature" class="orb-p" data-phase="feature" aria-label="FEATURES: Specify the details, 7 of 7 zones rebuilt"><title>FEATURES · Specify the details · 7/7 rebuilt</title><circle cx="59.46089475659906" cy="107.11269837220809" r="7.5" fill="url(#railP_feature)"></circle><text x="59.46089475659906" y="126.61269837220809">FEATURES</text></a><a href="#rail-make" class="orb-p" data-phase="make" aria-label="MAKE: Produce and inspect, 1 of 7 zones rebuilt"><title>MAKE · Produce and inspect · 1/7 rebuilt</title><circle cx="29" cy="76" r="7.5" fill="url(#railP_make)"></circle><text x="29" y="63.5">MAKE</text></a><a href="#rail-spec" class="orb-p" data-phase="spec" aria-label="SPECIFY: Standards &amp; release, 0 of 5 zones rebuilt"><title>SPECIFY · Standards &amp; release · 0/5 rebuilt</title><circle cx="59.460894756599046" cy="44.88730162779191" r="7.5" fill="url(#railP_spec)"></circle><text x="59.460894756599046" y="32.38730162779191">SPECIFY</text></a><text class="orb-where" x="133" y="157">PHASE 4/8 · 38 OF 64 ZONES IN v2</text></svg></figure><section class="rail-phase" id="rail-orient" style="--pc: var(--ph-orient)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">◎</span><span class="ph-name">ORIENT</span><span class="ph-sub">Understand the problem</span><span class="ph-cnt" title="3 of 10 zones rebuilt in v2">3/10</span></h2><ul><li><a href="/classic/" class="rail-z v2"><span class="zn">Z1</span><span class="zi" aria-hidden="true">⌂</span><span class="zl">OVERVIEW</span></a></li><li><a href="/classic/fundamentals/how-a-solid-motor-works/" class="rail-z v2 primer"><span class="zn">P1</span><span class="zi" aria-hidden="true">✦</span><span class="zl">HOW A SOLID MOTOR WORKS</span></a></li><li><a href="/legacy/?z=reqs" class="rail-z v1" title="Z2 REQUIREMENTS &amp; ICD: opens in the v1 archive"><span class="zn">Z2</span><span class="zi" aria-hidden="true">☰</span><span class="zl">REQUIREMENTS &amp; ICD</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=duty" class="rail-z v1" title="Z3 DUTY CYCLE: opens in the v1 archive"><span class="zn">Z3</span><span class="zi" aria-hidden="true">⟳</span><span class="zl">DUTY CYCLE</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=risk" class="rail-z v1" title="Z4 CRITICALITY: opens in the v1 archive"><span class="zn">Z4</span><span class="zi" aria-hidden="true">⚑</span><span class="zl">CRITICALITY</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=metal" class="rail-z v1" title="Z5 METALLURGY: opens in the v1 archive"><span class="zn">Z5</span><span class="zi" aria-hidden="true">◈</span><span class="zl">METALLURGY</span><span class="tag">v1</span></a></li><li><a href="/classic/fundamentals/fatigue/" class="rail-z v2"><span class="zn">Z6</span><span class="zi" aria-hidden="true">⌇</span><span class="zl">FATIGUE</span></a></li><li><a href="/classic/fundamentals/viscoelasticity/" class="rail-z v2"><span class="zn">Z7</span><span class="zi" aria-hidden="true">∿</span><span class="zl">VISCOELASTICITY</span></a></li><li><a href="/legacy/?z=sandbox" class="rail-z v1" title="Z8 SANDBOX: opens in the v1 archive"><span class="zn">Z8</span><span class="zi" aria-hidden="true">◍</span><span class="zl">SANDBOX</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=worked" class="rail-z v1" title="Z9 WORKED EXAMPLE: opens in the v1 archive"><span class="zn">Z9</span><span class="zi" aria-hidden="true">▶</span><span class="zl">WORKED EXAMPLE</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=read" class="rail-z v1" title="Z10 READING: opens in the v1 archive"><span class="zn">Z10</span><span class="zi" aria-hidden="true">❑</span><span class="zl">READING</span><span class="tag">v1</span></a></li></ul></section><section class="rail-phase" id="rail-select" style="--pc: var(--ph-select)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">◈</span><span class="ph-name">SELECT</span><span class="ph-sub">Choose the material</span><span class="ph-cnt" title="3 of 10 zones rebuilt in v2">3/10</span></h2><ul><li><a href="/classic/materials/selection/" class="rail-z v2"><span class="zn">Z11</span><span class="zi" aria-hidden="true">◆</span><span class="zl">MATERIALS</span></a></li><li><a href="/legacy/?z=trade" class="rail-z v1" title="Z12 TRADE STUDY: opens in the v1 archive"><span class="zn">Z12</span><span class="zi" aria-hidden="true">⚖</span><span class="zl">TRADE STUDY</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=sheet" class="rail-z v1" title="Z13 DATASHEET: opens in the v1 archive"><span class="zn">Z13</span><span class="zi" aria-hidden="true">▤</span><span class="zl">DATASHEET</span><span class="tag">v1</span></a></li><li><a href="/classic/materials/allowables/" class="rail-z v2"><span class="zn">Z14</span><span class="zi" aria-hidden="true">∑</span><span class="zl">ALLOWABLES</span></a></li><li><a href="/legacy/?z=cryo" class="rail-z v1" title="Z15 CRYOGENIC: opens in the v1 archive"><span class="zn">Z15</span><span class="zi" aria-hidden="true">❄</span><span class="zl">CRYOGENIC</span><span class="tag">v1</span></a></li><li><a href="/classic/materials/designations/" class="rail-z v2"><span class="zn">Z16</span><span class="zi" aria-hidden="true">⇄</span><span class="zl">DESIGNATIONS</span></a></li><li><a href="/legacy/?z=density" class="rail-z v1" title="Z17 DENSITY: opens in the v1 archive"><span class="zn">Z17</span><span class="zi" aria-hidden="true">⚖</span><span class="zl">DENSITY</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=plastics" class="rail-z v1" title="Z18 PLASTICS: opens in the v1 archive"><span class="zn">Z18</span><span class="zi" aria-hidden="true">◍</span><span class="zl">PLASTICS</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=elast" class="rail-z v1" title="Z19 SILICONE &amp; PU: opens in the v1 archive"><span class="zn">Z19</span><span class="zi" aria-hidden="true">◍</span><span class="zl">SILICONE &amp; PU</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=coat" class="rail-z v1" title="Z20 COATINGS: opens in the v1 archive"><span class="zn">Z20</span><span class="zi" aria-hidden="true">▧</span><span class="zl">COATINGS</span><span class="tag">v1</span></a></li></ul></section><section class="rail-phase" id="rail-size" style="--pc: var(--ph-size)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">▲</span><span class="ph-name">SIZE</span><span class="ph-sub">Structural design</span><span class="ph-cnt" title="9 of 10 zones rebuilt in v2">9/10</span></h2><ul><li><a href="/classic/joints/load-paths/" class="rail-z v2"><span class="zn">Z21</span><span class="zi" aria-hidden="true">⇢</span><span class="zl">LOAD PATHS &amp; JOINTS</span></a></li><li><a href="/legacy/?z=access" class="rail-z v1" title="Z22 ENVELOPE &amp; ACCESS: opens in the v1 archive"><span class="zn">Z22</span><span class="zi" aria-hidden="true">⬚</span><span class="zl">ENVELOPE &amp; ACCESS</span><span class="tag">v1</span></a></li><li><a href="/classic/motor/hardware/" class="rail-z v2"><span class="zn">Z23</span><span class="zi" aria-hidden="true">▲</span><span class="zl">ROCKET MOTOR</span></a></li><li><a href="/classic/motor/propellant/" class="rail-z v2"><span class="zn">Z24</span><span class="zi" aria-hidden="true">◭</span><span class="zl">PROPELLANT</span></a></li><li><a href="/classic/motor/case-sizing/" class="rail-z v2"><span class="zn">Z25</span><span class="zi" aria-hidden="true">⬭</span><span class="zl">CASE SIZING</span></a></li><li><a href="/classic/motor/propellant-grain/" class="rail-z v2"><span class="zn">Z26</span><span class="zi" aria-hidden="true">◭</span><span class="zl">PROPELLANT GRAIN</span></a></li><li><a href="/classic/motor/insulation/" class="rail-z v2"><span class="zn">Z27</span><span class="zi" aria-hidden="true">◈</span><span class="zl">ABLATIVE LINERS</span></a></li><li><a href="/classic/motor/transient-thermal/" class="rail-z v2"><span class="zn">Z28</span><span class="zi" aria-hidden="true">◕</span><span class="zl">TRANSIENT THERMAL</span></a></li><li><a href="/classic/fundamentals/hand-calcs/" class="rail-z v2"><span class="zn">Z29</span><span class="zi" aria-hidden="true">∫</span><span class="zl">HAND CALCS</span></a></li><li><a href="/classic/joints/differential-expansion/" class="rail-z v2"><span class="zn">Z30</span><span class="zi" aria-hidden="true">↔</span><span class="zl">DIFF. EXPANSION</span></a></li></ul></section><section class="rail-phase" id="rail-verify" style="--pc: var(--ph-verify)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">✓</span><span class="ph-name">VERIFY</span><span class="ph-sub">Prove it survives</span><span class="ph-cnt" title="9 of 9 zones rebuilt in v2">9/9</span></h2><ul><li><a href="/classic/verify/margin-policy/" class="rail-z v2"><span class="zn">Z31</span><span class="zi" aria-hidden="true">±</span><span class="zl">MARGIN POLICY</span></a></li><li><a href="/classic/verify/shell-buckling/" class="rail-z v2"><span class="zn">Z32</span><span class="zi" aria-hidden="true">◫</span><span class="zl">SHELL BUCKLING</span></a></li><li><a href="/classic/verify/leak-before-break/" class="rail-z v2"><span class="zn">Z33</span><span class="zi" aria-hidden="true">◔</span><span class="zl">LEAK BEFORE BREAK</span></a></li><li><a href="/classic/verify/random-vibration/" class="rail-z v2"><span class="zn">Z34</span><span class="zi" aria-hidden="true">≋</span><span class="zl">RANDOM VIBRATION</span></a></li><li><a href="/classic/verify/proof-testing/" class="rail-z v2"><span class="zn">Z35</span><span class="zi" aria-hidden="true">◉</span><span class="zl">PROOF TESTING</span></a></li><li><a href="/classic/verify/fea-cards/" class="rail-z v2"><span class="zn">Z36</span><span class="zi" aria-hidden="true">▦</span><span class="zl">FEA CARDS</span></a></li><li><a href="/classic/verify/fea-and-test/" class="rail-z v2"><span class="zn">Z37</span><span class="zi" aria-hidden="true">◱</span><span class="zl">FEA &amp; TEST</span></a></li><li><a href="/classic/verify/test-correlation/" class="rail-z v2"><span class="zn">Z38</span><span class="zi" aria-hidden="true">≍</span><span class="zl">TEST CORRELATION</span></a></li><li><a href="/classic/verify/storage-ageing/" class="rail-z v2 here" aria-current="page"><span class="zn">Z39</span><span class="zi" aria-hidden="true">⧗</span><span class="zl">STORAGE &amp; AGEING</span></a></li></ul></section><section class="rail-phase" id="rail-detail" style="--pc: var(--ph-detail)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">⊞</span><span class="ph-name">DETAIL</span><span class="ph-sub">Define the drawing</span><span class="ph-cnt" title="6 of 6 zones rebuilt in v2">6/6</span></h2><ul><li><a href="/classic/drawing/gdt/" class="rail-z v2"><span class="zn">Z40</span><span class="zi" aria-hidden="true">⌖</span><span class="zl">GD&amp;T</span></a></li><li><a href="/classic/drawing/datums-and-position/" class="rail-z v2"><span class="zn">Z41</span><span class="zi" aria-hidden="true">⊕</span><span class="zl">DATUMS &amp; POSITION</span></a></li><li><a href="/classic/drawing/fits-and-limits/" class="rail-z v2"><span class="zn">Z42</span><span class="zi" aria-hidden="true">◎</span><span class="zl">FITS &amp; LIMITS</span></a></li><li><a href="/classic/drawing/tolerance-stack/" class="rail-z v2"><span class="zn">Z43</span><span class="zi" aria-hidden="true">≡</span><span class="zl">TOL STACK</span></a></li><li><a href="/classic/drawing/surface-finish/" class="rail-z v2"><span class="zn">Z44</span><span class="zi" aria-hidden="true">≈</span><span class="zl">SURFACE FINISH</span></a></li><li><a href="/classic/drawing/gauging/" class="rail-z v2"><span class="zn">Z45</span><span class="zi" aria-hidden="true">⌀</span><span class="zl">GAUGING</span></a></li></ul></section><section class="rail-phase" id="rail-feature" style="--pc: var(--ph-feature)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">⊕</span><span class="ph-name">FEATURES</span><span class="ph-sub">Specify the details</span><span class="ph-cnt" title="7 of 7 zones rebuilt in v2">7/7</span></h2><ul><li><a href="/classic/materials/residual-stress/" class="rail-z v2"><span class="zn">Z46</span><span class="zi" aria-hidden="true">◑</span><span class="zl">RESIDUAL STRESS</span></a></li><li><a href="/classic/joints/threads/" class="rail-z v2"><span class="zn">Z47</span><span class="zi" aria-hidden="true">⟐</span><span class="zl">THREADS</span></a></li><li><a href="/classic/joints/bolted-joints/" class="rail-z v2"><span class="zn">Z48</span><span class="zi" aria-hidden="true">⬢</span><span class="zl">BOLTED JOINTS</span></a></li><li><a href="/classic/joints/locking-and-retention/" class="rail-z v2"><span class="zn">Z49</span><span class="zi" aria-hidden="true">⊗</span><span class="zl">LOCKING &amp; RETENTION</span></a></li><li><a href="/classic/seals/sealing-strategy/" class="rail-z v2"><span class="zn">Z50</span><span class="zi" aria-hidden="true">◎</span><span class="zl">SEALING STRATEGY</span></a></li><li><a href="/classic/seals/o-ring-design/" class="rail-z v2"><span class="zn">Z51</span><span class="zi" aria-hidden="true">◯</span><span class="zl">O-RING DESIGN</span></a></li><li><a href="/classic/materials/galvanic/" class="rail-z v2"><span class="zn">Z52</span><span class="zi" aria-hidden="true">⚡</span><span class="zl">GALVANIC</span></a></li></ul></section><section class="rail-phase" id="rail-make" style="--pc: var(--ph-make)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">⚙</span><span class="ph-name">MAKE</span><span class="ph-sub">Produce and inspect</span><span class="ph-cnt" title="1 of 7 zones rebuilt in v2">1/7</span></h2><ul><li><a href="/legacy/?z=process" class="rail-z v1" title="Z53 PROCESS &amp; AM: opens in the v1 archive"><span class="zn">Z53</span><span class="zi" aria-hidden="true">⚙</span><span class="zl">PROCESS &amp; AM</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=cost" class="rail-z v1" title="Z54 COST: opens in the v1 archive"><span class="zn">Z54</span><span class="zi" aria-hidden="true">£</span><span class="zl">COST</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=weld" class="rail-z v1" title="Z55 WELDING: opens in the v1 archive"><span class="zn">Z55</span><span class="zi" aria-hidden="true">⌁</span><span class="zl">WELDING</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=ndt" class="rail-z v1" title="Z56 NDT: opens in the v1 archive"><span class="zn">Z56</span><span class="zi" aria-hidden="true">◉</span><span class="zl">NDT</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=leak" class="rail-z v1" title="Z57 LEAK TESTING: opens in the v1 archive"><span class="zn">Z57</span><span class="zi" aria-hidden="true">◌</span><span class="zl">LEAK TESTING</span><span class="tag">v1</span></a></li><li><a href="/classic/materials/specification/" class="rail-z v2"><span class="zn">Z58</span><span class="zi" aria-hidden="true">▣</span><span class="zl">MATERIAL SPECS</span></a></li><li><a href="/legacy/?z=certs" class="rail-z v1" title="Z59 CERTS &amp; TRACE: opens in the v1 archive"><span class="zn">Z59</span><span class="zi" aria-hidden="true">✓</span><span class="zl">CERTS &amp; TRACE</span><span class="tag">v1</span></a></li></ul></section><section class="rail-phase" id="rail-spec" style="--pc: var(--ph-spec)"><h2 class="rail-ph-head"><span class="orb" aria-hidden="true"></span><span class="ph-ico" aria-hidden="true">§</span><span class="ph-name">SPECIFY</span><span class="ph-sub">Standards &amp; release</span><span class="ph-cnt" title="0 of 5 zones rebuilt in v2">0/5</span></h2><ul><li><a href="/legacy/?z=standards" class="rail-z v1" title="Z60 STANDARDS: opens in the v1 archive"><span class="zn">Z60</span><span class="zi" aria-hidden="true">§</span><span class="zl">STANDARDS</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=guides" class="rail-z v1" title="Z61 DESIGN GUIDES: opens in the v1 archive"><span class="zn">Z61</span><span class="zi" aria-hidden="true">❋</span><span class="zl">DESIGN GUIDES</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=drawing" class="rail-z v1" title="Z62 DRAWING FRAME &amp; NOTES: opens in the v1 archive"><span class="zn">Z62</span><span class="zi" aria-hidden="true">▭</span><span class="zl">DRAWING FRAME &amp; NOTES</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=release" class="rail-z v1" title="Z63 REVISION &amp; SIGN-OFF: opens in the v1 archive"><span class="zn">Z63</span><span class="zi" aria-hidden="true">✎</span><span class="zl">REVISION &amp; SIGN-OFF</span><span class="tag">v1</span></a></li><li><a href="/legacy/?z=export" class="rail-z v1" title="Z64 ARCHIVE &amp; EXPORT: opens in the v1 archive"><span class="zn">Z64</span><span class="zi" aria-hidden="true">⛨</span><span class="zl">ARCHIVE &amp; EXPORT</span><span class="tag">v1</span></a></li></ul></section></div><div class="md:sl-hidden"><div class="mobile-preferences sl-flex astro-p4azlveh"><div class="social-icons astro-p4azlveh"><span class="hud-met" aria-hidden="true"><span class="k">MET</span><span data-met>T+00:00:00</span></span><button type="button" class="hud-chip" data-motion-switch aria-pressed="false" title="Pause the background and all animation"><span class="v" data-motion-label>PAUSE MOTION</span></button><a class="hud-icon" href="https://github.com/dashroyy/ref-db" rel="me" title="Source on GitHub"><span class="sr-only">Source on GitHub</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"></path></svg></a></div><button type="button" class="hud-chip mode-switch" data-mode-switch aria-label="Switch between dark and light theme"><span class="k">MODE</span><span class="v" data-mode-label>DARK</span></button></div></div></div></sl-sidebar-pane></nav><div class="main-frame astro-yntsjkba"><script type="module">var e=document.getElementById(`starlight__sidebar`),t=e?.querySelector(`sl-sidebar-state-persist`),n=`sl-sidebar-state`,r=()=>{let r=[],i=t?.dataset.hash||``;try{let e=sessionStorage.getItem(n),t=JSON.parse(e||`{}`);Array.isArray(t.open)&&t.hash===i&&(r=t.open)}catch{}return{hash:i,open:r,scroll:e?.scrollTop||0}},i=e=>{try{sessionStorage.setItem(n,JSON.stringify(e))}catch{}},a=()=>i(r()),o=(e,t)=>{let n=r();n.open[t]=e,i(n)};t?.addEventListener(`click`,e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`summary`)?.closest(`details`);if(!t)return;let n=t.querySelector(`sl-sidebar-restore`),r=parseInt(n?.dataset.index||``);isNaN(r)||o(!t.open,r)}),addEventListener(`visibilitychange`,()=>{document.visibilityState===`hidden`&&a()});</script><div class="lg:sl-flex astro-lrzkfocr"><aside class="right-sidebar-container print:hidden astro-lrzkfocr"><div class="right-sidebar astro-lrzkfocr"><div class="lg:sl-hidden astro-qok35upx"><mobile-starlight-toc data-min-h="2" data-max-h="3" class="astro-66cqc7ze"><nav aria-labelledby="starlight__on-this-page--mobile" class="astro-66cqc7ze"><details id="starlight__mobile-toc" class="astro-66cqc7ze"><summary id="starlight__on-this-page--mobile" class="sl-flex astro-66cqc7ze"><span class="toggle sl-flex astro-66cqc7ze">On this page<svg aria-hidden="true" class="caret astro-66cqc7ze astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></span><span class="display-current astro-66cqc7ze"></span></summary><div class="dropdown astro-66cqc7ze"><ul class="isMobile astro-jugkfwgx" style="--depth: 0;"><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#_top" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Overview</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#why-this-matters" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Why this matters</span></a><ul class="isMobile astro-jugkfwgx" style="--depth: 1;"><li style="--depth: 1;" class="astro-jugkfwgx"><a href="#what-ages-and-what-to-monitor" style="--depth: 1;" class="astro-jugkfwgx"><span style="--depth: 1;" class="astro-jugkfwgx">What ages, and what to monitor</span></a></li></ul></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#ageing-is-chemistry-and-chemistry-is-temperature" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Ageing is chemistry, and chemistry is temperature</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#the-average-temperature-is-the-wrong-average" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">The average temperature is the wrong average</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#predicting-service-life-from-accelerated-tests" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Predicting service life from accelerated tests</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#calculator" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Calculator</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#worked-example-a-seal-in-a-hot-store" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Worked example: a seal in a hot store</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#surveillance" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Surveillance</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#where-this-stops" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Where this stops</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#on-the-drawing-and-in-the-specifications" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">On the drawing and in the specifications</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#references-and-further-reading" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">References and further reading</span></a></li></ul></div></details></nav></mobile-starlight-toc><script type="module" src="/classic/_astro/MobileTableOfContents.astro_astro_type_script_index_0_lang.C3fM4Kra.js"></script></div><div class="right-sidebar-panel sl-hidden lg:sl-block astro-qok35upx"><div class="sl-container astro-qok35upx"><starlight-toc data-min-h="2" data-max-h="3"><nav aria-labelledby="starlight__on-this-page"><h2 id="starlight__on-this-page">On this page</h2><ul class="astro-jugkfwgx" style="--depth: 0;"><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#_top" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Overview</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#why-this-matters" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Why this matters</span></a><ul class="astro-jugkfwgx" style="--depth: 1;"><li style="--depth: 1;" class="astro-jugkfwgx"><a href="#what-ages-and-what-to-monitor" style="--depth: 1;" class="astro-jugkfwgx"><span style="--depth: 1;" class="astro-jugkfwgx">What ages, and what to monitor</span></a></li></ul></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#ageing-is-chemistry-and-chemistry-is-temperature" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Ageing is chemistry, and chemistry is temperature</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#the-average-temperature-is-the-wrong-average" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">The average temperature is the wrong average</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#predicting-service-life-from-accelerated-tests" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Predicting service life from accelerated tests</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#calculator" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Calculator</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#worked-example-a-seal-in-a-hot-store" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Worked example: a seal in a hot store</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#surveillance" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Surveillance</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#where-this-stops" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Where this stops</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#on-the-drawing-and-in-the-specifications" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">On the drawing and in the specifications</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#references-and-further-reading" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">References and further reading</span></a></li></ul></nav></starlight-toc><script type="module" src="/classic/_astro/TableOfContents.astro_astro_type_script_index_0_lang.BpJaGz7G.js"></script></div></div></div></aside><div class="main-pane astro-lrzkfocr"><main class="astro-g5ptsecz" lang="en" dir="ltr"><div class="content-panel astro-a7po4psb"><div class="sl-container astro-a7po4psb"><nav class="zone-banner" style="--pc: var(--ph-verify)" aria-label="Where this page sits in the route"><svg class="zb-planet" viewBox="0 0 40 40" aria-hidden="true"><defs><radialGradient id="zbGrad" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"></stop><stop offset=".38" stop-color="var(--ph-verify)"></stop><stop offset="1" stop-color="#000"></stop></radialGradient></defs><ellipse cx="20" cy="20" rx="19" ry="6" fill="none" stroke="var(--ph-verify)" stroke-width="1" opacity=".55" transform="rotate(-18 20 20)"></ellipse><circle cx="20" cy="20" r="11.5" fill="url(#zbGrad)"></circle></svg><div class="zb-txt"><span class="zb-phase">PHASE 4 OF 8 · VERIFY · STEP 9 OF 9 · Z39</span><span class="zb-sub">Prove it survives: Substantiation: show that it does not buckle, burst, crack or leak, and that the analysis behind that claim is sound.</span><span class="zb-steps"><a href="/classic/verify/margin-policy/" class="v2" title="Z31 MARGIN POLICY" aria-label="Z31 MARGIN POLICY"></a><a href="/classic/verify/shell-buckling/" class="v2" title="Z32 SHELL BUCKLING" aria-label="Z32 SHELL BUCKLING"></a><a href="/classic/verify/leak-before-break/" class="v2" title="Z33 LEAK BEFORE BREAK" aria-label="Z33 LEAK BEFORE BREAK"></a><a href="/classic/verify/random-vibration/" class="v2" title="Z34 RANDOM VIBRATION" aria-label="Z34 RANDOM VIBRATION"></a><a href="/classic/verify/proof-testing/" class="v2" title="Z35 PROOF TESTING" aria-label="Z35 PROOF TESTING"></a><a href="/classic/verify/fea-cards/" class="v2" title="Z36 FEA CARDS" aria-label="Z36 FEA CARDS"></a><a href="/classic/verify/fea-and-test/" class="v2" title="Z37 FEA &amp; TEST" aria-label="Z37 FEA &amp; TEST"></a><a href="/classic/verify/test-correlation/" class="v2" title="Z38 TEST CORRELATION" aria-label="Z38 TEST CORRELATION"></a><a href="/classic/verify/storage-ageing/" class="v2 here" title="Z39 STORAGE &amp; AGEING" aria-label="Z39 STORAGE &amp; AGEING (this page)"></a></span></div><div class="zb-nav"><a href="/classic/verify/test-correlation/" title="Z38 TEST CORRELATION"><span>‹ PREV</span><small>Z38</small></a><a href="/classic/drawing/gdt/" title="Z40 GD&amp;T"><span>NEXT ›</span><small>Z40</small></a></div></nav><h1 id="_top" class="page-title">Storage &amp; ageing</h1></div></div><div class="content-panel astro-a7po4psb"><div class="sl-container astro-a7po4psb"><div class="sl-markdown-content"><div class="glance"><div><b>In one line</b>Ageing is chemistry, and chemistry becomes exponentially faster with temperature. Hot days have the largest effect, heat can make a test shorter, and only aged hardware can prove a prediction.</div><div><b>Before this</b><a href="../../seals/o-ring-design/">O-ring design</a> (compression set) · <a href="../../motor/propellant/#ageing">Propellant properties</a></div><div><b>Scope</b>Non-energetic hardware: seals, adhesives, bondlines, coatings, joints</div></div>
+<aside aria-label="What this page covers" class="starlight-aside starlight-aside--note"><p class="starlight-aside__title" aria-hidden="true"><svg aria-hidden="true" class="starlight-aside__icon astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z"/></svg>What this page covers</p><div class="starlight-aside__content"><p>This page covers the ageing of the hardware around the propellant. Your energetics specialists assess the ageing of
+the propellant (mechanical and chemical), with their own methods and safety authority.</p></div></aside>
+<div class="sl-heading-wrapper level-h2"><h2 id="why-this-matters">Why this matters</h2><a class="sl-anchor-link" href="#why-this-matters"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Why this matters”</span></a></div>
+<p>A motor is made one time and then it waits, often for years and sometimes for decades. It must operate on its last day
+in storage exactly as on its first day. During this time it changes. Seals get a compression set, adhesives and
+bondlines absorb moisture and oxidise, bolt preload relaxes, coatings break down at edges, and greases become dry. The
+part that ages fastest sets the service life of the programme. To claim a service life, you need two things: a
+<strong>prediction</strong> from accelerated tests, and <strong>evidence</strong> from surveillance of real aged hardware.</p>
+<div class="sl-heading-wrapper level-h3"><h3 id="what-ages-and-what-to-monitor">What ages, and what to monitor</h3><a class="sl-anchor-link" href="#what-ages-and-what-to-monitor"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “What ages, and what to monitor”</span></a></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Item</th><th>How it ages</th><th>Design response</th></tr></thead><tbody><tr><td>Elastomer seals</td><td>Compression set, oxidation, loss of low-temperature resilience</td><td>Include the set in the minimum squeeze (<a href="../../seals/o-ring-design/">O-ring design</a>); record cure dates; keep surveillance samples</td></tr><tr><td>Adhesive and bonded joints</td><td>Moisture absorption, plasticisation, interface degradation</td><td>Humidity-aged allowables; protect the edge of the bondline; witness coupons</td></tr><tr><td>Liner and insulation bonds</td><td>Plasticiser migration to and from the propellant; hardening</td><td>Compatibility tests; bond-strength surveillance with the energetics team</td></tr><tr><td>Bolted joints</td><td>Preload relaxation, embedding, creep of coatings and gaskets</td><td>Long grips, no soft layers in the clamp, a retorque policy if permitted</td></tr><tr><td>Coatings and platings</td><td>Breakdown at edges and damage; <a href="../../materials/galvanic/">galvanic attack</a></td><td>Also coat the cathode; inspect edges and fastener heads</td></tr><tr><td>Lubricants and greases</td><td>Drying, separation, migration onto seals</td><td>Compatible with the elastomer; specify the quantity, not “lightly”</td></tr><tr><td>Connectors and cabling</td><td>Contact corrosion; insulation becomes brittle</td><td>Sealed connectors; continuity and insulation checks in surveillance</td></tr></tbody></table>
+<div class="sl-heading-wrapper level-h2"><h2 id="ageing-is-chemistry-and-chemistry-is-temperature">Ageing is chemistry, and chemistry is temperature</h2><a class="sl-anchor-link" href="#ageing-is-chemistry-and-chemistry-is-temperature"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Ageing is chemistry, and chemistry is temperature”</span></a></div>
+<p>Most ageing is a chemical reaction: oxidation, hydrolysis or cross-linking. Reaction rates follow the Arrhenius law,
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mi>A</mi><mtext> </mtext><msup><mi>e</mi><mrow><mo>−</mo><msub><mi>E</mi><mi>a</mi></msub><mi mathvariant="normal">/</mi><mi>R</mi><mi>T</mi></mrow></msup></mrow><annotation encoding="application/x-tex">k = A\,e^{-E_a/RT}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.888em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.888em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1645em;"><span style="top:-2.357em;margin-left:-0.0576em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mord mtight">/</span><span class="mord mathnormal mtight" style="margin-right:0.0077em;">R</span><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span></span></span></span></span></span></span></span></span>. Life is inversely proportional to rate. Thus the <strong>acceleration factor</strong> between a test
+temperature and the service temperature is:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mi>F</mi><mo>=</mo><mi>exp</mi><mo>⁡</mo><mtext> ⁣</mtext><mrow><mo fence="true">[</mo><mfrac><msub><mi>E</mi><mi>a</mi></msub><mi>R</mi></mfrac><mrow><mo fence="true">(</mo><mfrac><mn>1</mn><msub><mi>T</mi><mtext>service</mtext></msub></mfrac><mo>−</mo><mfrac><mn>1</mn><msub><mi>T</mi><mtext>test</mtext></msub></mfrac><mo fence="true">)</mo></mrow><mo fence="true">]</mo></mrow><mspace width="2em"></mspace><mi>R</mi><mo>=</mo><mn>8.314</mn><mtext> J/(mol⋅K)</mtext><mo separator="true">,</mo><mtext> </mtext><mi>T</mi><mtext> in kelvin</mtext></mrow><annotation encoding="application/x-tex">AF = \exp\!\left[\frac{E_a}{R}\left(\frac{1}{T_\text{service}} - \frac{1}{T_\text{test}}\right)\right]
+\qquad R = 8.314 \ \text{J/(mol·K)},\ T \text{ in kelvin}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="mop">exp</span><span class="mspace" style="margin-right:-0.1667em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">[</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0077em;">R</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">(</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3175em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord text mtight"><span class="mord mtight">service</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord text mtight"><span class="mord mtight">test</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">)</span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">]</span></span></span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">R</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">8.314</span><span class="mspace"> </span><span class="mord text"><span class="mord">J/(mol⋅K)</span></span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mord text"><span class="mord"> in kelvin</span></span></span></span></span></span>
+<p>The <strong>activation energy</strong> <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> sets how quickly life decreases with temperature:</p>
+<ul>
+<li>The old rule “ageing doubles each 10 °C” is only one value of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>: approximately <strong>53 kJ/mol</strong> near room
+temperature. At 80 kJ/mol, the rate doubles each 6.5 K.</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a property of the <strong>mechanism</strong>, not of the material name. Values for polymer oxidation are approximately
+between 50 and 120 kJ/mol, and the result is very sensitive to the value. Measure it. Do not take it from a different
+source.</li>
+</ul>
+<aside class="analogy" aria-label="Analogy: Milk on the kitchen counter"><p class="analogy-label"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path></svg>Think of it like…</p><p class="analogy-title">Milk on the kitchen counter</p><p>Milk stays good for a week in the fridge, and it becomes bad in a day on a warm counter. A few degrees make a very
+large difference to the chemistry. Now think of a fridge that becomes warm for a few hours each afternoon. The milk
+becomes bad sooner than in a fridge kept steadily at the same average temperature, because the warm hours cause much
+more damage than the cold hours prevent.</p></aside>
+<div class="sl-heading-wrapper level-h2"><h2 id="the-average-temperature-is-the-wrong-average">The average temperature is the wrong average</h2><a class="sl-anchor-link" href="#the-average-temperature-is-the-wrong-average"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “The average temperature is the wrong average”</span></a></div>
+<p>A store that changes between 12 °C and 38 °C does not age hardware as a store kept at the average does. With
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mn>79</mn></mrow><annotation encoding="application/x-tex">E_a = 79</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">79</span></span></span></span> kJ/mol, one hour at 38 °C causes the same ageing as 16 hours at 12 °C. The correct average is the <strong>mean
+kinetic temperature (MKT)</strong>. This is the constant temperature that causes the same total ageing as the real, changing
+record:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>T</mi><mtext>MKT</mtext></msub><mo>=</mo><mfrac><mrow><msub><mi>E</mi><mi>a</mi></msub><mi mathvariant="normal">/</mi><mi>R</mi></mrow><mrow><mo>−</mo><mi>ln</mi><mo>⁡</mo><mtext> ⁣</mtext><mrow><mo fence="true">[</mo><mstyle scriptlevel="0" displaystyle="true"><mfrac><mn>1</mn><mi>n</mi></mfrac></mstyle><mstyle scriptlevel="0" displaystyle="true"><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mi>e</mi><mrow><mo>−</mo><msub><mi>E</mi><mi>a</mi></msub><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mi>R</mi><mtext> </mtext><msub><mi>T</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow></msup></mstyle><mo fence="true">]</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">T_\text{MKT} = \frac{E_a/R}{-\ln\!\left[\dfrac{1}{n}\displaystyle\sum_{i=1}^{n} e^{-E_a/(R\,T_i)}\right]}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord text mtight"><span class="mord mtight">MKT</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:4.3447em;vertical-align:-2.9177em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.11em;"><span class="pstrut" style="height:3.75em;"></span><span class="mord"><span class="mord">−</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">ln</span><span class="mspace" style="margin-right:-0.1667em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size4">[</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">n</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6514em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1645em;"><span style="top:-2.357em;margin-left:-0.0576em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mord mtight">/</span><span class="mopen mtight">(</span><span class="mord mathnormal mtight" style="margin-right:0.0077em;">R</span><span class="mspace mtight" style="margin-right:0.1952em;"></span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3281em;"><span style="top:-2.357em;margin-left:-0.1389em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size4">]</span></span></span></span></span><span style="top:-3.98em;"><span class="pstrut" style="height:3.75em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-4.427em;"><span class="pstrut" style="height:3.75em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.0077em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.9177em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span>
+<p>This is for <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> readings at equal intervals, in kelvin. The MKT is always equal to or more than the arithmetic mean. The
+difference increases with the size of the temperature changes and with <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>. The method comes from pharmaceutical
+storage (Haynes, 1971), where it is standard practice. <strong>You cannot calculate the MKT without a temperature log.</strong> This
+is a good reason to require a log in the storage specification.</p>
+<div class="sl-heading-wrapper level-h2"><h2 id="predicting-service-life-from-accelerated-tests">Predicting service life from accelerated tests</h2><a class="sl-anchor-link" href="#predicting-service-life-from-accelerated-tests"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Predicting service life from accelerated tests”</span></a></div>
+<p>ISO 11346 gives this method for rubbers:</p>
+<ol>
+<li><strong>Select the property and its end-of-life limit.</strong> Examples are the compression set at which a seal does not have
+sufficient squeeze, or the bond strength below which a joint does not meet its load.</li>
+<li><strong>Age samples at three or more increased temperatures,</strong> in the correct condition (seals compressed, bonds at the
+correct humidity). Record the time that each sample takes to get to the limit.</li>
+<li><strong>Plot ln(life) against 1/T.</strong> One mechanism gives a straight line, with a slope of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub><mi mathvariant="normal">/</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">E_a/R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.0077em;">R</span></span></span></span>.</li>
+<li><strong>Extrapolate to the MKT of the service conditions,</strong> and compare with the necessary life, with the margin of your
+programme.</li>
+</ol>
+<p>The possible errors:</p>
+<ul>
+<li><strong>One mechanism only.</strong> If the test temperature is too high, a different chemistry starts. You then extrapolate an
+incorrect result with high precision. Points that are off the line at the hot end are the warning.</li>
+<li><strong>Thick sections age from the outside in.</strong> At high test temperatures, the surface uses oxygen faster than the
+oxygen can diffuse inward. Thus the skin ages and the core does not. This never occurs in service. Thick parts need
+moderate test temperatures, or a check for this effect.</li>
+<li><strong>Long extrapolations make all errors larger.</strong> A 10% error in <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> can change a predicted life by a factor of 1.5
+or more. The calculator shows the effect for your data.</li>
+<li><strong>Field ageing can be different from the laboratory.</strong> Long-term studies of rubbers stored for decades found lives
+shorter than the Arrhenius extrapolation predicted. Treat a prediction as a hypothesis that surveillance must test.</li>
+</ul>
+<div class="sl-heading-wrapper level-h2"><h2 id="calculator">Calculator</h2><a class="sl-anchor-link" href="#calculator"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Calculator”</span></a></div>
+<div class="calc agcalc" data-agcalc><div class="calc-head"><span>Service life from accelerated ageing</span><span>single-mechanism Arrhenius · mean kinetic temperature</span></div><div class="calc-body"><form data-form onsubmit="return false"><fieldset><legend>1 · Accelerated tests</legend><div class="ag-rows"><span class="ag-h">Test temp (°C)</span><span class="ag-h">Life (hours)</span><input name="t0" type="number" step="any" value="80" aria-label="Test 1 temperature"><input name="l0" type="number" min="0" step="any" value="1400" aria-label="Test 1 life"><input name="t1" type="number" step="any" value="100" aria-label="Test 2 temperature"><input name="l1" type="number" min="0" step="any" value="330" aria-label="Test 2 life"><input name="t2" type="number" step="any" value="120" aria-label="Test 3 temperature"><input name="l2" type="number" min="0" step="any" value="90" aria-label="Test 3 life"><input name="t3" type="number" step="any" value aria-label="Test 4 temperature"><input name="l3" type="number" min="0" step="any" value aria-label="Test 4 life"><input name="t4" type="number" step="any" value aria-label="Test 5 temperature"><input name="l4" type="number" min="0" step="any" value aria-label="Test 5 life"></div><p class="hint">Life = time to reach your end-of-life criterion at that temperature: compression set reaching its limit, bond strength falling to its minimum. At least three temperatures. Defaults are illustrative, not data for any real compound.</p><label>Activation energy override (kJ/mol)<input name="ea" type="number" min="1" step="any" placeholder="from the fit"></label></fieldset><fieldset><legend>2 · Storage record</legend><div class="ag-presets"><button type="button" class="chip" data-preset="hot">Hot unconditioned store</button><button type="button" class="chip" data-preset="temperate">Temperate, monthly means</button><button type="button" class="chip" data-preset="conditioned">Conditioned store</button></div><label>Readings, °C: equal intervals, one per line<textarea name="log" rows="5">12
+18
+24
+31
+38
+29
+21
+15</textarea></label></fieldset><fieldset><legend>3 · Test plan</legend><div class="row2"><label>Test temperature (°C)<input name="tt" type="number" step="any" value="80"></label><label>Test duration (days)<input name="td" type="number" min="0" step="any" value="30"></label></div></fieldset><script type="application/json" data-presets>{"hot":{"label":"Hot unconditioned store","log":[12,18,24,31,38,29,21,15]},"temperate":{"label":"Temperate, monthly means","log":[4,5,8,11,15,18,20,20,17,13,8,5]},"conditioned":{"label":"Conditioned store","log":[20,20,20,20]}}</script></form><div><dl class="readouts"><div class="readout primary"><dt>Predicted life in this store</dt><dd data-r="life">—</dd></div><div class="readout"><dt>Using the plain average instead</dt><dd data-r="lifeMean">—</dd></div></dl><p class="pv-sub">The chemistry</p><dl class="readouts"><div class="readout"><dt>Activation energy E<sub>a</sub></dt><dd data-r="ea">—</dd></div><div class="readout"><dt>Rate doubles every</dt><dd data-r="dbl">—</dd></div><div class="readout"><dt>Extrapolation from the coolest test</dt><dd data-r="gap">—</dd></div></dl><p class="pv-sub">The store</p><dl class="readouts"><div class="readout"><dt>Mean kinetic temperature</dt><dd data-r="mkt">—</dd></div><div class="readout"><dt>Arithmetic mean</dt><dd data-r="mean">—</dd></div></dl><p class="pv-sub">The test plan</p><dl class="readouts"><div class="readout"><dt>Acceleration factor</dt><dd data-r="af">—</dd></div><div class="readout"><dt>Equivalent time in this store</dt><dd data-r="eq">—</dd></div></dl><figure class="ag-fig"><svg viewBox="0 0 480 250" data-arr role="img" aria-label="Arrhenius plot of life against temperature"></svg><figcaption>Arrhenius plot: life (log scale) against temperature on a 1/T scale, so a single mechanism is a straight line. Solid: fitted over the tests. Dashed: the extrapolation to the store.</figcaption></figure><figure class="ag-fig"><svg viewBox="0 0 480 170" data-log role="img" aria-label="Storage temperature record with its mean and mean kinetic temperature"></svg><figcaption>The storage record. The mean kinetic temperature sits above the plain average, because hot readings age the hardware far more than cold ones slow it down.</figcaption></figure><ul class="pv-notes" data-notes></ul></div></div><div class="calc-foot">One degradation mechanism with a constant activation energy across the whole range, life defined by one property reaching one limit, and a storage record that is representative of the whole service life. ISO 11346 describes the full method for rubbers, including fitting by time–temperature shifting.</div></div><script type="module" src="/classic/_astro/AgeingCalc.astro_astro_type_script_index_0_lang.DPHT37LG.js"></script>
+<div class="sl-heading-wrapper level-h2"><h2 id="worked-example-a-seal-in-a-hot-store">Worked example: a seal in a hot store</h2><a class="sl-anchor-link" href="#worked-example-a-seal-in-a-hot-store"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Worked example: a seal in a hot store”</span></a></div>
+<p>The test data for an elastomer seal are illustrative. The time to get to its compression-set limit is 1400 h at 80 °C,
+330 h at 100 °C and 90 h at 120 °C. These are the starting values of the calculator.</p>
+<ol>
+<li><strong>Fit.</strong> ln(life) against 1/T gives a slope of 9526 K. Thus <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mn>9526</mn><mo>×</mo><mn>8.314</mn><mo>=</mo><mn>79.2</mn></mrow><annotation encoding="application/x-tex">E_a = 9526 \times 8.314 = 79.2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">9526</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8.314</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">79.2</span></span></span></span> kJ/mol, with
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>r</mi><mn>2</mn></msup><mo>≈</mo><mn>1.000</mn></mrow><annotation encoding="application/x-tex">r^2 \approx 1.000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">r</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1.000</span></span></span></span>.</li>
+<li><strong>Store.</strong> This is a store without temperature control in a hot climate, read each three hours over a typical day:
+12, 18, 24, 31, 38, 29, 21 and 15 °C. The mean is 23.5 °C, and the MKT is <strong>26.9 °C</strong>.</li>
+<li><strong>Life in this store.</strong> 18.9 years at the MKT. The plain average would give 27.2 years, which is 44% too high.</li>
+<li><strong>Uncertainty.</strong> The coolest test is 53 K above the store temperature. Thus a 10% error in <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">E_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> changes the result
+by a factor of 1.6.</li>
+<li><strong>Test plan.</strong> At 80 °C the acceleration factor is 119. Thus 30 days of oven ageing represents approximately 9.7
+years in this store, and 62 days represents 20 years.</li>
+<li><strong>Against the requirement.</strong> If the requirement is 20 years, this seal does not meet it in this store. The options
+are: store the motors at a controlled 20 °C (39.9 years), select a more resistant compound, or claim a shorter life
+now and extend it with surveillance evidence.</li>
+</ol>
+<div class="sl-heading-wrapper level-h2"><h2 id="surveillance">Surveillance</h2><a class="sl-anchor-link" href="#surveillance"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Surveillance”</span></a></div>
+<p>A prediction tells what must occur. Surveillance tells what occurred. A surveillance programme:</p>
+<ul>
+<li><strong>Keeps representative hardware and witness samples</strong> (seal samples, bonded coupons, sample cartons) in storage with
+the fleet, in the same conditions.</li>
+<li><strong>Removes them on a schedule and tests them:</strong> dimensions and leak checks, NDT (radiography or CT for debonds and
+cracks), dissection, mechanical tests of bonds and seals, and, for complete motors, static firing of aged units.</li>
+<li><strong>Plots the trend of the results</strong> against the prediction and the end-of-life limit. With this evidence, it extends
+or decreases the service life.</li>
+</ul>
+<figure class="viz"><p class="viz-title">Surveillance: prediction first, then evidence (illustrative)</p><svg viewBox="0 0 640 340" role="img" aria-labelledby="sv-desc" class="sv-svg"><desc id="sv-desc">A property, such as bond strength as a percentage of its new value, plotted against years in storage. A predicted decline from accelerated tests reaches the end-of-life limit at 20 years, with an uncertainty band that widens with age. Surveillance results from samples withdrawn every two years fall above the prediction; their trend reaches the limit at about 27 years, supporting a longer service life.</desc><g><line x1="64" x2="620" y1="294" y2="294" stroke="var(--rd-line)"></line><text x="56" y="298" text-anchor="end" font-size="12" fill="var(--rd-muted)">50%</text></g><g><line x1="64" x2="620" y1="242.4" y2="242.4" stroke="var(--rd-line)"></line><text x="56" y="246.4" text-anchor="end" font-size="12" fill="var(--rd-muted)">60%</text></g><g><line x1="64" x2="620" y1="190.8" y2="190.8" stroke="var(--rd-line)"></line><text x="56" y="194.8" text-anchor="end" font-size="12" fill="var(--rd-muted)">70%</text></g><g><line x1="64" x2="620" y1="139.20000000000002" y2="139.20000000000002" stroke="var(--rd-line)"></line><text x="56" y="143.20000000000002" text-anchor="end" font-size="12" fill="var(--rd-muted)">80%</text></g><g><line x1="64" x2="620" y1="87.6" y2="87.6" stroke="var(--rd-line)"></line><text x="56" y="91.6" text-anchor="end" font-size="12" fill="var(--rd-muted)">90%</text></g><g><line x1="64" x2="620" y1="36" y2="36" stroke="var(--rd-line)"></line><text x="56" y="40" text-anchor="end" font-size="12" fill="var(--rd-muted)">100%</text></g><g><line x1="64" x2="64" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="64" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">0</text></g><g><line x1="156.66666666666666" x2="156.66666666666666" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="156.66666666666666" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">5</text></g><g><line x1="249.33333333333331" x2="249.33333333333331" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="249.33333333333331" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">10</text></g><g><line x1="342" x2="342" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="342" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">15</text></g><g><line x1="434.66666666666663" x2="434.66666666666663" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="434.66666666666663" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">20</text></g><g><line x1="527.3333333333334" x2="527.3333333333334" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="527.3333333333334" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">25</text></g><g><line x1="620" x2="620" y1="36" y2="294" stroke="var(--rd-line)"></line><text x="620" y="310" text-anchor="middle" font-size="12" fill="var(--rd-muted)">30</text></g><text x="342" y="334" text-anchor="middle" font-size="12" fill="var(--rd-ink)">years in storage</text><text x="14" y="165" text-anchor="middle" font-size="12" fill="var(--rd-ink)" transform="rotate(-90 14 165)">property, % of new</text><path d="M64.0,36.0L75.1,40.8L86.2,45.6L97.4,50.4L108.5,55.2L119.6,60.0L130.7,64.8L141.8,69.6L153.0,74.4L164.1,79.2L175.2,84.0L186.3,88.8L197.4,93.6L208.6,98.4L219.7,103.2L230.8,108.0L241.9,112.8L253.0,117.6L264.2,122.4L275.3,127.2L286.4,132.0L297.5,136.8L308.6,141.6L319.8,146.4L330.9,151.2L342.0,156.0L353.1,160.8L364.2,165.6L375.4,170.4L386.5,175.2L397.6,180.0L408.7,184.8L419.8,189.6L431.0,194.4L442.1,199.2L453.2,204.0L464.3,208.8L475.4,213.6L486.6,218.4L497.7,223.2L508.8,228.0L519.9,232.8L531.0,237.5L542.2,242.3L553.3,247.1L564.4,251.9L575.5,256.7L586.6,261.5L597.8,266.3L608.9,271.1L620.0,275.9L620.0,294.0L608.9,294.0L597.8,294.0L586.6,294.0L575.5,294.0L564.4,294.0L553.3,294.0L542.2,294.0L531.0,294.0L519.9,294.0L508.8,294.0L497.7,294.0L486.6,294.0L475.4,294.0L464.3,294.0L453.2,294.0L442.1,293.9L431.0,286.3L419.8,278.7L408.7,271.1L397.6,263.6L386.5,256.0L375.4,248.4L364.2,240.8L353.1,233.2L342.0,225.6L330.9,218.0L319.8,210.5L308.6,202.9L297.5,195.3L286.4,187.7L275.3,180.1L264.2,172.5L253.0,164.9L241.9,157.4L230.8,149.8L219.7,142.2L208.6,134.6L197.4,127.0L186.3,119.4L175.2,111.9L164.1,104.3L153.0,96.7L141.8,89.1L130.7,81.5L119.6,73.9L108.5,66.3L97.4,58.8L86.2,51.2L75.1,43.6L64.0,36.0Z" fill="var(--rd-blue)" fill-opacity="0.12"></path><path d="M64.0,36.0L75.1,42.2L86.2,48.4L97.4,54.6L108.5,60.8L119.6,67.0L130.7,73.2L141.8,79.3L153.0,85.5L164.1,91.7L175.2,97.9L186.3,104.1L197.4,110.3L208.6,116.5L219.7,122.7L230.8,128.9L241.9,135.1L253.0,141.3L264.2,147.5L275.3,153.6L286.4,159.8L297.5,166.0L308.6,172.2L319.8,178.4L330.9,184.6L342.0,190.8L353.1,197.0L364.2,203.2L375.4,209.4L386.5,215.6L397.6,221.8L408.7,228.0L419.8,234.1L431.0,240.3L442.1,246.5L453.2,252.7L464.3,258.9L475.4,265.1L486.6,271.3L497.7,277.5L508.8,283.7L519.9,289.9L531.0,294.0L542.2,294.0L553.3,294.0L564.4,294.0L575.5,294.0L586.6,294.0L597.8,294.0L608.9,294.0L620.0,294.0" fill="none" stroke="var(--rd-blue)" stroke-width="2.5"></path><text x="91.8" y="185.64" font-size="12" fill="var(--rd-blue)">prediction, with</text><text x="91.8" y="200.64" font-size="12" fill="var(--rd-blue)">its uncertainty</text><line x1="64" x2="620" y1="242.4" y2="242.4" stroke="var(--rd-accent)" stroke-width="2"></line><text x="70" y="236.4" font-size="12" fill="var(--rd-accent)">end-of-life limit</text><path d="M64.0,36.0L75.1,40.6L86.2,45.3L97.4,49.9L108.5,54.6L119.6,59.2L130.7,63.9L141.8,68.5L153.0,73.2L164.1,77.8L175.2,82.4L186.3,87.1L197.4,91.7L208.6,96.4L219.7,101.0L230.8,105.7L241.9,110.3" fill="none" stroke="var(--rd-ok)" stroke-width="2.5"></path><path d="M253.0,114.9L264.2,119.6L275.3,124.2L286.4,128.9L297.5,133.5L308.6,138.2L319.8,142.8L330.9,147.5L342.0,152.1L353.1,156.7L364.2,161.4L375.4,166.0L386.5,170.7L397.6,175.3L408.7,180.0L419.8,184.6L431.0,189.3L442.1,193.9L453.2,198.5L464.3,203.2L475.4,207.8L486.6,212.5L497.7,217.1L508.8,221.8L519.9,226.4L531.0,231.0L542.2,235.7L553.3,240.3L564.4,245.0L575.5,249.6L586.6,254.3L597.8,258.9L608.9,263.6L620.0,268.2" fill="none" stroke="var(--rd-ok)" stroke-width="2" stroke-dasharray="6 4"></path><circle cx="101.06666666666666" cy="50.44799999999998" r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle><circle cx="138.13333333333333" cy="65.41200000000003" r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle><circle cx="175.2" cy="82.44000000000003" r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle><circle cx="212.26666666666665" cy="95.34" r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle><circle cx="249.33333333333331" cy="114.43200000000002" r="6" fill="var(--rd-panel)" stroke="var(--rd-ok)" stroke-width="2.5"></circle><text x="267.8666666666667" y="77.28" font-size="12" fill="var(--rd-ok)">surveillance results and their trend</text><line x1="434.66666666666663" x2="434.66666666666663" y1="242.4" y2="294" stroke="var(--rd-blue)" stroke-dasharray="3 3"></line><line x1="558.2222222222222" x2="558.2222222222222" y1="242.4" y2="294" stroke="var(--rd-ok)" stroke-dasharray="3 3"></line><text x="430.66666666666663" y="286" text-anchor="end" font-size="12" fill="var(--rd-blue)">predicted life</text><text x="562.2222222222222" y="272" font-size="12" fill="var(--rd-ok)">supported</text><text x="562.2222222222222" y="286" font-size="12" fill="var(--rd-ok)">by data</text><path d="M280.4,22 l12,0 l-6,10 z" fill="var(--rd-muted)"></path><path d="M317.4666666666667,22 l12,0 l-6,10 z" fill="var(--rd-muted)"></path><text x="304.93333333333334" y="16" text-anchor="middle" font-size="11" fill="var(--rd-muted)">next withdrawals</text></svg><figcaption>A prediction says what should happen; surveillance says what did. Extending a service life rests on the trend of real aged hardware staying clear of the limit, with enough withdrawals left to catch it if it turns.</figcaption></figure>
+<p>Design for surveillance from the start. Put witness samples in the build, make the bondlines accessible for
+inspection, record cure dates and batch traceability, and require a temperature log in storage.</p>
+<div class="sl-heading-wrapper level-h2"><h2 id="where-this-stops">Where this stops</h2><a class="sl-anchor-link" href="#where-this-stops"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Where this stops”</span></a></div>
+<ul>
+<li><strong>One mechanism with a constant activation energy.</strong> Several mechanisms, humidity, oxygen supply and mechanical
+stress each need their own method.</li>
+<li><strong>A representative record.</strong> The MKT is only as good as the log. One hot day is not a year. Use records that cover the
+full storage cycle.</li>
+<li><strong>Non-energetic hardware only.</strong> The energetics specialists are responsible for the ageing of the propellant and the
+igniter, which includes chemical stability.</li>
+<li><strong>ISO 11346</strong> also gives fitting by time–temperature shifting, and a maximum temperature of use. This page uses the
+simplest form.</li>
+</ul>
+<div class="sl-heading-wrapper level-h2"><h2 id="on-the-drawing-and-in-the-specifications">On the drawing and in the specifications</h2><a class="sl-anchor-link" href="#on-the-drawing-and-in-the-specifications"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “On the drawing and in the specifications”</span></a></div>
+<ul>
+<li><strong>Record the cure dates and the batch</strong> of each elastomer, and apply the shelf-life rules of ISO 2230 or SAE ARP5316
+before assembly.</li>
+<li><strong>Give the storage conditions</strong> (temperature range, humidity, protection from ozone and UV) in the storage and
+handling specification, and require a temperature log.</li>
+<li><strong>Identify the items with a life limit,</strong> with the basis of their life, so that you can trace a surveillance result
+back to a prediction.</li>
+<li><strong>Include witness samples in the build:</strong> coupons bonded and cured with the hardware. You can then test something
+that is not the flight article.</li>
+</ul>
+<div class="sl-heading-wrapper level-h2"><h2 id="references-and-further-reading">References and further reading</h2><a class="sl-anchor-link" href="#references-and-further-reading"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “References and further reading”</span></a></div>
+<ul>
+<li>ISO 11346, <em>Rubber, vulcanized or thermoplastic — Estimation of life-time and maximum temperature of use</em>.</li>
+<li>ISO 188, <em>Rubber, vulcanized or thermoplastic — Accelerated ageing and heat resistance tests</em>.</li>
+<li>ISO 815-1, <em>Rubber — Determination of compression set at ambient or elevated temperatures</em>.</li>
+<li>ISO 2230, <em>Rubber products — Guidelines for storage</em>; SAE ARP5316, <em>Storage of elastomer seals and seal assemblies</em>.</li>
+<li>J. D. Haynes, “Worldwide virtual temperatures for product stability testing”, <em>Journal of Pharmaceutical Sciences</em>
+60 (1971) 927–929 (mean kinetic temperature).</li>
+<li>K. T. Gillen, R. Bernstein &#x26; D. K. Derzon, “Evidence of non-Arrhenius behaviour from laboratory aging and 24-year
+field aging of polychloroprene rubber materials”, <em>Polymer Degradation and Stability</em> 87 (2005) 57–67.</li>
+</ul>
+<aside aria-label="Note" class="starlight-aside starlight-aside--note"><p class="starlight-aside__title" aria-hidden="true"><svg aria-hidden="true" class="starlight-aside__icon astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z"/></svg>Note</p><div class="starlight-aside__content"><p>This is a screening model with one mechanism. Service-life claims need measured ageing data in the correct condition,
+surveillance of real hardware, and approval by the responsible authority.</p></div></aside></div><footer class="route-foot"><div class="rf-meta"><p>Last updated: <time datetime="2026-10-28T19:48:27.000Z">Oct 28, 2026</time></p></div><nav class="rf-pager" aria-label="Previous and next on the route"><a class="rf-card prev" href="/classic/verify/test-correlation/" style="--pc: var(--ph-verify)"><span class="rf-k">‹ PREVIOUS · VERIFY · Z38</span><span class="rf-t">TEST CORRELATION</span></a><a class="rf-card next" href="/classic/drawing/gdt/" style="--pc: var(--ph-detail)"><span class="rf-k">NEXT ON THE ROUTE · DETAIL · Z40 ›</span><span class="rf-t">GD&amp;T</span></a></nav><section class="rf-phase" style="--pc: var(--ph-verify)"><p class="rf-k">ALSO IN VERIFY: PROVE IT SURVIVES</p><div class="rf-chips"><a href="/classic/verify/margin-policy/" class="rf-chip v2"><span class="zn">Z31</span>MARGIN POLICY</a><a href="/classic/verify/shell-buckling/" class="rf-chip v2"><span class="zn">Z32</span>SHELL BUCKLING</a><a href="/classic/verify/leak-before-break/" class="rf-chip v2"><span class="zn">Z33</span>LEAK BEFORE BREAK</a><a href="/classic/verify/random-vibration/" class="rf-chip v2"><span class="zn">Z34</span>RANDOM VIBRATION</a><a href="/classic/verify/proof-testing/" class="rf-chip v2"><span class="zn">Z35</span>PROOF TESTING</a><a href="/classic/verify/fea-cards/" class="rf-chip v2"><span class="zn">Z36</span>FEA CARDS</a><a href="/classic/verify/fea-and-test/" class="rf-chip v2"><span class="zn">Z37</span>FEA &amp; TEST</a><a href="/classic/verify/test-correlation/" class="rf-chip v2"><span class="zn">Z38</span>TEST CORRELATION</a></div></section><p class="rf-disclaimer">Reference aid for learning and early design. Values are typical published data and screening methods. Before release, verify against the current issue of the applicable standard, the approved data of your organisation and the requirements of your programme.</p></footer></div></div></main></div></div></div></div><script type="module">var e=document.querySelector(`#scrollTelemetry i`),t=()=>{if(!e)return;let t=Math.max(1,document.documentElement.scrollHeight-innerHeight);e.style.transform=`scaleX(${Math.min(1,scrollY/t)})`};addEventListener(`scroll`,t,{passive:!0}),addEventListener(`resize`,t),t();var n=document.documentElement,r=()=>n.classList.contains(`motion-off`)||matchMedia(`(prefers-reduced-motion: reduce)`).matches;matchMedia(`(hover: hover) and (pointer: fine)`).matches&&document.querySelectorAll(`.mh-way, .mh-task, .mh-station`).forEach(e=>{e.classList.add(`tilt`),e.addEventListener(`pointermove`,t=>{let n=e.getBoundingClientRect(),i=(t.clientX-n.left)/n.width,a=(t.clientY-n.top)/n.height;e.style.setProperty(`--mx`,`${(i*100).toFixed(1)}%`),e.style.setProperty(`--my`,`${(a*100).toFixed(1)}%`),e.style.transform=r()?``:`perspective(700px) rotateX(${((.5-a)*7).toFixed(2)}deg) rotateY(${((i-.5)*9).toFixed(2)}deg) translateZ(6px)`}),e.addEventListener(`pointerleave`,()=>{e.style.transform=``})});</script></body></html>
